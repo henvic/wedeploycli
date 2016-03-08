@@ -10,7 +10,6 @@ import (
 	cconfig "github.com/launchpad-project/cli/cmd/config"
 	"github.com/launchpad-project/cli/cmd/hooks"
 	"github.com/launchpad-project/cli/cmd/info"
-	"github.com/launchpad-project/cli/cmd/update"
 	"github.com/launchpad-project/cli/cmd/version"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/configstore"
@@ -61,7 +60,6 @@ func init() {
 	RootCmd.AddCommand(auth.LoginCmd)
 	RootCmd.AddCommand(auth.LogoutCmd)
 	RootCmd.AddCommand(cconfig.ConfigCmd)
-	RootCmd.AddCommand(update.UpdateCmd)
 	RootCmd.AddCommand(info.InfoCmd)
 	RootCmd.AddCommand(hooks.BuildCmd)
 	RootCmd.AddCommand(hooks.DeployCmd)
