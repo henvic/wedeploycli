@@ -29,7 +29,7 @@ func PrintProject() {
 	fmt.Println(
 		"Project: " + s.Get("name") + "\n" +
 			"Domain: " + s.Get("domain") + "\n" +
-			s.Get("description"))
+			"Description: " + s.Get("description"))
 }
 
 // PrintContainer prints container information read from container.json
@@ -37,7 +37,8 @@ func PrintContainer() {
 	var s = config.Stores["container"]
 
 	fmt.Println(
-		"Container description: " + s.Get("description") + "\n" +
+		"Container: " + s.Get("name") + "\n" +
+			"Description: " + s.Get("description") + "\n" +
 			"Version: " + s.Get("version") + "\n" +
 			"Runtime: " + s.Get("runtime"))
 }
