@@ -1,0 +1,18 @@
+{
+    "version": "0.0.1",
+    "description": "Static hosting container example",
+    "runtime": "static",
+    "basePath": "/",
+    "webPath": "/",
+    "instances": 1,
+    "memory": 128,
+    "environment": {},
+    "hooks": {
+        "before_build": "echo hello",
+        "build": "ls -l",
+        "after_build": "ps",
+        "before_deploy": "who",
+        "deploy": "git --help",
+        "after_deploy": "cal"
+    }
+}

@@ -1,0 +1,11 @@
+{
+    INVALID CONTAINER FILE
+    "hooks": {
+        "before_build": "echo hello"
+        "build": "ls -l",
+        "after_build": "ps",
+        "before_deploy": "who",
+        "deploy": "git --help",
+        "after_deploy": "cal"
+    }
+}
