@@ -1,0 +1,16 @@
+{
+    "name": "app",
+    "description": "App example project",
+    "domain": "app.liferay.io",
+    "environment": {
+        "TOKEN": "1234567890"
+    },
+    "hooks": {
+        "before_build": "",
+        "build": "",
+        "after_build": "",
+        "before_deploy": "",
+        "deploy": "",
+        "after_deploy": ""
+    }
+}
