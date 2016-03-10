@@ -31,8 +31,20 @@ func TestSetup(t *testing.T) {
 
 	Setup()
 
-	if len(Stores) != 3 || Stores["global"] == nil || Stores["project"] == nil || Stores["container"] == nil {
-		t.Errorf("Should have global, project, and container store")
+	if len(Stores) != 3 {
+		t.Error("Should have 3 config stores")
+	}
+
+	var list = []string{
+		"global",
+		"project",
+		"container",
+	}
+
+	for _, k := range list {
+		if Stores[k] == nil {
+			t.Errorf("%v store missing", k)
+		}
 	}
 
 	os.Chdir(workingDir)

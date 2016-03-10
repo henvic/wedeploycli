@@ -8,6 +8,12 @@ import (
 	"github.com/launchpad-project/api.go/jsonlib"
 )
 
+func assertGetString(t *testing.T, s Store, key, retVal string, retErr error) {
+	if w, err := s.GetString(key); w != retVal || err != retErr {
+		t.Errorf("Wanted <%s, %s>, got <%s %s> instead", retVal, retErr, w, err)
+	}
+}
+
 func TestLoad(t *testing.T) {
 	var s = Store{
 		Name: "myconfig",
@@ -112,33 +118,13 @@ func TestGetString(t *testing.T) {
 		t.Errorf("Unexpected error %v when no error was expected", err)
 	}
 
-	if w, err := s.GetString("planet.Earth.BR.city"); w != "Recife" || err != nil {
-		t.Errorf("Wanted <Recife, nil>, got %s %s instead", w, err)
-	}
-
-	if w, err := s.GetString("score"); w != "1000" || err != nil {
-		t.Errorf("Wanted score = (string) 1000, got <%s, %s> instead", w, err)
-	}
-
-	if w, err := s.GetString("sys.components"); w != "null" || err != nil {
-		t.Errorf("Wanted sys.components = null, got <%s, %s> instead", w, err)
-	}
-
-	if w, err := s.GetString("sys.missing"); w != "" || err != ErrConfigKeyNotFound {
-		t.Errorf("Wanted sys.missing to be <\"\", ErrConfigKeyNotFound>, got <%s, %s> instead", w, err)
-	}
-
-	if w, err := s.GetString(""); w != "" || err != ErrConfigKeyNotFound {
-		t.Errorf("Wanted (empty) to be <\"\", ErrConfigKeyNotFound>, got <%s, %s> instead", w, err)
-	}
-
-	if w, err := s.GetString("..."); w != "" || err != ErrConfigKeyNotFound {
-		t.Errorf("Wanted ... to be <\"\", ErrConfigKeyNotFound>, got <%s, %s> instead", w, err)
-	}
-
-	if w, err := s.GetString("planet"); w != "" || err != ErrConfigKeyNotLeaf {
-		t.Errorf("Wanted planet to be <empty, %s>, got <%s, %s> instead", ErrConfigKeyNotLeaf, w, err)
-	}
+	assertGetString(t, s, "planet.Earth.BR.city", "Recife", nil)
+	assertGetString(t, s, "score", "1000", nil)
+	assertGetString(t, s, "sys.components", "null", nil)
+	assertGetString(t, s, "sys.missing", "", ErrConfigKeyNotFound)
+	assertGetString(t, s, "", "", ErrConfigKeyNotFound)
+	assertGetString(t, s, "...", "", ErrConfigKeyNotFound)
+	assertGetString(t, s, "planet", "", ErrConfigKeyNotLeaf)
 }
 
 func TestGetInterface(t *testing.T) {
