@@ -52,11 +52,11 @@ func TestPrompt(t *testing.T) {
 		t.Errorf("Expected prompt value %v, got %v instead", want, u)
 	}
 
-	if len(string(bufErrStream.Bytes())) != 0 {
+	if bufErrStream.Len() != 0 {
 		t.Error("Expected error stream to be empty")
 	}
 
-	if string(bufOutStream.Bytes()) != "question: " {
+	if bufOutStream.String() != "question: " {
 		t.Error("Unexpected output stream")
 	}
 }

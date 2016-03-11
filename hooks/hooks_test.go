@@ -54,13 +54,13 @@ func TestBuild(t *testing.T) {
 		t.Errorf("Expected %v, got %v instead", nil, err)
 	}
 
-	if len(string(bufErrStream.Bytes())) != 0 {
+	if bufErrStream.Len() != 0 {
 		t.Error("Error stream length different than 0")
 	}
 
 	var wantOutput = "before build\nduring build\nafter build\n"
 
-	if string(bufOutStream.Bytes()) != wantOutput {
+	if bufOutStream.String() != wantOutput {
 		t.Errorf("Output stream buffer doesn't match with expected value.")
 	}
 
@@ -130,13 +130,13 @@ func TestDeploy(t *testing.T) {
 		t.Errorf("Expected %v, got %v instead", nil, err)
 	}
 
-	if len(string(bufErrStream.Bytes())) != 0 {
+	if bufErrStream.Len() != 0 {
 		t.Error("Error stream length different than 0")
 	}
 
 	var wantOutput = "before deploy\nduring deploy\nafter deploy\n"
 
-	if string(bufOutStream.Bytes()) != wantOutput {
+	if bufOutStream.String() != wantOutput {
 		t.Errorf("Output stream buffer doesn't match with expected value.")
 	}
 
@@ -304,7 +304,7 @@ func TestRun(t *testing.T) {
 	data, _ := ioutil.ReadFile("./hooks.go")
 	io.WriteString(h, string(data))
 
-	if !strings.Contains(string(bufOutStream.Bytes()), fmt.Sprintf("%x", h.Sum(nil))) {
+	if !strings.Contains(bufOutStream.String(), fmt.Sprintf("%x", h.Sum(nil))) {
 		t.Errorf("Expected Run() test to contain md5 output similar to crypto.md5")
 	}
 
@@ -328,7 +328,7 @@ func TestRunAndExitOnFailureOnSuccess(t *testing.T) {
 	data, _ := ioutil.ReadFile("./hooks.go")
 	io.WriteString(h, string(data))
 
-	if !strings.Contains(string(bufOutStream.Bytes()), fmt.Sprintf("%x", h.Sum(nil))) {
+	if !strings.Contains(bufOutStream.String(), fmt.Sprintf("%x", h.Sum(nil))) {
 		t.Errorf("Expected Run() test to contain md5 output similar to crypto.md5")
 	}
 
@@ -362,7 +362,7 @@ func TestRunAndExitOnFailureFailure(t *testing.T) {
 		t.Errorf("Expected exit status 1 for ping process, got %v instead", err)
 	}
 
-	if len(string(bufErrStream.Bytes())) == 0 {
+	if bufErrStream.Len() == 0 {
 		t.Error("Expected ping output to be piped to stderr")
 	}
 }

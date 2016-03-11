@@ -22,7 +22,7 @@ func TestDebugOn(t *testing.T) {
 	Debug("Hello...", "World!")
 
 	var want = "Hello... World!\n"
-	if got := string(bufErrStream.Bytes()); got != want {
+	if got := bufErrStream.String(); got != want {
 		t.Errorf("Wanted %s, got %s instead", want, got)
 	}
 }
@@ -32,7 +32,7 @@ func TestDebugOff(t *testing.T) {
 	Enabled = false
 	Debug("1, 2, 3")
 
-	if got := string(bufErrStream.Bytes()); len(got) != 0 {
+	if got := bufErrStream.String(); len(got) != 0 {
 		t.Errorf("Wanted no debug, got %s instead", got)
 	}
 }
