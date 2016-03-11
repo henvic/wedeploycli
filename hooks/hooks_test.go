@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
@@ -44,7 +44,7 @@ func TestBuild(t *testing.T) {
 
 	var workingDir, _ = os.Getwd()
 
-	if err := os.Chdir(path.Join(workingDir, "mocks/project/simple-container")); err != nil {
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/project/simple-container")); err != nil {
 		t.Error(err)
 	}
 
@@ -75,7 +75,7 @@ func TestBuildUnbuildable(t *testing.T) {
 
 	var workingDir, _ = os.Getwd()
 
-	if err := os.Chdir(path.Join(workingDir, "mocks/unbuildable")); err != nil {
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/unbuildable")); err != nil {
 		t.Error(err)
 	}
 
@@ -96,7 +96,7 @@ func TestBuildProjectFailure(t *testing.T) {
 
 	var workingDir, _ = os.Getwd()
 
-	if err := os.Chdir(path.Join(workingDir, "mocks/missing-hooks")); err != nil {
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/missing-hooks")); err != nil {
 		t.Error(err)
 	}
 
@@ -120,7 +120,7 @@ func TestDeploy(t *testing.T) {
 
 	var workingDir, _ = os.Getwd()
 
-	if err := os.Chdir(path.Join(workingDir, "mocks/project/simple-container")); err != nil {
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/project/simple-container")); err != nil {
 		t.Error(err)
 	}
 
@@ -151,7 +151,7 @@ func TestDeployProjectFailure(t *testing.T) {
 
 	var workingDir, _ = os.Getwd()
 
-	if err := os.Chdir(path.Join(workingDir, "mocks/missing-hooks")); err != nil {
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/missing-hooks")); err != nil {
 		t.Error(err)
 	}
 
@@ -172,7 +172,7 @@ func TestDeployUndeployable(t *testing.T) {
 
 	var workingDir, _ = os.Getwd()
 
-	if err := os.Chdir(path.Join(workingDir, "mocks/undeployable")); err != nil {
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/undeployable")); err != nil {
 		t.Error(err)
 	}
 
@@ -193,7 +193,7 @@ func TestGetContainer(t *testing.T) {
 
 	var workingDir, _ = os.Getwd()
 
-	if err := os.Chdir(path.Join(workingDir, "mocks/project/container")); err != nil {
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/project/container")); err != nil {
 		t.Error(err)
 	}
 
@@ -233,7 +233,7 @@ func TestGetProject(t *testing.T) {
 
 	var workingDir, _ = os.Getwd()
 
-	if err := os.Chdir(path.Join(workingDir, "mocks/project")); err != nil {
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/project")); err != nil {
 		t.Error(err)
 	}
 
@@ -273,7 +273,7 @@ func TestGetProjectFailure(t *testing.T) {
 
 	var workingDir, _ = os.Getwd()
 
-	if err := os.Chdir(path.Join(workingDir, "mocks/missing-hooks")); err != nil {
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/missing-hooks")); err != nil {
 		t.Error(err)
 	}
 

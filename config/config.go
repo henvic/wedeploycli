@@ -2,7 +2,7 @@ package config
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/launchpad-project/cli/configstore"
 	"github.com/launchpad-project/cli/context"
@@ -47,7 +47,7 @@ func Setup() {
 				"description": true,
 				"domain":      true,
 			},
-			Path: path.Join(Context.ProjectRoot, "/project.json"),
+			Path: filepath.Join(Context.ProjectRoot, "/project.json"),
 		}
 	}
 
@@ -55,7 +55,7 @@ func Setup() {
 		Stores["container"] = &configstore.Store{
 			Name:             "container",
 			ConfigurableKeys: map[string]bool{},
-			Path:             path.Join(Context.ContainerRoot, "/container.json"),
+			Path:             filepath.Join(Context.ContainerRoot, "/container.json"),
 		}
 	}
 

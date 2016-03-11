@@ -3,7 +3,6 @@ package context
 import (
 	"errors"
 	"os"
-	"path"
 	"path/filepath"
 )
 
@@ -72,10 +71,10 @@ func getRootDirectory(delimiter, file string) (dir string, err error) {
 
 	// sysRoot = / = upper-bound / The Power of Ten rule 2
 	for dir != sysRoot && dir != delimiter {
-		stat, err := os.Stat(path.Join(dir, file))
+		stat, err := os.Stat(filepath.Join(dir, file))
 
 		if stat == nil {
-			dir = path.Join(dir, "..")
+			dir = filepath.Join(dir, "..")
 			dir, _ = filepath.Abs(dir)
 			continue
 		}

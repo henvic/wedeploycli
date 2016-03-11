@@ -2,7 +2,7 @@ package config
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 )
 
@@ -15,7 +15,7 @@ func TestSetup(t *testing.T) {
 		t.Errorf("Should have global store")
 	}
 
-	if err := os.Chdir(path.Join(workingDir, "mocks/project")); err != nil {
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/project")); err != nil {
 		t.Error(err)
 	}
 
@@ -25,7 +25,7 @@ func TestSetup(t *testing.T) {
 		t.Errorf("Should have global and project store")
 	}
 
-	if err := os.Chdir(path.Join(workingDir, "mocks/project/container")); err != nil {
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/project/container")); err != nil {
 		t.Error(err)
 	}
 

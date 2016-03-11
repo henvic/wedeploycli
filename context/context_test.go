@@ -2,7 +2,6 @@ package context
 
 import (
 	"os"
-	"path"
 	"path/filepath"
 	"testing"
 )
@@ -36,7 +35,7 @@ func TestGetTargetFileDirectory(t *testing.T) {
 	setSysRoot("./mocks")
 
 	for _, each := range rootDirectoryCases {
-		if err := os.Chdir(path.Join(workingDir, each.dir)); err != nil {
+		if err := os.Chdir(filepath.Join(workingDir, each.dir)); err != nil {
 			t.Error(err)
 		}
 
@@ -46,7 +45,7 @@ func TestGetTargetFileDirectory(t *testing.T) {
 			t.Error(err)
 		}
 
-		var want = path.Join(workingDir, each.want)
+		var want = filepath.Join(workingDir, each.want)
 		want, _ = filepath.Abs(want)
 
 		if directory != want {
@@ -62,7 +61,7 @@ func TestGetTargetFileDirectoryFailure(t *testing.T) {
 	setSysRoot("./mocks")
 
 	for _, each := range rootDirectoryFailureCases {
-		if err := os.Chdir(path.Join(workingDir, each.dir)); err != nil {
+		if err := os.Chdir(filepath.Join(workingDir, each.dir)); err != nil {
 			t.Error(err)
 		}
 
@@ -79,7 +78,7 @@ func TestGetTargetFileDirectoryFailure(t *testing.T) {
 
 func TestGlobalContext(t *testing.T) {
 	setSysRoot("./mocks")
-	os.Chdir(path.Join(workingDir, "mocks/list/basic"))
+	os.Chdir(filepath.Join(workingDir, "mocks/list/basic"))
 
 	var context, configurations = Get()
 	var wantContext = "global"
@@ -98,7 +97,7 @@ func TestGlobalContext(t *testing.T) {
 
 func TestProjectAndContainerInvalidContext(t *testing.T) {
 	setSysRoot("./mocks")
-	os.Chdir(path.Join(workingDir, "mocks/schizophrenic"))
+	os.Chdir(filepath.Join(workingDir, "mocks/schizophrenic"))
 
 	var _, configurations = Get()
 
@@ -112,7 +111,7 @@ func TestProjectAndContainerInvalidContext(t *testing.T) {
 
 func TestProjectContext(t *testing.T) {
 	setSysRoot("./mocks")
-	var projectDir = path.Join(workingDir, "mocks/project")
+	var projectDir = filepath.Join(workingDir, "mocks/project")
 	os.Chdir(projectDir)
 
 	var context, err = Get()
@@ -139,8 +138,8 @@ func TestProjectContext(t *testing.T) {
 
 func TestContainerContext(t *testing.T) {
 	setSysRoot("./mocks")
-	var projectDir = path.Join(workingDir, "mocks/project")
-	var containerDir = path.Join(projectDir, "container")
+	var projectDir = filepath.Join(workingDir, "mocks/project")
+	var containerDir = filepath.Join(projectDir, "container")
 	os.Chdir(containerDir)
 
 	var context, err = Get()
@@ -167,7 +166,7 @@ func TestContainerContext(t *testing.T) {
 
 func TestOrphanContainerContext(t *testing.T) {
 	setSysRoot("./mocks")
-	os.Chdir(path.Join(workingDir, "mocks/orphan_container"))
+	os.Chdir(filepath.Join(workingDir, "mocks/orphan_container"))
 
 	var context, err = Get()
 
@@ -193,7 +192,7 @@ func TestOrphanContainerContext(t *testing.T) {
 
 func TestInvalidContext(t *testing.T) {
 	setSysRoot("./mocks")
-	os.Chdir(path.Join(workingDir, "mocks/schizophrenic"))
+	os.Chdir(filepath.Join(workingDir, "mocks/schizophrenic"))
 
 	var context, err = Get()
 
@@ -201,7 +200,7 @@ func TestInvalidContext(t *testing.T) {
 		t.Errorf("Expected context type to be project, got %s instead", context.Scope)
 	}
 
-	if context.ProjectRoot != path.Join(workingDir, "mocks/schizophrenic") {
+	if context.ProjectRoot != filepath.Join(workingDir, "mocks/schizophrenic") {
 		t.Errorf("Unexpected project root")
 	}
 
