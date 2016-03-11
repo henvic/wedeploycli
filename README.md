@@ -1,4 +1,4 @@
-# Launchpad CLI tool [![Build Status](http://img.shields.io/travis/launchpad-project/cli/master.svg?style=flat)](https://travis-ci.org/launchpad-project/cli) [![Coverage Status](https://coveralls.io/repos/launchpad-project/cli/badge.svg)](https://coveralls.io/r/launchpad-project/cli) [![GoDoc](https://godoc.org/github.com/launchpad-project/cli?status.svg)](https://godoc.org/github.com/launchpad-project/cli)
+# Launchpad CLI tool [![Build Status](http://img.shields.io/travis/launchpad-project/cli/master.svg?style=flat)](https://travis-ci.org/launchpad-project/cli) [![Coverage Status](https://coveralls.io/repos/launchpad-project/cli/badge.svg)](https://coveralls.io/r/launchpad-project/cli) [![Go Report Card](https://goreportcard.com/badge/github.com/launchpad-project/cli)](https://goreportcard.com/report/github.com/launchpad-project/cli) [![GoDoc](https://godoc.org/github.com/launchpad-project/cli?status.svg)](https://godoc.org/github.com/launchpad-project/cli)
 
 **This tool is under construction.**
 
