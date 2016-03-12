@@ -295,7 +295,7 @@ func TestRun(t *testing.T) {
 	bufErrStream.Reset()
 	bufOutStream.Reset()
 
-	if err := Run("md5 hooks.go"); err != nil {
+	if err := Run("openssl md5 hooks.go"); err != nil {
 		t.Errorf("Unexpected error %v when running md5 hooks.go", err)
 	}
 
