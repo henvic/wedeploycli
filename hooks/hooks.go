@@ -121,7 +121,13 @@ func RunAndExitOnFailure(command string) {
 
 	// edge case not shown on coverage, tested on TestRunAndExitOnFailureFailure
 	if err != nil {
-		fmt.Fprintf(errStream, "%v\n", err.(*exec.ExitError))
+		switch err.(type) {
+		case *exec.ExitError:
+			fmt.Fprintf(errStream, "%v\n", err.(*exec.ExitError))
+		default:
+			fmt.Fprintf(errStream, "%v\n", err)
+		}
+
 		os.Exit(1)
 	}
 }
