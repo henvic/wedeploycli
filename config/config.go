@@ -14,7 +14,7 @@ var (
 	Context *context.Context
 
 	// Stores sets the map of available config stores
-	Stores map[string]*configstore.Store
+	Stores = map[string]*configstore.Store{}
 )
 
 // Setup the environment
