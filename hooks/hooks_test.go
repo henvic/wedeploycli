@@ -321,7 +321,7 @@ func TestRunAndExitOnFailureOnSuccess(t *testing.T) {
 	bufErrStream.Reset()
 	bufOutStream.Reset()
 
-	RunAndExitOnFailure("md5 hooks.go")
+	RunAndExitOnFailure("openssl md5 hooks.go")
 
 	h := md5.New()
 
