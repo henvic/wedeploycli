@@ -31,7 +31,7 @@ func TestSetupAndTeardown(t *testing.T) {
 	}
 
 	if req.Response.StatusCode != wantStatusCode {
-		t.Error("Wanted status code %v, got %v instead", wantStatusCode, req.Response.StatusCode)
+		t.Errorf("Wanted status code %v, got %v instead", wantStatusCode, req.Response.StatusCode)
 	}
 
 	Teardown()
