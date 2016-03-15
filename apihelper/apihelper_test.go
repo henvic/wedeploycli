@@ -8,8 +8,7 @@ import (
 	"testing"
 
 	"github.com/launchpad-project/api.go"
-	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/configstore"
+	"github.com/launchpad-project/cli/globalconfigmock"
 	"github.com/launchpad-project/cli/servertest"
 )
 
@@ -23,22 +22,13 @@ type postMock struct {
 var bufErrStream bytes.Buffer
 
 func TestMain(m *testing.M) {
-	var originalCSG = config.Stores["global"]
-
-	var mockGlobal = configstore.Store{
-		Name: "global",
-		Path: "./mocks/config.json",
-	}
-
-	mockGlobal.Load()
-	config.Stores["global"] = &mockGlobal
-
 	var defaultErrStream = errStream
 	errStream = &bufErrStream
 
+	globalconfigmock.Setup()
 	ec := m.Run()
+	globalconfigmock.Teardown()
 
-	config.Stores["global"] = originalCSG
 	errStream = defaultErrStream
 
 	os.Exit(ec)
