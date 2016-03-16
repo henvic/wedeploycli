@@ -41,8 +41,19 @@ func Auth(request *launchpad.Launchpad) {
 
 // DecodeJSON decodes a JSON response or exits the process on error
 func DecodeJSON(request *launchpad.Launchpad, data interface{}) {
-	if err := request.DecodeJSON(&data); err != nil {
+	body, err := ioutil.ReadAll(request.Response.Body)
+
+	if err == nil {
+		err = json.Unmarshal(body, &data)
+	}
+
+	if err != nil {
 		fmt.Fprintln(errStream, err)
+	}
+
+	verbose.Debug("Response Body:\n" + string(body))
+
+	if err != nil {
 		exitCommand()
 	}
 }
