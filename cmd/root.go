@@ -8,6 +8,7 @@ import (
 	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/cmd/auth"
 	cconfig "github.com/launchpad-project/cli/cmd/config"
+	"github.com/launchpad-project/cli/cmd/containers"
 	"github.com/launchpad-project/cli/cmd/hooks"
 	"github.com/launchpad-project/cli/cmd/info"
 	"github.com/launchpad-project/cli/cmd/projects"
@@ -66,6 +67,7 @@ func init() {
 	RootCmd.AddCommand(cconfig.ConfigCmd)
 	RootCmd.AddCommand(info.InfoCmd)
 	RootCmd.AddCommand(projects.ProjectsCmd)
+	RootCmd.AddCommand(containers.ContainersCmd)
 	RootCmd.AddCommand(restart.RestartCmd)
 	RootCmd.AddCommand(hooks.BuildCmd)
 	RootCmd.AddCommand(hooks.DeployCmd)
