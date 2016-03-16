@@ -8,17 +8,19 @@ import (
 	"github.com/launchpad-project/cli/apihelper"
 )
 
+// Project structure
 type Project struct {
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
-	Id          string   `json:"id"`
-	OwnerId     string   `json:"ownerId"`
-	Url         string   `json:"url"`
+	ID          string   `json:"id"`
+	OwnerID     string   `json:"ownerId"`
+	URL         string   `json:"url"`
 	Users       []string `json:"users"`
 }
 
 var outStream io.Writer = os.Stdout
 
+// List projects
 func List() {
 	var projects []Project
 	var req = apihelper.URL("/api/projects")
@@ -28,6 +30,6 @@ func List() {
 	apihelper.DecodeJSON(req, &projects)
 
 	for _, project := range projects {
-		fmt.Fprintln(outStream, project.Name+" "+project.Id)
+		fmt.Fprintln(outStream, project.Name+" "+project.ID)
 	}
 }
