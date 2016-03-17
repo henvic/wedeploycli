@@ -3,6 +3,7 @@ package integration
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -34,6 +35,8 @@ var (
 
 	binaryDir string
 	binary    string
+
+	errStream io.Writer = os.Stderr
 )
 
 // GetExitCode tries to retrieve the exit code from an exit error
@@ -48,6 +51,7 @@ func GetExitCode(err error) int {
 		}
 	}
 
+	fmt.Fprintln(errStream, err.Error())
 	panic(ErrExitCodeNotAvailable)
 }
 

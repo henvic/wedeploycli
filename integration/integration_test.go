@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"bytes"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -9,6 +10,8 @@ import (
 
 func TestInvalidCommand(t *testing.T) {
 	var originalBinary = binary
+	var defaultErrStream = errStream
+	var bufErrStream bytes.Buffer
 
 	defer func() {
 		r := recover()
@@ -17,10 +20,16 @@ func TestInvalidCommand(t *testing.T) {
 			t.Errorf("Expected panic with %v error, got %v instead", ErrExitCodeNotAvailable, r)
 		}
 
+		if !strings.Contains(bufErrStream.String(), "executable file not found") {
+			t.Error("Expected missing 'executable file not found error' message")
+		}
+
 		binary = originalBinary
+		errStream = defaultErrStream
 	}()
 
 	binary = fmt.Sprintf("invalid-command-%d", rand.Int())
+	errStream = &bufErrStream
 
 	var cmd = &Command{}
 	cmd.Run()
