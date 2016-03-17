@@ -84,11 +84,11 @@ Run 'launchpad --help' for usage.
 	outString := cmd.Stdout.String()
 
 	if errString != e.Stderr {
-		t.Errorf("Wanted Stderr %v, got %v instead", errString, e.Stderr)
+		t.Errorf("Wanted Stderr %v, got %v instead", e.Stderr, errString)
 	}
 
 	if outString != e.Stdout {
-		t.Errorf("Wanted Stdout %v, got %v instead", outString, e.Stdout)
+		t.Errorf("Wanted Stdout %v, got %v instead", e.Stdout, outString)
 	}
 }
 
@@ -116,11 +116,11 @@ func TestStdin(t *testing.T) {
 	outString := cmd.Stdout.String()
 
 	if errString != e.Stderr {
-		t.Errorf("Wanted Stderr %v, got %v instead", errString, e.Stderr)
+		t.Errorf("Wanted Stderr %v, got %v instead", e.Stderr, errString)
 	}
 
 	if outString != e.Stdout {
-		t.Errorf("Wanted Stdout %v, got %v instead", outString, e.Stdout)
+		t.Errorf("Wanted Stdout %v, got %v instead", e.Stdout, outString)
 	}
 
 	binary = originalBinary
