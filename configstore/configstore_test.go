@@ -174,6 +174,23 @@ func TestSave(t *testing.T) {
 	s.SetAndSave("foo.bah", "hello")
 }
 
+func TestSaveFailure(t *testing.T) {
+	defer func() {
+		r := recover()
+
+		if !os.IsNotExist(r.(error)) {
+			t.Errorf("Unexpected error %s, when file not found was expected", r)
+		}
+	}()
+
+	var s = Store{
+		Name: "myconfig",
+		Path: "",
+	}
+
+	s.Save()
+}
+
 func TestSet(t *testing.T) {
 	var s = Store{}
 
