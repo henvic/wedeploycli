@@ -33,7 +33,7 @@ func TestInfo(t *testing.T) {
 func TestInfoProject(t *testing.T) {
 	var cmd = &Command{
 		Args: []string{"info"},
-		Dir:  "homemock/bucket/project",
+		Dir:  "mocks/home/bucket/project",
 	}
 
 	var e = &Expect{
@@ -65,7 +65,7 @@ Description: App example project
 func TestInfoContainer(t *testing.T) {
 	var cmd = &Command{
 		Args: []string{"info"},
-		Dir:  "homemock/bucket/project/container",
+		Dir:  "mocks/home/bucket/project/container",
 	}
 
 	var e = &Expect{

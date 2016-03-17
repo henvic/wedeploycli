@@ -66,7 +66,7 @@ func (cmd *Command) Run() {
 	var serr = new(bytes.Buffer)
 	var sout = new(bytes.Buffer)
 
-	var customHome, err = filepath.Abs("./homemock")
+	var customHome, err = filepath.Abs("./mocks/home")
 
 	if err != nil {
 		panic(err)
