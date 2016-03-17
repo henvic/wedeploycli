@@ -20,6 +20,8 @@ type Expect struct {
 // Command structure
 type Command struct {
 	Args     []string
+	Env      []string
+	Dir      string
 	Stdin    io.Reader
 	Stderr   *bytes.Buffer
 	Stdout   *bytes.Buffer
@@ -60,6 +62,8 @@ func (cmd *Command) Run() {
 	var err = new(bytes.Buffer)
 	var out = new(bytes.Buffer)
 
+	child.Env = cmd.Env
+	child.Dir = cmd.Dir
 	child.Stderr = err
 	child.Stdout = out
 	cmd.Stderr = err
