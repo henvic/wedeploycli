@@ -24,7 +24,7 @@ func TestCustomHomeDir(t *testing.T) {
 	var got = GetHomeDir()
 
 	if got != want {
-		t.Error("Wanted custom home to be %v", want, got)
+		t.Errorf("Wanted custom home to be %v, got %v instead", want, got)
 	}
 
 	if err := os.Setenv("LAUNCHPAD_CUSTOM_HOME", defaultEnv); err != nil {
