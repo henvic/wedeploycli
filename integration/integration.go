@@ -66,6 +66,15 @@ func (cmd *Command) Run() {
 	var serr = new(bytes.Buffer)
 	var sout = new(bytes.Buffer)
 
+	var customHome, err = filepath.Abs("./homemock")
+
+	if err != nil {
+		panic(err)
+	}
+
+	cmd.Env = append(cmd.Env, "LAUNCHPAD_CUSTOM_HOME="+customHome)
+	cmd.Env = append(cmd.Env, os.Environ()...)
+
 	if cmd.Dir != "" {
 		cmd.Dir, err = filepath.Abs(cmd.Dir)
 
