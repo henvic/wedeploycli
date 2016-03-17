@@ -63,15 +63,23 @@ func (cmd *Command) Run() {
 		child.Stdin = cmd.Stdin
 	}
 
-	var err = new(bytes.Buffer)
-	var out = new(bytes.Buffer)
+	var serr = new(bytes.Buffer)
+	var sout = new(bytes.Buffer)
+
+	if cmd.Dir != "" {
+		cmd.Dir, err = filepath.Abs(cmd.Dir)
+
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	child.Env = cmd.Env
 	child.Dir = cmd.Dir
-	child.Stderr = err
-	child.Stdout = out
-	cmd.Stderr = err
-	cmd.Stdout = out
+	child.Stderr = serr
+	child.Stdout = sout
+	cmd.Stderr = serr
+	cmd.Stdout = sout
 	cmd.ExitCode = GetExitCode(child.Run())
 }
 

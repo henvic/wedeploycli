@@ -8,6 +8,32 @@ import (
 	"testing"
 )
 
+func TestInvalidDir(t *testing.T) {
+	var defaultErrStream = errStream
+	var bufErrStream bytes.Buffer
+
+	defer func() {
+		r := recover()
+
+		if r != ErrExitCodeNotAvailable {
+			t.Errorf("Expected panic with %v error, got %v instead", ErrExitCodeNotAvailable, r)
+		}
+
+		if !strings.Contains(bufErrStream.String(), "no such file or directory") {
+			t.Error("Expected missing 'no such file or directory' message")
+		}
+
+		errStream = defaultErrStream
+	}()
+
+	errStream = &bufErrStream
+
+	var cmd = &Command{
+		Dir: "foo",
+	}
+	cmd.Run()
+}
+
 func TestInvalidCommand(t *testing.T) {
 	var originalBinary = binary
 	var defaultErrStream = errStream
