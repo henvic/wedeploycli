@@ -200,9 +200,7 @@ func TestSet(t *testing.T) {
 
 func TestSetEditableKey(t *testing.T) {
 	var s = Store{
-		ConfigurableKeys: map[string]bool{
-			"user.account.token": true,
-		},
+		ConfigurableKeys: []string{"user.account.token"},
 	}
 	var err = s.SetEditableKey("user.account.token", "value")
 
@@ -252,11 +250,9 @@ func TestSetAndSaveEditableKey(t *testing.T) {
 	os.Remove("./mocks/temporary.json")
 
 	var s = Store{
-		Name: "myconfig",
-		Path: "./mocks/temporary.json",
-		ConfigurableKeys: map[string]bool{
-			"foo.bah": true,
-		},
+		Name:             "myconfig",
+		Path:             "./mocks/temporary.json",
+		ConfigurableKeys: []string{"foo.bah"},
 	}
 
 	if err := s.SetAndSaveEditableKey("foo.bah", "hello"); err != nil {

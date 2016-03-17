@@ -13,7 +13,7 @@ type Store struct {
 	Name string
 	Path string
 	// ConfigurableKeys must be configurable string values only
-	ConfigurableKeys map[string]bool
+	ConfigurableKeys []string
 	Data             map[string]interface{}
 }
 
@@ -163,10 +163,12 @@ func (s *Store) SetAndSaveEditableKey(key, value string) error {
 // SetEditableKey sets the value for a given key
 // (or fail if it the key is not public)
 func (s *Store) SetEditableKey(key, value string) error {
-	if s.ConfigurableKeys == nil || !s.ConfigurableKeys[key] {
-		return ErrConfigKeyNotConfigurable
+	for _, v := range s.ConfigurableKeys {
+		if v == key {
+			s.Set(key, value)
+			return nil
+		}
 	}
 
-	s.Set(key, value)
-	return nil
+	return ErrConfigKeyNotConfigurable
 }

@@ -24,10 +24,10 @@ func Setup() {
 	Stores["global"] = &configstore.Store{
 		Name: "global",
 		Path: user.GetHomeDir() + "/.launchpad.json",
-		ConfigurableKeys: map[string]bool{
-			"username": true,
-			"password": true,
-			"endpoint": false,
+		ConfigurableKeys: []string{
+			"username",
+			"password",
+			"endpoint",
 		},
 	}
 
@@ -42,10 +42,10 @@ func Setup() {
 	if Context.Scope == "project" || Context.Scope == "container" {
 		Stores["project"] = &configstore.Store{
 			Name: "project",
-			ConfigurableKeys: map[string]bool{
-				"name":        true,
-				"description": true,
-				"domain":      true,
+			ConfigurableKeys: []string{
+				"name",
+				"description",
+				"domain",
 			},
 			Path: filepath.Join(Context.ProjectRoot, "/project.json"),
 		}
@@ -53,9 +53,8 @@ func Setup() {
 
 	if Context.Scope == "container" {
 		Stores["container"] = &configstore.Store{
-			Name:             "container",
-			ConfigurableKeys: map[string]bool{},
-			Path:             filepath.Join(Context.ContainerRoot, "/container.json"),
+			Name: "container",
+			Path: filepath.Join(Context.ContainerRoot, "/container.json"),
 		}
 	}
 

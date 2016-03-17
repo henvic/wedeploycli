@@ -26,10 +26,8 @@ var (
 )
 
 func listKeys() {
-	for key, configurable := range configStore.ConfigurableKeys {
-		if configurable {
-			fmt.Println(key, "=", configStore.GetRequiredString(key))
-		}
+	for _, key := range configStore.ConfigurableKeys {
+		fmt.Println(key, "=", configStore.GetRequiredString(key))
 	}
 }
 
