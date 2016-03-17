@@ -25,12 +25,6 @@ var (
 	configStore *configstore.Store
 )
 
-func listKeys() {
-	for _, key := range configStore.ConfigurableKeys {
-		fmt.Println(key, "=", configStore.GetRequiredString(key))
-	}
-}
-
 func configRun(cmd *cobra.Command, args []string) {
 	switch confArg {
 	case "default":
@@ -48,7 +42,7 @@ func configRun(cmd *cobra.Command, args []string) {
 	}
 
 	if listArg {
-		listKeys()
+		configStore.List()
 		return
 	}
 

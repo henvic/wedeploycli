@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"os"
 	"strings"
 )
 
@@ -26,6 +28,8 @@ var (
 
 	// ErrConfigKeyNotConfigurable is used when a key is not configurable
 	ErrConfigKeyNotConfigurable = errors.New("key not configurable")
+
+	outStream io.Writer = os.Stdout
 )
 
 // Load reads and populates the config data
@@ -115,6 +119,12 @@ func (s *Store) GetString(key string) (string, error) {
 		return fmt.Sprintf("%v", parent[subPath]), nil
 	default:
 		return "", ErrConfigKeyNotLeaf
+	}
+}
+
+func (s *Store) List() {
+	for _, key := range s.ConfigurableKeys {
+		fmt.Fprintln(outStream, key+" = "+s.GetRequiredString(key))
 	}
 }
 

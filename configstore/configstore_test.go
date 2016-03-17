@@ -1,6 +1,7 @@
 package configstore
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
 	"testing"
@@ -161,6 +162,35 @@ func TestGetInterfaceFailure(t *testing.T) {
 	if err != ErrConfigKeyNotFound {
 		t.Errorf("Expected <%v, %v>, got <%v, %v> instead", nil, ErrConfigKeyNotFound, got, err)
 	}
+}
+
+func TestList(t *testing.T) {
+	var s = Store{
+		Name:             "conf",
+		Path:             "./mocks/read.json",
+		ConfigurableKeys: []string{"name", "sys.components", "score"},
+	}
+
+	var want = `name = Complex
+sys.components = null
+score = 1000
+`
+
+	s.Load()
+
+	var bufOutStream bytes.Buffer
+	var defaultOutStream = outStream
+	outStream = &bufOutStream
+
+	s.List()
+
+	var outString = bufOutStream.String()
+
+	if outString != want {
+		t.Errorf("Wanted config list %v, got %v instead", want, outString)
+	}
+
+	outStream = defaultOutStream
 }
 
 func TestSave(t *testing.T) {
