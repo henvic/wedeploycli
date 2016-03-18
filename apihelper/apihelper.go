@@ -51,7 +51,7 @@ func DecodeJSON(request *launchpad.Launchpad, data interface{}) {
 		fmt.Fprintln(errStream, err)
 	}
 
-	verbose.Debug("Response Body:\n" + string(body))
+	printHTTPVerbose(request, body)
 
 	if err != nil {
 		exitCommand()
@@ -109,5 +109,10 @@ func printHTTPError(request *launchpad.Launchpad) {
 	}
 
 	printErrorList(af.Errors)
+	printHTTPVerbose(request, body)
+}
+
+func printHTTPVerbose(request *launchpad.Launchpad, body []byte) {
+	verbose.Debug(request.Request.Method + " " + request.URL)
 	verbose.Debug("Response Body:\n" + string(body))
 }
