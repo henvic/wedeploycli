@@ -66,6 +66,13 @@ func URL(paths ...string) *launchpad.Launchpad {
 
 // ValidateOrExit validates a request or exits the process on error
 func ValidateOrExit(request *launchpad.Launchpad, err error) {
+
+	if request.Request == nil {
+		verbose.Debug("(wait) " + request.URL)
+	} else {
+		verbose.Debug(request.Request.Method + " " + request.URL)
+	}
+
 	switch err {
 	case nil:
 		return
@@ -113,6 +120,5 @@ func printHTTPError(request *launchpad.Launchpad) {
 }
 
 func printHTTPVerbose(request *launchpad.Launchpad, body []byte) {
-	verbose.Debug(request.Request.Method + " " + request.URL)
 	verbose.Debug("Response Body:\n" + string(body))
 }
