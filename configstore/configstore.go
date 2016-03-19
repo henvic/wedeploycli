@@ -122,6 +122,7 @@ func (s *Store) GetString(key string) (string, error) {
 	}
 }
 
+// List configurable keys
 func (s *Store) List() {
 	for _, key := range s.ConfigurableKeys {
 		fmt.Fprintln(outStream, key+" = "+s.GetRequiredString(key))
