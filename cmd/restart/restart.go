@@ -1,29 +1,35 @@
 package restart
 
 import (
-	"fmt"
 	"os"
 
-	crestart "github.com/launchpad-project/cli/restart"
+	"github.com/launchpad-project/cli/cmdcontext"
+	"github.com/launchpad-project/cli/containers"
+	"github.com/launchpad-project/cli/projects"
 	"github.com/spf13/cobra"
 )
 
 // RestartCmd is used for getting restart
 var RestartCmd = &cobra.Command{
-	Use:   "restart",
-	Short: "Container running on Launchpad",
+	Use:   "restart [project] [container]",
+	Short: "Restart project or container running on Launchpad",
 	Run:   restartRun,
+	Example: `launchpad restart portal
+launchpad restart portal email`,
 }
 
 func restartRun(cmd *cobra.Command, args []string) {
-	switch len(args) {
-	case 1:
-		crestart.Project(args[0])
-	case 2:
-		crestart.Container(args[0], args[1])
-	default:
-		// add proper command not found message
-		fmt.Fprintln(os.Stderr, "Use launchpad restart <project> <optional container>")
+	project, container, err := cmdcontext.GetProjectOrContainerID(args)
+
+	if err != nil {
+		cmd.Help()
 		os.Exit(1)
+	}
+
+	switch container {
+	case "":
+		projects.Restart(project)
+	default:
+		containers.Restart(project, container)
 	}
 }

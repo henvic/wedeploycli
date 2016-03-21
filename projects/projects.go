@@ -20,6 +20,17 @@ type Project struct {
 
 var outStream io.Writer = os.Stdout
 
+// GetStatus gets the status for the project
+func GetStatus(id string) {
+	var status string
+	var req = apihelper.URL("/api/projects/" + id + "/state")
+
+	apihelper.Auth(req)
+	apihelper.ValidateOrExit(req, req.Get())
+	apihelper.DecodeJSON(req, &status)
+	fmt.Println(status + " (" + id + ")")
+}
+
 // List projects
 func List() {
 	var projects []Project
@@ -32,4 +43,12 @@ func List() {
 	for _, project := range projects {
 		fmt.Fprintln(outStream, project.Name+" "+project.ID)
 	}
+}
+
+// Restart restarts a project
+func Restart(id string) {
+	var req = apihelper.URL("/api/restart/project?projectId=" + id)
+
+	apihelper.Auth(req)
+	apihelper.ValidateOrExit(req, req.Post())
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/launchpad-project/cli/cmd/info"
 	"github.com/launchpad-project/cli/cmd/projects"
 	"github.com/launchpad-project/cli/cmd/restart"
+	"github.com/launchpad-project/cli/cmd/status"
 	"github.com/launchpad-project/cli/cmd/version"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/configstore"
@@ -68,6 +69,7 @@ func init() {
 	RootCmd.AddCommand(info.InfoCmd)
 	RootCmd.AddCommand(projects.ProjectsCmd)
 	RootCmd.AddCommand(containers.ContainersCmd)
+	RootCmd.AddCommand(status.StatusCmd)
 	RootCmd.AddCommand(restart.RestartCmd)
 	RootCmd.AddCommand(hooks.BuildCmd)
 	RootCmd.AddCommand(hooks.DeployCmd)
