@@ -1,4 +1,4 @@
-package projects
+package cmdprojects
 
 import (
 	"github.com/launchpad-project/cli/projects"

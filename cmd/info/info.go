@@ -1,4 +1,4 @@
-package info
+package cmdinfo
 
 import (
 	"github.com/launchpad-project/cli/info"

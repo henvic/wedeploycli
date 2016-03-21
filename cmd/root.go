@@ -7,14 +7,14 @@ import (
 
 	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/cmd/auth"
-	cconfig "github.com/launchpad-project/cli/cmd/config"
-	"github.com/launchpad-project/cli/cmd/containers"
-	"github.com/launchpad-project/cli/cmd/hooks"
-	"github.com/launchpad-project/cli/cmd/info"
-	"github.com/launchpad-project/cli/cmd/projects"
-	"github.com/launchpad-project/cli/cmd/restart"
-	"github.com/launchpad-project/cli/cmd/status"
-	"github.com/launchpad-project/cli/cmd/version"
+	cmdconfig "github.com/launchpad-project/cli/cmd/config"
+	cmdcontainers "github.com/launchpad-project/cli/cmd/containers"
+	cmdhooks "github.com/launchpad-project/cli/cmd/hooks"
+	cmdinfo "github.com/launchpad-project/cli/cmd/info"
+	cmdprojects "github.com/launchpad-project/cli/cmd/projects"
+	cmdrestart "github.com/launchpad-project/cli/cmd/restart"
+	cmdstatus "github.com/launchpad-project/cli/cmd/status"
+	cmdversion "github.com/launchpad-project/cli/cmd/version"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/configstore"
 	"github.com/launchpad-project/cli/verbose"
@@ -63,17 +63,17 @@ func init() {
 		false,
 		"verbose output")
 
-	RootCmd.AddCommand(auth.LoginCmd)
-	RootCmd.AddCommand(auth.LogoutCmd)
-	RootCmd.AddCommand(cconfig.ConfigCmd)
-	RootCmd.AddCommand(info.InfoCmd)
-	RootCmd.AddCommand(projects.ProjectsCmd)
-	RootCmd.AddCommand(containers.ContainersCmd)
-	RootCmd.AddCommand(status.StatusCmd)
-	RootCmd.AddCommand(restart.RestartCmd)
-	RootCmd.AddCommand(hooks.BuildCmd)
-	RootCmd.AddCommand(hooks.DeployCmd)
-	RootCmd.AddCommand(version.VersionCmd)
+	RootCmd.AddCommand(cmdauth.LoginCmd)
+	RootCmd.AddCommand(cmdauth.LogoutCmd)
+	RootCmd.AddCommand(cmdconfig.ConfigCmd)
+	RootCmd.AddCommand(cmdinfo.InfoCmd)
+	RootCmd.AddCommand(cmdprojects.ProjectsCmd)
+	RootCmd.AddCommand(cmdcontainers.ContainersCmd)
+	RootCmd.AddCommand(cmdstatus.StatusCmd)
+	RootCmd.AddCommand(cmdrestart.RestartCmd)
+	RootCmd.AddCommand(cmdhooks.BuildCmd)
+	RootCmd.AddCommand(cmdhooks.DeployCmd)
+	RootCmd.AddCommand(cmdversion.VersionCmd)
 }
 
 func persistentPreRun(cmd *cobra.Command, args []string) {

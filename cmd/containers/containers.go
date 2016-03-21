@@ -1,4 +1,4 @@
-package containers
+package cmdcontainers
 
 import (
 	"fmt"
