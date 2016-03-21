@@ -1,4 +1,5 @@
 {
+    "id": "complex",
     "name": "Complex",
     "description": "Complex JSON Example",
     "sys": {

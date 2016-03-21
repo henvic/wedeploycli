@@ -27,7 +27,7 @@ func PrintProject() {
 	var s = config.Stores["project"]
 
 	fmt.Println(
-		"Project: " + s.Get("name") + "\n" +
+		"Project: " + s.Get("id") + " (" + s.Get("name") + ")\n" +
 			"Domain: " + s.Get("domain") + "\n" +
 			"Description: " + s.Get("description"))
 }

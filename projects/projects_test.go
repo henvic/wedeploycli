@@ -29,12 +29,12 @@ func TestList(t *testing.T) {
 	globalconfigmock.Setup()
 	bufOutStream.Reset()
 
-	var want = "images 111222333444555000\n"
+	var want = "images (Image Server)\ntotal 1\n"
 
 	servertest.Mux.HandleFunc("/api/projects", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `[{
-    "name": "images",
-    "id": "111222333444555000"
+    "name": "Image Server",
+    "id": "images"
 }]`)
 	})
 

@@ -41,7 +41,7 @@ var GetProjectOrContainerIDCases = []GetContainerProvider{
 }
 
 var GetProjectIDWithProjectStoreCases = []GetProjectProvider{
-	{[]string{}, "146274450430843645", nil},
+	{[]string{}, "extraction", nil},
 	{[]string{"x454"}, "x454", nil},
 	{[]string{"x341", "y53"}, "", ErrInvalidArgumentLength},
 	{[]string{"x634"}, "x634", nil},
@@ -55,38 +55,38 @@ var GetProjectIDWithInvalidProjectStoreCases = []GetProjectProvider{
 }
 
 var GetProjectAndContainerIDWithProjectStoreCases = []GetContainerProvider{
-	{[]string{}, "146274450430843645", "", ErrNotFound},
-	{[]string{"146274450430843645", "mycontainer"}, "146274450430843645", "mycontainer", nil},
-	{[]string{"146274450430843645", "x4242"}, "146274450430843645", "x4242", nil},
+	{[]string{}, "extraction", "", ErrNotFound},
+	{[]string{"extraction", "mycontainer"}, "extraction", "mycontainer", nil},
+	{[]string{"extraction", "x4242"}, "extraction", "x4242", nil},
 	{[]string{"x555", "y777"}, "x555", "y777", nil},
 	{[]string{"x42"}, "", "", ErrInvalidArgumentLength},
 }
 
 var GetProjectAndContainerIDWithProjectAndContainerStoreCases = []GetContainerProvider{
-	{[]string{}, "146274450430843645", "mycontainer", nil},
-	{[]string{"146274450430843645", "mycontainer"}, "146274450430843645", "mycontainer", nil},
-	{[]string{"146274450430843645", "x4242"}, "146274450430843645", "x4242", nil},
+	{[]string{}, "extraction", "mycontainer", nil},
+	{[]string{"extraction", "mycontainer"}, "extraction", "mycontainer", nil},
+	{[]string{"extraction", "x4242"}, "extraction", "x4242", nil},
 	{[]string{"x6432", "y535"}, "x6432", "y535", nil},
 	{[]string{"x"}, "", "", ErrInvalidArgumentLength},
 }
 
 var GetProjectOrContainerIDWithProjectStoreCases = []GetContainerProvider{
-	{[]string{}, "146274450430843645", "", nil},
-	{[]string{"146274450430843645", "mycontainer"}, "146274450430843645", "mycontainer", nil},
-	{[]string{"146274450430843645", "x4242"}, "146274450430843645", "x4242", nil},
+	{[]string{}, "extraction", "", nil},
+	{[]string{"extraction", "mycontainer"}, "extraction", "mycontainer", nil},
+	{[]string{"extraction", "x4242"}, "extraction", "x4242", nil},
 	{[]string{"x145"}, "x145", "", nil},
 	{[]string{"x555", "y777"}, "x555", "y777", nil},
-	{[]string{"146274450430843645", "x414"}, "146274450430843645", "x414", nil},
+	{[]string{"extraction", "x414"}, "extraction", "x414", nil},
 	{[]string{"x42"}, "x42", "", nil},
 }
 
 var GetProjectOrContainerIDWithProjectOrContainerStoreCases = []GetContainerProvider{
-	{[]string{}, "146274450430843645", "mycontainer", nil},
-	{[]string{"146274450430843645", "mycontainer"}, "146274450430843645", "mycontainer", nil},
-	{[]string{"146274450430843645", "x4242"}, "146274450430843645", "x4242", nil},
+	{[]string{}, "extraction", "mycontainer", nil},
+	{[]string{"extraction", "mycontainer"}, "extraction", "mycontainer", nil},
+	{[]string{"extraction", "x4242"}, "extraction", "x4242", nil},
 	{[]string{"x6543"}, "x6543", "", nil},
-	{[]string{"146274450430843645", "x414"}, "146274450430843645", "x414", nil},
-	{[]string{"146274450430843645", "mycontainer"}, "146274450430843645", "mycontainer", nil},
+	{[]string{"extraction", "x414"}, "extraction", "x414", nil},
+	{[]string{"extraction", "mycontainer"}, "extraction", "mycontainer", nil},
 	{[]string{"x", "y"}, "x", "y", nil},
 	{[]string{"x42"}, "x42", "", nil},
 }

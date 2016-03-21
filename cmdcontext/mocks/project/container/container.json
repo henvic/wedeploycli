@@ -1,5 +1,6 @@
 {
-    "name": "mycontainer",
+    "id": "mycontainer",
+    "name": "My Container",
     "version": "0.0.1",
     "description": "Static hosting container example",
     "runtime": "static",

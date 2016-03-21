@@ -37,7 +37,7 @@ func TestInfoProject(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stdout: `Project: app
+		Stdout: `Project: app (my app)
 Domain: app.liferay.io
 Description: App example project
 `,

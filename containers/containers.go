@@ -44,6 +44,8 @@ func List(id string) {
 	for _, container := range containers {
 		fmt.Fprintln(outStream, container.Name+" "+container.ID+" ("+container.Image+")")
 	}
+
+	fmt.Fprintln(outStream, "total", len(containers))
 }
 
 // Restart restarts a container inside a project

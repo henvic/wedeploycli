@@ -40,7 +40,8 @@ func TestConfigProjectList(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stdout: `name = app
+		Stdout: `id = app
+name = my app
 description = App example project
 domain = app.liferay.io
 `,

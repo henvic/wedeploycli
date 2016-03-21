@@ -41,8 +41,10 @@ func List() {
 	apihelper.DecodeJSON(req, &projects)
 
 	for _, project := range projects {
-		fmt.Fprintln(outStream, project.Name+" "+project.ID)
+		fmt.Fprintln(outStream, project.ID+" ("+project.Name+")")
 	}
+
+	fmt.Fprintln(outStream, "total", len(projects))
 }
 
 // Restart restarts a project

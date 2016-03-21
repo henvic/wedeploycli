@@ -25,7 +25,10 @@ func TestLoad(t *testing.T) {
 		t.Errorf("Unexpected error %s, when no error should happen", err)
 	}
 
-	jsonlib.AssertJSONMarshal(t, `{"name": "helloworld"}`, s.Data)
+	jsonlib.AssertJSONMarshal(t, `{
+		"id": "helloworld",
+		"name": "Hello World"
+		}`, s.Data)
 }
 
 func TestLoadInvalidJSON(t *testing.T) {
@@ -168,10 +171,11 @@ func TestList(t *testing.T) {
 	var s = Store{
 		Name:             "conf",
 		Path:             "./mocks/read.json",
-		ConfigurableKeys: []string{"name", "sys.components", "score"},
+		ConfigurableKeys: []string{"id", "name", "sys.components", "score"},
 	}
 
-	var want = `name = Complex
+	var want = `id = complex
+name = Complex
 sys.components = null
 score = 1000
 `

@@ -59,7 +59,7 @@ func getCtxID(store string) (id string, err error) {
 		return "", ErrNotFound
 	}
 
-	id, err = configStore.GetString("name")
+	id, err = configStore.GetString("id")
 
 	if err != nil {
 		return "", ErrNotFound

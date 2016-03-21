@@ -29,7 +29,7 @@ func TestList(t *testing.T) {
 	globalconfigmock.Setup()
 	bufOutStream.Reset()
 
-	var want = "Cloud Search 145911644072551330 (launchpad)\n"
+	var want = "Cloud Search 145911644072551330 (launchpad)\ntotal 1\n"
 
 	servertest.Mux.HandleFunc("/api/projects/123/containers", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w,

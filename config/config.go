@@ -43,6 +43,7 @@ func Setup() {
 		Stores["project"] = &configstore.Store{
 			Name: "project",
 			ConfigurableKeys: []string{
+				"id",
 				"name",
 				"description",
 				"domain",
