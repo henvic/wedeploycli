@@ -6,10 +6,13 @@
 For some tasks the Launchpad CLI tool needs git to be available on your system.
 
 ## Contributing
-In lieu of a formal style guide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Check your code with go fmt, go vet, go test, go cover, and go lint.
+In lieu of a formal style guide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Integration tests should be written as well.
+
+Check your code with go fmt, go vet, go test, go cover, go lint, and gocyclo.
 
 * [Lint for this repo](http://go-lint.appspot.com/github.com/launchpad-project/cli)
 
 
-Install (or update to the latest version) api.cli with
-go get -u github.com/launchpad-project/cli
+Install (or update to the latest version) with
+`go get -u github.com/launchpad-project/cli`
+
