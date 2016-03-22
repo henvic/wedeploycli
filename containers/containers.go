@@ -49,7 +49,7 @@ func List(id string) {
 }
 
 // Restart restarts a container inside a project
-func Restart(projectID string, containerID string) {
+func Restart(projectID, containerID string) {
 	var req = apihelper.URL("/api/restart/container?projectId=" + projectID + "&containerId=" + containerID)
 
 	apihelper.Auth(req)
