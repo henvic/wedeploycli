@@ -52,6 +52,27 @@ func GetProjectOrContainerID(args []string) (projectID, containerID string, err 
 	}
 }
 
+// SplitArguments splits a group of arguments (e.g., project + container)
+func SplitArguments(recArgs []string, offset, limit int) []string {
+	if len(recArgs) < limit {
+		limit = len(recArgs)
+	}
+
+	var end = offset + limit
+
+	if end > len(recArgs) {
+		end = len(recArgs)
+	}
+
+	recArgs = recArgs[offset:end]
+
+	var c = make([]string, end-offset)
+
+	copy(c, recArgs)
+
+	return c
+}
+
 func getCtxID(store string) (id string, err error) {
 	var configStore = config.Stores[store]
 

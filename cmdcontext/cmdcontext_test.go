@@ -1,6 +1,7 @@
 package cmdcontext
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/launchpad-project/cli/config"
@@ -20,7 +21,15 @@ type GetContainerProvider struct {
 	Err         error
 }
 
+type SplitArgumentsProvider struct {
+	ReceivedArgs []string
+	Offset       int
+	Limit        int
+	Args         []string
+}
+
 var GetProjectIDCases = []GetProjectProvider{
+	// {[]string{""}, "", ErrNotFound},
 	{[]string{}, "", ErrNotFound},
 	{[]string{"x123", "y454"}, "", ErrInvalidArgumentLength},
 	{[]string{"x522"}, "x522", nil},
@@ -28,6 +37,7 @@ var GetProjectIDCases = []GetProjectProvider{
 
 var GetProjectAndContainerIDCases = []GetContainerProvider{
 	{[]string{}, "", "", ErrNotFound},
+	// {[]string{"", ""}, "", "", ErrNotFound},
 	{[]string{"x433"}, "", "", ErrInvalidArgumentLength},
 	{[]string{"x544", "y532", "z752"}, "", "", ErrInvalidArgumentLength},
 	{[]string{"x211", "y2224"}, "x211", "y2224", nil},
@@ -35,6 +45,8 @@ var GetProjectAndContainerIDCases = []GetContainerProvider{
 
 var GetProjectOrContainerIDCases = []GetContainerProvider{
 	{[]string{}, "", "", ErrNotFound},
+	// {[]string{""}, "", "", ErrNotFound},
+	// {[]string{"", ""}, "", "", ErrNotFound},
 	{[]string{"x007"}, "x007", "", nil},
 	{[]string{"x445", "y445"}, "x445", "y445", nil},
 	{[]string{"x695", "y151", "z615"}, "", "", ErrInvalidArgumentLength},
@@ -89,6 +101,24 @@ var GetProjectOrContainerIDWithProjectOrContainerStoreCases = []GetContainerProv
 	{[]string{"extraction", "mycontainer"}, "extraction", "mycontainer", nil},
 	{[]string{"x", "y"}, "x", "y", nil},
 	{[]string{"x42"}, "x42", "", nil},
+}
+
+var SplitArgumentsCases = []SplitArgumentsProvider{
+	{[]string{}, 0, 1, []string{}},
+	{[]string{"x", "y", "z"}, 0, 0, []string{}},
+	{[]string{"x", "y", "z"}, 0, 1, []string{"x"}},
+	{[]string{"abc"}, 0, 0, []string{}},
+	{[]string{"cde"}, 0, 1, []string{"cde"}},
+	{[]string{"fgh"}, 1, 1, []string{}},
+	{[]string{"a", "b"}, 0, 2, []string{"a", "b"}},
+	{[]string{"a", "b"}, 0, 1, []string{"a"}},
+	{[]string{"a", "b"}, 1, 1, []string{"b"}},
+	{[]string{"2 3 4", "1 0 1 dog"}, 1, 1, []string{"1 0 1 dog"}},
+	{[]string{"2 3 4 x", "1 0 1"}, 1, 2, []string{"1 0 1"}},
+	{[]string{"a", "b", "c", "d", "e"}, 2, 0, []string{}},
+	{[]string{"a", "b", "c", "d", "e"}, 2, 2, []string{"c", "d"}},
+	{[]string{"a", "b", "c", "d", "e"}, 2, 3, []string{"c", "d", "e"}},
+	{[]string{"a", "b", "c", "d", "e", "f", "g"}, 3, 3, []string{"d", "e", "f"}},
 }
 
 func TestGetProjectID(t *testing.T) {
@@ -340,4 +370,14 @@ func TestGetProjectOrContainerIDWithProjectOrContainerStore(t *testing.T) {
 
 	config.Stores["project"] = nil
 	config.Stores["container"] = nil
+}
+
+func TestSplitArguments(t *testing.T) {
+	for _, c := range SplitArgumentsCases {
+		var args = SplitArguments(c.ReceivedArgs, c.Offset, c.Limit)
+
+		if !reflect.DeepEqual(args, c.Args) {
+			t.Errorf("Wanted %v normalized slice, got %v instead", c.Args, args)
+		}
+	}
 }
