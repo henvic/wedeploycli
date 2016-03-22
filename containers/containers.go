@@ -42,7 +42,7 @@ func List(id string) {
 	apihelper.DecodeJSON(req, &containers)
 
 	for _, container := range containers {
-		fmt.Fprintln(outStream, container.Name+" "+container.ID+" ("+container.Image+")")
+		fmt.Fprintln(outStream, container.ID+" ("+container.Name+")")
 	}
 
 	fmt.Fprintln(outStream, "total", len(containers))
