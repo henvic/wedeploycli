@@ -9,7 +9,8 @@
 #     --html      Additionally create HTML report and open it in browser
 #     --coveralls Push coverage statistics to coveralls.io
 #
-# Source: https://github.com/mlafeldt/chef-runner/blob/v0.7.0/script/coverage
+# Original: https://github.com/mlafeldt/chef-runner/blob/v0.7.0/script/coverage
+# Changes: directories ending in .go used to fail
 
 set -e
 
@@ -23,7 +24,7 @@ generate_cover_data() {
 
     for pkg in "$@"; do
         f="$workdir/$(echo $pkg | tr / -).cover"
-        go test -covermode="$mode" -coverprofile="$f" "$pkg"
+        go test -covermode="$mode" -coverprofile="$f" "$pkg/"
     done
 
     echo "mode: $mode" >"$profile"
