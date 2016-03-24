@@ -29,7 +29,6 @@ type SplitArgumentsProvider struct {
 }
 
 var GetProjectIDCases = []GetProjectProvider{
-	// {[]string{""}, "", ErrNotFound},
 	{[]string{}, "", ErrNotFound},
 	{[]string{"x123", "y454"}, "", ErrInvalidArgumentLength},
 	{[]string{"x522"}, "x522", nil},
@@ -37,7 +36,6 @@ var GetProjectIDCases = []GetProjectProvider{
 
 var GetProjectAndContainerIDCases = []GetContainerProvider{
 	{[]string{}, "", "", ErrNotFound},
-	// {[]string{"", ""}, "", "", ErrNotFound},
 	{[]string{"x433"}, "", "", ErrInvalidArgumentLength},
 	{[]string{"x544", "y532", "z752"}, "", "", ErrInvalidArgumentLength},
 	{[]string{"x211", "y2224"}, "x211", "y2224", nil},
@@ -45,8 +43,6 @@ var GetProjectAndContainerIDCases = []GetContainerProvider{
 
 var GetProjectOrContainerIDCases = []GetContainerProvider{
 	{[]string{}, "", "", ErrNotFound},
-	// {[]string{""}, "", "", ErrNotFound},
-	// {[]string{"", ""}, "", "", ErrNotFound},
 	{[]string{"x007"}, "x007", "", nil},
 	{[]string{"x445", "y445"}, "x445", "y445", nil},
 	{[]string{"x695", "y151", "z615"}, "", "", ErrInvalidArgumentLength},

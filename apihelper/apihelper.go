@@ -27,9 +27,8 @@ type APIFaultError struct {
 }
 
 var (
-	// ErrParamsFromNonFlatStruct is used when query string params can't be extracted
-	// Mostly likely due to trying to use non-flat objects
-	ErrParamsFromNonFlatStruct = errors.New("Error extracting query string params")
+	// ErrParamsFromNonFlatStruct is used when query string params fail due to unrecognized type
+	ErrExtractingParams = errors.New("Can only extract query string params from flat objects")
 
 	errStream       io.Writer = os.Stderr
 	haltExitCommand           = false
@@ -83,7 +82,7 @@ func ParamsFromJSON(request *launchpad.Launchpad, data interface{}) {
 		case string, int, int64, float64:
 			request.Param(k, fmt.Sprintf("%v", value))
 		default:
-			panic(ErrParamsFromNonFlatStruct)
+			panic(ErrExtractingParams)
 		}
 	}
 }
