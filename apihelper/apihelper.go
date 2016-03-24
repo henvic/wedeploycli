@@ -2,6 +2,7 @@ package apihelper
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -26,9 +27,12 @@ type APIFaultError struct {
 }
 
 var (
-	haltExitCommand = false
+	// ErrParamsFromNonFlatStruct is used when query string params can't be extracted
+	// Mostly likely due to trying to use non-flat objects
+	ErrParamsFromNonFlatStruct = errors.New("Error extracting query string params")
 
-	errStream io.Writer = os.Stderr
+	errStream       io.Writer = os.Stderr
+	haltExitCommand           = false
 )
 
 // Auth a Launchpad request with the global authentication data
@@ -55,6 +59,32 @@ func DecodeJSON(request *launchpad.Launchpad, data interface{}) {
 
 	if err != nil {
 		exitCommand()
+	}
+}
+
+// ParamsFromJSON creates query string params from a flat object with JSON tags
+func ParamsFromJSON(request *launchpad.Launchpad, data interface{}) {
+	var v map[string]interface{}
+
+	b, err := json.Marshal(data)
+
+	if err == nil {
+		err = json.Unmarshal(b, &v)
+	}
+
+	if err != nil {
+		panic(err)
+	}
+
+	for k, value := range v {
+		switch value.(type) {
+		case nil:
+			request.Param(k, "null")
+		case string, int, int64, float64:
+			request.Param(k, fmt.Sprintf("%v", value))
+		default:
+			panic(ErrParamsFromNonFlatStruct)
+		}
 	}
 }
 

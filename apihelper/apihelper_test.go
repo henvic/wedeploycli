@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
+	"reflect"
 	"testing"
 
+	"github.com/kylelemons/godebug/pretty"
 	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/globalconfigmock"
 	"github.com/launchpad-project/cli/servertest"
@@ -123,6 +126,72 @@ func TestDecodeJSONFailure(t *testing.T) {
 	}
 
 	haltExitCommand = false
+}
+
+func TestParamsFromJSON(t *testing.T) {
+	type musicianMock struct {
+		ID       int64   `json:"id"`
+		Name     string  `json:"name"`
+		Hometown *string `json:"hometown"`
+		LastName *string `json:"last_name,omitempty"`
+		FullName *string `json:"full_name"`
+		Friend   *string `json:"friend,omitempty"`
+		Age      int     `json:"age"`
+		Height   float64 `json:"height"`
+		password string
+	}
+
+	var fullName = "Ray Charles"
+	var friend = "Gossie McKee"
+
+	var musician = &musicianMock{
+		ID:       14232,
+		Name:     "Ray",
+		FullName: &fullName,
+		Friend:   &friend,
+		Age:      73,
+		Height:   1.75,
+		password: "c#swift",
+	}
+
+	var req = launchpad.URL("htt://example.com/")
+	ParamsFromJSON(req, musician)
+
+	var want = url.Values{
+		"id":        []string{"14232"},
+		"name":      []string{"Ray"},
+		"full_name": []string{"Ray Charles"},
+		"friend":    []string{"Gossie McKee"},
+		"age":       []string{"73"},
+		"height":    []string{"1.75"},
+		"hometown":  []string{"null"},
+	}
+
+	var got = req.Params()
+
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("Params doesn't match:\n%s", pretty.Compare(want, got))
+	}
+}
+
+func TestParamsFromJSONFailure(t *testing.T) {
+	type invalidMock struct {
+		AllowedParam      string   `json:"name"`
+		NestingNotAllowed postMock `json:"post"`
+	}
+
+	var invalid = &invalidMock{}
+	var req = launchpad.URL("htt://example.com/")
+
+	defer func() {
+		r := recover()
+
+		if r != ErrExtractingParams {
+			t.Errorf("Expected panic with %v error, got %v instead", ErrExtractingParams, r)
+		}
+	}()
+
+	ParamsFromJSON(req, invalid)
 }
 
 func TestURL(t *testing.T) {
