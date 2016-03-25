@@ -185,21 +185,8 @@ Run 'launchpad --help' for usage.
 	}
 
 	cmd.Run()
+	e.AssertExact(t, cmd)
 
-	if cmd.ExitCode != e.ExitCode {
-		t.Errorf("Wanted exit code %v, got %v instead", e.ExitCode, cmd.ExitCode)
-	}
-
-	errString := cmd.Stderr.String()
-	outString := cmd.Stdout.String()
-
-	if errString != e.Stderr {
-		t.Errorf("Wanted Stderr %v, got %v instead", e.Stderr, errString)
-	}
-
-	if outString != e.Stdout {
-		t.Errorf("Wanted Stdout %v, got %v instead", e.Stdout, outString)
-	}
 }
 
 func TestStdin(t *testing.T) {
@@ -217,21 +204,7 @@ func TestStdin(t *testing.T) {
 	}
 
 	cmd.Run()
-
-	if cmd.ExitCode != e.ExitCode {
-		t.Errorf("Wanted exit code %v, got %v instead", e.ExitCode, cmd.ExitCode)
-	}
-
-	errString := cmd.Stderr.String()
-	outString := cmd.Stdout.String()
-
-	if errString != e.Stderr {
-		t.Errorf("Wanted Stderr %v, got %v instead", e.Stderr, errString)
-	}
-
-	if outString != e.Stdout {
-		t.Errorf("Wanted Stdout %v, got %v instead", e.Stdout, outString)
-	}
+	e.AssertExact(t, cmd)
 
 	binary = originalBinary
 }

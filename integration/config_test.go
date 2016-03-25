@@ -16,21 +16,7 @@ endpoint = http://www.example.com/
 	}
 
 	cmd.Run()
-
-	if cmd.ExitCode != e.ExitCode {
-		t.Errorf("Wanted exit code %v, got %v instead", e.ExitCode, cmd.ExitCode)
-	}
-
-	errString := cmd.Stderr.String()
-	outString := cmd.Stdout.String()
-
-	if errString != e.Stderr {
-		t.Errorf("Wanted Stderr %v, got %v instead", e.Stderr, errString)
-	}
-
-	if outString != e.Stdout {
-		t.Errorf("Wanted Stdout %v, got %v instead", e.Stdout, outString)
-	}
+	e.AssertExact(t, cmd)
 }
 
 func TestConfigProjectList(t *testing.T) {
@@ -49,21 +35,7 @@ domain = app.liferay.io
 	}
 
 	cmd.Run()
-
-	if cmd.ExitCode != e.ExitCode {
-		t.Errorf("Wanted exit code %v, got %v instead", e.ExitCode, cmd.ExitCode)
-	}
-
-	errString := cmd.Stderr.String()
-	outString := cmd.Stdout.String()
-
-	if errString != e.Stderr {
-		t.Errorf("Wanted Stderr %v, got %v instead", e.Stderr, errString)
-	}
-
-	if outString != e.Stdout {
-		t.Errorf("Wanted Stdout %v, got %v instead", e.Stdout, outString)
-	}
+	e.AssertExact(t, cmd)
 }
 
 func TestConfigContainerList(t *testing.T) {
@@ -77,19 +49,5 @@ func TestConfigContainerList(t *testing.T) {
 	}
 
 	cmd.Run()
-
-	if cmd.ExitCode != e.ExitCode {
-		t.Errorf("Wanted exit code %v, got %v instead", e.ExitCode, cmd.ExitCode)
-	}
-
-	errString := cmd.Stderr.String()
-	outString := cmd.Stdout.String()
-
-	if errString != e.Stderr {
-		t.Errorf("Wanted Stderr %v, got %v instead", e.Stderr, errString)
-	}
-
-	if outString != e.Stdout {
-		t.Errorf("Wanted Stdout %v, got %v instead", e.Stdout, outString)
-	}
+	e.AssertExact(t, cmd)
 }

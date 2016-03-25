@@ -13,21 +13,7 @@ func TestInfo(t *testing.T) {
 	}
 
 	cmd.Run()
-
-	if cmd.ExitCode != e.ExitCode {
-		t.Errorf("Wanted exit code %v, got %v instead", e.ExitCode, cmd.ExitCode)
-	}
-
-	errString := cmd.Stderr.String()
-	outString := cmd.Stdout.String()
-
-	if errString != e.Stderr {
-		t.Errorf("Wanted Stderr %v, got %v instead", e.Stderr, errString)
-	}
-
-	if outString != e.Stdout {
-		t.Errorf("Wanted Stdout %v, got %v instead", e.Stdout, outString)
-	}
+	e.AssertExact(t, cmd)
 }
 
 func TestInfoProject(t *testing.T) {
@@ -45,21 +31,7 @@ Description: App example project
 	}
 
 	cmd.Run()
-
-	if cmd.ExitCode != e.ExitCode {
-		t.Errorf("Wanted exit code %v, got %v instead", e.ExitCode, cmd.ExitCode)
-	}
-
-	errString := cmd.Stderr.String()
-	outString := cmd.Stdout.String()
-
-	if errString != e.Stderr {
-		t.Errorf("Wanted Stderr %v, got %v instead", e.Stderr, errString)
-	}
-
-	if outString != e.Stdout {
-		t.Errorf("Wanted Stdout %v, got %v instead", e.Stdout, outString)
-	}
+	e.AssertExact(t, cmd)
 }
 
 func TestInfoContainer(t *testing.T) {
@@ -78,19 +50,5 @@ Runtime: static
 	}
 
 	cmd.Run()
-
-	if cmd.ExitCode != e.ExitCode {
-		t.Errorf("Wanted exit code %v, got %v instead", e.ExitCode, cmd.ExitCode)
-	}
-
-	errString := cmd.Stderr.String()
-	outString := cmd.Stdout.String()
-
-	if errString != e.Stderr {
-		t.Errorf("Wanted Stderr %v, got %v instead", e.Stderr, errString)
-	}
-
-	if outString != e.Stdout {
-		t.Errorf("Wanted Stdout %v, got %v instead", e.Stdout, outString)
-	}
+	e.AssertExact(t, cmd)
 }
