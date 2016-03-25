@@ -10,6 +10,9 @@ import (
 	"path/filepath"
 	"syscall"
 	"testing"
+
+	"github.com/launchpad-project/cli/configstore"
+	"github.com/launchpad-project/cli/servertest"
 )
 
 // Expect structure
@@ -66,6 +69,15 @@ func GetLoginHome() string {
 
 func GetLogoutHome() string {
 	return getHomePath("logout")
+}
+
+func Setup() {
+	servertest.SetupIntegration()
+	setupLoginHome()
+}
+
+func Teardown() {
+	servertest.TeardownIntegration()
 }
 
 func (e *Expect) AssertExact(t *testing.T, cmd *Command) {
@@ -165,4 +177,16 @@ func getHomePath(home string) string {
 
 func init() {
 	compile()
+}
+
+func setupLoginHome() {
+	var csg = &configstore.Store{
+		Name: "global",
+		Path: filepath.Join(GetLoginHome(), "/.launchpad.json"),
+	}
+
+	csg.Set("endpoint", servertest.IntegrationServer.URL)
+	csg.Set("username", "foo")
+	csg.Set("password", "bar")
+	csg.Save()
 }

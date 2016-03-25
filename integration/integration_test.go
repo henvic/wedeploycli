@@ -186,7 +186,11 @@ Run 'launchpad --help' for usage.
 
 	cmd.Run()
 	e.AssertExact(t, cmd)
+}
 
+func TestSetupAndTeardown(t *testing.T) {
+	Setup()
+	Teardown()
 }
 
 func TestStdin(t *testing.T) {
