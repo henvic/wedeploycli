@@ -65,7 +65,7 @@ func Setup() {
 		if err != nil && !os.IsNotExist(err) {
 			println("Unexpected error reading configuration file.")
 			println("Fix " + Stores[k].Path + " by hand or erase it.")
-			os.Exit(-1)
+			os.Exit(1)
 		}
 	}
 }
