@@ -29,7 +29,7 @@ func TestList(t *testing.T) {
 	globalconfigmock.Setup()
 	bufOutStream.Reset()
 
-	var want = "Cloud Search 145911644072551330 (launchpad)\ntotal 1\n"
+	var want = "csearch (Cloud Search)\ntotal 1\n"
 
 	servertest.Mux.HandleFunc("/api/projects/123/containers", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w,
@@ -38,7 +38,7 @@ func TestList(t *testing.T) {
 		"template": "cloudsearch",
 		"name": "Cloud Search",
 		"image": "launchpad",
-		"id": "145911644072551330",
+		"id": "csearch",
 		"basePath": "/search"
     }
 }`)
