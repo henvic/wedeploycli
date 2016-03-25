@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"syscall"
+	"testing"
 )
 
 // Expect structure
@@ -65,6 +66,23 @@ func GetLoginHome() string {
 
 func GetLogoutHome() string {
 	return getHomePath("logout")
+}
+
+func (e *Expect) AssertExact(t *testing.T, cmd *Command) {
+	if cmd.ExitCode != e.ExitCode {
+		t.Errorf("Wanted exit code %v, got %v instead", e.ExitCode, cmd.ExitCode)
+	}
+
+	errString := cmd.Stderr.String()
+	outString := cmd.Stdout.String()
+
+	if errString != e.Stderr {
+		t.Errorf("Wanted Stderr %v, got %v instead", e.Stderr, errString)
+	}
+
+	if outString != e.Stdout {
+		t.Errorf("Wanted Stdout %v, got %v instead", e.Stdout, outString)
+	}
 }
 
 // Run runs the command

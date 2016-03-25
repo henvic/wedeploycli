@@ -15,6 +15,12 @@ type HomesProvider struct {
 	path string
 }
 
+type AssertExactProvider struct {
+	Command *Command
+	Expect  *Expect
+	Pass    bool
+}
+
 var HomesCases = []HomesProvider{
 	{
 		"home",
@@ -30,6 +36,71 @@ var HomesCases = []HomesProvider{
 	},
 }
 
+var AssertExactCases = []AssertExactProvider{
+	{
+		&Command{
+			Stderr:   bytes.NewBufferString("foo"),
+			Stdout:   bytes.NewBufferString("bar"),
+			ExitCode: 2,
+		},
+		&Expect{
+			Stderr:   "foo",
+			Stdout:   "bar",
+			ExitCode: 2,
+		},
+		true,
+	},
+	{
+		&Command{
+			Stderr:   bytes.NewBufferString("foo"),
+			Stdout:   bytes.NewBufferString("bar"),
+			ExitCode: 3,
+		},
+		&Expect{
+			Stderr:   "nonfoo",
+			Stdout:   "bar",
+			ExitCode: 3,
+		},
+		false,
+	},
+	{
+		&Command{
+			Stderr:   bytes.NewBufferString("foo"),
+			Stdout:   bytes.NewBufferString("bar"),
+			ExitCode: 4,
+		},
+		&Expect{
+			Stderr:   "foo",
+			Stdout:   "nonbar",
+			ExitCode: 4,
+		},
+		false,
+	},
+	{
+		&Command{
+			Stderr:   bytes.NewBufferString("foo"),
+			Stdout:   bytes.NewBufferString("bar"),
+			ExitCode: 2,
+		},
+		&Expect{
+			Stderr:   "foo",
+			Stdout:   "bar",
+			ExitCode: 3,
+		},
+		false,
+	},
+}
+
+func TestAssertExact(t *testing.T) {
+	for _, c := range AssertExactCases {
+		var mockTest = &testing.T{}
+		c.Expect.AssertExact(mockTest, c.Command)
+
+		if mockTest.Failed() == c.Pass {
+			t.Errorf("Mock test did not meet passing status = %v assertion", c.Pass)
+		}
+	}
+}
 
 func TestGetHomes(t *testing.T) {
 	var base, err = os.Getwd()
