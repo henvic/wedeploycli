@@ -48,3 +48,36 @@ func TestSetupAndTeardown(t *testing.T) {
 		t.Error("Expected mux reference to be gone")
 	}
 }
+
+func TestSetupAndTeardownIntegration(t *testing.T) {
+	var completed = false
+	var wantStatusCode = 201
+
+	SetupIntegration()
+
+	IntegrationMux.HandleFunc("/foo", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(201)
+		completed = true
+	})
+
+	req := launchpad.URL(IntegrationServer.URL, "/foo")
+	req.Post()
+
+	if !completed {
+		t.Error("Request not completed")
+	}
+
+	if req.Response.StatusCode != wantStatusCode {
+		t.Errorf("Wanted status code %v, got %v instead", wantStatusCode, req.Response.StatusCode)
+	}
+
+	TeardownIntegration()
+
+	if IntegrationServer != nil {
+		t.Error("Expected IntegrationServer reference to be gone")
+	}
+
+	if IntegrationMux != nil {
+		t.Error("Expected IntegrationMux reference to be gone")
+	}
+}
