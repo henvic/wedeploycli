@@ -27,7 +27,7 @@ type APIFaultError struct {
 }
 
 var (
-	// ErrParamsFromNonFlatStruct is used when query string params fail due to unrecognized type
+	// ErrExtractingParams is used when query string params fail due to unrecognized type
 	ErrExtractingParams = errors.New("Can only extract query string params from flat objects")
 
 	errStream       io.Writer = os.Stderr

@@ -37,6 +37,7 @@ func Setup() {
 	launchpad.Client = &http.Client{Transport: transport}
 }
 
+// SetupIntegration sets up the integration tests mock server
 func SetupIntegration() {
 	IntegrationMux = http.NewServeMux()
 	IntegrationServer = httptest.NewServer(IntegrationMux)
@@ -50,6 +51,7 @@ func Teardown() {
 	server = nil
 }
 
+// TeardownIntegration teardowns the integration tests mock server
 func TeardownIntegration() {
 	IntegrationServer.Close()
 	IntegrationMux = nil

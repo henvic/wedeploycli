@@ -59,27 +59,33 @@ func GetExitCode(err error) int {
 	panic(ErrExitCodeNotAvailable)
 }
 
+// GetRegularHome gets mocked regular user's home path
 func GetRegularHome() string {
 	return getHomePath("home")
 }
 
+// GetLoginHome gets mocked logged in user's home path
 func GetLoginHome() string {
 	return getHomePath("login")
 }
 
+// GetLogoutHome gets mocked logged out user's home path
 func GetLogoutHome() string {
 	return getHomePath("logout")
 }
 
+// Setup an integration test environment
 func Setup() {
 	servertest.SetupIntegration()
 	setupLoginHome()
 }
 
+// Teardown an integration test environment
 func Teardown() {
 	servertest.TeardownIntegration()
 }
 
+// AssertExact tests if command executed exactly as described by Expect
 func (e *Expect) AssertExact(t *testing.T, cmd *Command) {
 	if cmd.ExitCode != e.ExitCode {
 		t.Errorf("Wanted exit code %v, got %v instead", e.ExitCode, cmd.ExitCode)
