@@ -55,6 +55,18 @@ func GetExitCode(err error) int {
 	panic(ErrExitCodeNotAvailable)
 }
 
+func GetRegularHome() string {
+	return getHomePath("home")
+}
+
+func GetLoginHome() string {
+	return getHomePath("login")
+}
+
+func GetLogoutHome() string {
+	return getHomePath("logout")
+}
+
 // Run runs the command
 func (cmd *Command) Run() {
 	child := exec.Command(binary, cmd.Args...)
@@ -121,6 +133,16 @@ func compile() {
 	}
 
 	os.Chdir(workingDir)
+}
+
+func getHomePath(home string) string {
+	var path, err = filepath.Abs("./mocks/" + home)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return path
 }
 
 func init() {

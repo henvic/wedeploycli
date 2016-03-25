@@ -4,9 +4,48 @@ import (
 	"bytes"
 	"fmt"
 	"math/rand"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
+
+type HomesProvider struct {
+	in   string
+	path string
+}
+
+var HomesCases = []HomesProvider{
+	{
+		"home",
+		GetRegularHome(),
+	},
+	{
+		"login",
+		GetLoginHome(),
+	},
+	{
+		"logout",
+		GetLogoutHome(),
+	},
+}
+
+
+func TestGetHomes(t *testing.T) {
+	var base, err = os.Getwd()
+
+	if err != nil {
+		panic(err)
+	}
+
+	for _, c := range HomesCases {
+		var want = filepath.Join(base, "mocks", c.in)
+
+		if want != c.path {
+			t.Errorf("Wanted home path %v, got %v instead", want, c.path)
+		}
+	}
+}
 
 func TestInvalidDir(t *testing.T) {
 	var defaultErrStream = errStream
