@@ -39,4 +39,12 @@ func TestSetupAndTeardown(t *testing.T) {
 	if launchpadHTTPClient != launchpad.Client {
 		t.Error("Expected same Launchpad HTTP Client instance")
 	}
+
+	if server != nil {
+		t.Error("Expected server reference to be gone")
+	}
+
+	if Mux != nil {
+		t.Error("Expected mux reference to be gone")
+	}
 }
