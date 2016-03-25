@@ -8,21 +8,6 @@ import (
 	"github.com/launchpad-project/cli/servertest"
 )
 
-func TestLoggedOut(t *testing.T) {
-	var cmd = &Command{
-		Args: []string{"projects", "-v"},
-		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLogoutHome()},
-	}
-
-	var e = &Expect{
-		Stderr:   "Please run \"launchpad login\" first.\n",
-		ExitCode: 1,
-	}
-
-	cmd.Run()
-	e.AssertExact(t, cmd)
-}
-
 func TestProjects(t *testing.T) {
 	defer Teardown()
 	Setup()
