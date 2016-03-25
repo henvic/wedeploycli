@@ -28,7 +28,7 @@ func GetStatus(id string) {
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Get())
 	apihelper.DecodeJSON(req, &status)
-	fmt.Println(status + " (" + id + ")")
+	fmt.Fprintln(outStream, status+" ("+id+")")
 }
 
 // List projects
