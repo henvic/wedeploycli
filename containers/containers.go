@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 
 	"github.com/launchpad-project/cli/apihelper"
 )
@@ -41,7 +42,15 @@ func List(id string) {
 	apihelper.ValidateOrExit(req, req.Get())
 	apihelper.DecodeJSON(req, &containers)
 
-	for _, container := range containers {
+	keys := make([]string, 0, len(containers))
+	for k := range containers {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		container := containers[k]
 		fmt.Fprintln(outStream, container.ID+" ("+container.Name+")")
 	}
 
