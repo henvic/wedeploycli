@@ -1,23 +1,19 @@
 package integration
 
 import (
-	"fmt"
-	"net/http"
 	"testing"
 
 	"github.com/launchpad-project/cli/servertest"
+	"github.com/launchpad-project/cli/tdata"
 )
 
 func TestProjects(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc("/api/projects", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, `[{
-    "name": "Image Server",
-    "id": "images"
-}]`)
-	})
+	servertest.IntegrationMux.HandleFunc(
+		"/api/projects",
+		tdata.ServerHandler("../projects/mocks/projects_response.json"))
 
 	var cmd = &Command{
 		Args: []string{"projects"},
@@ -25,7 +21,7 @@ func TestProjects(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stdout:   "images (Image Server)\ntotal 1\n",
+		Stdout:   tdata.FromFile("../projects/mocks/want_projects"),
 		ExitCode: 0,
 	}
 

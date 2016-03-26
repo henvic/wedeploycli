@@ -9,6 +9,7 @@ import (
 
 	"github.com/launchpad-project/cli/globalconfigmock"
 	"github.com/launchpad-project/cli/servertest"
+	"github.com/launchpad-project/cli/tdata"
 )
 
 var bufOutStream bytes.Buffer
@@ -50,14 +51,11 @@ func TestList(t *testing.T) {
 	globalconfigmock.Setup()
 	bufOutStream.Reset()
 
-	var want = "images (Image Server)\ntotal 1\n"
+	var want = tdata.FromFile("mocks/want_projects")
 
-	servertest.Mux.HandleFunc("/api/projects", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, `[{
-    "name": "Image Server",
-    "id": "images"
-}]`)
-	})
+	servertest.Mux.HandleFunc(
+		"/api/projects",
+		tdata.ServerHandler("mocks/projects_response.json"))
 
 	List()
 
