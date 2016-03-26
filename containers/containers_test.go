@@ -2,13 +2,12 @@ package containers
 
 import (
 	"bytes"
-	"fmt"
-	"net/http"
 	"os"
 	"testing"
 
 	"github.com/launchpad-project/cli/globalconfigmock"
 	"github.com/launchpad-project/cli/servertest"
+	"github.com/launchpad-project/cli/tdata"
 )
 
 var bufOutStream bytes.Buffer
@@ -29,20 +28,10 @@ func TestList(t *testing.T) {
 	globalconfigmock.Setup()
 	bufOutStream.Reset()
 
-	var want = "csearch (Cloud Search)\ntotal 1\n"
+	var want = tdata.FromFile("mocks/want_containers")
 
-	servertest.Mux.HandleFunc("/api/projects/123/containers", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w,
-			`{
-	"456": {
-		"template": "cloudsearch",
-		"name": "Cloud Search",
-		"image": "launchpad",
-		"id": "csearch",
-		"basePath": "/search"
-    }
-}`)
-	})
+	servertest.Mux.HandleFunc("/api/projects/123/containers",
+		tdata.ServerHandler("mocks/containers_response.json"))
 
 	List("123")
 

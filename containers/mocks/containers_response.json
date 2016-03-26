@@ -1,0 +1,32 @@
+{
+  "search7606": {
+    "template": "cloudsearch",
+    "basePath": "\/search",
+    "instances": [
+      {
+        "id": "foo_search7606_vdafpgw8twrjmnyhlqul6yvp",
+        "state": "OFF"
+      }
+    ],
+    "name": "Cloud Search",
+    "bootstrap": "launchpad",
+    "id": "search7606",
+    "state": "on",
+    "maxInstances": 5
+  },
+  "nodejs5143": {
+    "template": "nodejs",
+    "basePath": "\/nodejs",
+    "instances": [
+      {
+        "id": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+        "state": "OFF"
+      }
+    ],
+    "name": "Node.js",
+    "bootstrap": "docker",
+    "id": "nodejs5143",
+    "state": "on",
+    "maxInstances": 5
+  }
+}
