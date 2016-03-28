@@ -69,3 +69,8 @@ func Setup() {
 		}
 	}
 }
+
+func Teardown() {
+	Context = nil
+	Stores = map[string]*configstore.Store{}
+}
