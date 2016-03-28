@@ -1,10 +1,17 @@
 package logs
 
 import (
+	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"strconv"
+	"strings"
+	"syscall"
 	"time"
+
+	"github.com/launchpad-project/cli/apihelper"
+	"github.com/launchpad-project/cli/verbose"
 )
 
 // LongPoolingPeriod is the time between retries
@@ -52,4 +59,77 @@ func GetLevel(severityOrLevel string) (int, error) {
 	}
 
 	return strconv.Atoi(severityOrLevel)
+}
+
+// GetList logs
+func GetList(filter Filter, paths ...string) []Logs {
+	var list []Logs
+	var req = apihelper.URL("/api/logs/" + strings.Join(paths, "/"))
+
+	apihelper.Auth(req)
+	apihelper.ParamsFromJSON(req, filter)
+
+	apihelper.ValidateOrExit(req, req.Get())
+	apihelper.DecodeJSON(req, &list)
+
+	return list
+}
+
+// List logs
+func List(filter Filter, paths ...string) {
+	var list = GetList(filter, paths...)
+	printList(list)
+}
+
+// Watch logs
+func Watch(filter Filter, paths ...string) {
+	sigs := make(chan os.Signal, 1)
+	done := make(chan bool, 1)
+
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-sigs
+		done <- true
+		fmt.Println()
+		os.Exit(0)
+	}()
+
+	watch(filter, paths...)
+	<-done
+}
+
+func printList(list []Logs) {
+	for _, log := range list {
+		fmt.Fprintln(outStream, log.Message)
+	}
+}
+
+func watch(filter Filter, paths ...string) {
+	for {
+		var list = GetList(filter, paths...)
+
+		printList(list)
+
+		time.Sleep(LongPoolingPeriod)
+
+		var length = len(list)
+
+		if length == 0 {
+			verbose.Debug("No new log since " + filter.Since)
+			continue
+		}
+
+		last := list[length-1]
+		next, err := strconv.ParseInt(last.Timestamp, 10, 0)
+
+		if err != nil {
+			panic(err)
+		}
+
+		next++
+
+		filter.Since = fmt.Sprintf("%v", next)
+		verbose.Debug("Next --since parameter value = " + filter.Since)
+	}
 }
