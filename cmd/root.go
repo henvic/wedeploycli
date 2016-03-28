@@ -11,6 +11,7 @@ import (
 	cmdcontainers "github.com/launchpad-project/cli/cmd/containers"
 	cmdhooks "github.com/launchpad-project/cli/cmd/hooks"
 	cmdinfo "github.com/launchpad-project/cli/cmd/info"
+	cmdlogs "github.com/launchpad-project/cli/cmd/logs"
 	cmdprojects "github.com/launchpad-project/cli/cmd/projects"
 	cmdrestart "github.com/launchpad-project/cli/cmd/restart"
 	cmdstatus "github.com/launchpad-project/cli/cmd/status"
@@ -67,6 +68,7 @@ func init() {
 	RootCmd.AddCommand(cmdauth.LogoutCmd)
 	RootCmd.AddCommand(cmdconfig.ConfigCmd)
 	RootCmd.AddCommand(cmdinfo.InfoCmd)
+	RootCmd.AddCommand(cmdlogs.LogsCmd)
 	RootCmd.AddCommand(cmdprojects.ProjectsCmd)
 	RootCmd.AddCommand(cmdcontainers.ContainersCmd)
 	RootCmd.AddCommand(cmdstatus.StatusCmd)
