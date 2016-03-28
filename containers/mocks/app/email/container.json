@@ -1,0 +1,20 @@
+{
+    "id": "email",
+    "version": "0.0.1",
+    "description": "Email hosting container example",
+    "runtime": "static",
+    "basePath": "/",
+    "webPath": "/",
+    "instances": 1,
+    "memory": 128,
+    "environment": {},
+    "hooks": {
+        "before_build": "",
+        "build": "",
+        "after_build": "",
+        "before_deploy": "",
+        "deploy": "",
+        "after_deploy": ""
+    },
+    "deploy_ignore": ["xoo", "foo"]
+}
