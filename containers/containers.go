@@ -3,10 +3,14 @@ package containers
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"sort"
 
 	"github.com/launchpad-project/cli/apihelper"
+	"github.com/launchpad-project/cli/config"
+	"github.com/launchpad-project/cli/configstore"
 )
 
 // Containers map
@@ -21,6 +25,47 @@ type Container struct {
 }
 
 var outStream io.Writer = os.Stdout
+
+func GetListFromScope() ([]string, error) {
+	var projectRoot = config.Context.ProjectRoot
+	var list []string
+
+	if config.Context.ContainerRoot != "" {
+		_, container := filepath.Split(config.Context.ContainerRoot)
+		list = append(list, container)
+		return list, nil
+	}
+
+	files, err := ioutil.ReadDir(projectRoot)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, file := range files {
+		if !file.IsDir() {
+			continue
+		}
+
+		var cs = configstore.Store{
+			Name: file.Name(),
+			Path: filepath.Join(projectRoot, file.Name(), "container.json"),
+		}
+
+		err = cs.Load()
+
+		if err == nil {
+			list = append(list, file.Name())
+			continue
+		}
+
+		if !os.IsNotExist(err) {
+			return nil, err
+		}
+	}
+
+	return list, nil
+}
 
 // GetStatus gets the status for a container
 func GetStatus(projectID, containerID string) {
