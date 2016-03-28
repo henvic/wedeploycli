@@ -65,7 +65,7 @@ func TestBuild(t *testing.T) {
 	}
 
 	os.Chdir(workingDir)
-	config.Setup()
+	config.Teardown()
 }
 
 func TestBuildUnbuildable(t *testing.T) {
@@ -86,7 +86,7 @@ func TestBuildUnbuildable(t *testing.T) {
 	}
 
 	os.Chdir(workingDir)
-	config.Setup()
+	config.Teardown()
 }
 
 func TestBuildProjectFailure(t *testing.T) {
@@ -107,7 +107,7 @@ func TestBuildProjectFailure(t *testing.T) {
 	}
 
 	os.Chdir(workingDir)
-	config.Setup()
+	config.Teardown()
 }
 
 func TestDeploy(t *testing.T) {
@@ -141,7 +141,7 @@ func TestDeploy(t *testing.T) {
 	}
 
 	os.Chdir(workingDir)
-	config.Setup()
+	config.Teardown()
 }
 
 func TestDeployProjectFailure(t *testing.T) {
@@ -162,7 +162,7 @@ func TestDeployProjectFailure(t *testing.T) {
 	}
 
 	os.Chdir(workingDir)
-	config.Setup()
+	config.Teardown()
 }
 
 func TestDeployUndeployable(t *testing.T) {
@@ -183,7 +183,7 @@ func TestDeployUndeployable(t *testing.T) {
 	}
 
 	os.Chdir(workingDir)
-	config.Setup()
+	config.Teardown()
 }
 
 func TestGetContainer(t *testing.T) {
@@ -223,7 +223,7 @@ func TestGetContainer(t *testing.T) {
     }`, hooks)
 
 	os.Chdir(workingDir)
-	config.Setup()
+	config.Teardown()
 }
 
 func TestGetProject(t *testing.T) {
@@ -263,7 +263,7 @@ func TestGetProject(t *testing.T) {
     }`, hooks)
 
 	os.Chdir(workingDir)
-	config.Setup()
+	config.Teardown()
 }
 
 func TestGetProjectFailure(t *testing.T) {
@@ -284,7 +284,7 @@ func TestGetProjectFailure(t *testing.T) {
 	}
 
 	os.Chdir(workingDir)
-	config.Setup()
+	config.Teardown()
 }
 
 func TestRun(t *testing.T) {
