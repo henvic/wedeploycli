@@ -26,6 +26,7 @@ type Container struct {
 
 var outStream io.Writer = os.Stdout
 
+// GetListFromScope returns a list of containers on the current context
 func GetListFromScope() ([]string, error) {
 	var projectRoot = config.Context.ProjectRoot
 	var list []string
