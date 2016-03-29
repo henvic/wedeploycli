@@ -32,9 +32,8 @@ func TestGetStatus(t *testing.T) {
 
 	var want = "on (foo)\n"
 
-	servertest.Mux.HandleFunc("/api/projects/foo/state", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, `"on"`)
-	})
+	servertest.Mux.HandleFunc(
+		"/api/projects/foo/state", tdata.ServerHandler(`"on"`))
 
 	GetStatus("foo")
 
@@ -55,7 +54,7 @@ func TestList(t *testing.T) {
 
 	servertest.Mux.HandleFunc(
 		"/api/projects",
-		tdata.ServerHandler("mocks/projects_response.json"))
+		tdata.ServerFileHandler("mocks/projects_response.json"))
 
 	List()
 

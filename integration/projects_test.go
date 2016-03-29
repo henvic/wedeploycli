@@ -13,7 +13,7 @@ func TestProjects(t *testing.T) {
 
 	servertest.IntegrationMux.HandleFunc(
 		"/api/projects",
-		tdata.ServerHandler("../projects/mocks/projects_response.json"))
+		tdata.ServerFileHandler("../projects/mocks/projects_response.json"))
 
 	var cmd = &Command{
 		Args: []string{"projects"},

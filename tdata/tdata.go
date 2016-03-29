@@ -17,8 +17,15 @@ func FromFile(filename string) string {
 	return string(b)
 }
 
-// ServerHandler serves static content from a file
-func ServerHandler(filename string) func(w http.ResponseWriter, r *http.Request) {
+// ServerHandler serves string content
+func ServerHandler(content string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, content)
+	}
+}
+
+// ServerFileHandler serves static content from a file
+func ServerFileHandler(filename string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, FromFile(filename))
 	}

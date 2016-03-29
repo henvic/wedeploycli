@@ -130,7 +130,7 @@ func TestList(t *testing.T) {
 	var want = tdata.FromFile("mocks/want_containers")
 
 	servertest.Mux.HandleFunc("/api/projects/123/containers",
-		tdata.ServerHandler("mocks/containers_response.json"))
+		tdata.ServerFileHandler("mocks/containers_response.json"))
 
 	List("123")
 

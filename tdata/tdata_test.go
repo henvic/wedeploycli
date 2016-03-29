@@ -9,22 +9,19 @@ import (
 )
 
 type ResponseWriterMock struct {
-	test *testing.T
+	Want string
+	Test *testing.T
 }
 
 func (*ResponseWriterMock) Header() http.Header {
 	return nil
 }
 
-func (r *ResponseWriterMock) SetTest(t *testing.T) {
-	r.test = t
-}
 func (r *ResponseWriterMock) Write(c []byte) (int, error) {
-	var want = "this is a mock\n"
 	var got = string(c)
 
-	if want != got {
-		r.test.Errorf("Wanted %v, got %v instead", want, got)
+	if r.Want != got {
+		r.Test.Errorf("Wanted %v, got %v instead", r.Want, got)
 	}
 
 	return len(c), nil
@@ -56,8 +53,17 @@ func TestFromFileNotFound(t *testing.T) {
 }
 
 func TestServerHandler(t *testing.T) {
-	var handler = ServerHandler("mocks/mock")
+	var handler = ServerHandler("this is a mock\n")
 	var mock = &ResponseWriterMock{}
-	mock.SetTest(t)
+	mock.Want = "this is a mock\n"
+	mock.Test = t
+	handler(mock, nil)
+}
+
+func TestServerFileHandler(t *testing.T) {
+	var handler = ServerFileHandler("mocks/mock")
+	var mock = &ResponseWriterMock{}
+	mock.Want = "this is a mock\n"
+	mock.Test = t
 	handler(mock, nil)
 }
