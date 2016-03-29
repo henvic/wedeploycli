@@ -6,8 +6,16 @@ import (
 	"testing"
 )
 
-func TestSetup(t *testing.T) {
+func TestSetupAndTeardown(t *testing.T) {
 	var workingDir, _ = os.Getwd()
+
+	if Context != nil {
+		t.Errorf("Expected config.Context to be null")
+	}
+
+	if len(Stores) != 0 {
+		t.Errorf("Expected config.Stores to be an empty map")
+	}
 
 	Setup()
 
@@ -48,4 +56,13 @@ func TestSetup(t *testing.T) {
 	}
 
 	os.Chdir(workingDir)
+	Teardown()
+
+	if Context != nil {
+		t.Errorf("Expected config.Context to be null")
+	}
+
+	if len(Stores) != 0 {
+		t.Errorf("Expected config.Stores to be an empty map")
+	}
 }
