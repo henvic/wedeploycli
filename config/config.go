@@ -70,6 +70,7 @@ func Setup() {
 	}
 }
 
+// Teardown resets the configuration environment
 func Teardown() {
 	Context = nil
 	Stores = map[string]*configstore.Store{}
