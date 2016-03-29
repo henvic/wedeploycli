@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"math/rand"
+	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -137,6 +138,45 @@ func TestList(t *testing.T) {
 	if bufOutStream.String() != want {
 		t.Errorf("Wanted %v, got %v instead", want, bufOutStream.String())
 	}
+
+	globalconfigmock.Teardown()
+}
+
+func TestGetStatus(t *testing.T) {
+	defer servertest.Teardown()
+	servertest.Setup()
+	globalconfigmock.Setup()
+	bufOutStream.Reset()
+
+	var want = "on (foo bar)\n"
+	servertest.Mux.HandleFunc("/api/projects/foo/containers/bar/state", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `"on"`)
+	})
+
+	GetStatus("foo", "bar")
+
+	if bufOutStream.String() != want {
+		t.Errorf("Wanted %v, got %v instead", want, bufOutStream.String())
+	}
+
+	globalconfigmock.Teardown()
+}
+
+func TestRestart(t *testing.T) {
+	defer servertest.Teardown()
+	servertest.Setup()
+	globalconfigmock.Setup()
+	bufOutStream.Reset()
+
+	servertest.Mux.HandleFunc("/api/restart/container", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.RawQuery != "projectId=foo&containerId=bar" {
+			t.Error("Wrong query parameters for restart method")
+		}
+
+		fmt.Fprintf(w, `"on"`)
+	})
+
+	Restart("foo", "bar")
 
 	globalconfigmock.Teardown()
 }
