@@ -76,7 +76,7 @@ func GetStatus(projectID, containerID string) {
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Get())
 	apihelper.DecodeJSON(req, &status)
-	fmt.Println(status + " (" + projectID + " " + containerID + ")")
+	fmt.Fprintln(outStream, status+" ("+projectID+" "+containerID+")")
 }
 
 // List of containers of a given project
