@@ -57,7 +57,7 @@ func DecodeJSON(request *launchpad.Launchpad, data interface{}) {
 	printHTTPVerbose(request, body)
 
 	if err != nil {
-		exitCommand()
+		exitCommand(1)
 	}
 }
 
@@ -111,12 +111,12 @@ func ValidateOrExit(request *launchpad.Launchpad, err error) {
 		fmt.Fprintln(errStream, err)
 	}
 
-	exitCommand()
+	exitCommand(1)
 }
 
-func exitCommand() {
+func exitCommand(code int) {
 	if !haltExitCommand {
-		os.Exit(1)
+		os.Exit(code)
 	}
 }
 
