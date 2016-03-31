@@ -140,7 +140,11 @@ func TestWatch(t *testing.T) {
 
 	go func() {
 		time.Sleep(20 * time.Millisecond)
-		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+
+		if err := syscall.Kill(syscall.Getpid(), syscall.SIGINT); err != nil {
+			panic(err)
+		}
+
 		time.Sleep(20 * time.Millisecond)
 		wg.Done()
 	}()
