@@ -13,7 +13,11 @@ func Setup() {
 
 	var mockGlobal = configstore.Store{
 		Name: "global",
-		Path: "../apihelper/mocks/config.json",
+		Data: map[string]interface{}{
+			"username": "admin",
+			"password": "safe",
+			"endpoint": "http://www.example.com/",
+		},
 	}
 
 	mockGlobal.Load()
