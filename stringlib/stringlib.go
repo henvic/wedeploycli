@@ -17,7 +17,7 @@ func AssertSimilar(t *testing.T, want string, got string) {
 }
 
 // Normalize string breaking lines with \n and removing extra spacing
-// on the begining and end of strings
+// on the beginning and end of strings
 func Normalize(s string) string {
 	var parts = strings.Split(s, "\n")
 	var final = make([]string, 10*len(parts))
