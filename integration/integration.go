@@ -104,8 +104,8 @@ func (e *Expect) Assert(t *testing.T, cmd *Command) {
 	}
 }
 
-// Run runs the command
-func (cmd *Command) Run() {
+// Prepare prepares the executable command
+func (cmd *Command) Prepare() *exec.Cmd {
 	child := exec.Command(binary, cmd.Args...)
 
 	if cmd.Stdin != nil {
@@ -138,7 +138,14 @@ func (cmd *Command) Run() {
 	child.Stdout = sout
 	cmd.Stderr = serr
 	cmd.Stdout = sout
-	cmd.ExitCode = GetExitCode(child.Run())
+
+	return child
+}
+
+// Run runs the command
+func (cmd *Command) Run() {
+	c := cmd.Prepare()
+	cmd.ExitCode = GetExitCode(c.Run())
 }
 
 func compile() {
