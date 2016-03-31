@@ -2,6 +2,7 @@ package containers
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/launchpad-project/api.go/jsonlib"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/globalconfigmock"
 	"github.com/launchpad-project/cli/servertest"
@@ -26,6 +28,63 @@ func TestMain(m *testing.M) {
 
 	outStream = defaultOutStream
 	os.Exit(ec)
+}
+
+func TestGetConfig(t *testing.T) {
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/app")); err != nil {
+		t.Error(err)
+	}
+
+	var c Container
+
+	if err := GetConfig("email", &c); err != nil {
+		t.Errorf("Wanted err to be nil, got %v instead", err)
+	}
+
+	jsonlib.AssertJSONMarshal(t, `{
+		"deploy_ignore": ["xoo", "foo"],
+		"id": "email",
+		"image": "",
+		"name": "",
+		"template": ""}`, c)
+
+	os.Chdir(workingDir)
+}
+
+func TestGetConfigFileNotFound(t *testing.T) {
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/app")); err != nil {
+		t.Error(err)
+	}
+
+	var c Container
+
+	if err := GetConfig("unknown", &c); !os.IsNotExist(err) {
+		t.Errorf("Wanted file to not exist, got %v error instead", err)
+	}
+
+	os.Chdir(workingDir)
+}
+
+func TestGetConfigCorrupted(t *testing.T) {
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/app-with-invalid-container")); err != nil {
+		t.Error(err)
+	}
+
+	var c Container
+
+	var err = GetConfig("corrupted", &c)
+
+	if _, ok := err.(*json.SyntaxError); !ok {
+		t.Errorf("Wanted err to be *json.SyntaxError, got %v instead", err)
+	}
+
+	os.Chdir(workingDir)
 }
 
 func TestGetListFromScopeFromProject(t *testing.T) {

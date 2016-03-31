@@ -1,6 +1,7 @@
 package containers
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -25,6 +26,17 @@ type Container struct {
 }
 
 var outStream io.Writer = os.Stdout
+
+// GetConfig reads the container configuration file in a given directory
+func GetConfig(dir string, c *Container) error {
+	content, err := ioutil.ReadFile(filepath.Join(dir, "container.json"))
+
+	if err == nil {
+		err = json.Unmarshal(content, &c)
+	}
+
+	return err
+}
 
 // GetListFromScope returns a list of containers on the current context
 func GetListFromScope() ([]string, error) {
