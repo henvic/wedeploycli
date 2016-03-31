@@ -13,7 +13,7 @@ func TestInfo(t *testing.T) {
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 }
 
 func TestInfoProject(t *testing.T) {
@@ -31,7 +31,7 @@ Description: App example project
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 }
 
 func TestInfoContainer(t *testing.T) {
@@ -50,5 +50,5 @@ Runtime: static
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 }

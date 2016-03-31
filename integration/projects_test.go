@@ -26,5 +26,5 @@ func TestProjects(t *testing.T) {
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 }

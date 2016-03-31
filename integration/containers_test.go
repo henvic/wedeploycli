@@ -26,7 +26,7 @@ func TestContainers(t *testing.T) {
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 }
 
 func TestContainersFromProjectDirectory(t *testing.T) {
@@ -49,7 +49,7 @@ func TestContainersFromProjectDirectory(t *testing.T) {
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 }
 
 func TestContainersWithouProjectContext(t *testing.T) {
@@ -68,5 +68,5 @@ func TestContainersWithouProjectContext(t *testing.T) {
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 }

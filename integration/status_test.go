@@ -25,7 +25,7 @@ func TestStatusProject(t *testing.T) {
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 }
 
 func TestStatusContainer(t *testing.T) {
@@ -46,5 +46,5 @@ func TestStatusContainer(t *testing.T) {
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 }

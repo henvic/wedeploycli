@@ -13,6 +13,7 @@ import (
 
 	"github.com/launchpad-project/cli/configstore"
 	"github.com/launchpad-project/cli/servertest"
+	"github.com/launchpad-project/cli/stringlib"
 )
 
 // Expect structure
@@ -85,8 +86,8 @@ func Teardown() {
 	servertest.TeardownIntegration()
 }
 
-// AssertExact tests if command executed exactly as described by Expect
-func (e *Expect) AssertExact(t *testing.T, cmd *Command) {
+// Assert tests if command executed exactly as described by Expect
+func (e *Expect) Assert(t *testing.T, cmd *Command) {
 	if cmd.ExitCode != e.ExitCode {
 		t.Errorf("Wanted exit code %v, got %v instead", e.ExitCode, cmd.ExitCode)
 	}
@@ -94,11 +95,11 @@ func (e *Expect) AssertExact(t *testing.T, cmd *Command) {
 	errString := cmd.Stderr.String()
 	outString := cmd.Stdout.String()
 
-	if errString != e.Stderr {
+	if !stringlib.Similar(errString, e.Stderr) {
 		t.Errorf("Wanted Stderr %v, got %v instead", e.Stderr, errString)
 	}
 
-	if outString != e.Stdout {
+	if !stringlib.Similar(outString, e.Stdout) {
 		t.Errorf("Wanted Stdout %v, got %v instead", e.Stdout, outString)
 	}
 }

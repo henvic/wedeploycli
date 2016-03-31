@@ -12,6 +12,7 @@ import (
 	"github.com/launchpad-project/api.go/jsonlib"
 	"github.com/launchpad-project/cli/globalconfigmock"
 	"github.com/launchpad-project/cli/servertest"
+	"github.com/launchpad-project/cli/stringlib"
 	"github.com/launchpad-project/cli/tdata"
 )
 
@@ -96,9 +97,7 @@ func TestList(t *testing.T) {
 	var want = tdata.FromFile("mocks/logs_response_print")
 	var got = bufOutStream.String()
 
-	if want != got {
-		t.Errorf("Wanted output stream %v, got %v instead", want, got)
-	}
+	stringlib.AssertSimilar(t, want, got)
 
 	outStream = defaultOutStream
 
@@ -153,9 +152,7 @@ func TestWatch(t *testing.T) {
 	var want = tdata.FromFile("mocks/logs_watch_syscall")
 	var got = bufOutStream.String()
 
-	if want != got {
-		t.Errorf("Wanted watched data to be %v, got %v instead", want, got)
-	}
+	stringlib.AssertSimilar(t, want, got)
 
 	// some time before cleaning up services on other goroutines...
 	time.Sleep(10 * time.Millisecond)
@@ -206,9 +203,10 @@ func TestWatcherStart(t *testing.T) {
 
 	<-done
 
-	if bufOutStream.String() != tdata.FromFile("mocks/logs_watch") {
-		t.Errorf("Invalid captured logs watch output")
-	}
+	var want = tdata.FromFile("mocks/logs_watch")
+	var got = bufOutStream.String()
+
+	stringlib.AssertSimilar(t, want, got)
 
 	// some time before cleaning up services on other goroutines...
 	time.Sleep(10 * time.Millisecond)

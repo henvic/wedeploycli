@@ -21,7 +21,7 @@ endpoint = http://www.example.com/
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 }
 
 func TestConfigProjectList(t *testing.T) {
@@ -40,7 +40,7 @@ domain = app.liferay.io
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 }
 
 func TestConfigContainerList(t *testing.T) {
@@ -54,7 +54,7 @@ func TestConfigContainerList(t *testing.T) {
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 }
 
 func TestCorruptConfig(t *testing.T) {
@@ -80,7 +80,7 @@ Fix %v by hand or erase it.
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 }
 
 func TestLoggedOut(t *testing.T) {
@@ -95,5 +95,5 @@ func TestLoggedOut(t *testing.T) {
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 }

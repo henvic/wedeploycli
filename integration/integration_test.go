@@ -15,7 +15,7 @@ type HomesProvider struct {
 	path string
 }
 
-type AssertExactProvider struct {
+type AssertProvider struct {
 	Command *Command
 	Expect  *Expect
 	Pass    bool
@@ -36,7 +36,7 @@ var HomesCases = []HomesProvider{
 	},
 }
 
-var AssertExactCases = []AssertExactProvider{
+var AssertCases = []AssertProvider{
 	{
 		&Command{
 			Stderr:   bytes.NewBufferString("foo"),
@@ -89,12 +89,25 @@ var AssertExactCases = []AssertExactProvider{
 		},
 		false,
 	},
+	{
+		&Command{
+			Stderr:   bytes.NewBufferString("foo "),
+			Stdout:   bytes.NewBufferString("bar "),
+			ExitCode: 5,
+		},
+		&Expect{
+			Stderr:   "foo",
+			Stdout:   "bar",
+			ExitCode: 5,
+		},
+		true,
+	},
 }
 
-func TestAssertExact(t *testing.T) {
-	for _, c := range AssertExactCases {
+func TestAssert(t *testing.T) {
+	for _, c := range AssertCases {
 		var mockTest = &testing.T{}
-		c.Expect.AssertExact(mockTest, c.Command)
+		c.Expect.Assert(mockTest, c.Command)
 
 		if mockTest.Failed() == c.Pass {
 			t.Errorf("Mock test did not meet passing status = %v assertion", c.Pass)
@@ -185,7 +198,7 @@ Run 'launchpad --help' for usage.
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 }
 
 func TestSetupAndTeardown(t *testing.T) {
@@ -208,7 +221,7 @@ func TestStdin(t *testing.T) {
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 
 	binary = originalBinary
 }

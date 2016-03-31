@@ -33,7 +33,7 @@ func TestRestartProject(t *testing.T) {
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 
 	if !handled {
 		t.Errorf("Restart request not handled.")
@@ -66,7 +66,7 @@ func TestRestartContainer(t *testing.T) {
 	}
 
 	cmd.Run()
-	e.AssertExact(t, cmd)
+	e.Assert(t, cmd)
 
 	if !handled {
 		t.Errorf("Restart request not handled.")
