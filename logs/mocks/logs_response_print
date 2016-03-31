@@ -1,0 +1,18 @@
+[2016-03-29 18:55:51,234] INFO  [main] com.liferay.launchpad.server.AppServer#start:125 - Server started
+[2016-03-29 18:55:51,237] INFO  [main] com.liferay.launchpad.Launchpad#startServer:163 - Server is up and running
+[2016-03-29 18:55:51,240] INFO  [main] com.liferay.launchpad.Launchpad#start:69 - Launchpad is ready
+	Member [172.21.0.2]:5701
+Mar 29, 2016 7:43:30 PM com.hazelcast.core.LifecycleService
+Mar 29, 2016 7:43:30 PM com.hazelcast.client.connection.nio.ClientConnectionManagerImpl
+INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_CONNECTED
+INFO: 
+INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_DISCONNECTED
+WARNING: Connection [/192.168.99.100:5701] lost. Reason: Socket explicitly closed
+
+Members [1] {
+
+Mar 29, 2016 7:43:30 PM com.hazelcast.client.spi.impl.ClientMembershipListener
+}
+Mar 29, 2016 7:43:30 PM com.hazelcast.core.LifecycleService
+Mar 29, 2016 7:43:30 PM com.hazelcast.client.connection.nio.ClientConnection
+WARNING: Heartbeat failed to connection : ClientConnection{live=true, writeHandler=com.hazelcast.client.connection.nio.ClientWriteHandler@4934e36f, readHandler=com.hazelcast.client.connection.nio.ClientReadHandler@62aac949, connectionId=1, socketChannel=DefaultSocketChannelWrapper{socketChannel=java.nio.channels.SocketChannel[connected local=/172.17.0.7:41139 remote=/192.168.99.100:5701]}, remoteEndpoint=Address[172.21.0.2]:5701}

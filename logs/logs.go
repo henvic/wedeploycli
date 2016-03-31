@@ -14,9 +14,6 @@ import (
 	"github.com/launchpad-project/cli/verbose"
 )
 
-// LongPoolingPeriod is the time between retries
-const LongPoolingPeriod = time.Second
-
 // Logs structure
 type Logs struct {
 	AppName    string `json:"appName"`
@@ -30,9 +27,16 @@ type Logs struct {
 
 // Filter structure
 type Filter struct {
-	Level      int    `json:"level,omitempty"`
-	InstanceID string `json:"instanceId,omitempty"`
-	Since      string `json:"start,omitempty"`
+	Level int    `json:"level,omitempty"`
+	Since string `json:"start,omitempty"`
+}
+
+// Watcher structure
+type Watcher struct {
+	Filter          *Filter
+	Paths           []string
+	PoolingInterval time.Duration
+	ticker          *time.Ticker
 }
 
 // SeverityToLevel map
@@ -43,6 +47,9 @@ var SeverityToLevel = map[string]int{
 	"info":     6,
 	"debug":    7,
 }
+
+// PoolingInterval is the time between retries
+var PoolingInterval = time.Second
 
 var outStream io.Writer = os.Stdout
 
@@ -62,7 +69,7 @@ func GetLevel(severityOrLevel string) (int, error) {
 }
 
 // GetList logs
-func GetList(filter Filter, paths ...string) []Logs {
+func GetList(filter *Filter, paths ...string) []Logs {
 	var list []Logs
 	var req = apihelper.URL("/api/logs/" + strings.Join(paths, "/"))
 
@@ -76,27 +83,45 @@ func GetList(filter Filter, paths ...string) []Logs {
 }
 
 // List logs
-func List(filter Filter, paths ...string) {
+func List(filter *Filter, paths ...string) {
 	var list = GetList(filter, paths...)
 	printList(list)
 }
 
 // Watch logs
-func Watch(filter Filter, paths ...string) {
+func Watch(watcher *Watcher) {
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
+	watcher.Start()
+
 	go func() {
 		<-sigs
 		done <- true
-		fmt.Println()
-		os.Exit(0)
+		fmt.Fprintln(outStream, "")
+		watcher.Stop()
 	}()
 
-	watch(filter, paths...)
 	<-done
+}
+
+// Start for Watcher
+func (w *Watcher) Start() {
+	w.ticker = time.NewTicker(w.PoolingInterval)
+
+	go func() {
+		w.pool()
+		for range w.ticker.C {
+			w.pool()
+		}
+	}()
+}
+
+// Stop for Watcher
+func (w *Watcher) Stop() {
+	w.ticker.Stop()
 }
 
 func printList(list []Logs) {
@@ -105,31 +130,27 @@ func printList(list []Logs) {
 	}
 }
 
-func watch(filter Filter, paths ...string) {
-	for {
-		var list = GetList(filter, paths...)
+func (w *Watcher) pool() {
+	var list = GetList(w.Filter, w.Paths...)
 
-		printList(list)
+	printList(list)
 
-		time.Sleep(LongPoolingPeriod)
+	var length = len(list)
 
-		var length = len(list)
-
-		if length == 0 {
-			verbose.Debug("No new log since " + filter.Since)
-			continue
-		}
-
-		last := list[length-1]
-		next, err := strconv.ParseInt(last.Timestamp, 10, 0)
-
-		if err != nil {
-			panic(err)
-		}
-
-		next++
-
-		filter.Since = fmt.Sprintf("%v", next)
-		verbose.Debug("Next --since parameter value = " + filter.Since)
+	if length == 0 {
+		verbose.Debug("No new log since " + w.Filter.Since)
+		return
 	}
+
+	last := list[length-1]
+	next, err := strconv.ParseInt(last.Timestamp, 10, 0)
+
+	if err != nil {
+		panic(err)
+	}
+
+	next++
+
+	w.Filter.Since = fmt.Sprintf("%v", next)
+	verbose.Debug("Next --since parameter value = " + w.Filter.Since)
 }

@@ -1,12 +1,29 @@
 package logs
 
-import "testing"
+import (
+	"bytes"
+	"fmt"
+	"net/http"
+	"sync"
+	"syscall"
+	"testing"
+	"time"
+
+	"github.com/launchpad-project/api.go/jsonlib"
+	"github.com/launchpad-project/cli/globalconfigmock"
+	"github.com/launchpad-project/cli/servertest"
+	"github.com/launchpad-project/cli/tdata"
+)
 
 type GetLevelProvider struct {
 	in    string
 	out   int
 	valid bool
 }
+
+var (
+	bufOutStream bytes.Buffer
+)
 
 var GetLevelCases = []GetLevelProvider{
 	{"0", 0, true},
@@ -34,4 +51,168 @@ func TestGetLevel(t *testing.T) {
 				err)
 		}
 	}
+}
+
+func TestGetList(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+		tdata.ServerFileHandler("mocks/logs_response.json"))
+
+	var filter = &Filter{
+		Level: 4,
+	}
+
+	var args = []string{"foo", "nodejs5143", "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj"}
+
+	var list = GetList(filter, args...)
+
+	jsonlib.AssertJSONMarshal(t, tdata.FromFile("mocks/logs_response_ref.json"), list)
+
+	globalconfigmock.Teardown()
+	servertest.Teardown()
+}
+
+func TestList(t *testing.T) {
+	var defaultOutStream = outStream
+	outStream = &bufOutStream
+	bufOutStream.Reset()
+
+	globalconfigmock.Setup()
+	servertest.Setup()
+
+	servertest.Mux.HandleFunc("/api/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+		tdata.ServerFileHandler("mocks/logs_response.json"))
+
+	var filter = &Filter{
+		Level: 4,
+	}
+
+	var args = []string{"foo", "nodejs5143", "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj"}
+
+	List(filter, args...)
+
+	var want = tdata.FromFile("mocks/logs_response_print")
+	var got = bufOutStream.String()
+
+	if want != got {
+		t.Errorf("Wanted output stream %v, got %v instead", want, got)
+	}
+
+	outStream = defaultOutStream
+
+	globalconfigmock.Teardown()
+	servertest.Teardown()
+}
+
+func TestWatch(t *testing.T) {
+	var defaultOutStream = outStream
+	outStream = &bufOutStream
+	bufOutStream.Reset()
+
+	globalconfigmock.Setup()
+	servertest.Setup()
+
+	var missing = true
+
+	servertest.Mux.HandleFunc("/api/logs/foo/bar",
+		func(w http.ResponseWriter, r *http.Request) {
+			switch missing {
+			case true:
+				fmt.Fprintln(w, tdata.FromFile("mocks/logs_watch_response_syscall.json"))
+				missing = false
+			default:
+				fmt.Fprintln(w, "[]")
+			}
+		})
+
+	var watcher = &Watcher{
+		Filter: &Filter{Level: 4},
+		Paths: []string{
+			"foo",
+			"bar"},
+		PoolingInterval: time.Millisecond,
+	}
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+
+	go func() {
+		time.Sleep(20 * time.Millisecond)
+		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+		time.Sleep(20 * time.Millisecond)
+		wg.Done()
+	}()
+
+	Watch(watcher)
+
+	wg.Wait()
+
+	var want = tdata.FromFile("mocks/logs_watch_syscall")
+	var got = bufOutStream.String()
+
+	if want != got {
+		t.Errorf("Wanted watched data to be %v, got %v instead", want, got)
+	}
+
+	// some time before cleaning up services on other goroutines...
+	time.Sleep(10 * time.Millisecond)
+	outStream = defaultOutStream
+	globalconfigmock.Teardown()
+	servertest.Teardown()
+}
+
+func TestWatcherStart(t *testing.T) {
+	var defaultOutStream = outStream
+	outStream = &bufOutStream
+	bufOutStream.Reset()
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	var fileNum = 0
+
+	servertest.Mux.HandleFunc("/api/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+		func(w http.ResponseWriter, r *http.Request) {
+			time.Sleep(2 * time.Millisecond)
+			if fileNum < 4 {
+				fileNum++
+				log := fmt.Sprintf("%s%d%s", "mocks/logs_watch_response_", fileNum, ".json")
+				fmt.Fprintln(w, tdata.FromFile(log))
+			} else {
+				fmt.Fprintln(w, "[]")
+			}
+		})
+
+	var watcher = &Watcher{
+		Filter: &Filter{Level: 4},
+		Paths: []string{
+			"foo",
+			"nodejs5143",
+			"foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj"},
+		PoolingInterval: time.Millisecond,
+	}
+
+	done := make(chan bool, 1)
+
+	go func() {
+		watcher.Start()
+		// this sleep has to be slightly greater than pooling * requests
+		time.Sleep(60 * time.Millisecond)
+		watcher.Stop()
+		done <- true
+	}()
+
+	<-done
+
+	if bufOutStream.String() != tdata.FromFile("mocks/logs_watch") {
+		t.Errorf("Invalid captured logs watch output")
+	}
+
+	// some time before cleaning up services on other goroutines...
+	time.Sleep(10 * time.Millisecond)
+	outStream = defaultOutStream
+	servertest.Teardown()
+	globalconfigmock.Teardown()
 }

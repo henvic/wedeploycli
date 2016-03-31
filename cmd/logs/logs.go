@@ -3,6 +3,7 @@ package cmdlogs
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/launchpad-project/cli/cmdcontext"
 	"github.com/launchpad-project/cli/logs"
@@ -26,35 +27,32 @@ launchpad logs portal email email5932`,
 }
 
 func logsRun(cmd *cobra.Command, args []string) {
-	var instanceID string
-
 	c := cmdcontext.SplitArguments(args, 0, 2)
 
 	project, container, err := cmdcontext.GetProjectAndContainerID(c)
-
 	level, levelErr := logs.GetLevel(severityArg)
 
+	// 3rd argument might be instance ID
 	if err != nil || len(args) > 3 || levelErr != nil {
 		cmd.Help()
 		os.Exit(1)
 	}
 
-	if len(args) == 3 {
-		instanceID = args[2]
-	}
-
 	args[0] = project
 	args[1] = container
 
-	filter := logs.Filter{
-		Level:      level,
-		InstanceID: instanceID,
-		Since:      fmt.Sprintf("%v", sinceArg),
+	filter := &logs.Filter{
+		Level: level,
+		Since: fmt.Sprintf("%v", sinceArg),
 	}
 
 	switch followArg {
 	case true:
-		logs.Watch(filter, args...)
+		logs.Watch(&logs.Watcher{
+			Filter:          filter,
+			Paths:           args,
+			PoolingInterval: time.Second,
+		})
 	default:
 		logs.List(filter, args...)
 	}
