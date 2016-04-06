@@ -253,6 +253,18 @@ func TestURL(t *testing.T) {
 	}
 }
 
+func TestValidate(t *testing.T) {
+	var want = "Get x://localhost: unsupported protocol scheme \"x\""
+
+	r := launchpad.URL("x://localhost/")
+
+	err := Validate(r, r.Get())
+
+	if err.Error() != want {
+		t.Errorf("Wanted error to be %v, got %v instead", want, err)
+	}
+}
+
 func TestValidateOrExit(t *testing.T) {
 	var want = "Get x://localhost: unsupported protocol scheme \"x\"\n"
 	haltExitCommand = true

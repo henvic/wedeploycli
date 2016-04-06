@@ -98,9 +98,8 @@ func URL(paths ...string) *launchpad.Launchpad {
 	return launchpad.URL(csg.Get("endpoint"), paths...)
 }
 
-// ValidateOrExit validates a request or exits the process on error
-func ValidateOrExit(request *launchpad.Launchpad, err error) {
-
+// Validate validates a request and sends an error on error
+func Validate(request *launchpad.Launchpad, err error) error {
 	if request.Request == nil {
 		verbose.Debug("(wait) " + request.URL)
 	} else {
@@ -109,14 +108,23 @@ func ValidateOrExit(request *launchpad.Launchpad, err error) {
 
 	switch err {
 	case nil:
-		return
+		return nil
 	case launchpad.ErrUnexpectedResponse:
 		printHTTPError(request)
 	default:
 		fmt.Fprintln(errStream, err)
 	}
 
-	exitCommand(1)
+	return err
+}
+
+// ValidateOrExit validates a request or exits the process on error
+func ValidateOrExit(request *launchpad.Launchpad, err error) {
+	err = Validate(request, err)
+
+	if err != nil {
+		exitCommand(1)
+	}
 }
 
 func exitCommand(code int) {
