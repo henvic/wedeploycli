@@ -25,6 +25,7 @@ var CommonIgnorePatterns = []string{
 	".project",
 	".settings",
 	".idea",
+	"*.pod",
 }
 
 // Compress pod
@@ -40,6 +41,8 @@ func Compress(dest, src string, ignorePatterns []string) error {
 	if err != nil {
 		return err
 	}
+
+	verbose.Debug("Saving container to", file.Name())
 
 	var pkg = &pod{
 		Source:      src,
@@ -136,5 +139,4 @@ func copy(writer io.Writer, path, relative string) error {
 	}
 
 	return err
-
 }
