@@ -77,7 +77,7 @@ func GetList(filter *Filter, paths ...string) []Logs {
 	apihelper.ParamsFromJSON(req, filter)
 
 	apihelper.ValidateOrExit(req, req.Get())
-	apihelper.DecodeJSON(req, &list)
+	apihelper.DecodeJSONOrExit(req, &list)
 
 	return list
 }

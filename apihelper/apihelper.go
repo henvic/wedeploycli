@@ -42,8 +42,8 @@ func Auth(request *launchpad.Launchpad) {
 	request.Auth(username, password)
 }
 
-// DecodeJSON decodes a JSON response or exits the process on error
-func DecodeJSON(request *launchpad.Launchpad, data interface{}) {
+// DecodeJSON decodes a JSON response
+func DecodeJSON(request *launchpad.Launchpad, data interface{}) error {
 	body, err := ioutil.ReadAll(request.Response.Body)
 
 	if err == nil {
@@ -56,7 +56,12 @@ func DecodeJSON(request *launchpad.Launchpad, data interface{}) {
 
 	printHTTPVerbose(request, body)
 
-	if err != nil {
+	return err
+}
+
+// DecodeJSONOrExit decodes a JSON response or exits the process on error
+func DecodeJSONOrExit(request *launchpad.Launchpad, data interface{}) {
+	if err := DecodeJSON(request, data); err != nil {
 		exitCommand(1)
 	}
 }

@@ -88,7 +88,7 @@ func GetStatus(projectID, containerID string) {
 
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Get())
-	apihelper.DecodeJSON(req, &status)
+	apihelper.DecodeJSONOrExit(req, &status)
 	fmt.Fprintln(outStream, status+" ("+projectID+" "+containerID+")")
 }
 
@@ -99,7 +99,7 @@ func List(id string) {
 
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Get())
-	apihelper.DecodeJSON(req, &containers)
+	apihelper.DecodeJSONOrExit(req, &containers)
 
 	keys := make([]string, 0, len(containers))
 	for k := range containers {

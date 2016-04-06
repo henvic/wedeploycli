@@ -27,7 +27,7 @@ func GetStatus(id string) {
 
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Get())
-	apihelper.DecodeJSON(req, &status)
+	apihelper.DecodeJSONOrExit(req, &status)
 	fmt.Fprintln(outStream, status+" ("+id+")")
 }
 
@@ -38,7 +38,7 @@ func List() {
 
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Get())
-	apihelper.DecodeJSON(req, &projects)
+	apihelper.DecodeJSONOrExit(req, &projects)
 
 	for _, project := range projects {
 		fmt.Fprintln(outStream, project.ID+" ("+project.Name+")")

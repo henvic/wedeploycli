@@ -70,13 +70,63 @@ func TestDecodeJSON(t *testing.T) {
 	var wantBody = "to be written"
 	var wantComments = 30
 
+	r := URL("/posts/1")
+
+	ValidateOrExit(r, r.Get())
+	err := DecodeJSON(r, &post)
+
+	if err != nil {
+		t.Errorf("Wanted error to be nil, got %v instead", err)
+	}
+
+	if post.ID != wantID {
+		t.Errorf("Wanted Id %v, got %v instead", wantID, post.ID)
+	}
+
+	if post.Title != wantTitle {
+		t.Errorf("Wanted Title %v, got %v instead", wantTitle, post.Title)
+	}
+
+	if post.Body != wantBody {
+		t.Errorf("Wanted Body %v, got %v instead", wantBody, post.Body)
+	}
+
+	if post.Comments != wantComments {
+		t.Errorf("Wanted Comments %v, got %v instead", wantComments, post.Comments)
+	}
+
+	if bufErrStream.Len() != 0 {
+		t.Errorf("Unexpected content written to err stream: %v", bufErrStream.String())
+	}
+}
+
+func TestDecodeJSONOrExit(t *testing.T) {
+	servertest.Setup()
+	defer servertest.Teardown()
+
+	servertest.Mux.HandleFunc("/posts/1", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{
+    "id": "1234",
+    "title": "once upon a time",
+    "body": "to be written",
+    "comments": 30
+}`)
+	})
+
+	var post postMock
+
+	var wantID = "1234"
+	var wantTitle = "once upon a time"
+	var wantBody = "to be written"
+	var wantComments = 30
+
 	haltExitCommand = true
 	bufErrStream.Reset()
 
 	r := URL("/posts/1")
 
 	ValidateOrExit(r, r.Get())
-	DecodeJSON(r, &post)
+	DecodeJSONOrExit(r, &post)
 
 	if post.ID != wantID {
 		t.Errorf("Wanted Id %v, got %v instead", wantID, post.ID)
@@ -101,7 +151,7 @@ func TestDecodeJSON(t *testing.T) {
 	haltExitCommand = false
 }
 
-func TestDecodeJSONFailure(t *testing.T) {
+func TestDecodeJSONOrExitFailure(t *testing.T) {
 	servertest.Setup()
 	defer servertest.Teardown()
 
@@ -119,7 +169,7 @@ func TestDecodeJSONFailure(t *testing.T) {
 	r := URL("/posts/1/comments")
 
 	ValidateOrExit(r, r.Get())
-	DecodeJSON(r, &post)
+	DecodeJSONOrExit(r, &post)
 
 	if bufErrStream.String() != want {
 		t.Errorf("Wanted %v written to errStream, got %v instead", want, bufErrStream.String())
