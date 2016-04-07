@@ -7,6 +7,8 @@ import (
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/launchpad-project/cli/progress"
 )
 
 type FileInfo struct {
@@ -54,10 +56,11 @@ func TestCompress(t *testing.T) {
 		"!NotIgnored.md",
 	}
 
-	var err = Compress(
+	var size, err = Compress(
 		"mocks/res/compress.zip",
 		"mocks/ref",
 		ignoredList,
+		progress.New("mock"),
 	)
 
 	var minSize int64 = 500
@@ -124,7 +127,11 @@ func TestCompress(t *testing.T) {
 
 func TestCompressInvalidDestination(t *testing.T) {
 	var invalid = fmt.Sprintf("mocks/res/invalid-dest-%d/foo.pod", rand.Int())
-	var err = Compress(invalid, "mocks/ref", nil)
+	var size, err = Compress(invalid, "mocks/ref", nil, progress.New("invalid"))
+
+	if size != 0 {
+		t.Errorf("Expected size to be zero on invalid destination")
+	}
 
 	if !os.IsNotExist(err) {
 		t.Errorf("Wanted error te be due directory not found, got %v instead", err)
