@@ -145,7 +145,7 @@ func (d *Deploy) Deploy(pod string) (err error) {
 
 	if err == nil || err == launchpad.ErrUnexpectedResponse {
 		d.progress.Append = fmt.Sprintf(
-			"%d (Complete)",
+			"%s (Complete)",
 			humanize.Bytes(uint64(d.PackageSize)))
 		d.progress.Set(progress.Total)
 	}
