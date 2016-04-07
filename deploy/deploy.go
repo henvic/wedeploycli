@@ -83,7 +83,7 @@ func Only(container string, df *DeployFlags) error {
 
 	var containerHooks = deploy.Container.Hooks
 
-	if df.Hooks && containerHooks && containerHooks.BeforeDeploy != "" {
+	if df.Hooks && containerHooks != nil && containerHooks.BeforeDeploy != "" {
 		containerHooks.BeforeDeploy = "ls"
 		err = hooks.Run(containerHooks.BeforeDeploy)
 	}
@@ -92,7 +92,7 @@ func Only(container string, df *DeployFlags) error {
 		err = deploy.Only()
 	}
 
-	if err == nil && df.Hooks && containerHooks && containerHooks.AfterDeploy != "" {
+	if err == nil && df.Hooks && containerHooks != nil && containerHooks.AfterDeploy != "" {
 		err = hooks.Run(containerHooks.AfterDeploy)
 	}
 
