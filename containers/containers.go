@@ -12,6 +12,7 @@ import (
 	"github.com/launchpad-project/cli/apihelper"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/configstore"
+	"github.com/launchpad-project/cli/hooks"
 )
 
 // Containers map
@@ -19,11 +20,12 @@ type Containers map[string]*Container
 
 // Container structure
 type Container struct {
-	Template     string   `json:"template"`
-	Name         string   `json:"name"`
-	Image        string   `json:"image"`
-	ID           string   `json:"id"`
-	DeployIgnore []string `json:"deploy_ignore"`
+	Template     string       `json:"template"`
+	Name         string       `json:"name"`
+	Image        string       `json:"image"`
+	ID           string       `json:"id"`
+	Hooks        *hooks.Hooks `json:"hooks"`
+	DeployIgnore []string     `json:"deploy_ignore"`
 }
 
 var outStream io.Writer = os.Stdout

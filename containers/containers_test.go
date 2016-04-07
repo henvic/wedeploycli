@@ -43,12 +43,9 @@ func TestGetConfig(t *testing.T) {
 		t.Errorf("Wanted err to be nil, got %v instead", err)
 	}
 
-	jsonlib.AssertJSONMarshal(t, `{
-		"deploy_ignore": ["xoo", "foo"],
-		"id": "email",
-		"image": "",
-		"name": "",
-		"template": ""}`, c)
+	jsonlib.AssertJSONMarshal(t, tdata.FromFile(
+		filepath.Join(workingDir, "mocks/app/email/container_ref.json")),
+		c)
 
 	os.Chdir(workingDir)
 }

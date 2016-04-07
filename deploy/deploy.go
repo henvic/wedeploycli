@@ -15,6 +15,7 @@ import (
 	"github.com/launchpad-project/cli/apihelper"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/containers"
+	"github.com/launchpad-project/cli/hooks"
 	"github.com/launchpad-project/cli/pod"
 	"github.com/launchpad-project/cli/progress"
 	"github.com/launchpad-project/cli/verbose"
@@ -71,8 +72,19 @@ func All(list []string) (err error) {
 func Only(container string) error {
 	var deploy, err = New(container)
 
+	var containerHooks = deploy.Container.Hooks
+
+	if err == nil && containerHooks.BeforeDeploy != "" {
+		containerHooks.BeforeDeploy = "ls"
+		err = hooks.Run(containerHooks.BeforeDeploy)
+	}
+
 	if err == nil {
 		err = deploy.Only()
+	}
+
+	if err == nil && containerHooks.AfterDeploy != "" {
+		err = hooks.Run(containerHooks.AfterDeploy)
 	}
 
 	return err
