@@ -77,9 +77,13 @@ func All(list []string, df *DeployFlags) (err error) {
 func Only(container string, df *DeployFlags) error {
 	var deploy, err = New(container)
 
+	if err != nil {
+		return err
+	}
+
 	var containerHooks = deploy.Container.Hooks
 
-	if err == nil && df.Hooks && containerHooks.BeforeDeploy != "" {
+	if df.Hooks && containerHooks.BeforeDeploy != "" {
 		containerHooks.BeforeDeploy = "ls"
 		err = hooks.Run(containerHooks.BeforeDeploy)
 	}
