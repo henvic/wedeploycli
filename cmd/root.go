@@ -12,6 +12,7 @@ import (
 	cmddeploy "github.com/launchpad-project/cli/cmd/deploy"
 	cmdhooks "github.com/launchpad-project/cli/cmd/hooks"
 	cmdinfo "github.com/launchpad-project/cli/cmd/info"
+	cmdinit "github.com/launchpad-project/cli/cmd/initctx"
 	cmdlogs "github.com/launchpad-project/cli/cmd/logs"
 	cmdprojects "github.com/launchpad-project/cli/cmd/projects"
 	cmdrestart "github.com/launchpad-project/cli/cmd/restart"
@@ -75,6 +76,7 @@ func init() {
 	RootCmd.AddCommand(cmdstatus.StatusCmd)
 	RootCmd.AddCommand(cmdrestart.RestartCmd)
 	RootCmd.AddCommand(cmdhooks.BuildCmd)
+	RootCmd.AddCommand(cmdinit.InitCmd)
 	RootCmd.AddCommand(cmddeploy.DeployCmd)
 	RootCmd.AddCommand(cmdversion.VersionCmd)
 }
