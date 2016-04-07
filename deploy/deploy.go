@@ -144,7 +144,7 @@ func (d *Deploy) Deploy(pod string) (err error) {
 	}
 
 	if err == nil {
-		err = apihelper.Validate(req, req.Put())
+		err = apihelper.Validate(req, req.Post())
 	}
 
 	if err == nil || err == launchpad.ErrUnexpectedResponse {
