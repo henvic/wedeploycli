@@ -76,7 +76,7 @@ func NewContainer() error {
 		return ErrResourceExists
 	}
 
-	fmt.Println("Creating container configuration")
+	fmt.Println("Creating container")
 	c.ID = prompt.Prompt("ID")
 
 	if c.ID == "" {
@@ -115,7 +115,7 @@ func NewProject() error {
 
 	var p = &projects.Project{}
 
-	fmt.Println("Creating project configuration")
+	fmt.Println("Creating project")
 	p.ID = prompt.Prompt("ID")
 
 	if p.ID == "" {
