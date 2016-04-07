@@ -9,6 +9,7 @@ import (
 	"github.com/launchpad-project/cli/cmd/auth"
 	cmdconfig "github.com/launchpad-project/cli/cmd/config"
 	cmdcontainers "github.com/launchpad-project/cli/cmd/containers"
+	cmddeploy "github.com/launchpad-project/cli/cmd/deploy"
 	cmdhooks "github.com/launchpad-project/cli/cmd/hooks"
 	cmdinfo "github.com/launchpad-project/cli/cmd/info"
 	cmdlogs "github.com/launchpad-project/cli/cmd/logs"
@@ -74,7 +75,7 @@ func init() {
 	RootCmd.AddCommand(cmdstatus.StatusCmd)
 	RootCmd.AddCommand(cmdrestart.RestartCmd)
 	RootCmd.AddCommand(cmdhooks.BuildCmd)
-	RootCmd.AddCommand(cmdhooks.DeployCmd)
+	RootCmd.AddCommand(cmddeploy.DeployCmd)
 	RootCmd.AddCommand(cmdversion.VersionCmd)
 }
 

@@ -16,25 +16,8 @@ var BuildCmd = &cobra.Command{
 	Run:    buildRun,
 }
 
-// DeployCmd deploys the current project or container
-var DeployCmd = &cobra.Command{
-	Use:    "deploy",
-	Short:  "Deploys the current project or container",
-	PreRun: preRun,
-	Run:    deployRun,
-}
-
 func buildRun(cmd *cobra.Command, args []string) {
 	err := hooks.Build(config.Context)
-
-	if err != nil {
-		println(err.Error())
-		os.Exit(1)
-	}
-}
-
-func deployRun(cmd *cobra.Command, args []string) {
-	err := hooks.Deploy(config.Context)
 
 	if err != nil {
 		println(err.Error())
