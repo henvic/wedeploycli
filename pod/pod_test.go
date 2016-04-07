@@ -60,6 +60,13 @@ func TestCompress(t *testing.T) {
 		ignoredList,
 	)
 
+	var minSize int64 = 500
+	var maxSize int64 = 2000
+
+	if size <= minSize || size >= maxSize {
+		t.Errorf("Expected size to be around %v-%v bytes, got %v instead", minSize, maxSize, size)
+	}
+
 	if err != nil {
 		t.Errorf("Expected compress to end without errors, got %v error instead", err)
 	}
