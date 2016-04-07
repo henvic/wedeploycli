@@ -11,6 +11,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	// there is currently a hack that makes setting 100 => 99, see below
 	var defaultOutStream = progressList.Out
 	var tmp, err = ioutil.TempFile(os.TempDir(), "launchpad-cli-test")
 
@@ -28,29 +29,11 @@ func TestNew(t *testing.T) {
 		t.Errorf("Wanted name to be %v, got %v instead", wantName, bar.Name)
 	}
 
-	wantCurrent := 0
-	current := bar.Current()
+	assertProgress(t, 0, bar.Current())
 
-	if current != wantCurrent {
-		t.Errorf("Wanted bar to be %v, got %v instead", wantCurrent, current)
-	}
-
-	bar.Incr()
-	wantCurrent = 1
-	current = bar.Current()
-
-	if current != wantCurrent {
-		t.Errorf("Wanted bar to be %v, got %v instead", wantCurrent, current)
-	}
-
+	bar.Set(40)
 	bar.Reset("copying", "eta 01:00")
-
-	wantCurrent = 0
-	current = bar.Current()
-
-	if current != wantCurrent {
-		t.Errorf("Wanted bar to be %v, got %v instead", wantCurrent, current)
-	}
+	assertProgress(t, 0, bar.Current())
 
 	wantPrepend := "copying"
 	wantAppend := "eta 01:00"
@@ -63,15 +46,24 @@ func TestNew(t *testing.T) {
 		t.Errorf("Wanted append: %v, got %v instead", wantAppend, bar.Append)
 	}
 
+	bar.Set(97)
+	assertProgress(t, 97, bar.Current())
+
+	bar.Flow()
+	assertProgress(t, 98, bar.Current())
+
+	bar.Flow()
+	assertProgress(t, 99, bar.Current())
+
+	bar.Flow()
+	assertProgress(t, 0, bar.Current())
+
+	// test hack as uiprogress show = as last character when 100%
+	// and > (as in ===>) is desired
 	bar.Set(100)
-	wantCurrent = 100
-	current = bar.Current()
+	assertProgress(t, 99, bar.Current())
 
-	if current != wantCurrent {
-		t.Errorf("Wanted bar to be %v, got %v instead", wantCurrent, current)
-	}
-
-	time.Sleep(1 * time.Second)
+	time.Sleep(50 * time.Millisecond)
 
 	Stop()
 
@@ -84,4 +76,10 @@ func TestNew(t *testing.T) {
 
 	os.Remove(tmp.Name())
 	progressList.Out = defaultOutStream
+}
+
+func assertProgress(t *testing.T, want, got int) {
+	if got != want {
+		t.Errorf("Wanted bar to be %v, got %v instead", want, got)
+	}
 }

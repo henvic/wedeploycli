@@ -52,9 +52,16 @@ func (b *Bar) Current() int {
 	return b.adapter.Current()
 }
 
-// Incr increments progress bar current value by 1
-func (b *Bar) Incr() bool {
-	return b.adapter.Incr()
+// Flow repeats flowing the progress bar from begin to end continuously
+func (b *Bar) Flow() {
+	var current = b.Current()
+	var next = current + 1
+
+	if current >= Total-1 {
+		next = 0
+	}
+
+	b.Set(next)
 }
 
 // Reset progress bar and reset its prepend and append messages
@@ -66,6 +73,11 @@ func (b *Bar) Reset(msgPrepend, msgAppend string) error {
 
 // Set progress bar position
 func (b *Bar) Set(n int) error {
+	// hack to show => even when complete
+	if n == 100 {
+		n = 99
+	}
+
 	return b.adapter.Set(n)
 }
 
