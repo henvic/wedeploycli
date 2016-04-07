@@ -36,7 +36,10 @@ var CommonIgnorePatterns = []string{
 }
 
 // Compress pod
-func Compress(dest, src string, ignorePatterns []string, pb *progress.Bar) (int64, error) {
+func Compress(dest,
+	src string,
+	ignorePatterns []string,
+	pb *progress.Bar) (int64, error) {
 	var file *os.File
 	var size int64
 
