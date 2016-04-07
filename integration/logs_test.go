@@ -60,13 +60,13 @@ func TestWatch(t *testing.T) {
 	wg.Add(1)
 
 	go func() {
-		time.Sleep(60 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 
 		if err := syscall.Kill(c.Process.Pid, syscall.SIGINT); err != nil {
 			panic(err)
 		}
 
-		time.Sleep(60 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 
 		if !c.ProcessState.Exited() {
 			t.Error("Expected process to be gone.")
