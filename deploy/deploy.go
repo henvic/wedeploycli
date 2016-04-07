@@ -125,7 +125,7 @@ func Zip(dest, container string) error {
 // Deploy POD to Launchpad
 func (d *Deploy) Deploy(pod string) (err error) {
 	var projectID = config.Stores["project"].Get("id")
-	var u = path.Join("push", projectID, d.Container.ID)
+	var u = path.Join("api/push", projectID, d.Container.ID)
 	var req = apihelper.URL(u)
 	var file io.Reader
 
