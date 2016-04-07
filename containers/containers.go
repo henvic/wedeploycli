@@ -20,12 +20,12 @@ type Containers map[string]*Container
 
 // Container structure
 type Container struct {
-	Template     string       `json:"template"`
-	Name         string       `json:"name"`
-	Image        string       `json:"image"`
 	ID           string       `json:"id"`
-	Hooks        *hooks.Hooks `json:"hooks"`
-	DeployIgnore []string     `json:"deploy_ignore"`
+	Name         string       `json:"name"`
+	Bootstrap    string       `json:"bootstrap"`
+	Type         string       `json:"type,omitempty"`
+	Hooks        *hooks.Hooks `json:"hooks,omitempty"`
+	DeployIgnore []string     `json:"deploy_ignore,omitempty"`
 }
 
 var outStream io.Writer = os.Stdout

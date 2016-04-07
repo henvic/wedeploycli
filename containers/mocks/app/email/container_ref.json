@@ -1,8 +1,7 @@
 {
     "id": "email",
-    "image": "",
+    "bootstrap": "",
     "name": "",
-    "template": "",
     "hooks": {
         "before_build": "",
         "build": "",

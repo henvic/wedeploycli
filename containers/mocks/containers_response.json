@@ -1,6 +1,6 @@
 {
   "search7606": {
-    "template": "cloudsearch",
+    "type": "cloudsearch",
     "basePath": "\/search",
     "instances": [
       {
@@ -15,7 +15,7 @@
     "maxInstances": 5
   },
   "nodejs5143": {
-    "template": "nodejs",
+    "type": "nodejs",
     "basePath": "\/nodejs",
     "instances": [
       {

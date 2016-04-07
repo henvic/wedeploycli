@@ -10,12 +10,10 @@ import (
 
 // Project structure
 type Project struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	ID          string   `json:"id"`
-	OwnerID     string   `json:"ownerId"`
-	URL         string   `json:"url"`
-	Users       []string `json:"users"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Domain      string `json:"domain"`
+	Description string `json:"description,omitempty"`
 }
 
 var outStream io.Writer = os.Stdout

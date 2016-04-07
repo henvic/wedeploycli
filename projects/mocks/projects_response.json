@@ -7,7 +7,7 @@
     "name": "Image Server",
     "containers": {
       "search7606": {
-        "template": "cloudsearch",
+        "type": "cloudsearch",
         "basePath": "/search",
         "instances": [
           {
@@ -22,7 +22,7 @@
         "maxInstances": 5
       },
       "nodejs5143": {
-        "template": "nodejs",
+        "type": "nodejs",
         "basePath": "/nodejs",
         "instances": [
           {
@@ -38,10 +38,6 @@
       }
     },
     "state": "on",
-    "id": "images",
-    "ownerId": "147112442124908580",
-    "users": [
-      "147112442124908580"
-    ]
+    "id": "images"
   }
 ]
