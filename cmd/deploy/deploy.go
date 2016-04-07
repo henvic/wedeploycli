@@ -11,7 +11,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var output string
+var (
+	noHooks bool
+	output  string
+)
 
 // DeployCmd deploys the current project or container
 var DeployCmd = &cobra.Command{
@@ -40,7 +43,9 @@ func deployRun(cmd *cobra.Command, args []string) {
 	if err == nil {
 		progress.Start()
 		if output == "" {
-			err = deploy.All(list)
+			err = deploy.All(list, &deploy.DeployFlags{
+				Hooks: !noHooks,
+			})
 		} else {
 			err = deploy.Zip(output, list[0])
 		}
@@ -53,5 +58,6 @@ func deployRun(cmd *cobra.Command, args []string) {
 }
 
 func init() {
+	DeployCmd.Flags().BoolVar(&noHooks, "no-hooks", false, "bypass the deploy pre/pos hooks")
 	DeployCmd.Flags().StringVarP(&output, "output", "o", "", "Write to a file, instead of deploying")
 }

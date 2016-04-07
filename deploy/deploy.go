@@ -29,6 +29,11 @@ type Deploy struct {
 	progress      *progress.Bar
 }
 
+// DeployFlags modifiers
+type DeployFlags struct {
+	Hooks bool
+}
+
 // WriteCounter is a writer for writing to the progress bar
 type WriteCounter struct {
 	Total    uint64
@@ -40,7 +45,7 @@ type WriteCounter struct {
 var ErrDeploy = errors.New("Error during deploy")
 
 // All deploys a list of containers on the given context
-func All(list []string) (err error) {
+func All(list []string, df *DeployFlags) (err error) {
 	var wg sync.WaitGroup
 	var el []error
 
@@ -48,7 +53,7 @@ func All(list []string) (err error) {
 
 	for _, container := range list {
 		go func(c string) {
-			el = append(el, Only(c))
+			el = append(el, Only(c, df))
 			wg.Done()
 		}(container)
 	}
@@ -69,12 +74,12 @@ func All(list []string) (err error) {
 }
 
 // Only PODify a container and deploys it to Launchpad
-func Only(container string) error {
+func Only(container string, df *DeployFlags) error {
 	var deploy, err = New(container)
 
 	var containerHooks = deploy.Container.Hooks
 
-	if err == nil && containerHooks.BeforeDeploy != "" {
+	if err == nil && df.Hooks && containerHooks.BeforeDeploy != "" {
 		containerHooks.BeforeDeploy = "ls"
 		err = hooks.Run(containerHooks.BeforeDeploy)
 	}
@@ -83,7 +88,7 @@ func Only(container string) error {
 		err = deploy.Only()
 	}
 
-	if err == nil && containerHooks.AfterDeploy != "" {
+	if err == nil && df.Hooks && containerHooks.AfterDeploy != "" {
 		err = hooks.Run(containerHooks.AfterDeploy)
 	}
 
