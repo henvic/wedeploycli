@@ -81,6 +81,25 @@ func Only(container string, df *DeployFlags) error {
 		return err
 	}
 
+	var projectID = config.Stores["project"].Get("id")
+
+	err = containers.Validate(projectID, deploy.Container.ID)
+
+	switch err {
+	case containers.ErrContainerAlreadyExists:
+		break
+	case nil:
+		err = containers.Install(projectID, deploy.Container)
+
+		if err != nil {
+			return err
+		} else {
+			fmt.Println("New container installed")
+		}
+	default:
+		return err
+	}
+
 	var containerHooks = deploy.Container.Hooks
 
 	if df.Hooks && containerHooks != nil && containerHooks.BeforeDeploy != "" {
