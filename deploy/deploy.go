@@ -18,6 +18,7 @@ import (
 	"github.com/launchpad-project/cli/hooks"
 	"github.com/launchpad-project/cli/pod"
 	"github.com/launchpad-project/cli/progress"
+	"github.com/launchpad-project/cli/projects"
 	"github.com/launchpad-project/cli/verbose"
 )
 
@@ -82,6 +83,23 @@ func Only(container string, df *DeployFlags) error {
 	}
 
 	var projectID = config.Stores["project"].Get("id")
+
+	err = projects.Validate(projectID)
+
+	switch err {
+	case projects.ErrProjectAlreadyExists:
+		break
+	case nil:
+		err = projects.Create(projectID, config.Stores["project"].Get("name"))
+
+		if err != nil {
+			return err
+		} else {
+			fmt.Println("New project created")
+		}
+	default:
+		return err
+	}
 
 	err = containers.Validate(projectID, deploy.Container.ID)
 
