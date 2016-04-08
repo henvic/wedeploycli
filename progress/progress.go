@@ -22,7 +22,7 @@ type Bar struct {
 var Total = 100
 
 // Width of standard progress bar
-var Width = 50
+var Width = 40
 
 var progressList = uiprogress.New()
 
