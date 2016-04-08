@@ -37,9 +37,15 @@ var (
 // Auth a Launchpad request with the global authentication data
 func Auth(request *launchpad.Launchpad) {
 	var csg = config.Stores["global"]
-	var username = csg.Get("username")
-	var password = csg.Get("password")
-	request.Auth(username, password)
+	var token = csg.Get("token")
+
+	if token == "" {
+		var username = csg.Get("username")
+		var password = csg.Get("password")
+		request.Auth(username, password)
+	} else {
+		request.Auth(csg.Get("token"))
+	}
 }
 
 // DecodeJSON decodes a JSON response
