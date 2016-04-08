@@ -128,6 +128,33 @@ func List(id string) {
 	fmt.Fprintln(outStream, "total", len(containers))
 }
 
+type InstallParams struct {
+	ID        string `json:"id"`
+	Bootstrap string `json:"bootstrap"`
+	Name      string `json:"name"`
+	Template  string `json:"template"`
+}
+
+func Install(projectID string, c Container) (err error) {
+	var req = apihelper.URL(path.Join("/api/projects", projectID, "containers", c.ID))
+	verbose.Debug("Installing container")
+
+	var params = &InstallParams{
+		ID:        c.ID,
+		Bootstrap: c.Bootstrap,
+		Name:      c.Name,
+		Template:  c.Template,
+	}
+
+	apihelper.Auth(req)
+
+	apihelper.ParamsFromJSON(req, params)
+
+	err = apihelper.Validate(req, req.Put())
+
+	return err
+}
+
 func GetRegistry() (registry []Register) {
 	var req = apihelper.URL("/api/registry")
 
