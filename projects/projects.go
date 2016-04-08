@@ -36,10 +36,9 @@ func Create(projectID, name string) error {
 	var req = apihelper.URL(path.Join("/api/projects"))
 	verbose.Debug("Creating project")
 
-	req.Param("id", projectID)
-	req.Param("name", name)
-
 	apihelper.Auth(req)
+	req.Form("id", projectID)
+	req.Form("name", name)
 
 	return apihelper.Validate(req, req.Post())
 }
