@@ -74,17 +74,27 @@ func Compress(dest,
 
 	err = filepath.Walk(src, pkg.walkFunc)
 
-	if err == nil {
-		pb.Set(progress.Total)
-		pb.Append = "(Complete)"
-		err = pkg.Writer.Close()
+	if err != nil {
+		return 0, err
 	}
 
-	stat, err := file.Stat()
+	pb.Set(progress.Total)
+	pb.Append = "(Complete)"
+	err = pkg.Writer.Close()
 
-	if err == nil {
-		err = file.Close()
+	if err != nil {
+		return 0, err
 	}
+
+	var stat os.FileInfo
+
+	stat, err = file.Stat()
+
+	if err != nil {
+		return 0, err
+	}
+
+	err = file.Close()
 
 	if stat != nil {
 		size = stat.Size()
