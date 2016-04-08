@@ -84,7 +84,6 @@ func Only(container string, df *DeployFlags) error {
 	var containerHooks = deploy.Container.Hooks
 
 	if df.Hooks && containerHooks != nil && containerHooks.BeforeDeploy != "" {
-		containerHooks.BeforeDeploy = "ls"
 		err = hooks.Run(containerHooks.BeforeDeploy)
 	}
 
