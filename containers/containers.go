@@ -213,7 +213,7 @@ func Validate(projectID, containerID string) (err error) {
 	apihelper.Auth(req)
 	apihelper.ParamsFromJSON(req, params)
 
-	err = apihelper.Validate(req, req.Get())
+	err = req.Get()
 
 	if err == nil {
 		return nil
