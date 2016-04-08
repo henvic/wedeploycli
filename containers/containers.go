@@ -29,7 +29,7 @@ type Container struct {
 	Name         string       `json:"name"`
 	Bootstrap    string       `json:"bootstrap"`
 	Template     string       `json:"template"`
-	Type         string       `json:"type,omitempty"`
+	Type         string       `json:"type"`
 	Hooks        *hooks.Hooks `json:"hooks,omitempty"`
 	DeployIgnore []string     `json:"deploy_ignore,omitempty"`
 }
@@ -42,6 +42,7 @@ type Register struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Template    string `json:"template"`
+	Type        string `json:"type"`
 }
 
 var (
