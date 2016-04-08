@@ -1,11 +1,17 @@
 package projects
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"path"
+	"strings"
 
+	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/apihelper"
+	"github.com/launchpad-project/cli/verbose"
 )
 
 // Project structure
@@ -16,7 +22,27 @@ type Project struct {
 	Description string `json:"description,omitempty"`
 }
 
-var outStream io.Writer = os.Stdout
+var (
+	// ErrProjectAlreadyExists happens when a Project ID already exists
+	ErrProjectAlreadyExists = errors.New("Project already exists")
+
+	// ErrInvalidProjectID happens when a Project ID is invalid
+	ErrInvalidProjectID = errors.New("Invalid project ID")
+
+	outStream io.Writer = os.Stdout
+)
+
+func Create(projectID, name string) error {
+	var req = apihelper.URL(path.Join("/api/projects"))
+	verbose.Debug("Creating project")
+
+	req.Param("id", projectID)
+	req.Param("name", name)
+
+	apihelper.Auth(req)
+
+	return apihelper.Validate(req, req.Post())
+}
 
 // GetStatus gets the status for the project
 func GetStatus(id string) {
@@ -51,4 +77,35 @@ func Restart(id string) {
 
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Post())
+}
+
+func Validate(projectID string) (err error) {
+	var req = apihelper.URL("/api/validators/project/id")
+
+	apihelper.Auth(req)
+
+	req.Param("value", projectID)
+
+	err = req.Get()
+
+	// @Everything here is to be refactored, this is a hack
+	if err == launchpad.ErrUnexpectedResponse {
+		body, err := ioutil.ReadAll(req.Response.Body)
+
+		if err != nil {
+			return err
+		}
+
+		b := string(body)
+
+		if strings.Contains(b, "invalidProjectId") {
+			return ErrInvalidProjectID
+		}
+
+		if strings.Contains(b, "projectAlreadyExists") {
+			return ErrProjectAlreadyExists
+		}
+	}
+
+	return err
 }
