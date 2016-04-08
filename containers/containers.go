@@ -29,6 +29,16 @@ type Container struct {
 }
 
 var outStream io.Writer = os.Stdout
+// Register for the container structure
+type Register struct {
+	Bootstrap   string `json:"bootstrap"`
+	Category    string `json:"category"`
+	Description string `json:"description"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Template    string `json:"template"`
+}
+
 
 // GetConfig reads the container configuration file in a given directory
 func GetConfig(dir string, c *Container) error {
@@ -116,6 +126,16 @@ func List(id string) {
 	}
 
 	fmt.Fprintln(outStream, "total", len(containers))
+}
+
+func GetRegistry() (registry []Register) {
+	var req = apihelper.URL("/api/registry")
+
+	apihelper.Auth(req)
+	apihelper.ValidateOrExit(req, req.Get())
+	apihelper.DecodeJSONOrExit(req, &registry)
+
+	return registry
 }
 
 // Restart restarts a container inside a project
