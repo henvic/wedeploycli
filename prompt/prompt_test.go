@@ -44,7 +44,31 @@ func TestIsSecretKey(t *testing.T) {
 func TestPrompt(t *testing.T) {
 	var want = "value"
 	bufInStream.Reset()
-	bufInStream.WriteString("value")
+	bufErrStream.Reset()
+	bufOutStream.Reset()
+	bufInStream.WriteString("value\n")
+
+	var u = Prompt("question")
+
+	if u != want {
+		t.Errorf("Expected prompt value %v, got %v instead", want, u)
+	}
+
+	if bufErrStream.Len() != 0 {
+		t.Error("Expected error stream to be empty")
+	}
+
+	if bufOutStream.String() != "question: " {
+		t.Error("Unexpected output stream")
+	}
+}
+
+func TestPromptWithSpace(t *testing.T) {
+	var want = "my value"
+	bufInStream.Reset()
+	bufErrStream.Reset()
+	bufOutStream.Reset()
+	bufInStream.WriteString("my value\n")
 
 	var u = Prompt("question")
 

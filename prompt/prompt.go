@@ -1,6 +1,7 @@
 package prompt
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -32,8 +33,6 @@ func isSecretKey(key string) bool {
 // Prompt returns a prompt to receive the value of a parameter.
 // If the key is on a secret keys list it suppresses the feedback.
 func Prompt(param string) string {
-	var value string
-
 	if isSecretKey(param) {
 		value, err := speakeasy.Ask(param + ": ")
 
@@ -44,7 +43,11 @@ func Prompt(param string) string {
 		return value
 	}
 
+	reader := bufio.NewReader(inStream)
 	fmt.Fprintf(outStream, param+": ")
-	fmt.Fscanf(inStream, "%s\n", &value)
+	var value, _ = reader.ReadString('\n')
+
+	value = strings.TrimSpace(value)
+
 	return value
 }
