@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/launchpad-project/cli/config"
@@ -76,16 +77,44 @@ func NewContainer() error {
 		return ErrResourceExists
 	}
 
-	fmt.Println("Creating container")
-	c.ID = prompt.Prompt("ID")
+	var registry = containers.GetRegistry()
 
-	if c.ID == "" {
-		return ErrInvalidID
+	fmt.Println("Please choose an option to create a container")
+
+	for pos, r := range registry {
+		fmt.Fprintf(os.Stdout, "%d) %s\n", pos+1, r.Name)
 	}
 
-	c.Name = prompt.Prompt("Name")
+	var option = prompt.Prompt(fmt.Sprintf("\nSelect from 1..%d", len(registry)))
+
+	var index int
+
+	index, err = strconv.Atoi(option)
+
+	index--
+
+	if err != nil || index < 0 || index > len(registry) {
+		return errors.New("Invalid option")
+	}
+
+	var reg = registry[index]
+
+	c.ID = prompt.Prompt("ID [default: " + reg.ID + "]")
+
+	if c.ID == "" {
+		c.ID = reg.ID
+	}
+
+	c.Name = prompt.Prompt("Name [default: " + reg.Name + "]")
+
+	if c.Name == "" {
+		c.Name = reg.Name
+	}
 
 	bin, err = json.MarshalIndent(c, "", "    ")
+
+	c.Bootstrap = reg.Bootstrap
+	c.Template = reg.Template
 
 	if err != nil {
 		return err
