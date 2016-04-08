@@ -2,17 +2,22 @@ package containers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
+	"strings"
 
+	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/apihelper"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/configstore"
 	"github.com/launchpad-project/cli/hooks"
+	"github.com/launchpad-project/cli/verbose"
 )
 
 // Containers map
@@ -29,7 +34,6 @@ type Container struct {
 	DeployIgnore []string     `json:"deploy_ignore,omitempty"`
 }
 
-var outStream io.Writer = os.Stdout
 // Register for the container structure
 type Register struct {
 	Bootstrap   string `json:"bootstrap"`
@@ -40,6 +44,15 @@ type Register struct {
 	Template    string `json:"template"`
 }
 
+var (
+	// ErrContainerAlreadyExists happens when a container ID already exists
+	ErrContainerAlreadyExists = errors.New("Container already exists")
+
+	// ErrInvalidContainerID happens when a container ID is invalid
+	ErrInvalidContainerID = errors.New("Invalid container ID")
+
+	outStream io.Writer = os.Stdout
+)
 
 // GetConfig reads the container configuration file in a given directory
 func GetConfig(dir string, c *Container) error {
@@ -172,4 +185,48 @@ func Restart(projectID, containerID string) {
 
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Post())
+}
+
+type ValidateParams struct {
+	ProjectID string `json:"projectId"`
+	Value     string `json:"value"`
+}
+
+func Validate(projectID, containerID string) (err error) {
+	var req = apihelper.URL("/api/validators/containers/id")
+
+	var params = &ValidateParams{
+		ProjectID: projectID,
+		Value:     containerID,
+	}
+
+	apihelper.Auth(req)
+	apihelper.ParamsFromJSON(req, params)
+
+	err = apihelper.Validate(req, req.Get())
+
+	if err == nil {
+		return nil
+	}
+
+	// @Everything here is to be refactored, this is a hack
+	if err == launchpad.ErrUnexpectedResponse {
+		body, err := ioutil.ReadAll(req.Response.Body)
+
+		if err != nil {
+			return err
+		}
+
+		b := string(body)
+
+		if strings.Contains(b, "invalidContainerId") {
+			return ErrInvalidContainerID
+		}
+
+		if strings.Contains(b, "containerAlreadyExists") {
+			return ErrContainerAlreadyExists
+		}
+	}
+
+	return err
 }
