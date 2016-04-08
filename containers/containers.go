@@ -1,6 +1,7 @@
 package containers
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -161,9 +162,17 @@ func Install(projectID string, c Container) (err error) {
 		Template:  c.Template,
 	}
 
+	var b []byte
+
+	b, err = json.Marshal(params)
+
+	if err != nil {
+		return err
+	}
+
 	apihelper.Auth(req)
 
-	apihelper.ParamsFromJSON(req, params)
+	req.Body(bytes.NewReader(b))
 
 	err = apihelper.Validate(req, req.Put())
 
