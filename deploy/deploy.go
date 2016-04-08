@@ -105,6 +105,7 @@ func Only(container string, df *DeployFlags) error {
 
 	switch err {
 	case containers.ErrContainerAlreadyExists:
+		err = nil
 		break
 	case nil:
 		err = containers.Install(projectID, deploy.Container)
