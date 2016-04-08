@@ -111,10 +111,10 @@ func NewContainer() error {
 		c.Name = reg.Name
 	}
 
-	bin, err = json.MarshalIndent(c, "", "    ")
-
 	c.Bootstrap = reg.Bootstrap
 	c.Template = reg.Template
+
+	bin, err = json.MarshalIndent(c, "", "    ")
 
 	if err != nil {
 		return err
