@@ -23,6 +23,7 @@ type Container struct {
 	ID           string       `json:"id"`
 	Name         string       `json:"name"`
 	Bootstrap    string       `json:"bootstrap"`
+	Template     string       `json:"template"`
 	Type         string       `json:"type,omitempty"`
 	Hooks        *hooks.Hooks `json:"hooks,omitempty"`
 	DeployIgnore []string     `json:"deploy_ignore,omitempty"`
