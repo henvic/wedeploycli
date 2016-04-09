@@ -11,6 +11,7 @@ import (
 
 	"github.com/kylelemons/godebug/pretty"
 	"github.com/launchpad-project/api.go"
+	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/globalconfigmock"
 	"github.com/launchpad-project/cli/servertest"
 )
@@ -43,6 +44,22 @@ func TestAuth(t *testing.T) {
 	Auth(r)
 
 	var want = "Basic YWRtaW46c2FmZQ==" // admin:safe in base64
+	var got = r.Headers.Get("Authorization")
+
+	if want != got {
+		t.Errorf("Wrong auth header. Expected %s, got %s instead", want, got)
+	}
+}
+
+func TestAuthTokenBearer(t *testing.T) {
+	r := launchpad.URL("http://localhost/")
+
+	var csg = config.Stores["global"]
+	csg.Set("token", "mytoken")
+
+	Auth(r)
+
+	var want = "Bearer mytoken"
 	var got = r.Headers.Get("Authorization")
 
 	if want != got {
