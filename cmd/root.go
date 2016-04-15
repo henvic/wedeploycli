@@ -28,8 +28,6 @@ var WhitelistCmdsNoAuthentication = map[string]bool{
 	"logout":  true,
 	"build":   true,
 	"deploy":  true,
-	"info":    true,
-	"config":  true,
 	"update":  true,
 	"version": true,
 }
