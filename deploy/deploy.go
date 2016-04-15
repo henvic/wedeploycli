@@ -185,7 +185,7 @@ func (d *Deploy) Deploy(pod string) (err error) {
 	}
 
 	if err == nil {
-		fmt.Printf(fmt.Sprintf("Ready! %v.%v.liferay.io\n", d.Container, projectID))
+		fmt.Printf(fmt.Sprintf("Ready! %v.%v.liferay.io\n", d.Container.ID, projectID))
 	}
 
 	return err
