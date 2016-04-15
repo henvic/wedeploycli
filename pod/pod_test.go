@@ -12,9 +12,10 @@ import (
 )
 
 type FileInfo struct {
-	Name  string
-	CRC32 uint32
-	Dir   bool
+	Name    string
+	CRC32   uint32
+	Dir     bool
+	Symlink bool
 }
 
 // Reference for files and directories on mocks/ref/
@@ -24,10 +25,22 @@ var Reference = map[string]*FileInfo{
 		CRC32: 0,
 		Dir:   true,
 	},
+	"symlink_dir": &FileInfo{
+		Name:    "symlink_dir",
+		CRC32:   3131800080,
+		Dir:     false,
+		Symlink: true,
+	},
 	"dir/placeholder": &FileInfo{
 		Name:  "dir/placeholder",
 		CRC32: 258472330,
 		Dir:   false,
+	},
+	"dir/symlink_placeholder": &FileInfo{
+		Name:    "dir/symlink_placeholder",
+		CRC32:   4125531906,
+		Dir:     false,
+		Symlink: true,
 	},
 	"dir2/NotIgnored.md": &FileInfo{
 		Name:  "dir2/NotIgnored.md",
@@ -56,6 +69,10 @@ func TestCompress(t *testing.T) {
 		"!NotIgnored.md",
 	}
 
+	// clean up compress.zip that might exist
+	// to detect if it is not generated
+	os.Remove("mocks/res/compress.zip")
+
 	var size, err = Compress(
 		"mocks/res/compress.zip",
 		"mocks/ref",
@@ -78,7 +95,6 @@ func TestCompress(t *testing.T) {
 	}
 
 	r, err := zip.OpenReader("mocks/res/compress.zip")
-	defer r.Close()
 
 	if err != nil {
 		t.Errorf("Wanted no errors opening compressed file, got %v instead", err)
@@ -88,16 +104,19 @@ func TestCompress(t *testing.T) {
 
 	for _, f := range r.File {
 		found[f.Name] = &FileInfo{
-			Name:  f.Name,
-			CRC32: f.CRC32,
-			Dir:   f.FileInfo().IsDir(),
+			Name:    f.Name,
+			CRC32:   f.CRC32,
+			Dir:     f.FileInfo().IsDir(),
+			Symlink: f.Mode()&os.ModeSymlink == os.ModeSymlink,
 		}
 	}
 
 	var assertNotIgnored = []string{
 		"doc",
 		"dir/",
+		"symlink_dir",
 		"dir/placeholder",
+		"dir/symlink_placeholder",
 	}
 
 	var refuteIgnored = []string{
@@ -126,6 +145,12 @@ func TestCompress(t *testing.T) {
 			t.Errorf("Expected file %v to be ignored.", k)
 		}
 	}
+
+	r.Close()
+
+	// clean up compress.zip to avoid false positives for other
+	// tests that misses adding a detection step
+	os.Remove("mocks/res/compress.zip")
 }
 
 func TestCompressInvalidDestination(t *testing.T) {
@@ -139,4 +164,59 @@ func TestCompressInvalidDestination(t *testing.T) {
 	if !os.IsNotExist(err) {
 		t.Errorf("Wanted error te be due directory not found, got %v instead", err)
 	}
+}
+
+func BenchmarkCompress(b *testing.B) {
+	var ignoredList = []string{
+		"arch",
+		"arm",
+		"blackfin",
+		"drivers",
+		"firmware",
+		"fs",
+		"include",
+		"mips",
+		"sound",
+		"tools",
+	}
+
+	if _, err := os.Stat("mocks/benchmark/linux-4.6-rc2/"); os.IsNotExist(err) {
+		b.Skip(`Test skipped due to missing test data. To install it run
+pod/mocks/benchmark/install.sh`)
+	}
+
+	// clean up any old compress.zip that might exist
+	os.Remove("mocks/res/benchmark.zip")
+
+	var size, err = Compress(
+		"mocks/res/benchmark.zip",
+		"mocks/benchmark",
+		ignoredList,
+		progress.New("mock"),
+	)
+
+	var minSize int64 = 19000000
+	var maxSize int64 = 26000000
+
+	if size <= minSize || size >= maxSize {
+		b.Errorf("Expected size to be around %v-%v bytes, got %v instead",
+			minSize,
+			maxSize,
+			size)
+	}
+
+	if err != nil {
+		b.Errorf("Expected compress to end without errors, got %v error instead", err)
+	}
+
+	r, err := zip.OpenReader("mocks/res/benchmark.zip")
+
+	if err != nil {
+		b.Errorf("Wanted no errors opening compressed file, got %v instead", err)
+	}
+
+	r.Close()
+
+	// clean up any old compress.zip that might exist
+	os.Remove("mocks/res/benchmark.zip")
 }

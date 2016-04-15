@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/dustin/go-humanize"
 	"github.com/launchpad-project/cli/progress"
@@ -14,6 +15,7 @@ import (
 )
 
 type pod struct {
+	Dest             string
 	Source           string
 	Writer           *zip.Writer
 	NumberFiles      int
@@ -56,6 +58,7 @@ func Compress(dest,
 	verbose.Debug("Saving container to", file.Name())
 
 	var pkg = &pod{
+		Dest:        dest,
 		Source:      src,
 		Writer:      zip.NewWriter(file),
 		ignoreRules: irules,
@@ -118,7 +121,8 @@ func (p *pod) countWalkFunc(path string, fi os.FileInfo, ierr error) error {
 	}
 
 	// Pod, Jar is a .tar bomb, err... a .zip bomb!
-	if relative == "." {
+	// avoid zipping itself 'til starvation also
+	if relative == "." || relative == p.Dest {
 		return nil
 	}
 
@@ -159,7 +163,8 @@ func (p *pod) walkFunc(path string, fi os.FileInfo, ierr error) error {
 	}
 
 	// Pod, Jar is a .tar bomb, err... a .zip bomb!
-	if relative == "." {
+	// avoid zipping itself 'til starvation also
+	if relative == "." || relative == p.Dest {
 		return nil
 	}
 
@@ -209,6 +214,18 @@ func (p *pod) walkFunc(path string, fi os.FileInfo, ierr error) error {
 
 	if fi.IsDir() {
 		return nil
+	}
+
+	if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
+		var linkDest string
+
+		linkDest, err = os.Readlink(path)
+
+		if err == nil {
+			_, err = io.Copy(writer, strings.NewReader(linkDest))
+		}
+
+		return err
 	}
 
 	return copy(writer, path, relative)
