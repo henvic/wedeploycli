@@ -210,19 +210,15 @@ func (d *Deploy) Only() error {
 
 // Zip packages a POD to a .pod package
 func (d *Deploy) Zip(dest string) (err error) {
-	var c containers.Container
 	d.progress.Reset("Zipping", "")
 	dest, _ = filepath.Abs(dest)
 
-	c.DeployIgnore = append(c.DeployIgnore, pod.CommonIgnorePatterns...)
-
-	// avoid zipping itself 'til starvation
-	c.DeployIgnore = append(c.DeployIgnore, dest)
+	var ignorePatterns = append(d.Container.DeployIgnore, pod.CommonIgnorePatterns...)
 
 	d.PackageSize, err = pod.Compress(
 		dest,
 		d.ContainerPath,
-		c.DeployIgnore,
+		ignorePatterns,
 		d.progress)
 
 	if err == nil {
