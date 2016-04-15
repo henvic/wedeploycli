@@ -122,9 +122,9 @@ func GetStatus(projectID, containerID string) {
 }
 
 // List of containers of a given project
-func List(id string) {
+func List(projectID string) {
 	var containers Containers
-	var req = apihelper.URL("/api/projects/" + id + "/containers")
+	var req = apihelper.URL("/api/projects/" + projectID + "/containers")
 
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Get())
