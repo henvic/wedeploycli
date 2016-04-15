@@ -29,6 +29,7 @@ type Container struct {
 	ID           string       `json:"id"`
 	Name         string       `json:"name"`
 	Bootstrap    string       `json:"bootstrap"`
+	State        string       `json:"state"`
 	Template     string       `json:"template"`
 	Type         string       `json:"type"`
 	Hooks        *hooks.Hooks `json:"hooks,omitempty"`
@@ -138,7 +139,7 @@ func List(id string) {
 
 	for _, k := range keys {
 		container := containers[k]
-		fmt.Fprintln(outStream, container.ID+" ("+container.Name+")")
+		fmt.Fprintln(outStream, container.ID+"\t"+container.ID+"."+projectID+".liferay.io ("+container.Name+") "+container.State)
 	}
 
 	fmt.Fprintln(outStream, "total", len(containers))
