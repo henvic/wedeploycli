@@ -35,13 +35,6 @@ type DeployFlags struct {
 	Hooks bool
 }
 
-// WriteCounter is a writer for writing to the progress bar
-type WriteCounter struct {
-	Total    uint64
-	Size     uint64
-	progress *progress.Bar
-}
-
 // ErrDeploy is a generic error triggered when any deploy error happens
 var ErrDeploy = errors.New("Error during deploy")
 
@@ -168,7 +161,7 @@ func (d *Deploy) Deploy(pod string) (err error) {
 
 	apihelper.Auth(req)
 
-	w := &WriteCounter{
+	w := &writeCounter{
 		progress: d.progress,
 		Size:     uint64(d.PackageSize),
 	}
@@ -241,18 +234,7 @@ func (d *Deploy) Zip(dest string) (err error) {
 	return err
 }
 
-// Write to the progress bar
-func (wc *WriteCounter) Write(p []byte) (int, error) {
-	n := len(p)
-	wc.Total += uint64(n)
-	perc := uint64(progress.Total) * wc.Total / wc.Size
 
-	wc.progress.Append = fmt.Sprintf(
-		"%s/%s",
-		humanize.Bytes(wc.Total),
-		humanize.Bytes(wc.Size))
 
-	wc.progress.Set(int(perc))
 
-	return n, nil
 }
