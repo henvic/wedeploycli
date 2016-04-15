@@ -19,6 +19,7 @@ type Project struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Domain      string `json:"domain"`
+	State       string `json:"state"`
 	Description string `json:"description,omitempty"`
 }
 
@@ -64,7 +65,7 @@ func List() {
 	apihelper.DecodeJSONOrExit(req, &projects)
 
 	for _, project := range projects {
-		fmt.Fprintln(outStream, project.ID+" ("+project.Name+")")
+		fmt.Fprintln(outStream, project.ID+"\t"+project.ID+".liferay.io ("+project.Name+") "+project.State)
 	}
 
 	fmt.Fprintln(outStream, "total", len(projects))
