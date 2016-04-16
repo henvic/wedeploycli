@@ -48,6 +48,14 @@ func Compress(dest,
 	irules, err := ignore.CompileIgnoreLines(ignorePatterns...)
 
 	if err == nil {
+		dest, err = filepath.Abs(dest)
+	}
+
+	if err == nil {
+		src, err = filepath.Abs(src)
+	}
+
+	if err == nil {
 		file, err = os.Create(dest)
 	}
 
@@ -115,6 +123,11 @@ func (p *pod) countWalkFunc(path string, fi os.FileInfo, ierr error) error {
 	p.progress.Flow()
 
 	var relative, err = filepath.Rel(p.Source, path)
+	var abs string
+
+	if err == nil {
+		abs, err = filepath.Abs(path)
+	}
 
 	if err != nil {
 		return err
@@ -122,7 +135,7 @@ func (p *pod) countWalkFunc(path string, fi os.FileInfo, ierr error) error {
 
 	// Pod, Jar is a .tar bomb, err... a .zip bomb!
 	// avoid zipping itself 'til starvation also
-	if relative == "." || relative == p.Dest {
+	if relative == "." || abs == p.Dest {
 		return nil
 	}
 
@@ -157,6 +170,11 @@ func (p *pod) walkFunc(path string, fi os.FileInfo, ierr error) error {
 	}
 
 	var relative, err = filepath.Rel(p.Source, path)
+	var abs string
+
+	if err == nil {
+		abs, err = filepath.Abs(path)
+	}
 
 	if err != nil {
 		return err
@@ -164,7 +182,7 @@ func (p *pod) walkFunc(path string, fi os.FileInfo, ierr error) error {
 
 	// Pod, Jar is a .tar bomb, err... a .zip bomb!
 	// avoid zipping itself 'til starvation also
-	if relative == "." || relative == p.Dest {
+	if relative == "." || abs == p.Dest {
 		return nil
 	}
 

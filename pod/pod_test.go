@@ -3,6 +3,7 @@ package pod
 import (
 	"archive/zip"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"reflect"
@@ -151,6 +152,51 @@ func TestCompress(t *testing.T) {
 	// clean up compress.zip to avoid false positives for other
 	// tests that misses adding a detection step
 	os.Remove("mocks/res/compress.zip")
+}
+
+func TestNotSelfCompress(t *testing.T) {
+	d := []byte("temporary placeholder")
+	if err := ioutil.WriteFile("mocks/self/compress.zip", d, 0644); err != nil {
+		panic(err)
+	}
+
+	var _, err = Compress(
+		"mocks/self/compress.zip",
+		"mocks/self",
+		nil,
+		progress.New("mock"),
+	)
+
+	r, err := zip.OpenReader("mocks/self/compress.zip")
+
+	if err != nil {
+		t.Errorf("Wanted no errors opening compressed file, got %v instead", err)
+	}
+
+	var found = map[string]*FileInfo{}
+
+	for _, f := range r.File {
+		found[f.Name] = &FileInfo{
+			Name:    f.Name,
+			CRC32:   f.CRC32,
+			Dir:     f.FileInfo().IsDir(),
+			Symlink: f.Mode()&os.ModeSymlink == os.ModeSymlink,
+		}
+	}
+
+	if found["placeholder"] == nil {
+		t.Errorf("Expected placeholder to be found")
+	}
+
+	if found["compress.zip"] != nil {
+		t.Errorf("compress.zip should not be compressed")
+	}
+
+	r.Close()
+
+	// clean up compress.zip to avoid false positives for other
+	// tests that misses adding a detection step
+	os.Remove("mocks/self/compress.zip")
 }
 
 func TestCompressInvalidDestination(t *testing.T) {
