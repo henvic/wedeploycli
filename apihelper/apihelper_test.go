@@ -203,6 +203,7 @@ func TestParamsFromJSON(t *testing.T) {
 		LastName *string `json:"last_name,omitempty"`
 		FullName *string `json:"full_name"`
 		Friend   *string `json:"friend,omitempty"`
+		Mic      bool    `json:"mic"`
 		Age      int     `json:"age"`
 		Height   float64 `json:"height"`
 		password string
@@ -216,6 +217,7 @@ func TestParamsFromJSON(t *testing.T) {
 		Name:     "Ray",
 		FullName: &fullName,
 		Friend:   &friend,
+		Mic:      true,
 		Age:      73,
 		Height:   1.75,
 		password: "c#swift",
@@ -229,6 +231,7 @@ func TestParamsFromJSON(t *testing.T) {
 		"name":      []string{"Ray"},
 		"full_name": []string{"Ray Charles"},
 		"friend":    []string{"Gossie McKee"},
+		"mic":       []string{"true"},
 		"age":       []string{"73"},
 		"height":    []string{"1.75"},
 		"hometown":  []string{"null"},

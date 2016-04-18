@@ -115,7 +115,7 @@ func (s *Store) GetString(key string) (string, error) {
 	switch parent[subPath].(type) {
 	case nil:
 		return "null", nil
-	case string, int, int64, float64:
+	case string, int, int64, float64, bool:
 		return fmt.Sprintf("%v", parent[subPath]), nil
 	default:
 		return "", ErrConfigKeyNotLeaf

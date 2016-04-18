@@ -15,5 +15,6 @@
             }
         }
     },
-    "score": 1000
+    "score": 1000,
+    "enabled": true
 }

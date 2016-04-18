@@ -11,7 +11,7 @@ import (
 
 func assertGetString(t *testing.T, s Store, key, retVal string, retErr error) {
 	if w, err := s.GetString(key); w != retVal || err != retErr {
-		t.Errorf("Wanted <%s, %s>, got <%s %s> instead", retVal, retErr, w, err)
+		t.Errorf("Wanted <%v, %v>, got <%v %v> instead", retVal, retErr, w, err)
 	}
 }
 
@@ -124,6 +124,7 @@ func TestGetString(t *testing.T) {
 
 	assertGetString(t, s, "planet.Earth.BR.city", "Recife", nil)
 	assertGetString(t, s, "score", "1000", nil)
+	assertGetString(t, s, "enabled", "true", nil)
 	assertGetString(t, s, "sys.components", "null", nil)
 	assertGetString(t, s, "sys.missing", "", ErrConfigKeyNotFound)
 	assertGetString(t, s, "", "", ErrConfigKeyNotFound)

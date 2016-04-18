@@ -90,7 +90,7 @@ func ParamsFromJSON(request *launchpad.Launchpad, data interface{}) {
 		switch value.(type) {
 		case nil:
 			request.Param(k, "null")
-		case string, int, int64, float64:
+		case string, int, int64, float64, bool:
 			request.Param(k, fmt.Sprintf("%v", value))
 		default:
 			panic(ErrExtractingParams)
