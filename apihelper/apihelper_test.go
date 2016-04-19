@@ -212,6 +212,79 @@ func TestDecodeJSONOrExitFailure(t *testing.T) {
 	haltExitCommand = false
 }
 
+func TestEncodeJSON(t *testing.T) {
+	type simple struct {
+		Foo string `json:"foo"`
+	}
+
+	var m = &simple{
+		Foo: "bar",
+	}
+
+	var foo, err = EncodeJSON(m)
+
+	if err != nil {
+		t.Errorf("Wanted err to be nil, got %v instead", err)
+	}
+
+	var b bytes.Buffer
+	foo.WriteTo(&b)
+
+	var got = b.String()
+
+	var want = `{"foo":"bar"}`
+
+	if want != got {
+		t.Errorf("Wanted encoded JSON to be %v, got %v instead", want, got)
+	}
+}
+
+func TestEncodeJSONMap(t *testing.T) {
+	var m = map[string]string{
+		"foo": "bar",
+	}
+
+	var foo, err = EncodeJSON(m)
+
+	if err != nil {
+		t.Errorf("Wanted err to be nil, got %v instead", err)
+	}
+
+	var b bytes.Buffer
+	foo.WriteTo(&b)
+
+	var got = b.String()
+
+	var want = `{"foo":"bar"}`
+
+	if want != got {
+		t.Errorf("Wanted encoded JSON to be %v, got %v instead", want, got)
+	}
+}
+
+func TestEncodeJSONMapUnsupportedType(t *testing.T) {
+	var m = map[int]string{
+		3: "bar",
+	}
+
+	var foo, err = EncodeJSON(m)
+
+	var wantErr = "json: unsupported type: map[int]string"
+
+	if err == nil || err.Error() != wantErr {
+		t.Errorf("Wanted err to be %v, got %v instead", wantErr, wantErr)
+	}
+
+	var b bytes.Buffer
+	foo.WriteTo(&b)
+
+	var got = b.String()
+
+	if len(got) != 0 {
+		t.Errorf("Wanted unsupported JSON to have length 0, got %v instead", len(got))
+	}
+}
+
 func TestParamsFromJSON(t *testing.T) {
 	type musicianMock struct {
 		ID       int64   `json:"id"`
