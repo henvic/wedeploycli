@@ -31,6 +31,10 @@ type APIFaultError struct {
 	Message string `json:"message"`
 }
 
+func (a APIFault) Error() string {
+	return fmt.Sprintf("Launchpad API error: %v", a.Message)
+}
+
 var (
 	// ErrExtractingParams is used when query string params fail due to unrecognized type
 	ErrExtractingParams = errors.New("Can only extract query string params from flat objects")

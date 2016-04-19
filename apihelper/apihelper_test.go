@@ -73,6 +73,17 @@ func TestAuthTokenBearer(t *testing.T) {
 	}
 }
 
+func TestAPIError(t *testing.T) {
+	var e error = &APIFault{
+		Code:    404,
+		Message: "Resource Not Found",
+	}
+
+	if fmt.Sprintf("%v", e) != "Launchpad API error: Resource Not Found" {
+		t.Errorf("Error interface not implemented.")
+	}
+}
+
 func TestDecodeJSON(t *testing.T) {
 	servertest.Setup()
 	defer servertest.Teardown()
