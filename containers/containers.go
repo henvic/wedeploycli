@@ -216,6 +216,8 @@ func Validate(projectID, containerID string) (err error) {
 
 	err = req.Get()
 
+	apihelper.RequestVerboseFeedback(req)
+
 	if err == nil {
 		return nil
 	}
