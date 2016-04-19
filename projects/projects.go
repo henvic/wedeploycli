@@ -113,3 +113,25 @@ func Validate(projectID string) (err error) {
 
 	return errDoc
 }
+
+// ValidateOrCreate project
+func ValidateOrCreate(projectID, projectName string) (bool, error) {
+	var created bool
+	var err = Validate(projectID)
+
+	if err == ErrProjectAlreadyExists {
+		return false, nil
+	}
+
+	if err != nil {
+		return false, err
+	}
+
+	err = Create(projectID, projectName)
+
+	if err == nil {
+		created = true
+	}
+
+	return created, err
+}

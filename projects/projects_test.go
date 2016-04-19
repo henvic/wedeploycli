@@ -200,3 +200,77 @@ func TestValidateInvalidError(t *testing.T) {
 	servertest.Teardown()
 	globalconfigmock.Teardown()
 }
+
+func TestValidateOrCreateAlreadyExists(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/project/id",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(404)
+			fmt.Fprintf(w, tdata.FromFile("mocks/project_already_exists_response.json"))
+		})
+
+	if ok, err := ValidateOrCreate("foo", "bar"); ok != false || err != nil {
+		t.Errorf("Wanted (%v, %v), got (%v, %v) instead", nil, false, ok, err)
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
+func TestValidateOrCreateNotExists(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+	bufOutStream.Reset()
+
+	servertest.Mux.HandleFunc("/api/validators/project/id",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.FormValue("value") != "sound" {
+				t.Errorf("Wrong form value")
+			}
+		})
+
+	servertest.Mux.HandleFunc("/api/projects",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != "POST" {
+				t.Errorf("Unexpected method %v", r.Method)
+			}
+
+			if r.FormValue("id") != "sound" {
+				t.Errorf("Wrong value form value")
+			}
+
+			if r.FormValue("name") != "Sound" {
+				t.Errorf("Wrong value form value")
+			}
+		})
+
+	var ok, err = ValidateOrCreate("sound", "Sound")
+
+	if ok != true || err != nil {
+		t.Errorf("Unexpected error on Install: (%v, %v)", ok, err)
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
+func TestValidateOrCreateInvalidError(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/project/id",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(404)
+		})
+
+	var _, err = ValidateOrCreate("foo", "Foo")
+
+	if err == nil || err.Error() != "unexpected end of JSON input" {
+		t.Errorf("Expected error didn't happen")
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}

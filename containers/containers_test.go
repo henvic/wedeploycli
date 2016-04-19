@@ -231,9 +231,10 @@ func TestGetStatus(t *testing.T) {
 	bufOutStream.Reset()
 
 	var want = "on (foo bar)\n"
-	servertest.Mux.HandleFunc("/api/projects/foo/containers/bar/state", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, `"on"`)
-	})
+	servertest.Mux.HandleFunc("/api/projects/foo/containers/bar/state",
+		func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(w, `"on"`)
+		})
 
 	GetStatus("foo", "bar")
 
@@ -269,13 +270,14 @@ func TestRestart(t *testing.T) {
 	globalconfigmock.Setup()
 	bufOutStream.Reset()
 
-	servertest.Mux.HandleFunc("/api/restart/container", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.RawQuery != "projectId=foo&containerId=bar" {
-			t.Error("Wrong query parameters for restart method")
-		}
+	servertest.Mux.HandleFunc("/api/restart/container",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.RawQuery != "projectId=foo&containerId=bar" {
+				t.Error("Wrong query parameters for restart method")
+			}
 
-		fmt.Fprintf(w, `"on"`)
-	})
+			fmt.Fprintf(w, `"on"`)
+		})
 
 	Restart("foo", "bar")
 
@@ -287,15 +289,16 @@ func TestValidate(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/containers/id", func(w http.ResponseWriter, r *http.Request) {
-		if r.FormValue("projectId") != "foo" {
-			t.Errorf("Wrong projectId form value")
-		}
+	servertest.Mux.HandleFunc("/api/validators/containers/id",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.FormValue("projectId") != "foo" {
+				t.Errorf("Wrong projectId form value")
+			}
 
-		if r.FormValue("value") != "bar" {
-			t.Errorf("Wrong containerId form value")
-		}
-	})
+			if r.FormValue("value") != "bar" {
+				t.Errorf("Wrong containerId form value")
+			}
+		})
 
 	if err := Validate("foo", "bar"); err != nil {
 		t.Errorf("Wanted null error, got %v instead", err)
@@ -373,6 +376,91 @@ func TestValidateInvalidError(t *testing.T) {
 		})
 
 	var err = Validate("foo", "bar")
+
+	if err == nil || err.Error() != "unexpected end of JSON input" {
+		t.Errorf("Expected error didn't happen")
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
+func TestValidateOrCreateAlreadyExists(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/containers/id",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(404)
+			fmt.Fprintf(w, tdata.FromFile("mocks/container_already_exists_response.json"))
+		})
+
+	var c = &Container{
+		ID: "bar",
+	}
+
+	if ok, err := ValidateOrCreate("foo", c); ok != false || err != nil {
+		t.Errorf("Wanted (%v, %v), got (%v, %v) instead", nil, false, ok, err)
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
+func TestValidateOrCreateNotExists(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+	bufOutStream.Reset()
+
+	servertest.Mux.HandleFunc("/api/validators/containers/id",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.FormValue("projectId") != "sound" {
+				t.Errorf("Wrong projectId form value")
+			}
+
+			if r.FormValue("value") != "speaker" {
+				t.Errorf("Wrong containerId form value")
+			}
+		})
+
+	servertest.Mux.HandleFunc(
+		"/api/projects/sound/containers/speaker",
+		tdata.ServerHandler(""))
+
+	var c = &Container{
+		ID:        "speaker",
+		Name:      "Speaker",
+		Bootstrap: "",
+		Template:  "",
+	}
+
+	var ok, err = ValidateOrCreate("sound", c)
+
+	if ok != true || err != nil {
+		t.Errorf("Unexpected error on Install: (%v, %v)", ok, err)
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
+func TestValidateOrCreateInvalidError(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/containers/id",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(404)
+		})
+
+	var c = &Container{
+		ID:        "speaker",
+		Name:      "Speaker",
+		Bootstrap: "",
+		Template:  "",
+	}
+
+	var _, err = ValidateOrCreate("foo", c)
 
 	if err == nil || err.Error() != "unexpected end of JSON input" {
 		t.Errorf("Expected error didn't happen")

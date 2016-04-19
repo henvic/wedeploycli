@@ -219,3 +219,25 @@ func Validate(projectID, containerID string) (err error) {
 
 	return errDoc
 }
+
+// ValidateOrCreate container
+func ValidateOrCreate(projectID string, c *Container) (bool, error) {
+	var created bool
+	var err = Validate(projectID, c.ID)
+
+	if err == ErrContainerAlreadyExists {
+		return false, nil
+	}
+
+	if err != nil {
+		return false, err
+	}
+
+	err = Install(projectID, c)
+
+	if err == nil {
+		created = true
+	}
+
+	return created, err
+}
