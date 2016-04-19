@@ -180,7 +180,6 @@ func TestGetListFromScopeDirectoryNotExists(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
-	defer servertest.Teardown()
 	servertest.Setup()
 	globalconfigmock.Setup()
 	bufOutStream.Reset()
@@ -196,11 +195,11 @@ func TestList(t *testing.T) {
 		t.Errorf("Wanted %v, got %v instead", want, bufOutStream.String())
 	}
 
+	servertest.Teardown()
 	globalconfigmock.Teardown()
 }
 
 func TestGetStatus(t *testing.T) {
-	defer servertest.Teardown()
 	servertest.Setup()
 	globalconfigmock.Setup()
 	bufOutStream.Reset()
@@ -216,11 +215,11 @@ func TestGetStatus(t *testing.T) {
 		t.Errorf("Wanted %v, got %v instead", want, bufOutStream.String())
 	}
 
+	servertest.Teardown()
 	globalconfigmock.Teardown()
 }
 
 func TestRestart(t *testing.T) {
-	defer servertest.Teardown()
 	servertest.Setup()
 	globalconfigmock.Setup()
 	bufOutStream.Reset()
@@ -235,6 +234,7 @@ func TestRestart(t *testing.T) {
 
 	Restart("foo", "bar")
 
+	servertest.Teardown()
 	globalconfigmock.Teardown()
 }
 
