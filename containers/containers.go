@@ -1,7 +1,6 @@
 package containers
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -144,37 +143,23 @@ func List(projectID string) {
 	fmt.Fprintln(outStream, "total", len(containers))
 }
 
-type InstallParams struct {
-	ID        string `json:"id"`
-	Bootstrap string `json:"bootstrap"`
-	Name      string `json:"name"`
-	Template  string `json:"template"`
-}
-
-func Install(projectID string, c Container) (err error) {
+// Install container to project
+func Install(projectID string, c *Container) error {
 	var req = apihelper.URL(path.Join("/api/projects", projectID, "containers", c.ID))
-	verbose.Debug("Installing container")
-
-	var params = &InstallParams{
-		ID:        c.ID,
-		Bootstrap: c.Bootstrap,
-		Name:      c.Name,
-		Template:  c.Template,
-	}
-
-	var b []byte
-
-	b, err = json.Marshal(params)
-
-	if err != nil {
-		return err
-	}
-
 	apihelper.Auth(req)
 
-	req.Body(bytes.NewReader(b))
+	var reader, err = apihelper.EncodeJSON(map[string]string{
+		"id":        c.ID,
+		"bootstrap": c.Bootstrap,
+		"name":      c.Name,
+		"template":  c.Template,
+	})
 
-	err = apihelper.Validate(req, req.Put())
+	if err == nil {
+		req.Body(reader)
+		verbose.Debug("Installing container")
+		err = apihelper.Validate(req, req.Put())
+	}
 
 	return err
 }

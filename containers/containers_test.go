@@ -199,6 +199,32 @@ func TestList(t *testing.T) {
 	globalconfigmock.Teardown()
 }
 
+func TestInstall(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+	bufOutStream.Reset()
+
+	servertest.Mux.HandleFunc(
+		"/api/projects/sound/containers/speaker",
+		tdata.ServerHandler(""))
+
+	var c = &Container{
+		ID:        "speaker",
+		Name:      "Speaker",
+		Bootstrap: "",
+		Template:  "",
+	}
+
+	var err = Install("sound", c)
+
+	if err != nil {
+		t.Errorf("Unexpected error on Install: %v", err)
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
 func TestGetStatus(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
