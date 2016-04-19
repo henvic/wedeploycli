@@ -186,10 +186,10 @@ func TestList(t *testing.T) {
 
 	var want = tdata.FromFile("mocks/want_containers")
 
-	servertest.Mux.HandleFunc("/api/projects/123/containers",
+	servertest.Mux.HandleFunc("/api/projects/images/containers",
 		tdata.ServerFileHandler("mocks/containers_response.json"))
 
-	List("123")
+	List("images")
 
 	if bufOutStream.String() != want {
 		t.Errorf("Wanted %v, got %v instead", want, bufOutStream.String())
