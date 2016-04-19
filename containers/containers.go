@@ -28,7 +28,7 @@ type Container struct {
 	ID           string       `json:"id"`
 	Name         string       `json:"name"`
 	Bootstrap    string       `json:"bootstrap"`
-	State        string       `json:"state"`
+	State        string       `json:"state,omitempty"`
 	Template     string       `json:"template"`
 	Type         string       `json:"type"`
 	Hooks        *hooks.Hooks `json:"hooks,omitempty"`
