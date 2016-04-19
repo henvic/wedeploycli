@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/cmd/auth"
 	cmdcontainers "github.com/launchpad-project/cli/cmd/containers"
@@ -18,6 +19,7 @@ import (
 	cmdversion "github.com/launchpad-project/cli/cmd/version"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/configstore"
+	"github.com/launchpad-project/cli/run"
 	"github.com/launchpad-project/cli/verbose"
 	"github.com/spf13/cobra"
 )
@@ -62,6 +64,18 @@ func init() {
 		false,
 		"verbose output")
 
+	RootCmd.PersistentFlags().BoolVar(
+		&color.NoColor,
+		"no-color",
+		false,
+		"disable color output")
+
+	var csg = config.Stores["global"]
+
+	if csg.Get("no_color") == "true" {
+		color.NoColor = true
+	}
+
 	RootCmd.AddCommand(cmdauth.LoginCmd)
 	RootCmd.AddCommand(cmdauth.LogoutCmd)
 	RootCmd.AddCommand(cmdlogs.LogsCmd)
@@ -71,6 +85,7 @@ func init() {
 	RootCmd.AddCommand(cmdrestart.RestartCmd)
 	RootCmd.AddCommand(cmdhooks.BuildCmd)
 	RootCmd.AddCommand(cmdinit.InitCmd)
+	RootCmd.AddCommand(cmdrun.RunCmd)
 	RootCmd.AddCommand(cmddeploy.DeployCmd)
 	RootCmd.AddCommand(cmdversion.VersionCmd)
 }
