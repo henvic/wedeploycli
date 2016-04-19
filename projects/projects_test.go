@@ -24,6 +24,27 @@ func TestMain(m *testing.M) {
 	os.Exit(ec)
 }
 
+func TestCreate(t *testing.T) {
+	defer servertest.Teardown()
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/projects",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != "POST" {
+				t.Errorf("Unexpected method %v", r.Method)
+			}
+		})
+
+	err := Create("myProjectID", "myName")
+
+	if err != nil {
+		t.Errorf("Wanted err to be nil, got %v instead", err)
+	}
+
+	globalconfigmock.Teardown()
+}
+
 func TestGetStatus(t *testing.T) {
 	defer servertest.Teardown()
 	servertest.Setup()
