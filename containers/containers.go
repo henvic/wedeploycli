@@ -179,6 +179,7 @@ func Install(projectID string, c Container) (err error) {
 	return err
 }
 
+// GetRegistry gets a list of container images
 func GetRegistry() (registry []Register) {
 	var req = apihelper.URL("/api/registry")
 

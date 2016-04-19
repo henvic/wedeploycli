@@ -219,6 +219,25 @@ func TestGetStatus(t *testing.T) {
 	globalconfigmock.Teardown()
 }
 
+func TestRegistry(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+	bufOutStream.Reset()
+
+	servertest.Mux.HandleFunc(
+		"/api/registry",
+		tdata.ServerFileHandler("mocks/registry.json"))
+
+	var registry = GetRegistry()
+
+	if len(registry) != 7 {
+		t.Errorf("Expected registry to have 7 images")
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
 func TestRestart(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
