@@ -2,18 +2,24 @@ package apihelper
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
+	"github.com/fatih/color"
 	"github.com/kylelemons/godebug/pretty"
 	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/globalconfigmock"
 	"github.com/launchpad-project/cli/servertest"
+	"github.com/launchpad-project/cli/stringlib"
+	"github.com/launchpad-project/cli/tdata"
+	"github.com/launchpad-project/cli/verbose"
 )
 
 type postMock struct {
@@ -262,6 +268,367 @@ func TestParamsFromJSONFailure(t *testing.T) {
 	}()
 
 	ParamsFromJSON(req, invalid)
+}
+
+func TestParamsFromJSONInvalidSstructure(t *testing.T) {
+	var invalid = map[int]string{
+		10: "foo",
+	}
+	var req = launchpad.URL("htt://example.com/")
+
+	defer func() {
+		r := recover()
+
+		if r == nil {
+			t.Errorf("Expected panic, got nil instead")
+		}
+	}()
+
+	ParamsFromJSON(req, invalid)
+}
+
+func TestRequestVerboseFeedback(t *testing.T) {
+	var defaultVerboseEnabled = verbose.Enabled
+	var defaultVerboseErrStream = verbose.ErrStream
+	var defaultNoColor = color.NoColor
+	color.NoColor = true
+	verbose.Enabled = true
+	verbose.ErrStream = &bufErrStream
+	bufErrStream.Reset()
+
+	servertest.Setup()
+	defer servertest.Teardown()
+
+	servertest.Mux.HandleFunc("/foo", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("X-Test-Multiple", "a")
+		w.Header().Add("X-Test-Multiple", "b")
+		fmt.Fprintf(w, "Hello")
+	})
+
+	var request = URL("/foo")
+
+	request.Headers.Add("Accept", "application/json")
+	request.Headers.Add("Accept", "text/plain")
+
+	if err := request.Get(); err != nil {
+		panic(err)
+	}
+
+	RequestVerboseFeedback(request)
+
+	var got = bufErrStream.String()
+
+	var find = []string{
+		"> GET http://www.example.com/foo HTTP/1.1",
+		"Content-Type: text/plain; charset=utf-8",
+		"Accept: [application/json text/plain]",
+		"X-Test-Multiple: [a b]",
+		"Hello",
+	}
+
+	var assertionError = false
+
+	for _, want := range find {
+		if !strings.Contains(got, want) {
+			assertionError = true
+			t.Errorf("Response doesn't contain expected value %v", want)
+		}
+	}
+
+	if assertionError {
+		t.Errorf("Response is:\n%v", got)
+	}
+
+	verbose.Enabled = defaultVerboseEnabled
+	verbose.ErrStream = defaultVerboseErrStream
+	color.NoColor = defaultNoColor
+}
+
+func TestRequestVerboseFeedbackUpload(t *testing.T) {
+	var defaultVerboseEnabled = verbose.Enabled
+	var defaultVerboseErrStream = verbose.ErrStream
+	var defaultNoColor = color.NoColor
+	color.NoColor = true
+	verbose.Enabled = true
+	verbose.ErrStream = &bufErrStream
+	bufErrStream.Reset()
+
+	servertest.Setup()
+	defer servertest.Teardown()
+
+	servertest.Mux.HandleFunc("/foo", tdata.ServerHandler(""))
+
+	var request = URL("/foo")
+
+	var file, err = os.Open("mocks/config.json")
+
+	if err != nil {
+		panic(err)
+	}
+
+	request.Body(file)
+
+	if err := request.Get(); err != nil {
+		panic(err)
+	}
+
+	RequestVerboseFeedback(request)
+
+	var got = bufErrStream.String()
+
+	var find = []string{
+		"> GET http://www.example.com/foo HTTP/1.1",
+		"Sending file as request body:\nmocks/config.json",
+	}
+
+	var assertionError = false
+
+	for _, want := range find {
+		if !strings.Contains(got, want) {
+			assertionError = true
+			t.Errorf("Response doesn't contain expected value %v", want)
+		}
+	}
+
+	if assertionError {
+		t.Errorf("Response is:\n%v", got)
+	}
+
+	verbose.Enabled = defaultVerboseEnabled
+	verbose.ErrStream = defaultVerboseErrStream
+	color.NoColor = defaultNoColor
+}
+
+func TestRequestVerboseFeedbackStringReader(t *testing.T) {
+	var defaultVerboseEnabled = verbose.Enabled
+	var defaultVerboseErrStream = verbose.ErrStream
+	var defaultNoColor = color.NoColor
+	color.NoColor = true
+	verbose.Enabled = true
+	verbose.ErrStream = &bufErrStream
+	bufErrStream.Reset()
+
+	servertest.Setup()
+	defer servertest.Teardown()
+
+	servertest.Mux.HandleFunc("/foo", tdata.ServerHandler(""))
+
+	var request = URL("/foo")
+
+	request.Body(strings.NewReader("custom body"))
+
+	if err := request.Get(); err != nil {
+		panic(err)
+	}
+
+	RequestVerboseFeedback(request)
+
+	var got = bufErrStream.String()
+
+	var find = []string{
+		"> GET http://www.example.com/foo HTTP/1.1",
+		"\ncustom body\n",
+	}
+
+	var assertionError = false
+
+	for _, want := range find {
+		if !strings.Contains(got, want) {
+			assertionError = true
+			t.Errorf("Response doesn't contain expected value %v", want)
+		}
+	}
+
+	if assertionError {
+		t.Errorf("Response is:\n%v", got)
+	}
+
+	verbose.Enabled = defaultVerboseEnabled
+	verbose.ErrStream = defaultVerboseErrStream
+	color.NoColor = defaultNoColor
+}
+
+func TestRequestVerboseFeedbackBytesReader(t *testing.T) {
+	var defaultVerboseEnabled = verbose.Enabled
+	var defaultVerboseErrStream = verbose.ErrStream
+	var defaultNoColor = color.NoColor
+	color.NoColor = true
+	verbose.Enabled = true
+	verbose.ErrStream = &bufErrStream
+	bufErrStream.Reset()
+
+	servertest.Setup()
+	defer servertest.Teardown()
+
+	servertest.Mux.HandleFunc("/foo", tdata.ServerHandler(""))
+
+	var request = URL("/foo")
+
+	var sr = strings.NewReader("custom body")
+
+	var b bytes.Buffer
+	sr.WriteTo(&b)
+
+	request.Body(bytes.NewReader(b.Bytes()))
+
+	if err := request.Get(); err != nil {
+		panic(err)
+	}
+
+	RequestVerboseFeedback(request)
+
+	var got = bufErrStream.String()
+
+	var find = []string{
+		"> GET http://www.example.com/foo HTTP/1.1",
+		"\ncustom body\n",
+	}
+
+	var assertionError = false
+
+	for _, want := range find {
+		if !strings.Contains(got, want) {
+			assertionError = true
+			t.Errorf("Response doesn't contain expected value %v", want)
+		}
+	}
+
+	if assertionError {
+		t.Errorf("Response is:\n%v", got)
+	}
+
+	verbose.Enabled = defaultVerboseEnabled
+	verbose.ErrStream = defaultVerboseErrStream
+	color.NoColor = defaultNoColor
+}
+
+func TestRequestVerboseFeedbackJSONResponse(t *testing.T) {
+	var defaultVerboseEnabled = verbose.Enabled
+	var defaultVerboseErrStream = verbose.ErrStream
+	var defaultNoColor = color.NoColor
+	color.NoColor = true
+	verbose.Enabled = true
+	verbose.ErrStream = &bufErrStream
+	bufErrStream.Reset()
+
+	servertest.Setup()
+	defer servertest.Teardown()
+
+	servertest.Mux.HandleFunc("/foo", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, `{"Hello": "World"}`)
+	})
+
+	var request = URL("/foo")
+
+	type Foo struct {
+		Bar string `json:"bar"`
+	}
+
+	var foo = &Foo{Bar: "one"}
+
+	var b, err = json.Marshal(foo)
+
+	if err != nil {
+		panic(err)
+	}
+
+	request.Body(bytes.NewBuffer(b))
+
+	if err := request.Post(); err != nil {
+		panic(err)
+	}
+
+	RequestVerboseFeedback(request)
+
+	var got = bufErrStream.String()
+
+	var find = []string{
+		"> POST http://www.example.com/foo HTTP/1.1",
+		`{"bar":"one"}`,
+		"{\n    \"Hello\": \"World\"\n}",
+	}
+
+	var assertionError = false
+
+	for _, want := range find {
+		if !strings.Contains(got, want) {
+			assertionError = true
+			t.Errorf("Response doesn't contain expected value %v", want)
+		}
+	}
+
+	if assertionError {
+		t.Errorf("Response is:\n%v", got)
+	}
+
+	verbose.Enabled = defaultVerboseEnabled
+	verbose.ErrStream = defaultVerboseErrStream
+	color.NoColor = defaultNoColor
+}
+
+func TestRequestVerboseFeedbackNullResponse(t *testing.T) {
+	var defaultVerboseEnabled = verbose.Enabled
+	var defaultVerboseErrStream = verbose.ErrStream
+	var defaultNoColor = color.NoColor
+	color.NoColor = true
+	verbose.Enabled = true
+	verbose.ErrStream = &bufErrStream
+	bufErrStream.Reset()
+
+	var request = URL("/foo")
+
+	request.URL = "x://"
+
+	// this returns an error, but we are not going to validate it here and
+	// shortcut because we want to see what verbose returns
+	request.Get()
+
+	RequestVerboseFeedback(request)
+
+	var got = bufErrStream.String()
+
+	var find = []string{
+		"> GET x:// HTTP/1.1",
+		"(null response)",
+	}
+
+	var assertionError = false
+
+	for _, want := range find {
+		if !strings.Contains(got, want) {
+			assertionError = true
+			t.Errorf("Response doesn't contain expected value %v", want)
+		}
+	}
+
+	if assertionError {
+		t.Errorf("Response is:\n%v", got)
+	}
+
+	verbose.Enabled = defaultVerboseEnabled
+	verbose.ErrStream = defaultVerboseErrStream
+	color.NoColor = defaultNoColor
+}
+
+func TestRequestVerboseFeedbackNotComplete(t *testing.T) {
+	var defaultVerboseEnabled = verbose.Enabled
+	var defaultVerboseErrStream = verbose.ErrStream
+	var defaultNoColor = color.NoColor
+	color.NoColor = true
+	verbose.Enabled = true
+	verbose.ErrStream = &bufErrStream
+	bufErrStream.Reset()
+
+	RequestVerboseFeedback(URL("/foo"))
+
+	stringlib.AssertSimilar(t,
+		"> (wait) http://www.example.com/foo",
+		bufErrStream.String())
+
+	verbose.Enabled = defaultVerboseEnabled
+	verbose.ErrStream = defaultVerboseErrStream
+	color.NoColor = defaultNoColor
 }
 
 func TestURL(t *testing.T) {

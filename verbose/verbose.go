@@ -10,12 +10,13 @@ var (
 	// Enabled flag
 	Enabled = false
 
-	errStream io.Writer = os.Stderr
+	// ErrStream is the stream for errors
+	ErrStream io.Writer = os.Stderr
 )
 
 // Debug prints verbose messages to stderr on verbose mode
 func Debug(a ...interface{}) {
 	if Enabled {
-		fmt.Fprintln(errStream, a...)
+		fmt.Fprintln(ErrStream, a...)
 	}
 }

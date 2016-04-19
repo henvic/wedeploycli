@@ -1,13 +1,18 @@
 package apihelper
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
+	"reflect"
+	"strings"
 
+	"github.com/fatih/color"
 	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/verbose"
@@ -60,8 +65,6 @@ func DecodeJSON(request *launchpad.Launchpad, data interface{}) error {
 		fmt.Fprintln(errStream, err)
 	}
 
-	printHTTPVerbose(request, body)
-
 	return err
 }
 
@@ -98,6 +101,56 @@ func ParamsFromJSON(request *launchpad.Launchpad, data interface{}) {
 	}
 }
 
+// RequestVerboseFeedback prints to the verbose err stream info about request
+func RequestVerboseFeedback(request *launchpad.Launchpad) {
+	if !verbose.Enabled {
+		return
+	}
+
+	if request.Request == nil {
+		verbose.Debug(">", color.RedString("(wait)"), request.URL)
+		return
+	}
+
+	verbose.Debug(">",
+		color.BlueString(request.Request.Method),
+		color.YellowString(request.URL),
+		color.BlueString(request.Request.Proto))
+
+	for h, r := range request.Headers {
+		if len(r) == 1 {
+			verbose.Debug(color.BlueString(h)+color.RedString(":"), color.YellowString(r[0]))
+		} else {
+			verbose.Debug(color.BlueString(h)+color.RedString(":"), r)
+		}
+	}
+
+	feedbackRequestBody(request)
+
+	verbose.Debug("\n")
+
+	if request.Response == nil {
+		verbose.Debug(color.RedString("(null response)"))
+		return
+	}
+
+	verbose.Debug("<",
+		color.BlueString(request.Response.Proto),
+		color.RedString(request.Response.Status))
+
+	for h, r := range request.Response.Header {
+		if len(r) == 1 {
+			verbose.Debug(color.BlueString(h)+color.RedString(":"), color.YellowString(r[0]))
+		} else {
+			verbose.Debug(color.BlueString(h)+color.RedString(":"), r)
+		}
+	}
+
+	verbose.Debug("")
+
+	feedbackResponseBody(request.Response)
+}
+
 // URL creates a Launchpad URL instance
 func URL(paths ...string) *launchpad.Launchpad {
 	var csg = config.Stores["global"]
@@ -106,11 +159,7 @@ func URL(paths ...string) *launchpad.Launchpad {
 
 // Validate validates a request and sends an error on error
 func Validate(request *launchpad.Launchpad, err error) error {
-	if request.Request == nil {
-		verbose.Debug("(wait) " + request.URL)
-	} else {
-		verbose.Debug(request.Request.Method + " " + request.URL)
-	}
+	RequestVerboseFeedback(request)
 
 	switch err {
 	case nil:
@@ -139,6 +188,65 @@ func exitCommand(code int) {
 	}
 }
 
+func feedbackRequestBody(request *launchpad.Launchpad) {
+	var body = request.RequestBody
+
+	if body != nil {
+		verbose.Debug("")
+	}
+
+	switch body.(type) {
+	case nil:
+	case *os.File:
+		var fr = body.(*os.File)
+		verbose.Debug(
+			color.MagentaString("Sending file as request body:\n%v", fr.Name()))
+	case *bytes.Buffer:
+		verbose.Debug(fmt.Sprintf("\n%s", body.(*bytes.Buffer)))
+	case *bytes.Reader:
+		var br = body.(*bytes.Reader)
+		var b bytes.Buffer
+		br.Seek(0, 0)
+		br.WriteTo(&b)
+		verbose.Debug("\n" + b.String())
+	case *strings.Reader:
+		var sr = body.(*strings.Reader)
+		var b bytes.Buffer
+		sr.Seek(0, 0)
+		sr.WriteTo(&b)
+		verbose.Debug("\n" + (b.String()))
+	default:
+		verbose.Debug("\n", color.RedString(
+			"(request body: "+reflect.TypeOf(body).String()+")"),
+		)
+	}
+}
+
+func feedbackResponseBody(response *http.Response) {
+	var body, err = ioutil.ReadAll(response.Body)
+	var out bytes.Buffer
+
+	if err != nil {
+		verbose.Debug("Error reading response body")
+		verbose.Debug(err)
+		return
+	}
+
+	response.Body = ioutil.NopCloser(bytes.NewReader(body))
+
+	if strings.Contains(
+		response.Header.Get("Content-Type"),
+		"application/json") {
+		err = json.Indent(&out, body, "", "    ")
+	}
+
+	if out.Len() == 0 {
+		out.Write(body)
+	}
+
+	verbose.Debug(color.MagentaString(out.String()) + "\n")
+}
+
 func printErrorList(list []APIFaultError) {
 	if list != nil {
 		for _, value := range list {
@@ -164,9 +272,4 @@ func printHTTPError(request *launchpad.Launchpad) {
 	}
 
 	printErrorList(af.Errors)
-	printHTTPVerbose(request, body)
-}
-
-func printHTTPVerbose(request *launchpad.Launchpad, body []byte) {
-	verbose.Debug("Response Body:\n" + string(body))
 }

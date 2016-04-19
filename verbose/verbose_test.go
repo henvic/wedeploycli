@@ -9,10 +9,10 @@ import (
 var bufErrStream bytes.Buffer
 
 func TestMain(m *testing.M) {
-	var defaultErrStream = errStream
-	errStream = &bufErrStream
+	var defaultErrStream = ErrStream
+	ErrStream = &bufErrStream
 	ec := m.Run()
-	errStream = defaultErrStream
+	ErrStream = defaultErrStream
 	os.Exit(ec)
 }
 
