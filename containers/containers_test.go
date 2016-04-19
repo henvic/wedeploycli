@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/launchpad-project/api.go/jsonlib"
+	"github.com/launchpad-project/cli/apihelper"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/globalconfigmock"
 	"github.com/launchpad-project/cli/servertest"
@@ -234,5 +235,104 @@ func TestRestart(t *testing.T) {
 
 	Restart("foo", "bar")
 
+	globalconfigmock.Teardown()
+}
+
+func TestValidate(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/containers/id", func(w http.ResponseWriter, r *http.Request) {
+		if r.FormValue("projectId") != "foo" {
+			t.Errorf("Wrong projectId form value")
+		}
+
+		if r.FormValue("value") != "bar" {
+			t.Errorf("Wrong containerId form value")
+		}
+	})
+
+	if err := Validate("foo", "bar"); err != nil {
+		t.Errorf("Wanted null error, got %v instead", err)
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
+func TestValidateAlreadyExists(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/containers/id",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(404)
+			fmt.Fprintf(w, tdata.FromFile("mocks/container_already_exists_response.json"))
+		})
+
+	if err := Validate("foo", "bar"); err != ErrContainerAlreadyExists {
+		t.Errorf("Wanted %v error, got %v instead", ErrContainerAlreadyExists, err)
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
+func TestValidateInvalidID(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/containers/id",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(404)
+			fmt.Fprintf(w, tdata.FromFile("mocks/container_invalid_id_response.json"))
+		})
+
+	if err := Validate("foo", "bar"); err != ErrInvalidContainerID {
+		t.Errorf("Wanted %v error, got %v instead", ErrInvalidContainerID, err)
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
+func TestValidateError(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/containers/id",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(400)
+			fmt.Fprintf(w, tdata.FromFile("../apihelper/mocks/unknown_error_api_response.json"))
+		})
+
+	var err = Validate("foo", "bar")
+
+	switch err.(type) {
+	case apihelper.APIFault:
+	default:
+		t.Errorf("Wanted error to be apihelper.APIFault, got %v instead", err)
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
+func TestValidateInvalidError(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/containers/id",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(404)
+		})
+
+	var err = Validate("foo", "bar")
+
+	if err == nil || err.Error() != "unexpected end of JSON input" {
+		t.Errorf("Expected error didn't happen")
+	}
+
+	servertest.Teardown()
 	globalconfigmock.Teardown()
 }

@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/launchpad-project/cli/apihelper"
 	"github.com/launchpad-project/cli/globalconfigmock"
 	"github.com/launchpad-project/cli/servertest"
 	"github.com/launchpad-project/cli/tdata"
@@ -102,5 +103,100 @@ func TestRestart(t *testing.T) {
 
 	Restart("foo")
 
+	globalconfigmock.Teardown()
+}
+
+func TestValidate(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/project/id", func(w http.ResponseWriter, r *http.Request) {
+		if r.FormValue("value") != "foo" {
+			t.Errorf("Wrong value form value")
+		}
+	})
+
+	if err := Validate("foo"); err != nil {
+		t.Errorf("Wanted null error, got %v instead", err)
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
+func TestValidateAlreadyExists(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/project/id",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(404)
+			fmt.Fprintf(w, tdata.FromFile("mocks/project_already_exists_response.json"))
+		})
+
+	if err := Validate("foo"); err != ErrProjectAlreadyExists {
+		t.Errorf("Wanted %v error, got %v instead", ErrProjectAlreadyExists, err)
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
+func TestValidateInvalidID(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/project/id",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(404)
+			fmt.Fprintf(w, tdata.FromFile("mocks/project_invalid_id_response.json"))
+		})
+
+	if err := Validate("foo"); err != ErrInvalidProjectID {
+		t.Errorf("Wanted %v error, got %v instead", ErrInvalidProjectID, err)
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
+func TestValidateError(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/project/id",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(400)
+			fmt.Fprintf(w, tdata.FromFile("../apihelper/mocks/unknown_error_api_response.json"))
+		})
+
+	var err = Validate("foo")
+
+	switch err.(type) {
+	case apihelper.APIFault:
+	default:
+		t.Errorf("Wanted error to be apihelper.APIFault, got %v instead", err)
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
+func TestValidateInvalidError(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/project/id",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(404)
+		})
+
+	var err = Validate("foo")
+
+	if err == nil || err.Error() != "unexpected end of JSON input" {
+		t.Errorf("Expected error didn't happen")
+	}
+
+	servertest.Teardown()
 	globalconfigmock.Teardown()
 }

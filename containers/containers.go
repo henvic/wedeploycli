@@ -11,7 +11,6 @@ import (
 	"path"
 	"path/filepath"
 	"sort"
-	"strings"
 
 	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/apihelper"
@@ -198,49 +197,39 @@ func Restart(projectID, containerID string) {
 	apihelper.ValidateOrExit(req, req.Post())
 }
 
-type ValidateParams struct {
-	ProjectID string `json:"projectId"`
-	Value     string `json:"value"`
-}
-
 // Validate container
 func Validate(projectID, containerID string) (err error) {
 	var req = apihelper.URL("/api/validators/containers/id")
 
-	var params = &ValidateParams{
-		ProjectID: projectID,
-		Value:     containerID,
-	}
-
 	apihelper.Auth(req)
-	apihelper.ParamsFromJSON(req, params)
+
+	req.Param("projectId", projectID)
+	req.Param("value", containerID)
 
 	err = req.Get()
 
 	apihelper.RequestVerboseFeedback(req)
 
-	if err == nil {
-		return nil
+	if err == nil || err != launchpad.ErrUnexpectedResponse {
+		return err
 	}
 
-	// @Everything here is to be refactored, this is a hack
-	if err == launchpad.ErrUnexpectedResponse {
-		body, err := ioutil.ReadAll(req.Response.Body)
+	var errDoc apihelper.APIFault
 
-		if err != nil {
-			return err
-		}
+	err = apihelper.DecodeJSON(req, &errDoc)
 
-		b := string(body)
+	if err != nil {
+		return err
+	}
 
-		if strings.Contains(b, "invalidContainerId") {
+	for _, ed := range errDoc.Errors {
+		switch ed.Reason {
+		case "invalidContainerId":
 			return ErrInvalidContainerID
-		}
-
-		if strings.Contains(b, "containerAlreadyExists") {
+		case "containerAlreadyExists":
 			return ErrContainerAlreadyExists
 		}
 	}
 
-	return err
+	return errDoc
 }

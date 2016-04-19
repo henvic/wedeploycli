@@ -4,10 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
-	"strings"
 
 	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/apihelper"
@@ -89,24 +87,28 @@ func Validate(projectID string) (err error) {
 
 	err = req.Get()
 
-	// @Everything here is to be refactored, this is a hack
-	if err == launchpad.ErrUnexpectedResponse {
-		body, err := ioutil.ReadAll(req.Response.Body)
+	apihelper.RequestVerboseFeedback(req)
 
-		if err != nil {
-			return err
-		}
+	if err == nil || err != launchpad.ErrUnexpectedResponse {
+		return err
+	}
 
-		b := string(body)
+	var errDoc apihelper.APIFault
 
-		if strings.Contains(b, "invalidProjectId") {
+	err = apihelper.DecodeJSON(req, &errDoc)
+
+	if err != nil {
+		return err
+	}
+
+	for _, ed := range errDoc.Errors {
+		switch ed.Reason {
+		case "invalidProjectId":
 			return ErrInvalidProjectID
-		}
-
-		if strings.Contains(b, "projectAlreadyExists") {
+		case "projectAlreadyExists":
 			return ErrProjectAlreadyExists
 		}
 	}
 
-	return err
+	return errDoc
 }
