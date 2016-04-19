@@ -31,6 +31,7 @@ var (
 	outStream io.Writer = os.Stdout
 )
 
+// Create new project
 func Create(projectID, name string) error {
 	var req = apihelper.URL(path.Join("/api/projects"))
 	verbose.Debug("Creating project")
