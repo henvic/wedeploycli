@@ -79,6 +79,7 @@ func Restart(id string) {
 	apihelper.ValidateOrExit(req, req.Post())
 }
 
+// Validate project
 func Validate(projectID string) (err error) {
 	var req = apihelper.URL("/api/validators/project/id")
 

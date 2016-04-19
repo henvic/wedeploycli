@@ -203,6 +203,7 @@ type ValidateParams struct {
 	Value     string `json:"value"`
 }
 
+// Validate container
 func Validate(projectID, containerID string) (err error) {
 	var req = apihelper.URL("/api/validators/containers/id")
 
