@@ -65,16 +65,13 @@ func DecodeJSON(request *launchpad.Launchpad, data interface{}) error {
 		err = json.Unmarshal(body, &data)
 	}
 
-	if err != nil {
-		fmt.Fprintln(errStream, err)
-	}
-
 	return err
 }
 
 // DecodeJSONOrExit decodes a JSON response or exits the process on error
 func DecodeJSONOrExit(request *launchpad.Launchpad, data interface{}) {
 	if err := DecodeJSON(request, data); err != nil {
+		fmt.Fprintln(errStream, err)
 		exitCommand(1)
 	}
 }
