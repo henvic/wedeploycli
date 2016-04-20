@@ -38,16 +38,30 @@ type DeployFlags struct {
 // ErrDeploy is a generic error triggered when any deploy error happens
 var ErrDeploy = errors.New("Error during deploy")
 
+// Errors list
+type Errors struct {
+	List map[string]error
+}
+
+func (de Errors) Error() string {
+	return fmt.Sprintf("Deploy error: %v", de.List)
+}
+
 // All deploys a list of containers on the given context
-func All(list []string, df *DeployFlags) (err error) {
+func All(list []string, df *Flags) (err error) {
 	var wg sync.WaitGroup
-	var el []error
+	var de = &Errors{}
 
 	wg.Add(len(list))
 
 	for _, container := range list {
 		go func(c string) {
-			el = append(el, Only(c, df))
+			var err = Only(c, df)
+
+			if err != nil {
+				de.List[container] = err
+			}
+
 			wg.Done()
 		}(container)
 	}
@@ -55,13 +69,12 @@ func All(list []string, df *DeployFlags) (err error) {
 	wg.Wait()
 	progress.Stop()
 
-	for _, e := range el {
-		if e == nil {
-			continue
-		}
-
+	for _, e := range de.List {
 		println(e.Error())
-		err = ErrDeploy
+	}
+
+	if len(de.List) != 0 {
+		err = de
 	}
 
 	return err
