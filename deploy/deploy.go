@@ -90,56 +90,29 @@ func Only(container string, df *Flags) error {
 
 	var projectID = config.Stores["project"].Get("id")
 
-	err = projects.Validate(projectID)
+	created, err := projects.ValidateOrCreate(
+		projectID,
+		config.Stores["project"].Get("name"))
 
-	switch err {
-	case projects.ErrProjectAlreadyExists:
-		break
-	case nil:
-		err = projects.Create(projectID, config.Stores["project"].Get("name"))
+	if created {
+		fmt.Println("New project created")
+	}
 
-		if err != nil {
-			return err
-		} else {
-			fmt.Println("New project created")
-		}
-	default:
+	if err != nil {
 		return err
 	}
 
-	err = containers.Validate(projectID, deploy.Container.ID)
+	created, err = containers.ValidateOrCreate(projectID, deploy.Container)
 
-	switch err {
-	case containers.ErrContainerAlreadyExists:
-		err = nil
-		break
-	case nil:
-		err = containers.Install(projectID, deploy.Container)
+	if created {
+		fmt.Println("New container created")
+	}
 
-		if err != nil {
-			return err
-		} else {
-			fmt.Println("New container installed")
-		}
-	default:
+	if err != nil {
 		return err
 	}
 
-	var containerHooks = deploy.Container.Hooks
-
-	if df.Hooks && containerHooks != nil && containerHooks.BeforeDeploy != "" {
-		err = hooks.Run(containerHooks.BeforeDeploy)
-	}
-
-	if err == nil {
-		err = deploy.Only()
-	}
-
-	if err == nil && df.Hooks && containerHooks != nil && containerHooks.AfterDeploy != "" {
-		err = hooks.Run(containerHooks.AfterDeploy)
-	}
-
-	return err
+	return runDeploy(deploy, df)
 }
 
 // New Deploy instance
@@ -249,7 +222,20 @@ func (d *Deploy) Zip(dest string) (err error) {
 	return err
 }
 
+func runDeploy(deploy *Deploy, df *Flags) (err error) {
+	var ch = deploy.Container.Hooks
 
+	if df.Hooks && ch != nil && ch.BeforeDeploy != "" {
+		err = hooks.Run(ch.BeforeDeploy)
+	}
 
+	if err == nil {
+		err = deploy.Only()
+	}
 
+	if err == nil && df.Hooks && ch != nil && ch.AfterDeploy != "" {
+		err = hooks.Run(ch.AfterDeploy)
+	}
+
+	return err
 }
