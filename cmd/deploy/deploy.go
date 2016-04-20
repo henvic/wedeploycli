@@ -43,7 +43,7 @@ func deployRun(cmd *cobra.Command, args []string) {
 	if err == nil {
 		progress.Start()
 		if output == "" {
-			err = deploy.All(list, &deploy.DeployFlags{
+			err = deploy.All(list, &deploy.Flags{
 				Hooks: !noHooks,
 			})
 		} else {

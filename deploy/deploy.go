@@ -30,8 +30,8 @@ type Deploy struct {
 	progress      *progress.Bar
 }
 
-// DeployFlags modifiers
-type DeployFlags struct {
+// Flags modifiers
+type Flags struct {
 	Hooks bool
 }
 
@@ -81,7 +81,7 @@ func All(list []string, df *Flags) (err error) {
 }
 
 // Only PODify a container and deploys it to Launchpad
-func Only(container string, df *DeployFlags) error {
+func Only(container string, df *Flags) error {
 	var deploy, err = New(container)
 
 	if err != nil {
