@@ -61,3 +61,22 @@ func TestNewErrorContainerNotFound(t *testing.T) {
 	config.Teardown()
 	os.Chdir(workingDir)
 }
+
+func TestZip(t *testing.T) {
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
+		t.Error(err)
+	}
+
+	config.Setup()
+
+	var err = Zip(os.DevNull, "mycontainer")
+
+	if err != nil {
+		t.Errorf("Unexpected zipping error: %v", err)
+	}
+
+	config.Teardown()
+	os.Chdir(workingDir)
+}
