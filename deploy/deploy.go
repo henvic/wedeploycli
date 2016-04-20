@@ -24,7 +24,7 @@ import (
 
 // Deploy holds the information of a POD to be zipped or deployed
 type Deploy struct {
-	Container     containers.Container
+	Container     *containers.Container
 	ContainerPath string
 	PackageSize   int64
 	progress      *progress.Bar
@@ -149,7 +149,13 @@ func New(container string) (*Deploy, error) {
 		progress:      progress.New(container),
 	}
 
-	var err = containers.GetConfig(deploy.ContainerPath, &deploy.Container)
+	var c containers.Container
+	var err = containers.GetConfig(deploy.ContainerPath, &c)
+	deploy.Container = &c
+
+	if err != nil {
+		return nil, err
+	}
 
 	return deploy, err
 }
