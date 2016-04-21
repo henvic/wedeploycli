@@ -1,10 +1,12 @@
 package deploy
 
 import (
+	"crypto/sha1"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"os"
 	"path"
 	"path/filepath"
@@ -30,18 +32,22 @@ type Deploy struct {
 	progress      *progress.Bar
 }
 
+// Errors list
+type Errors struct {
+	List map[string]error
+}
+
 // Flags modifiers
 type Flags struct {
 	Hooks bool
 }
 
-// ErrDeploy is a generic error triggered when any deploy error happens
-var ErrDeploy = errors.New("Error during deploy")
+var (
+	// ErrDeploy is a generic error triggered when any deploy error happens
+	ErrDeploy = errors.New("Error during deploy")
 
-// Errors list
-type Errors struct {
-	List map[string]error
-}
+	outStream io.Writer = os.Stdout
+)
 
 func (de Errors) Error() string {
 	return fmt.Sprintf("Deploy error: %v", de.List)
@@ -50,7 +56,9 @@ func (de Errors) Error() string {
 // All deploys a list of containers on the given context
 func All(list []string, df *Flags) (err error) {
 	var wg sync.WaitGroup
-	var de = &Errors{}
+	var de = &Errors{
+		List: map[string]error{},
+	}
 
 	wg.Add(len(list))
 
@@ -95,7 +103,7 @@ func Only(container string, df *Flags) error {
 		config.Stores["project"].Get("name"))
 
 	if created {
-		fmt.Println("New project created")
+		fmt.Fprintln(outStream, "New project created")
 	}
 
 	if err != nil {
@@ -105,7 +113,7 @@ func Only(container string, df *Flags) error {
 	created, err = containers.ValidateOrCreate(projectID, deploy.Container)
 
 	if created {
-		fmt.Println("New container created")
+		fmt.Fprintln(outStream, "New container created")
 	}
 
 	if err != nil {
@@ -145,39 +153,72 @@ func Zip(dest, container string) error {
 }
 
 // Deploy POD to Launchpad
-func (d *Deploy) Deploy(pod string) (err error) {
+func (d *Deploy) Deploy(src string) error {
 	var projectID = config.Stores["project"].Get("id")
 	var u = path.Join("api/push", projectID, d.Container.ID)
 	var req = apihelper.URL(u)
-	var file io.Reader
+	var fileInfo os.FileInfo
 
 	apihelper.Auth(req)
 
-	w := &writeCounter{
+	var file, err = os.Open(src)
+
+	if err != nil {
+		return err
+	}
+
+	fileInfo, err = file.Stat()
+
+	if err != nil {
+		return err
+	}
+
+	var packageSize = fileInfo.Size()
+
+	var wc = &writeCounter{
 		progress: d.progress,
-		Size:     uint64(d.PackageSize),
+		Size:     uint64(packageSize),
 	}
 
 	d.progress.Reset("Uploading", "")
-	file, err = os.Open(pod)
 
-	if err == nil {
-		req.Body(io.TeeReader(file, w))
+	var hash, esha1 = getPackageSHA1(file)
+
+	if esha1 != nil {
+		return esha1
 	}
 
-	if err == nil {
-		err = apihelper.Validate(req, req.Post())
+	req.Header("Launchpad-Package-Size", fmt.Sprintf("%d", packageSize))
+	req.Header("Launchpad-Package-SHA1", hash)
+
+	var r, w = io.Pipe()
+	var mpw = multipart.NewWriter(w)
+
+	var errMultipartChan = make(chan error, 1)
+
+	go func() {
+		errMultipartChan <- multipartWriter(mpw, w, file, wc)
+		close(errMultipartChan)
+	}()
+
+	req.Body(r)
+	req.Headers.Set("Content-Type", mpw.FormDataContentType())
+
+	err = apihelper.Validate(req, req.Post())
+
+	if errMultipart := <-errMultipartChan; errMultipart != nil {
+		return errMultipart
 	}
 
 	if err == nil || err == launchpad.ErrUnexpectedResponse {
 		d.progress.Append = fmt.Sprintf(
 			"%s (Complete)",
-			humanize.Bytes(uint64(d.PackageSize)))
+			humanize.Bytes(uint64(packageSize)))
 		d.progress.Set(progress.Total)
 	}
 
 	if err == nil {
-		fmt.Printf(fmt.Sprintf("Ready! %v.%v.liferay.io\n", d.Container.ID, projectID))
+		fmt.Fprintf(outStream, "Ready! %v.%v.liferay.io\n", d.Container.ID, projectID)
 	}
 
 	return err
@@ -185,7 +226,7 @@ func (d *Deploy) Deploy(pod string) (err error) {
 
 // Only PODify a container and deploys it to Launchpad
 func (d *Deploy) Only() error {
-	tmp, err := ioutil.TempFile(os.TempDir(), "launchpad-cli")
+	var tmp, err = ioutil.TempFile(os.TempDir(), "launchpad-cli")
 
 	err = d.Zip(tmp.Name())
 
@@ -207,7 +248,7 @@ func (d *Deploy) Zip(dest string) (err error) {
 
 	var ignorePatterns = append(d.Container.DeployIgnore, pod.CommonIgnorePatterns...)
 
-	d.PackageSize, err = pod.Compress(
+	_, err = pod.Compress(
 		dest,
 		d.ContainerPath,
 		ignorePatterns,
@@ -220,6 +261,23 @@ func (d *Deploy) Zip(dest string) (err error) {
 	verbose.Debug("Saving container to", dest)
 
 	return err
+}
+
+func getPackageSHA1(file *os.File) (string, error) {
+	var hash = sha1.New()
+	var _, err = io.Copy(hash, file)
+
+	if err != nil {
+		return "", err
+	}
+
+	_, err = file.Seek(0, 0)
+
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", hash.Sum(nil)), err
 }
 
 func runDeploy(deploy *Deploy, df *Flags) (err error) {
@@ -238,4 +296,25 @@ func runDeploy(deploy *Deploy, df *Flags) (err error) {
 	}
 
 	return err
+}
+
+func multipartWriter(
+	mpw *multipart.Writer,
+	w io.WriteCloser,
+	file *os.File,
+	wc *writeCounter) (err error) {
+	var part io.Writer
+	defer w.Close()
+	defer file.Close()
+
+	if part, err = mpw.CreateFormFile("pod", "container.pod"); err != nil {
+		return err
+	}
+
+	part = io.MultiWriter(part, wc)
+	if _, err = io.Copy(part, file); err != nil {
+		return err
+	}
+
+	return mpw.Close()
 }
