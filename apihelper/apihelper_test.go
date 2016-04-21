@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -566,6 +567,59 @@ func TestRequestVerboseFeedbackBytesReader(t *testing.T) {
 	var find = []string{
 		"> GET http://www.example.com/foo HTTP/1.1",
 		"\ncustom body\n",
+	}
+
+	var assertionError = false
+
+	for _, want := range find {
+		if !strings.Contains(got, want) {
+			assertionError = true
+			t.Errorf("Response doesn't contain expected value %v", want)
+		}
+	}
+
+	if assertionError {
+		t.Errorf("Response is:\n%v", got)
+	}
+
+	verbose.Enabled = defaultVerboseEnabled
+	verbose.ErrStream = defaultVerboseErrStream
+	color.NoColor = defaultNoColor
+}
+
+func TestRequestVerboseFeedbackOtherReader(t *testing.T) {
+	var defaultVerboseEnabled = verbose.Enabled
+	var defaultVerboseErrStream = verbose.ErrStream
+	var defaultNoColor = color.NoColor
+	color.NoColor = true
+	verbose.Enabled = true
+	verbose.ErrStream = &bufErrStream
+	bufErrStream.Reset()
+
+	servertest.Setup()
+	defer servertest.Teardown()
+
+	servertest.Mux.HandleFunc("/foo", tdata.ServerHandler(""))
+
+	var request = URL("/foo")
+
+	var body = strings.NewReader("custom body")
+
+	var b = &bytes.Buffer{}
+
+	request.Body(io.TeeReader(body, b))
+
+	if err := request.Get(); err != nil {
+		panic(err)
+	}
+
+	RequestVerboseFeedback(request)
+
+	var got = bufErrStream.String()
+
+	var find = []string{
+		"> GET http://www.example.com/foo HTTP/1.1",
+		"\n(request body: *io.teeReader)\n",
 	}
 
 	var assertionError = false

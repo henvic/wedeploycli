@@ -224,7 +224,7 @@ func feedbackRequestBody(request *launchpad.Launchpad) {
 		sr.WriteTo(&b)
 		verbose.Debug("\n" + (b.String()))
 	default:
-		verbose.Debug("\n", color.RedString(
+		verbose.Debug("\n" + color.RedString(
 			"(request body: "+reflect.TypeOf(body).String()+")"),
 		)
 	}
