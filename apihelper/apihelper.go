@@ -245,7 +245,9 @@ func feedbackResponseBody(response *http.Response) {
 	if strings.Contains(
 		response.Header.Get("Content-Type"),
 		"application/json") {
-		err = json.Indent(&out, body, "", "    ")
+		if err := json.Indent(&out, body, "", "    "); err != nil {
+			println(err)
+		}
 	}
 
 	if out.Len() == 0 {
