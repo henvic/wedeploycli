@@ -36,6 +36,9 @@ func (a APIFault) Error() string {
 }
 
 var (
+	// ErrInvalidContentType is used when the content-type is not application/json
+	ErrInvalidContentType = errors.New("Can only decode data for application/json")
+
 	// ErrExtractingParams is used when query string params fail due to unrecognized type
 	ErrExtractingParams = errors.New("Can only extract query string params from flat objects")
 
@@ -59,7 +62,14 @@ func Auth(request *launchpad.Launchpad) {
 
 // DecodeJSON decodes a JSON response
 func DecodeJSON(request *launchpad.Launchpad, data interface{}) error {
-	body, err := ioutil.ReadAll(request.Response.Body)
+	var response = request.Response
+	var contentType = response.Header.Get("Content-Type")
+
+	if !strings.Contains(contentType, "application/json") {
+		return ErrInvalidContentType
+	}
+
+	body, err := ioutil.ReadAll(response.Body)
 
 	if err == nil {
 		err = json.Unmarshal(body, &data)

@@ -90,6 +90,7 @@ func TestDecodeJSON(t *testing.T) {
 	defer servertest.Teardown()
 
 	servertest.Mux.HandleFunc("/posts/1", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-type", "application/json; charset=UTF-8")
 		fmt.Fprintf(w, `{
     "id": "1234",
     "title": "once upon a time",
@@ -135,11 +136,38 @@ func TestDecodeJSON(t *testing.T) {
 	}
 }
 
+func TestDecodeJSONInvalidContentType(t *testing.T) {
+	servertest.Setup()
+	defer servertest.Teardown()
+
+	servertest.Mux.HandleFunc("/posts/1", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{
+    "id": "1234",
+    "title": "once upon a time",
+    "body": "to be written",
+    "comments": 30
+}`)
+	})
+
+	var post postMock
+
+	r := URL("/posts/1")
+
+	ValidateOrExit(r, r.Get())
+	err := DecodeJSON(r, &post)
+
+	if err != ErrInvalidContentType {
+		t.Errorf("Wanted error to be %v, got %v instead", ErrInvalidContentType, err)
+
+	}
+}
+
 func TestDecodeJSONOrExit(t *testing.T) {
 	servertest.Setup()
 	defer servertest.Teardown()
 
 	servertest.Mux.HandleFunc("/posts/1", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-type", "application/json; charset=UTF-8")
 		fmt.Fprintf(w, `{
     "id": "1234",
     "title": "once upon a time",
@@ -191,6 +219,7 @@ func TestDecodeJSONOrExitFailure(t *testing.T) {
 	defer servertest.Teardown()
 
 	servertest.Mux.HandleFunc("/posts/1/comments", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-type", "application/json; charset=UTF-8")
 		fmt.Fprintf(w, `[1234, 2010]`)
 	})
 
