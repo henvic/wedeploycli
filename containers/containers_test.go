@@ -187,7 +187,7 @@ func TestList(t *testing.T) {
 	var want = tdata.FromFile("mocks/want_containers")
 
 	servertest.Mux.HandleFunc("/api/projects/images/containers",
-		tdata.ServerFileHandler("mocks/containers_response.json"))
+		tdata.ServerJSONFileHandler("mocks/containers_response.json"))
 
 	List("images")
 
@@ -253,7 +253,7 @@ func TestRegistry(t *testing.T) {
 
 	servertest.Mux.HandleFunc(
 		"/api/registry",
-		tdata.ServerFileHandler("mocks/registry.json"))
+		tdata.ServerJSONFileHandler("mocks/registry.json"))
 
 	var registry = GetRegistry()
 

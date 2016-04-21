@@ -76,7 +76,7 @@ func TestList(t *testing.T) {
 
 	servertest.Mux.HandleFunc(
 		"/api/projects",
-		tdata.ServerFileHandler("mocks/projects_response.json"))
+		tdata.ServerJSONFileHandler("mocks/projects_response.json"))
 
 	List()
 

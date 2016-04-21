@@ -59,7 +59,7 @@ func TestGetList(t *testing.T) {
 	globalconfigmock.Setup()
 
 	servertest.Mux.HandleFunc("/api/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
-		tdata.ServerFileHandler("mocks/logs_response.json"))
+		tdata.ServerJSONFileHandler("mocks/logs_response.json"))
 
 	var filter = &Filter{
 		Level: 4,
@@ -84,7 +84,7 @@ func TestList(t *testing.T) {
 	servertest.Setup()
 
 	servertest.Mux.HandleFunc("/api/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
-		tdata.ServerFileHandler("mocks/logs_response.json"))
+		tdata.ServerJSONFileHandler("mocks/logs_response.json"))
 
 	var filter = &Filter{
 		Level: 4,

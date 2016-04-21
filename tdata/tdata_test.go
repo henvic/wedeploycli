@@ -9,12 +9,13 @@ import (
 )
 
 type ResponseWriterMock struct {
-	Want string
-	Test *testing.T
+	Want    string
+	Test    *testing.T
+	Headers http.Header
 }
 
-func (*ResponseWriterMock) Header() http.Header {
-	return nil
+func (r *ResponseWriterMock) Header() http.Header {
+	return r.Headers
 }
 
 func (r *ResponseWriterMock) Write(c []byte) (int, error) {
@@ -66,4 +67,21 @@ func TestServerFileHandler(t *testing.T) {
 	mock.Want = "this is a mock\n"
 	mock.Test = t
 	handler(mock, nil)
+}
+
+func TestServerJSONFileHandler(t *testing.T) {
+	var handler = ServerJSONFileHandler("mocks/mock")
+	var mock = &ResponseWriterMock{
+		Headers: http.Header{},
+	}
+	mock.Want = "this is a mock\n"
+	mock.Test = t
+	handler(mock, nil)
+
+	var want = "application/json; charset=UTF-8"
+	var got = mock.Headers.Get("Content-Type")
+
+	if got != want {
+		t.Errorf("Wanted Content-Type %v, got %v instead", want, got)
+	}
 }

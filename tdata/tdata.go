@@ -30,3 +30,11 @@ func ServerFileHandler(filename string) func(w http.ResponseWriter, r *http.Requ
 		fmt.Fprintf(w, FromFile(filename))
 	}
 }
+
+// ServerJSONFileHandler serves static JSON content from a file
+func ServerJSONFileHandler(filename string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-type", "application/json; charset=UTF-8")
+		fmt.Fprintf(w, FromFile(filename))
+	}
+}
