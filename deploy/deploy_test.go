@@ -195,3 +195,68 @@ func TestDeployFileNotFound(t *testing.T) {
 	config.Teardown()
 	os.Chdir(workingDir)
 }
+
+func TestDeployOnly(t *testing.T) {
+	var defaultOutStream = outStream
+	var bufOutStream bytes.Buffer
+	outStream = &bufOutStream
+	servertest.Setup()
+	var workingDir, _ = os.Getwd()
+	var tmp, _ = ioutil.TempFile(os.TempDir(), "launchpad-cli")
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
+		t.Error(err)
+	}
+
+	config.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/push/project/container",
+		func(w http.ResponseWriter, r *http.Request) {
+			var mf, _, err = r.FormFile("pod")
+
+			if err != nil {
+				t.Error(err)
+			}
+
+			var hash = sha1.New()
+
+			var _, eh = io.Copy(hash, mf)
+
+			if eh != nil {
+				t.Error(eh)
+			}
+
+			var gotSHA1Header = r.Header.Get("Launchpad-Package-SHA1")
+			var gotSHA1 = fmt.Sprintf("%x", hash.Sum(nil))
+
+			if gotSHA1 != gotSHA1Header {
+				t.Errorf("SHA1 from package doesn't match SHA1 from header.")
+			}
+		})
+
+	var deploy, err = New("mycontainer")
+
+	if err != nil {
+		t.Errorf("Expected New error to be null, got %v instead", err)
+	}
+
+	err = deploy.Only()
+
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	var wantFeedback = "Ready! container.project.liferay.io\n"
+
+	if bufOutStream.String() != wantFeedback {
+		t.Errorf("Wanted feedback %v, got %v instead", wantFeedback, bufOutStream.String())
+	}
+
+	os.Remove(tmp.Name())
+	globalconfigmock.Teardown()
+	config.Teardown()
+	os.Chdir(workingDir)
+	servertest.Teardown()
+	outStream = defaultOutStream
+}
