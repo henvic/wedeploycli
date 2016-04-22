@@ -115,7 +115,7 @@ func Only(container string, df *Flags) error {
 		config.Stores["project"].Get("name"))
 
 	if created {
-		fmt.Fprintln(outStream, "New project created")
+		fmt.Fprintf(outStream, "New project %v created\n", projectID)
 	}
 
 	if err != nil {
@@ -125,7 +125,7 @@ func Only(container string, df *Flags) error {
 	created, err = containers.ValidateOrCreate(projectID, deploy.Container)
 
 	if created {
-		fmt.Fprintln(outStream, "New container created")
+		fmt.Fprintf(outStream, "New container %v created\n", deploy.Container.ID)
 	}
 
 	if err != nil {
