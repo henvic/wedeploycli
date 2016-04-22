@@ -135,10 +135,10 @@ func Only(container string, df *Flags) error {
 }
 
 // New Deploy instance
-func New(container string) (*Deploy, error) {
+func New(cpath string) (*Deploy, error) {
 	var deploy = &Deploy{
-		ContainerPath: path.Join(config.Context.ProjectRoot, container),
-		progress:      progress.New(container),
+		ContainerPath: path.Join(config.Context.ProjectRoot, cpath),
+		progress:      progress.New(cpath),
 	}
 
 	var c containers.Container
@@ -153,8 +153,8 @@ func New(container string) (*Deploy, error) {
 }
 
 // Zip packages a POD to a .pod package
-func Zip(dest, container string) error {
-	var deploy, err = New(container)
+func Zip(dest, cpath string) error {
+	var deploy, err = New(cpath)
 
 	if err == nil {
 		err = deploy.Zip(dest)
