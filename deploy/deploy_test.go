@@ -28,7 +28,7 @@ func TestErrors(t *testing.T) {
 	var want = "Deploy error: map[foo:file already exists]"
 
 	if fmt.Sprintf("%v", e) != want {
-		t.Errorf("Wanted error %v, got %v instead.", e, want)
+		t.Errorf("Wanted error %v, got %v instead.", want, e)
 	}
 }
 
