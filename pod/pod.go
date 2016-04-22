@@ -254,7 +254,7 @@ func miniPath(s string) string {
 		return s
 	}
 
-	return "..." + s[len(s)-22:len(s)]
+	return "..." + s[len(s)-22:]
 }
 
 func verboseCopyInfo(relative string, file *os.File) {

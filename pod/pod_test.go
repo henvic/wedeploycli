@@ -21,39 +21,39 @@ type FileInfo struct {
 
 // Reference for files and directories on mocks/ref/
 var Reference = map[string]*FileInfo{
-	"dir/": &FileInfo{
+	"dir/": {
 		Name:  "dir/",
 		CRC32: 0,
 		Dir:   true,
 	},
-	"symlink_dir": &FileInfo{
+	"symlink_dir": {
 		Name:    "symlink_dir",
 		CRC32:   3131800080,
 		Dir:     false,
 		Symlink: true,
 	},
-	"dir/placeholder": &FileInfo{
+	"dir/placeholder": {
 		Name:  "dir/placeholder",
 		CRC32: 258472330,
 		Dir:   false,
 	},
-	"dir/symlink_placeholder": &FileInfo{
+	"dir/symlink_placeholder": {
 		Name:    "dir/symlink_placeholder",
 		CRC32:   4125531906,
 		Dir:     false,
 		Symlink: true,
 	},
-	"dir2/NotIgnored.md": &FileInfo{
+	"dir2/NotIgnored.md": {
 		Name:  "dir2/NotIgnored.md",
 		CRC32: 2286427926,
 		Dir:   false,
 	},
-	"doc": &FileInfo{
+	"doc": {
 		Name:  "doc",
 		CRC32: 3402152999,
 		Dir:   false,
 	},
-	"ignored": &FileInfo{
+	"ignored": {
 		Name:  "ignored",
 		CRC32: 763821341,
 		Dir:   false,
