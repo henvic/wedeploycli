@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -242,6 +243,66 @@ func TestAll(t *testing.T) {
 		})
 
 	var err = All([]string{"mycontainer"}, &Flags{})
+
+	if err != nil {
+		t.Errorf("Unexpected error %v on deploy", err)
+	}
+
+	var wantFeedback = tdata.FromFile("../deploy_feedback")
+
+	if !strings.Contains(bufOutStream.String(), wantFeedback) {
+		t.Errorf("Wanted feedback to contain %v, got %v instead", wantFeedback, bufOutStream.String())
+	}
+
+	globalconfigmock.Teardown()
+	config.Teardown()
+	os.Chdir(workingDir)
+	servertest.Teardown()
+	outStream = defaultOutStream
+}
+
+func TestAllWithHooks(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Not testing with hooks on Windows")
+	}
+
+	var defaultOutStream = outStream
+	var bufOutStream bytes.Buffer
+	outStream = &bufOutStream
+	servertest.Setup()
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
+		t.Error(err)
+	}
+
+	config.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/project/id",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/api/projects",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/api/validators/containers/id",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/api/projects/project/containers/container",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/api/push/project/container",
+		func(w http.ResponseWriter, r *http.Request) {
+			var _, _, err = r.FormFile("pod")
+
+			if err != nil {
+				t.Error(err)
+			}
+		})
+
+	var err = All([]string{"mycontainer"}, &Flags{
+		Hooks: true,
+	})
 
 	if err != nil {
 		t.Errorf("Unexpected error %v on deploy", err)
