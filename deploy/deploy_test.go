@@ -16,16 +16,25 @@ import (
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/globalconfigmock"
 	"github.com/launchpad-project/cli/servertest"
+	"github.com/launchpad-project/cli/tdata"
 )
 
 func TestErrors(t *testing.T) {
-	var e error = &Errors{
-		List: map[string]error{
-			"foo": os.ErrExist,
-		},
+	var fooe = ContainerError{
+		Container: "foo",
+		Error:     os.ErrExist,
 	}
 
-	var want = "Deploy error: map[foo:file already exists]"
+	var bare = ContainerError{
+		Container: "bar",
+		Error:     os.ErrNotExist,
+	}
+
+	var e error = Errors{
+		List: []ContainerError{fooe, bare},
+	}
+
+	var want = tdata.FromFile("mocks/test_errors")
 
 	if fmt.Sprintf("%v", e) != want {
 		t.Errorf("Wanted error %v, got %v instead.", want, e)

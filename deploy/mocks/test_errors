@@ -1,0 +1,3 @@
+List of errors (format is container: error)
+foo: file already exists
+bar: file does not exist

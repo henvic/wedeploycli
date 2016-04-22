@@ -2,7 +2,6 @@ package deploy
 
 import (
 	"crypto/sha1"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -10,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/dustin/go-humanize"
@@ -24,6 +24,12 @@ import (
 	"github.com/launchpad-project/cli/verbose"
 )
 
+// ContainerError struct
+type ContainerError struct {
+	Container string
+	Error     error
+}
+
 // Deploy holds the information of a POD to be zipped or deployed
 type Deploy struct {
 	Container     *containers.Container
@@ -34,7 +40,7 @@ type Deploy struct {
 
 // Errors list
 type Errors struct {
-	List map[string]error
+	List []ContainerError
 }
 
 // Flags modifiers
@@ -43,31 +49,41 @@ type Flags struct {
 }
 
 var (
-	// ErrDeploy is a generic error triggered when any deploy error happens
-	ErrDeploy = errors.New("Error during deploy")
-
 	outStream io.Writer = os.Stdout
 )
 
 func (de Errors) Error() string {
-	return fmt.Sprintf("Deploy error: %v", de.List)
+	var msgs = []string{}
+
+	for _, e := range de.List {
+		msgs = append(msgs, fmt.Sprintf("%v: %v", e.Container, e.Error.Error()))
+	}
+
+	return fmt.Sprintf("List of errors (format is container: error)\n%v",
+		strings.Join(msgs, "\n"))
 }
 
 // All deploys a list of containers on the given context
 func All(list []string, df *Flags) (err error) {
 	var wg sync.WaitGroup
+	var mutex sync.Mutex
 	var de = &Errors{
-		List: map[string]error{},
+		List: []ContainerError{},
 	}
 
 	wg.Add(len(list))
 
 	for _, container := range list {
-		go func(c string) {
-			var err = Only(c, df)
+		go func(container string) {
+			var err = Only(container, df)
 
 			if err != nil {
-				de.List[container] = err
+				mutex.Lock()
+				de.List = append(de.List, ContainerError{
+					Container: container,
+					Error:     err,
+				})
+				mutex.Unlock()
 			}
 
 			wg.Done()
@@ -75,10 +91,6 @@ func All(list []string, df *Flags) (err error) {
 	}
 
 	wg.Wait()
-
-	for _, e := range de.List {
-		println(e.Error())
-	}
 
 	if len(de.List) != 0 {
 		err = de
