@@ -45,6 +45,7 @@ type Errors struct {
 
 // Flags modifiers
 type Flags struct {
+	Quiet bool
 	Hooks bool
 }
 

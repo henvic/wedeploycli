@@ -13,6 +13,7 @@ import (
 
 var (
 	noHooks bool
+	quiet   bool
 	output  string
 )
 
@@ -41,15 +42,22 @@ func deployRun(cmd *cobra.Command, args []string) {
 	}
 
 	if err == nil {
-		progress.Start()
+		if !quiet {
+			progress.Start()
+		}
+
 		if output == "" {
 			err = deploy.All(list, &deploy.Flags{
 				Hooks: !noHooks,
+				Quiet: quiet,
 			})
 		} else {
 			err = deploy.Zip(output, list[0])
 		}
-		progress.Stop()
+
+		if !quiet {
+			progress.Stop()
+		}
 	}
 
 	if err != nil {
@@ -60,5 +68,6 @@ func deployRun(cmd *cobra.Command, args []string) {
 
 func init() {
 	DeployCmd.Flags().BoolVar(&noHooks, "no-hooks", false, "bypass the deploy pre/pos hooks")
+	DeployCmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "hide progress bar")
 	DeployCmd.Flags().StringVarP(&output, "output", "o", "", "Write to a file, instead of deploying")
 }
