@@ -24,6 +24,14 @@ func ServerHandler(content string) func(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
+// ServerJSONHandler serves string content as JSON
+func ServerJSONHandler(content string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-type", "application/json; charset=UTF-8")
+		fmt.Fprintf(w, content)
+	}
+}
+
 // ServerFileHandler serves static content from a file
 func ServerFileHandler(filename string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {

@@ -12,7 +12,7 @@ func TestStatusProject(t *testing.T) {
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc(
-		"/api/projects/foo/state", tdata.ServerHandler(`"on"`))
+		"/api/projects/foo/state", tdata.ServerJSONHandler(`"on"`))
 
 	var cmd = &Command{
 		Args: []string{"status", "foo"},
@@ -33,7 +33,8 @@ func TestStatusContainer(t *testing.T) {
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc(
-		"/api/projects/foo/containers/bar/state", tdata.ServerHandler(`"on"`))
+		"/api/projects/foo/containers/bar/state",
+		tdata.ServerJSONHandler(`"on"`))
 
 	var cmd = &Command{
 		Args: []string{"status", "foo", "bar"},

@@ -117,6 +117,7 @@ func TestWatch(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/api/logs/foo/bar",
 		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			switch missing {
 			case true:
 				fmt.Fprintln(w, tdata.FromFile("mocks/logs_watch_response_syscall.json"))
@@ -176,6 +177,7 @@ func TestWatcherStart(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/api/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
 		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			time.Sleep(2 * time.Millisecond)
 			if fileNum < 4 {
 				fileNum++

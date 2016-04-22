@@ -55,7 +55,7 @@ func TestGetStatus(t *testing.T) {
 	var want = "on (foo)\n"
 
 	servertest.Mux.HandleFunc(
-		"/api/projects/foo/state", tdata.ServerHandler(`"on"`))
+		"/api/projects/foo/state", tdata.ServerJSONHandler(`"on"`))
 
 	GetStatus("foo")
 
@@ -130,6 +130,7 @@ func TestValidateAlreadyExists(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/api/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)
 			fmt.Fprintf(w, tdata.FromFile("mocks/project_already_exists_response.json"))
 		})
@@ -148,6 +149,7 @@ func TestValidateInvalidID(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/api/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)
 			fmt.Fprintf(w, tdata.FromFile("mocks/project_invalid_id_response.json"))
 		})
@@ -166,6 +168,7 @@ func TestValidateError(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/api/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			w.WriteHeader(400)
 			fmt.Fprintf(w, tdata.FromFile("../apihelper/mocks/unknown_error_api_response.json"))
 		})
@@ -193,8 +196,8 @@ func TestValidateInvalidError(t *testing.T) {
 
 	var err = Validate("foo")
 
-	if err == nil || err.Error() != "unexpected end of JSON input" {
-		t.Errorf("Expected error didn't happen")
+	if err != apihelper.ErrInvalidContentType {
+		t.Errorf("Expected content-type error didn't happen")
 	}
 
 	servertest.Teardown()
@@ -207,6 +210,7 @@ func TestValidateOrCreateAlreadyExists(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/api/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)
 			fmt.Fprintf(w, tdata.FromFile("mocks/project_already_exists_response.json"))
 		})
@@ -267,8 +271,8 @@ func TestValidateOrCreateInvalidError(t *testing.T) {
 
 	var _, err = ValidateOrCreate("foo", "Foo")
 
-	if err == nil || err.Error() != "unexpected end of JSON input" {
-		t.Errorf("Expected error didn't happen")
+	if err != apihelper.ErrInvalidContentType {
+		t.Errorf("Expected content-type error didn't happen")
 	}
 
 	servertest.Teardown()
