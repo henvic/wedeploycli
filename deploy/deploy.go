@@ -75,7 +75,6 @@ func All(list []string, df *Flags) (err error) {
 	}
 
 	wg.Wait()
-	progress.Stop()
 
 	for _, e := range de.List {
 		println(e.Error())

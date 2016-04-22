@@ -49,6 +49,7 @@ func deployRun(cmd *cobra.Command, args []string) {
 		} else {
 			err = deploy.Zip(output, list[0])
 		}
+		progress.Stop()
 	}
 
 	if err != nil {
