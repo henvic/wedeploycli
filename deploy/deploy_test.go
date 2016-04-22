@@ -321,6 +321,128 @@ func TestAllWithHooks(t *testing.T) {
 	outStream = defaultOutStream
 }
 
+func TestAllWithBeforeHookFailure(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Not testing with hooks on Windows")
+	}
+
+	var defaultOutStream = outStream
+	var bufOutStream bytes.Buffer
+	outStream = &bufOutStream
+	servertest.Setup()
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
+		t.Error(err)
+	}
+
+	config.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/project/id",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/api/projects",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/api/validators/containers/id",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/api/projects/project/containers/container_before_hook_failure",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/api/push/project/container_before_hook_failure",
+		func(w http.ResponseWriter, r *http.Request) {
+			var _, _, err = r.FormFile("pod")
+
+			if err != nil {
+				t.Error(err)
+			}
+		})
+
+	var err = All([]string{"container_before_hook_failure"}, &Flags{
+		Hooks: true,
+	})
+
+	if err == nil || err.Error() != `List of errors (format is container: error)
+container_before_hook_failure: exit status 1` {
+		t.Errorf("Expected error didn't happen, got %v instead", err)
+	}
+
+	var wantFeedback = tdata.FromFile("../deploy_before_hook_failure_feedback")
+
+	if !strings.Contains(bufOutStream.String(), wantFeedback) {
+		t.Errorf("Wanted feedback to contain %v, got %v instead", wantFeedback, bufOutStream.String())
+	}
+
+	globalconfigmock.Teardown()
+	config.Teardown()
+	os.Chdir(workingDir)
+	servertest.Teardown()
+	outStream = defaultOutStream
+}
+
+func TestAllWithAfterHookFailure(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Not testing with hooks on Windows")
+	}
+
+	var defaultOutStream = outStream
+	var bufOutStream bytes.Buffer
+	outStream = &bufOutStream
+	servertest.Setup()
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
+		t.Error(err)
+	}
+
+	config.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/project/id",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/api/projects",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/api/validators/containers/id",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/api/projects/project/containers/container_after_hook_failure",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/api/push/project/container_after_hook_failure",
+		func(w http.ResponseWriter, r *http.Request) {
+			var _, _, err = r.FormFile("pod")
+
+			if err != nil {
+				t.Error(err)
+			}
+		})
+
+	var err = All([]string{"container_after_hook_failure"}, &Flags{
+		Hooks: true,
+	})
+
+	if err == nil || err.Error() != `List of errors (format is container: error)
+container_after_hook_failure: exit status 1` {
+		t.Errorf("Expected error didn't happen, got %v instead", err)
+	}
+
+	var wantFeedback = tdata.FromFile("../deploy_after_hook_failure_feedback")
+
+	if !strings.Contains(bufOutStream.String(), wantFeedback) {
+		t.Errorf("Wanted feedback to contain %v, got %v instead", wantFeedback, bufOutStream.String())
+	}
+
+	globalconfigmock.Teardown()
+	config.Teardown()
+	os.Chdir(workingDir)
+	servertest.Teardown()
+	outStream = defaultOutStream
+}
+
 func TestAllOnlyNewError(t *testing.T) {
 	var defaultOutStream = outStream
 	var bufOutStream bytes.Buffer
