@@ -131,7 +131,7 @@ func Only(container string, df *Flags) error {
 		return err
 	}
 
-	return runDeploy(deploy, df)
+	return deploy.HooksAndOnly(df)
 }
 
 // New Deploy instance
@@ -235,6 +235,25 @@ func (d *Deploy) Deploy(src string) error {
 	return err
 }
 
+// HooksAndOnly run the hooks and Only method
+func (d *Deploy) HooksAndOnly(df *Flags) (err error) {
+	var ch = d.Container.Hooks
+
+	if df.Hooks && ch != nil && ch.BeforeDeploy != "" {
+		err = hooks.Run(ch.BeforeDeploy)
+	}
+
+	if err == nil {
+		err = d.Only()
+	}
+
+	if err == nil && df.Hooks && ch != nil && ch.AfterDeploy != "" {
+		err = hooks.Run(ch.AfterDeploy)
+	}
+
+	return err
+}
+
 // Only PODify a container and deploys it to Launchpad
 func (d *Deploy) Only() error {
 	var tmp, err = ioutil.TempFile(os.TempDir(), "launchpad-cli")
@@ -289,24 +308,6 @@ func getPackageSHA1(file *os.File) (string, error) {
 	}
 
 	return fmt.Sprintf("%x", hash.Sum(nil)), err
-}
-
-func runDeploy(deploy *Deploy, df *Flags) (err error) {
-	var ch = deploy.Container.Hooks
-
-	if df.Hooks && ch != nil && ch.BeforeDeploy != "" {
-		err = hooks.Run(ch.BeforeDeploy)
-	}
-
-	if err == nil {
-		err = deploy.Only()
-	}
-
-	if err == nil && df.Hooks && ch != nil && ch.AfterDeploy != "" {
-		err = hooks.Run(ch.AfterDeploy)
-	}
-
-	return err
 }
 
 func multipartWriter(
