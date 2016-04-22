@@ -202,7 +202,6 @@ func TestDeployOnly(t *testing.T) {
 	outStream = &bufOutStream
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
-	var tmp, _ = ioutil.TempFile(os.TempDir(), "launchpad-cli")
 
 	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
 		t.Error(err)
@@ -253,7 +252,6 @@ func TestDeployOnly(t *testing.T) {
 		t.Errorf("Wanted feedback %v, got %v instead", wantFeedback, bufOutStream.String())
 	}
 
-	os.Remove(tmp.Name())
 	globalconfigmock.Teardown()
 	config.Teardown()
 	os.Chdir(workingDir)
