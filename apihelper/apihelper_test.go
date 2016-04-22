@@ -158,7 +158,6 @@ func TestDecodeJSONInvalidContentType(t *testing.T) {
 
 	if err != ErrInvalidContentType {
 		t.Errorf("Wanted error to be %v, got %v instead", ErrInvalidContentType, err)
-
 	}
 }
 
