@@ -13,6 +13,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/launchpad-project/cli/apihelper"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/globalconfigmock"
 	"github.com/launchpad-project/cli/servertest"
@@ -203,6 +204,145 @@ func TestDeployFileNotFound(t *testing.T) {
 	globalconfigmock.Teardown()
 	config.Teardown()
 	os.Chdir(workingDir)
+}
+
+func TestOnly(t *testing.T) {
+	var defaultOutStream = outStream
+	var bufOutStream bytes.Buffer
+	outStream = &bufOutStream
+	servertest.Setup()
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
+		t.Error(err)
+	}
+
+	config.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/project/id",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/api/projects",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/api/validators/containers/id",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/api/projects/project/containers/container",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/api/push/project/container",
+		func(w http.ResponseWriter, r *http.Request) {
+			var _, _, err = r.FormFile("pod")
+
+			if err != nil {
+				t.Error(err)
+			}
+		})
+
+	var err = Only("mycontainer", &Flags{})
+
+	if err != nil {
+		t.Errorf("Unexpected error %v on deploy", err)
+	}
+
+	var wantFeedback = tdata.FromFile("../deploy_feedback")
+
+	if !strings.Contains(bufOutStream.String(), wantFeedback) {
+		t.Errorf("Wanted feedback to contain %v, got %v instead", wantFeedback, bufOutStream.String())
+	}
+
+	globalconfigmock.Teardown()
+	config.Teardown()
+	os.Chdir(workingDir)
+	servertest.Teardown()
+	outStream = defaultOutStream
+}
+
+func TestOnlyNewError(t *testing.T) {
+	var defaultOutStream = outStream
+	var bufOutStream bytes.Buffer
+	outStream = &bufOutStream
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
+		t.Error(err)
+	}
+
+	config.Setup()
+	globalconfigmock.Setup()
+
+	var err = Only("nil", &Flags{})
+
+	if !os.IsNotExist(err) {
+		t.Errorf("Wanted error to be file not exists, got %v instead", err)
+	}
+
+	globalconfigmock.Teardown()
+	config.Teardown()
+	os.Chdir(workingDir)
+	outStream = defaultOutStream
+}
+
+func TestOnlyProjectValidationOrCreationFailure(t *testing.T) {
+	var defaultOutStream = outStream
+	var bufOutStream bytes.Buffer
+	outStream = &bufOutStream
+	servertest.Setup()
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
+		t.Error(err)
+	}
+
+	config.Setup()
+	globalconfigmock.Setup()
+
+	var err = Only("mycontainer", &Flags{})
+
+	if err != apihelper.ErrInvalidContentType {
+		t.Errorf("Wanted error to be %v, got %v instead", apihelper.ErrInvalidContentType, err)
+	}
+
+	globalconfigmock.Teardown()
+	config.Teardown()
+	os.Chdir(workingDir)
+	servertest.Teardown()
+	outStream = defaultOutStream
+}
+
+func TestOnlyContainerValidationOrCreationFailure(t *testing.T) {
+	var defaultOutStream = outStream
+	var bufOutStream bytes.Buffer
+	outStream = &bufOutStream
+	servertest.Setup()
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
+		t.Error(err)
+	}
+
+	config.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/api/validators/project/id",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/api/projects",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	var err = Only("mycontainer", &Flags{})
+
+	if err != apihelper.ErrInvalidContentType {
+		t.Errorf("Wanted error to be %v, got %v instead", apihelper.ErrInvalidContentType, err)
+	}
+
+	globalconfigmock.Teardown()
+	config.Teardown()
+	os.Chdir(workingDir)
+	servertest.Teardown()
+	outStream = defaultOutStream
 }
 
 func TestDeployOnly(t *testing.T) {
