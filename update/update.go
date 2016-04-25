@@ -1,109 +1,143 @@
 package update
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"net/http"
 	"os"
-	"runtime"
-	"strings"
+	"time"
 
-	gup "github.com/inconshreveable/go-update"
+	"github.com/equinox-io/equinox"
+	"github.com/fatih/color"
 	"github.com/launchpad-project/api.go"
+	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/defaults"
 )
 
-// Release information
-type Release struct {
-	ID       string `json:"id"`
-	Link     string `json:"link"`
-	Version  string `json:"version"`
-	Platform string `json:"platform"`
-	Checksum string `json:"checksum"`
-}
+const lucFormat = "2006-01-02 15:04:05 -0700 MST"
 
-var (
-	// ErrMasterVersion for when trying to run launchpad upgrade on a master distribution
-	ErrMasterVersion = errors.New("You must upgrade a master version manually with git")
+var cacheNonAvailabilityDays = 4
 
-	// ErrPlatformUnsupported for when a release for the given platform was not found
-	ErrPlatformUnsupported = errors.New("Build for your platform was not found")
+// AppID is Equinox's app ID for this tool
+var AppID = "app_6vxvxHVfPgz"
 
-	// ErrPermission for when there is no permission to replace the binary
-	ErrPermission = errors.New("Can't replace Launchpad binary")
+// ErrMasterVersion triggered when trying to update a development version
+var ErrMasterVersion = errors.New(
+	"You must update a development version manually with git")
 
-	signature = []byte(`-----BEGIN/END PUBLIC KEY-----`)
-)
+// PublicKey is the public key for the certificate used with Equinox
+var PublicKey = []byte(`
+-----BEGIN ECDSA PUBLIC KEY-----
+MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE1+wgAlkBJRmtRwmZWfq9fa8dBlJ929hM
+BzASHioHo6RP1V+4EKnAxaYXN4eWlgalxQ2BEr8TqYRM+uHPizteVR11wKfsO6S0
+GENiOKpfivw5FIiTN14MZeMTagiKJUOq
+-----END ECDSA PUBLIC KEY-----
+`)
 
-// GetLatestReleases lists the latest releases available for the given platform
-func GetLatestReleases() []Release {
-	var address = defaults.Endpoint + "/releases/dist/channel"
-	var os = runtime.GOOS
-	var arch = runtime.GOARCH
+// Notifier is called every time this tool executes to verify if it is outdated
+func Notifier() {
+	var csg = config.Stores["global"]
 
-	var b = strings.NewReader(fmt.Sprintf(
-		`{"filter": [{"platform": {"value": "%s/%s"}}]}`, os, arch,
-	))
-
-	req := launchpad.URL(address)
-	req.Body(b)
-
-	if err := req.Get(); err != nil {
-		panic(err)
+	if len(os.Args) == 2 && os.Args[1] == "update" {
+		return
 	}
 
-	releases := *new([]Release)
-
-	if err := req.DecodeJSON(&releases); err != nil {
-		panic(err)
+	if defaults.Version == "master" || csg.Get("notify_updates") == "false" {
+		return
 	}
 
-	return releases
+	var nextVersion = csg.Get("cache.next_version")
+
+	if nextVersion != "" && nextVersion != defaults.Version {
+		notify()
+		return
+	}
+
+	// how long since last non availability result?
+	var lastUpdate = csg.Get("cache.last_update_check")
+	var luc, luce = time.Parse(lucFormat, lastUpdate)
+
+	if luce == nil && time.Since(luc).Hours() < float64(cacheNonAvailabilityDays*24) {
+		return
+	}
+
+	// save, just to be safe (e.g., if the check below breaks)
+	csg.SetAndSave("cache.last_update_check", time.Now().String())
+
+	var channel = csg.Get("update_channel")
+
+	if channel == "" {
+		channel = "stable"
+	}
+
+	var resp, err = check(channel)
+
+	switch err {
+	case equinox.NotAvailableErr:
+		csg.SetAndSave("cache.next_version", "")
+	case nil:
+		csg.SetAndSave("cache.next_version", resp.ReleaseVersion)
+		notify()
+	default:
+		println("Failed to verify if the CLI tool is outdated:", err.Error())
+	}
 }
 
-// ToLatest updates the Launchpad CLI to the latest version
-func ToLatest() {
-	if launchpad.Version == "master" {
+// Update this tool
+func Update(channel string) {
+	var csg = config.Stores["global"]
+
+	if defaults.Version == "master" {
 		println(ErrMasterVersion.Error())
 		os.Exit(1)
 	}
 
-	var releases = GetLatestReleases()
+	fmt.Println("Trying to update using the", channel, "distribution channel")
+	fmt.Println("Current installed version is " + launchpad.Version)
 
-	if len(releases) == 0 {
-		println("Releases not found.")
-	}
+	var resp, err = check(channel)
 
-	var next = releases[0]
-
-	if next.Version == launchpad.Version {
-		fmt.Println("Installed version " + launchpad.Version + " is already the latest version.")
+	switch err {
+	case nil:
+	case equinox.NotAvailableErr:
+		csg.Set("cache.next_version", "")
+		csg.Set("cache.last_update_check", time.Now().String())
+		csg.Save()
+		fmt.Println("No updates available.")
 		return
+	default:
+		println("Update failed:", err.Error())
+		os.Exit(1)
 	}
 
-	if err := Update(next); err != nil {
-		panic(err)
-	}
-}
-
-// Update updates the Launchpad CLI to the given release
-func Update(release Release) error {
-	resp, err := http.Get(release.Link)
+	err = resp.Apply()
 
 	if err != nil {
-		return err
+		println(err.Error())
+		os.Exit(1)
 	}
 
-	defer resp.Body.Close()
-	checksum, err := hex.DecodeString(release.Checksum)
+	csg.Set("update_channel", channel)
+	csg.Set("cache.next_version", "")
+	csg.Set("cache.last_update_check", time.Now().String())
+	csg.Save()
 
-	if err == nil {
-		err = gup.Apply(resp.Body, gup.Options{
-			Checksum:  checksum,
-			Signature: signature,
-		})
+	fmt.Println("Updated to new version:", resp.ReleaseVersion)
+}
+
+func check(channel string) (*equinox.Response, error) {
+	var opts equinox.Options
+	opts.Channel = channel
+
+	if err := opts.SetPublicKeyPEM(PublicKey); err != nil {
+		return nil, err
 	}
 
-	return err
+	resp, err := equinox.Check(AppID, opts)
+
+	return &resp, err
+}
+
+func notify() {
+	println(color.RedString(
+		`WARNING: Launchpad CLI tool is outdated. Run "launchpad update".`))
 }

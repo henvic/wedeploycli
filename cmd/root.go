@@ -16,10 +16,12 @@ import (
 	cmdprojects "github.com/launchpad-project/cli/cmd/projects"
 	cmdrestart "github.com/launchpad-project/cli/cmd/restart"
 	cmdstatus "github.com/launchpad-project/cli/cmd/status"
+	cmdupdate "github.com/launchpad-project/cli/cmd/update"
 	cmdversion "github.com/launchpad-project/cli/cmd/version"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/configstore"
 	"github.com/launchpad-project/cli/run"
+	"github.com/launchpad-project/cli/update"
 	"github.com/launchpad-project/cli/verbose"
 	"github.com/spf13/cobra"
 )
@@ -52,6 +54,8 @@ func Execute() {
 	if err := RootCmd.Execute(); err != nil {
 		os.Exit(-1)
 	}
+
+	update.Notifier()
 }
 
 func init() {
@@ -87,6 +91,7 @@ func init() {
 	RootCmd.AddCommand(cmdinit.InitCmd)
 	RootCmd.AddCommand(cmdrun.RunCmd)
 	RootCmd.AddCommand(cmddeploy.DeployCmd)
+	RootCmd.AddCommand(cmdupdate.UpdateCmd)
 	RootCmd.AddCommand(cmdversion.VersionCmd)
 }
 

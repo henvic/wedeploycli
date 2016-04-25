@@ -1,9 +1,6 @@
 package cmdupdate
 
 import (
-	"fmt"
-
-	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/update"
 	"github.com/spf13/cobra"
 )
@@ -15,8 +12,14 @@ var UpdateCmd = &cobra.Command{
 	Short: "Updates this tool to the latest version",
 }
 
+var (
+	channel string
+)
+
 func updateRun(cmd *cobra.Command, args []string) {
-	fmt.Println("Trying to update Launchpad CLI")
-	fmt.Println("Current installed version is " + launchpad.Version)
-	update.ToLatest()
+	update.Update(channel)
+}
+
+func init() {
+	UpdateCmd.Flags().StringVar(&channel, "channel", "stable", "distribution channel")
 }
