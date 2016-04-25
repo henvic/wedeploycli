@@ -81,7 +81,7 @@ func TestNewErrorContainerNotFound(t *testing.T) {
 	os.Chdir(workingDir)
 }
 
-func TestZip(t *testing.T) {
+func TestPack(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 
 	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
@@ -90,10 +90,10 @@ func TestZip(t *testing.T) {
 
 	config.Setup()
 
-	var err = Zip(os.DevNull, "mycontainer")
+	var err = Pack(os.DevNull, "mycontainer")
 
 	if err != nil {
-		t.Errorf("Unexpected zipping error: %v", err)
+		t.Errorf("Unexpected packing error: %v", err)
 	}
 
 	config.Teardown()

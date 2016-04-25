@@ -30,7 +30,7 @@ type ContainerError struct {
 	Error     error
 }
 
-// Deploy holds the information of a POD to be zipped or deployed
+// Deploy holds the information of a POD to be packed or deployed
 type Deploy struct {
 	Container     *containers.Container
 	ContainerPath string
@@ -153,12 +153,12 @@ func New(cpath string) (*Deploy, error) {
 	return deploy, err
 }
 
-// Zip packages a POD to a .pod package
-func Zip(dest, cpath string) error {
+// Pack packages a POD to a .pod package
+func Pack(dest, cpath string) error {
 	var deploy, err = New(cpath)
 
 	if err == nil {
-		err = deploy.Zip(dest)
+		err = deploy.Pack(dest)
 	}
 
 	return err
@@ -259,7 +259,7 @@ func (d *Deploy) HooksAndOnly(df *Flags) (err error) {
 func (d *Deploy) Only() error {
 	var tmp, err = ioutil.TempFile(os.TempDir(), "launchpad-cli")
 
-	err = d.Zip(tmp.Name())
+	err = d.Pack(tmp.Name())
 
 	if err == nil {
 		err = d.Deploy(tmp.Name())
@@ -272,18 +272,14 @@ func (d *Deploy) Only() error {
 	return err
 }
 
-// Zip packages a POD to a .pod package
-func (d *Deploy) Zip(dest string) (err error) {
-	d.progress.Reset("Zipping", "")
+// Pack packages a POD to a .pod package
+func (d *Deploy) Pack(dest string) (err error) {
+	d.progress.Reset("Packing", "")
 	dest, _ = filepath.Abs(dest)
 
 	var ignorePatterns = append(d.Container.DeployIgnore, pod.CommonIgnorePatterns...)
 
-	_, err = pod.Compress(
-		dest,
-		d.ContainerPath,
-		ignorePatterns,
-		d.progress)
+	_, err = pod.Pack(dest, d.ContainerPath, ignorePatterns, d.progress)
 
 	if err == nil {
 		d.progress.Set(progress.Total)

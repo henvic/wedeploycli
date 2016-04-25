@@ -1,66 +1,67 @@
 package pod
 
 import (
-	"archive/zip"
+	"archive/tar"
+	"crypto/md5"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"os"
-	"reflect"
 	"testing"
 
 	"github.com/launchpad-project/cli/progress"
 )
 
 type FileInfo struct {
-	Name    string
-	CRC32   uint32
-	Dir     bool
-	Symlink bool
+	Name     string
+	MD5      string
+	Dir      bool
+	Symlink  bool
+	Linkname string
 }
 
 // Reference for files and directories on mocks/ref/
 var Reference = map[string]*FileInfo{
 	"dir/": {
-		Name:  "dir/",
-		CRC32: 0,
-		Dir:   true,
+		Name: "dir/",
+		Dir:  true,
 	},
 	"symlink_dir": {
-		Name:    "symlink_dir",
-		CRC32:   3131800080,
-		Dir:     false,
-		Symlink: true,
+		Name:     "symlink_dir",
+		Dir:      false,
+		Symlink:  true,
+		Linkname: "dir",
 	},
 	"dir/placeholder": {
-		Name:  "dir/placeholder",
-		CRC32: 258472330,
-		Dir:   false,
+		Name: "dir/placeholder",
+		MD5:  "8996e816a871cf692f1063c93a18bd1b",
+		Dir:  false,
 	},
 	"dir/symlink_placeholder": {
-		Name:    "dir/symlink_placeholder",
-		CRC32:   4125531906,
-		Dir:     false,
-		Symlink: true,
+		Name:     "dir/symlink_placeholder",
+		Dir:      false,
+		Symlink:  true,
+		Linkname: "placeholder",
 	},
 	"dir2/NotIgnored.md": {
-		Name:  "dir2/NotIgnored.md",
-		CRC32: 2286427926,
-		Dir:   false,
+		Name: "dir2/NotIgnored.md",
+		MD5:  "788fe1134468d020cd3da5bce85eded1",
+		Dir:  false,
 	},
 	"doc": {
-		Name:  "doc",
-		CRC32: 3402152999,
-		Dir:   false,
+		Name: "doc",
+		MD5:  "ce1a09a0a60f13dfb8a718bd45e130fc",
+		Dir:  false,
 	},
 	"ignored": {
-		Name:  "ignored",
-		CRC32: 763821341,
-		Dir:   false,
+		Name: "ignored",
+		MD5:  "7b20a20f0c6ac0878c2a2018ee90a24c",
+		Dir:  false,
 	},
 }
 
-func TestCompress(t *testing.T) {
+func TestPack(t *testing.T) {
 	var ignoredList = []string{
 		"ignored",
 		"dir/foo/another_ignored_dir",
@@ -70,19 +71,19 @@ func TestCompress(t *testing.T) {
 		"!NotIgnored.md",
 	}
 
-	// clean up compress.zip that might exist
+	// clean up package.tar that might exist
 	// to detect if it is not generated
-	os.Remove("mocks/res/compress.zip")
+	os.Remove("mocks/res/package.tar")
 
-	var size, err = Compress(
-		"mocks/res/compress.zip",
+	var size, err = Pack(
+		"mocks/res/package.tar",
 		"mocks/ref",
 		ignoredList,
 		progress.New("mock"),
 	)
 
-	var minSize int64 = 500
-	var maxSize int64 = 2000
+	var minSize int64 = 5000
+	var maxSize int64 = 12000
 
 	if size <= minSize || size >= maxSize {
 		t.Errorf("Expected size to be around %v-%v bytes, got %v instead",
@@ -92,23 +93,44 @@ func TestCompress(t *testing.T) {
 	}
 
 	if err != nil {
-		t.Errorf("Expected compress to end without errors, got %v error instead", err)
+		t.Errorf("Expected pack to end without errors, got %v error instead", err)
 	}
 
-	r, err := zip.OpenReader("mocks/res/compress.zip")
+	file, err := os.Open("mocks/res/package.tar")
+	var fileReader io.ReadCloser = file
 
 	if err != nil {
-		t.Errorf("Wanted no errors opening compressed file, got %v instead", err)
+		t.Error(err)
 	}
+
+	r := tar.NewReader(fileReader)
 
 	var found = map[string]*FileInfo{}
 
-	for _, f := range r.File {
+	for {
+		f, err := r.Next()
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		rdbuf := make([]byte, 8)
+		h := md5.New()
+
+		if _, err := io.CopyBuffer(h, r, rdbuf); err != nil {
+			t.Error(err)
+		}
+
 		found[f.Name] = &FileInfo{
-			Name:    f.Name,
-			CRC32:   f.CRC32,
-			Dir:     f.FileInfo().IsDir(),
-			Symlink: f.Mode()&os.ModeSymlink == os.ModeSymlink,
+			Name:     f.Name,
+			MD5:      fmt.Sprintf("%x", h.Sum(nil)),
+			Dir:      f.FileInfo().IsDir(),
+			Symlink:  f.FileInfo().Mode()&os.ModeSymlink == os.ModeSymlink,
+			Linkname: f.Linkname,
 		}
 	}
 
@@ -133,11 +155,32 @@ func TestCompress(t *testing.T) {
 
 	for _, k := range assertNotIgnored {
 		if found[k] == nil {
-			t.Errorf("%v not found on zip", k)
+			t.Errorf("%v not found on tar", k)
 		}
 
-		if !reflect.DeepEqual(found[k], Reference[k]) {
-			t.Errorf("Zipped %v headers doesn't match expected values", k)
+		if found[k].Dir != Reference[k].Dir {
+			t.Errorf("Wanted Dir: %v for %v, got %v instead",
+				Reference[k].Dir, k, found[k].Dir)
+		}
+
+		if !found[k].Dir && !found[k].Symlink && found[k].MD5 != Reference[k].MD5 {
+			t.Errorf("Wanted MD5: %v for %v, got %v instead",
+				Reference[k].MD5, k, found[k].MD5)
+		}
+
+		if found[k].Name != Reference[k].Name {
+			t.Errorf("Wanted Name: %v for %v, got %v instead",
+				Reference[k].Name, k, found[k].Name)
+		}
+
+		if found[k].Symlink != Reference[k].Symlink {
+			t.Errorf("Wanted Symlink: %v for %v, got %v instead",
+				Reference[k].Symlink, k, found[k].Symlink)
+		}
+
+		if found[k].Linkname != Reference[k].Linkname {
+			t.Errorf("Wanted Linkname: %v for %v, got %v instead",
+				Reference[k].Linkname, k, found[k].Linkname)
 		}
 	}
 
@@ -147,40 +190,52 @@ func TestCompress(t *testing.T) {
 		}
 	}
 
-	r.Close()
+	file.Close()
 
-	// clean up compress.zip to avoid false positives for other
+	// clean up package.tar to avoid false positives for other
 	// tests that misses adding a detection step
-	os.Remove("mocks/res/compress.zip")
+	os.Remove("mocks/res/package.tar")
 }
 
-func TestNotSelfCompress(t *testing.T) {
+func TestNotSelfPack(t *testing.T) {
 	d := []byte("temporary placeholder")
-	if err := ioutil.WriteFile("mocks/self/compress.zip", d, 0644); err != nil {
+	if err := ioutil.WriteFile("mocks/self/package.tar", d, 0644); err != nil {
 		panic(err)
 	}
 
-	var _, err = Compress(
-		"mocks/self/compress.zip",
+	var _, err = Pack(
+		"mocks/self/package.tar",
 		"mocks/self",
 		nil,
 		progress.New("mock"),
 	)
 
-	r, err := zip.OpenReader("mocks/self/compress.zip")
+	file, err := os.Open("mocks/self/package.tar")
+	var fileReader io.ReadCloser = file
 
 	if err != nil {
-		t.Errorf("Wanted no errors opening compressed file, got %v instead", err)
+		t.Error(err)
 	}
+
+	r := tar.NewReader(fileReader)
 
 	var found = map[string]*FileInfo{}
 
-	for _, f := range r.File {
+	for {
+		f, err := r.Next()
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			t.Error(err)
+		}
+
 		found[f.Name] = &FileInfo{
 			Name:    f.Name,
-			CRC32:   f.CRC32,
 			Dir:     f.FileInfo().IsDir(),
-			Symlink: f.Mode()&os.ModeSymlink == os.ModeSymlink,
+			Symlink: f.FileInfo().Mode()&os.ModeSymlink == os.ModeSymlink,
 		}
 	}
 
@@ -188,20 +243,20 @@ func TestNotSelfCompress(t *testing.T) {
 		t.Errorf("Expected placeholder to be found")
 	}
 
-	if found["compress.zip"] != nil {
-		t.Errorf("compress.zip should not be compressed")
+	if found["package.tar"] != nil {
+		t.Errorf("package.tar should not be packed")
 	}
 
-	r.Close()
+	file.Close()
 
-	// clean up compress.zip to avoid false positives for other
+	// clean up package.tar to avoid false positives for other
 	// tests that misses adding a detection step
-	os.Remove("mocks/self/compress.zip")
+	os.Remove("mocks/self/package.tar")
 }
 
-func TestCompressInvalidDestination(t *testing.T) {
+func TestPackInvalidDestination(t *testing.T) {
 	var invalid = fmt.Sprintf("mocks/res/invalid-dest-%d/foo.pod", rand.Int())
-	var size, err = Compress(invalid, "mocks/ref", nil, progress.New("invalid"))
+	var size, err = Pack(invalid, "mocks/ref", nil, progress.New("invalid"))
 
 	if size != 0 {
 		t.Errorf("Expected size to be zero on invalid destination")
@@ -212,7 +267,7 @@ func TestCompressInvalidDestination(t *testing.T) {
 	}
 }
 
-func BenchmarkCompress(b *testing.B) {
+func BenchmarkPack(b *testing.B) {
 	var ignoredList = []string{
 		"arch",
 		"arm",
@@ -231,18 +286,18 @@ func BenchmarkCompress(b *testing.B) {
 pod/mocks/benchmark/install.sh`)
 	}
 
-	// clean up any old compress.zip that might exist
-	os.Remove("mocks/res/benchmark.zip")
+	// clean up any old package.tar that might exist
+	os.Remove("mocks/res/benchmark.tar")
 
-	var size, err = Compress(
-		"mocks/res/benchmark.zip",
+	var size, err = Pack(
+		"mocks/res/benchmark.tar",
 		"mocks/benchmark",
 		ignoredList,
 		progress.New("mock"),
 	)
 
-	var minSize int64 = 19000000
-	var maxSize int64 = 26000000
+	var minSize int64 = 70000000
+	var maxSize int64 = 80000000
 
 	if size <= minSize || size >= maxSize {
 		b.Errorf("Expected size to be around %v-%v bytes, got %v instead",
@@ -252,17 +307,20 @@ pod/mocks/benchmark/install.sh`)
 	}
 
 	if err != nil {
-		b.Errorf("Expected compress to end without errors, got %v error instead", err)
+		b.Errorf("Expected pack to end without errors, got %v error instead", err)
 	}
 
-	r, err := zip.OpenReader("mocks/res/benchmark.zip")
+	file, err := os.Open("mocks/res/benchmark.tar")
+	var fileReader io.ReadCloser = file
 
 	if err != nil {
-		b.Errorf("Wanted no errors opening compressed file, got %v instead", err)
+		b.Error(err)
 	}
 
-	r.Close()
+	tar.NewReader(fileReader)
 
-	// clean up any old compress.zip that might exist
-	os.Remove("mocks/res/benchmark.zip")
+	file.Close()
+
+	// clean up any old package.tar that might exist
+	os.Remove("mocks/res/benchmark.tar")
 }

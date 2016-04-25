@@ -52,7 +52,7 @@ func deployRun(cmd *cobra.Command, args []string) {
 				Quiet: quiet,
 			})
 		} else {
-			err = deploy.Zip(output, list[0])
+			err = deploy.Pack(output, list[0])
 		}
 
 		if !quiet {
