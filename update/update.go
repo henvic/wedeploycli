@@ -57,7 +57,7 @@ func NotifierCheck() error {
 	// save, just to be safe (e.g., if the check below breaks)
 	csg.SetAndSave("cache.last_update_check", time.Now().String())
 
-	var channel = csg.Get("update_channel")
+	var channel = csg.Get("release_channel")
 
 	if channel == "" {
 		channel = "stable"
@@ -126,7 +126,7 @@ func Update(channel string) {
 		os.Exit(1)
 	}
 
-	csg.Set("update_channel", channel)
+	csg.Set("release_channel", channel)
 	csg.Set("cache.next_version", "")
 	csg.Set("cache.last_update_check", time.Now().String())
 	csg.Save()
