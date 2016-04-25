@@ -9,6 +9,7 @@ pod/mocks/res/package.tar.gz
 pod/mocks/self/package.tar.gz
 pod/mocks/benchmark/linux-4.6-rc2
 pod/mocks/benchmark/linux-4.6-rc2.tar.xz
+pod/mocks/res/benchmark.tar.gz
 
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 cli
