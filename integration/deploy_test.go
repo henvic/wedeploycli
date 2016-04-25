@@ -35,7 +35,7 @@ func TestDeploy(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"deploy"},
+		Args: []string{"deploy", "-q"},
 		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/home/bucket/project/container",
 	}
@@ -74,7 +74,7 @@ func TestDeployOutput(t *testing.T) {
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"deploy", "-o", os.DevNull},
+		Args: []string{"deploy", "-o", os.DevNull, "--quiet"},
 		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/home/bucket/project/container",
 	}
