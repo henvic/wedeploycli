@@ -2,6 +2,7 @@ package pod
 
 import (
 	"archive/tar"
+	"compress/gzip"
 	"crypto/md5"
 	"fmt"
 	"io"
@@ -71,19 +72,19 @@ func TestPack(t *testing.T) {
 		"!NotIgnored.md",
 	}
 
-	// clean up package.tar that might exist
+	// clean up package.tar.gz that might exist
 	// to detect if it is not generated
-	os.Remove("mocks/res/package.tar")
+	os.Remove("mocks/res/package.tar.gz")
 
 	var size, err = Pack(
-		"mocks/res/package.tar",
+		"mocks/res/package.tar.gz",
 		"mocks/ref",
 		ignoredList,
 		progress.New("mock"),
 	)
 
-	var minSize int64 = 5000
-	var maxSize int64 = 12000
+	var minSize int64 = 5
+	var maxSize int64 = 20
 
 	if size <= minSize || size >= maxSize {
 		t.Errorf("Expected size to be around %v-%v bytes, got %v instead",
@@ -96,14 +97,19 @@ func TestPack(t *testing.T) {
 		t.Errorf("Expected pack to end without errors, got %v error instead", err)
 	}
 
-	file, err := os.Open("mocks/res/package.tar")
-	var fileReader io.ReadCloser = file
+	file, err := os.Open("mocks/res/package.tar.gz")
 
 	if err != nil {
 		t.Error(err)
 	}
 
-	r := tar.NewReader(fileReader)
+	gFile, err := gzip.NewReader(file)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	r := tar.NewReader(gFile)
 
 	var found = map[string]*FileInfo{}
 
@@ -190,34 +196,40 @@ func TestPack(t *testing.T) {
 		}
 	}
 
+	gFile.Close()
 	file.Close()
 
-	// clean up package.tar to avoid false positives for other
+	// clean up package.tar.gz to avoid false positives for other
 	// tests that misses adding a detection step
-	os.Remove("mocks/res/package.tar")
+	os.Remove("mocks/res/package.tar.gz")
 }
 
 func TestNotSelfPack(t *testing.T) {
 	d := []byte("temporary placeholder")
-	if err := ioutil.WriteFile("mocks/self/package.tar", d, 0644); err != nil {
+	if err := ioutil.WriteFile("mocks/self/package.tar.gz", d, 0644); err != nil {
 		panic(err)
 	}
 
 	var _, err = Pack(
-		"mocks/self/package.tar",
+		"mocks/self/package.tar.gz",
 		"mocks/self",
 		nil,
 		progress.New("mock"),
 	)
 
-	file, err := os.Open("mocks/self/package.tar")
-	var fileReader io.ReadCloser = file
+	file, err := os.Open("mocks/self/package.tar.gz")
 
 	if err != nil {
 		t.Error(err)
 	}
 
-	r := tar.NewReader(fileReader)
+	gFile, err := gzip.NewReader(file)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	r := tar.NewReader(gFile)
 
 	var found = map[string]*FileInfo{}
 
@@ -243,15 +255,16 @@ func TestNotSelfPack(t *testing.T) {
 		t.Errorf("Expected placeholder to be found")
 	}
 
-	if found["package.tar"] != nil {
-		t.Errorf("package.tar should not be packed")
+	if found["package.tar.gz"] != nil {
+		t.Errorf("package.tar.gz should not be packed")
 	}
 
+	gFile.Close()
 	file.Close()
 
-	// clean up package.tar to avoid false positives for other
+	// clean up package.tar.gz to avoid false positives for other
 	// tests that misses adding a detection step
-	os.Remove("mocks/self/package.tar")
+	os.Remove("mocks/self/package.tar.gz")
 }
 
 func TestPackInvalidDestination(t *testing.T) {
@@ -286,18 +299,18 @@ func BenchmarkPack(b *testing.B) {
 pod/mocks/benchmark/install.sh`)
 	}
 
-	// clean up any old package.tar that might exist
-	os.Remove("mocks/res/benchmark.tar")
+	// clean up any old package.tar.gz that might exist
+	os.Remove("mocks/res/benchmark.tar.gz")
 
 	var size, err = Pack(
-		"mocks/res/benchmark.tar",
+		"mocks/res/benchmark.tar.gz",
 		"mocks/benchmark",
 		ignoredList,
 		progress.New("mock"),
 	)
 
-	var minSize int64 = 70000000
-	var maxSize int64 = 80000000
+	var minSize int64 = 14000000
+	var maxSize int64 = 22000000
 
 	if size <= minSize || size >= maxSize {
 		b.Errorf("Expected size to be around %v-%v bytes, got %v instead",
@@ -310,17 +323,22 @@ pod/mocks/benchmark/install.sh`)
 		b.Errorf("Expected pack to end without errors, got %v error instead", err)
 	}
 
-	file, err := os.Open("mocks/res/benchmark.tar")
-	var fileReader io.ReadCloser = file
+	file, err := os.Open("mocks/res/benchmark.tar.gz")
 
 	if err != nil {
 		b.Error(err)
 	}
 
-	tar.NewReader(fileReader)
+	gFile, err := gzip.NewReader(file)
 
+	if err != nil {
+		b.Error(err)
+	}
+
+	tar.NewReader(gFile)
+	gFile.Close()
 	file.Close()
 
-	// clean up any old package.tar that might exist
-	os.Remove("mocks/res/benchmark.tar")
+	// clean up any old package.tar.gz that might exist
+	os.Remove("mocks/res/benchmark.tar.gz")
 }

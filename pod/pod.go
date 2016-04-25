@@ -2,6 +2,7 @@ package pod
 
 import (
 	"archive/tar"
+	"compress/gzip"
 	"fmt"
 	"io"
 	"os"
@@ -58,6 +59,8 @@ func Pack(dest,
 		file, err = os.Create(dest)
 	}
 
+	var gFile = gzip.NewWriter(file)
+
 	if err != nil {
 		return 0, err
 	}
@@ -67,7 +70,7 @@ func Pack(dest,
 	var pkg = &pod{
 		Dest:        dest,
 		Source:      src,
-		Writer:      tar.NewWriter(file),
+		Writer:      tar.NewWriter(gFile),
 		ignoreRules: irules,
 		progress:    pb,
 	}
@@ -104,7 +107,11 @@ func Pack(dest,
 		return 0, err
 	}
 
-	err = file.Close()
+	err = gFile.Close()
+
+	if err == nil {
+		err = file.Close()
+	}
 
 	if stat != nil {
 		size = stat.Size()
@@ -132,7 +139,7 @@ func (p *pod) countWalkFunc(path string, fi os.FileInfo, ierr error) error {
 		return err
 	}
 
-	// Pod, Jar is a .tar bomb!
+	// Pod, Jar is a gzipped tar bomb!
 	// avoid packing itself 'til starvation also
 	if relative == "." || abs == p.Dest {
 		return nil
@@ -179,7 +186,7 @@ func (p *pod) walkFunc(path string, fi os.FileInfo, ierr error) error {
 		return err
 	}
 
-	// Pod, Jar is a .tar bomb!
+	// Pod, Jar is a gzipped tar bomb!
 	// avoid packing itself 'til starvation also
 	if relative == "." || abs == p.Dest {
 		return nil
