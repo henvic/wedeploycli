@@ -2,6 +2,7 @@ package progress
 
 import (
 	"strings"
+	"time"
 
 	"github.com/gosuri/uiprogress"
 )
@@ -44,6 +45,8 @@ func Start() {
 
 // Stop progress bars
 func Stop() {
+	// allow enough time for the progress bar to print the final state
+	time.Sleep(2 * progressList.RefreshInterval)
 	progressList.Stop()
 }
 
