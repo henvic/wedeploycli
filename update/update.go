@@ -33,23 +33,18 @@ GENiOKpfivw5FIiTN14MZeMTagiKJUOq
 -----END ECDSA PUBLIC KEY-----
 `)
 
-// Notifier is called every time this tool executes to verify if it is outdated
-func Notifier() {
+// NotifierCheck enquires equinox if a new version is available
+func NotifierCheck() error {
 	var csg = config.Stores["global"]
 
-	if len(os.Args) == 2 && os.Args[1] == "update" {
-		return
-	}
-
-	if defaults.Version == "master" || csg.Get("notify_updates") == "false" {
-		return
+	if !isNotifyOn() {
+		return nil
 	}
 
 	var nextVersion = csg.Get("cache.next_version")
 
 	if nextVersion != "" && nextVersion != defaults.Version {
-		notify()
-		return
+		return nil
 	}
 
 	// how long since last non availability result?
@@ -57,7 +52,7 @@ func Notifier() {
 	var luc, luce = time.Parse(lucFormat, lastUpdate)
 
 	if luce == nil && time.Since(luc).Hours() < float64(cacheNonAvailabilityDays*24) {
-		return
+		return nil
 	}
 
 	// save, just to be safe (e.g., if the check below breaks)
@@ -72,13 +67,29 @@ func Notifier() {
 	var resp, err = check(channel)
 
 	switch err {
-	case equinox.NotAvailableErr:
-		csg.SetAndSave("cache.next_version", "")
 	case nil:
 		csg.SetAndSave("cache.next_version", resp.ReleaseVersion)
-		notify()
-	default:
-		println("Failed to verify if the CLI tool is outdated:", err.Error())
+	case equinox.NotAvailableErr:
+		csg.SetAndSave("cache.next_version", "")
+		err = nil
+	}
+
+	return err
+}
+
+// Notify is called every time this tool executes to verify if it is outdated
+func Notify() {
+	var csg = config.Stores["global"]
+
+	if !isNotifyOn() {
+		return
+	}
+
+	var nextVersion = csg.Get("cache.next_version")
+
+	if nextVersion != "" && nextVersion != defaults.Version {
+		println(color.RedString(
+			`WARNING: Launchpad CLI tool is outdated. Run "launchpad update".`))
 	}
 }
 
@@ -137,7 +148,16 @@ func check(channel string) (*equinox.Response, error) {
 	return &resp, err
 }
 
-func notify() {
-	println(color.RedString(
-		`WARNING: Launchpad CLI tool is outdated. Run "launchpad update".`))
+func isNotifyOn() bool {
+	var csg = config.Stores["global"]
+
+	if len(os.Args) == 2 && os.Args[1] == "update" {
+		return false
+	}
+
+	if defaults.Version == "master" || csg.Get("notify_updates") == "false" {
+		return false
+	}
+
+	return true
 }

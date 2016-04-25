@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/fatih/color"
 	"github.com/launchpad-project/api.go"
@@ -51,11 +52,26 @@ var globalStore *configstore.Store
 
 // Execute is the Entry-point for the CLI
 func Execute() {
+	var wgUpdate sync.WaitGroup
+	var errUpdate error
+
+	wgUpdate.Add(1)
+	go func() {
+		errUpdate = update.NotifierCheck()
+		wgUpdate.Done()
+	}()
+
 	if err := RootCmd.Execute(); err != nil {
 		os.Exit(-1)
 	}
 
-	update.Notifier()
+	wgUpdate.Wait()
+
+	if errUpdate == nil {
+		update.Notify()
+	} else {
+		println("Update notification error:", errUpdate.Error())
+	}
 }
 
 func init() {
