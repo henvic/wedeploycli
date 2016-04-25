@@ -1,6 +1,6 @@
 package defaults
 
-const (
+var (
 	// Version of the Launchpad Project CLI tool
 	Version = "master"
 
