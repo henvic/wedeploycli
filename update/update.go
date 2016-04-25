@@ -8,7 +8,6 @@ import (
 
 	"github.com/equinox-io/equinox"
 	"github.com/fatih/color"
-	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/defaults"
 )
@@ -103,7 +102,7 @@ func Update(channel string) {
 	}
 
 	fmt.Println("Trying to update using the", channel, "distribution channel")
-	fmt.Println("Current installed version is " + launchpad.Version)
+	fmt.Println("Current installed version is " + defaults.Version)
 
 	var resp, err = check(channel)
 

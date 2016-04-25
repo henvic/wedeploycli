@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/fatih/color"
-	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/cmd/auth"
 	cmdcontainers "github.com/launchpad-project/cli/cmd/containers"
 	cmddeploy "github.com/launchpad-project/cli/cmd/deploy"
@@ -21,6 +20,7 @@ import (
 	cmdversion "github.com/launchpad-project/cli/cmd/version"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/configstore"
+	"github.com/launchpad-project/cli/defaults"
 	"github.com/launchpad-project/cli/run"
 	"github.com/launchpad-project/cli/update"
 	"github.com/launchpad-project/cli/verbose"
@@ -42,7 +42,7 @@ var RootCmd = &cobra.Command{
 	Use:   "launchpad",
 	Short: "Launchpad CLI tool",
 	Long: `Launchpad Command Line Interface
-Version ` + launchpad.Version + `
+Version ` + defaults.Version + `
 Copyright 2016 Liferay, Inc.
 http://liferay.io`,
 	PersistentPreRun: persistentPreRun,
