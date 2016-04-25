@@ -87,8 +87,15 @@ func Notify() {
 	var nextVersion = csg.Get("cache.next_version")
 
 	if nextVersion != "" && nextVersion != defaults.Version {
+		var channel = csg.Get("release_channel")
+		var cmd = "launchpad update"
+
+		if channel != "" && channel != "stable" {
+			cmd += " --channel " + channel
+		}
+
 		println(color.RedString(
-			`WARNING: Launchpad CLI tool is outdated. Run "launchpad update".`))
+			`WARNING: Launchpad CLI tool is outdated. Run "` + cmd + `".`))
 	}
 }
 
