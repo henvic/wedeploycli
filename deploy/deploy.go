@@ -290,7 +290,7 @@ func (d *Deploy) Pack(dest string) (err error) {
 	return err
 }
 
-func getPackageSHA1(file *os.File) (string, error) {
+func getPackageSHA1(file io.ReadSeeker) (string, error) {
 	var hash = sha1.New()
 	var _, err = io.Copy(hash, file)
 
@@ -309,9 +309,9 @@ func getPackageSHA1(file *os.File) (string, error) {
 
 func multipartWriter(
 	mpw *multipart.Writer,
-	w io.WriteCloser,
-	file *os.File,
-	wc *writeCounter) (err error) {
+	w io.Closer,
+	file io.ReadCloser,
+	wc io.Writer) (err error) {
 	var part io.Writer
 	defer w.Close()
 	defer file.Close()

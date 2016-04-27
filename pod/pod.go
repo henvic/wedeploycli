@@ -267,7 +267,7 @@ func verboseCopyInfo(relative string, file *os.File) {
 	}
 }
 
-func copy(writer *tar.Writer, path, relative string) error {
+func copy(writer io.Writer, path, relative string) error {
 	var file, err = os.Open(path)
 
 	if err == nil {
