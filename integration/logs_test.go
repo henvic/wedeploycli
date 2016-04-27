@@ -15,7 +15,7 @@ func TestLogs(t *testing.T) {
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc(
-		"/api/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+		"/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
 		tdata.ServerJSONFileHandler("../logs/mocks/logs_response.json"))
 
 	var cmd = &Command{
@@ -38,7 +38,7 @@ func TestWatch(t *testing.T) {
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc(
-		"/api/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+		"/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
 		tdata.ServerJSONHandler("[]"))
 
 	var cmd = &Command{

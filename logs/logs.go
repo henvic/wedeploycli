@@ -71,7 +71,7 @@ func GetLevel(severityOrLevel string) (int, error) {
 // GetList logs
 func GetList(filter *Filter, paths ...string) []Logs {
 	var list []Logs
-	var req = apihelper.URL("/api/logs/" + strings.Join(paths, "/"))
+	var req = apihelper.URL("/logs/" + strings.Join(paths, "/"))
 
 	apihelper.Auth(req)
 	apihelper.ParamsFromJSON(req, filter)

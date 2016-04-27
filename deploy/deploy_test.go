@@ -117,7 +117,7 @@ func TestDeploy(t *testing.T) {
 
 	var packageSHA1 = "5b4238302c12e91f0faf44bcc912eb230e8f3094"
 
-	servertest.Mux.HandleFunc("/api/push/project/container",
+	servertest.Mux.HandleFunc("/push/project/container",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "POST" {
 				t.Errorf("Unexpected method %v", r.Method)
@@ -221,19 +221,19 @@ func TestAll(t *testing.T) {
 	config.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/project/id",
+	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/projects",
+	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/containers/id",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/projects/project/containers/container",
+	servertest.Mux.HandleFunc("/projects/project/containers/container",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/push/project/container",
+	servertest.Mux.HandleFunc("/push/project/container",
 		func(w http.ResponseWriter, r *http.Request) {
 			var _, _, err = r.FormFile("pod")
 
@@ -279,19 +279,19 @@ func TestAllWithHooks(t *testing.T) {
 	config.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/project/id",
+	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/projects",
+	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/containers/id",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/projects/project/containers/container",
+	servertest.Mux.HandleFunc("/projects/project/containers/container",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/push/project/container",
+	servertest.Mux.HandleFunc("/push/project/container",
 		func(w http.ResponseWriter, r *http.Request) {
 			var _, _, err = r.FormFile("pod")
 
@@ -339,19 +339,19 @@ func TestAllWithBeforeHookFailure(t *testing.T) {
 	config.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/project/id",
+	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/projects",
+	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/containers/id",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/projects/project/containers/container_before_hook_failure",
+	servertest.Mux.HandleFunc("/projects/project/containers/container_before_hook_failure",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/push/project/container_before_hook_failure",
+	servertest.Mux.HandleFunc("/push/project/container_before_hook_failure",
 		func(w http.ResponseWriter, r *http.Request) {
 			var _, _, err = r.FormFile("pod")
 
@@ -400,19 +400,19 @@ func TestAllWithAfterHookFailure(t *testing.T) {
 	config.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/project/id",
+	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/projects",
+	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/containers/id",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/projects/project/containers/container_after_hook_failure",
+	servertest.Mux.HandleFunc("/projects/project/containers/container_after_hook_failure",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/push/project/container_after_hook_failure",
+	servertest.Mux.HandleFunc("/push/project/container_after_hook_failure",
 		func(w http.ResponseWriter, r *http.Request) {
 			var _, _, err = r.FormFile("pod")
 
@@ -503,19 +503,19 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 	config.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/project/id",
+	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/projects",
+	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/containers/id",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/projects/project/containers/container",
+	servertest.Mux.HandleFunc("/projects/project/containers/container",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/push/project/container",
+	servertest.Mux.HandleFunc("/push/project/container",
 		func(w http.ResponseWriter, r *http.Request) {
 			var _, _, err = r.FormFile("pod")
 
@@ -575,19 +575,19 @@ func TestOnly(t *testing.T) {
 	config.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/project/id",
+	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/projects",
+	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/containers/id",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/projects/project/containers/container",
+	servertest.Mux.HandleFunc("/projects/project/containers/container",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/push/project/container",
+	servertest.Mux.HandleFunc("/push/project/container",
 		func(w http.ResponseWriter, r *http.Request) {
 			var _, _, err = r.FormFile("pod")
 
@@ -681,10 +681,10 @@ func TestOnlyContainerValidationOrCreationFailure(t *testing.T) {
 	config.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/project/id",
+	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/api/projects",
+	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
 	var err = Only("mycontainer", &Flags{})
@@ -714,7 +714,7 @@ func TestDeployOnly(t *testing.T) {
 	config.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/push/project/container",
+	servertest.Mux.HandleFunc("/push/project/container",
 		func(w http.ResponseWriter, r *http.Request) {
 			var mf, _, err = r.FormFile("pod")
 

@@ -186,7 +186,7 @@ func TestList(t *testing.T) {
 
 	var want = tdata.FromFile("mocks/want_containers")
 
-	servertest.Mux.HandleFunc("/api/projects/images/containers",
+	servertest.Mux.HandleFunc("/projects/images/containers",
 		tdata.ServerJSONFileHandler("mocks/containers_response.json"))
 
 	List("images")
@@ -205,7 +205,7 @@ func TestInstall(t *testing.T) {
 	bufOutStream.Reset()
 
 	servertest.Mux.HandleFunc(
-		"/api/projects/sound/containers/speaker",
+		"/projects/sound/containers/speaker",
 		tdata.ServerHandler(""))
 
 	var c = &Container{
@@ -231,7 +231,7 @@ func TestGetStatus(t *testing.T) {
 	bufOutStream.Reset()
 
 	var want = "on (foo bar)\n"
-	servertest.Mux.HandleFunc("/api/projects/foo/containers/bar/state",
+	servertest.Mux.HandleFunc("/projects/foo/containers/bar/state",
 		tdata.ServerJSONHandler(`"on"`))
 
 	GetStatus("foo", "bar")
@@ -250,7 +250,7 @@ func TestRegistry(t *testing.T) {
 	bufOutStream.Reset()
 
 	servertest.Mux.HandleFunc(
-		"/api/registry",
+		"/registry",
 		tdata.ServerJSONFileHandler("mocks/registry.json"))
 
 	var registry = GetRegistry()
@@ -268,7 +268,7 @@ func TestRestart(t *testing.T) {
 	globalconfigmock.Setup()
 	bufOutStream.Reset()
 
-	servertest.Mux.HandleFunc("/api/restart/container",
+	servertest.Mux.HandleFunc("/restart/container",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.RawQuery != "projectId=foo&containerId=bar" {
 				t.Error("Wrong query parameters for restart method")
@@ -287,7 +287,7 @@ func TestValidate(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/containers/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.FormValue("projectId") != "foo" {
 				t.Errorf("Wrong projectId form value")
@@ -310,7 +310,7 @@ func TestValidateAlreadyExists(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/containers/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)
@@ -329,7 +329,7 @@ func TestValidateInvalidID(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/containers/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)
@@ -348,7 +348,7 @@ func TestValidateError(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/containers/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			w.WriteHeader(400)
@@ -371,7 +371,7 @@ func TestValidateInvalidError(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/containers/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)
@@ -391,7 +391,7 @@ func TestValidateOrCreateAlreadyExists(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/containers/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)
@@ -415,7 +415,7 @@ func TestValidateOrCreateNotExists(t *testing.T) {
 	globalconfigmock.Setup()
 	bufOutStream.Reset()
 
-	servertest.Mux.HandleFunc("/api/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/containers/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.FormValue("projectId") != "sound" {
 				t.Errorf("Wrong projectId form value")
@@ -427,7 +427,7 @@ func TestValidateOrCreateNotExists(t *testing.T) {
 		})
 
 	servertest.Mux.HandleFunc(
-		"/api/projects/sound/containers/speaker",
+		"/projects/sound/containers/speaker",
 		tdata.ServerHandler(""))
 
 	var c = &Container{
@@ -451,7 +451,7 @@ func TestValidateOrCreateInvalidError(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/containers/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(404)
 		})

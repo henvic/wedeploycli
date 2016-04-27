@@ -111,7 +111,7 @@ func GetListFromScope() ([]string, error) {
 // GetStatus gets the status for a container
 func GetStatus(projectID, containerID string) {
 	var status string
-	var req = apihelper.URL("/api/projects/" + projectID + "/containers/" + containerID + "/state")
+	var req = apihelper.URL("/projects/" + projectID + "/containers/" + containerID + "/state")
 
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Get())
@@ -122,7 +122,7 @@ func GetStatus(projectID, containerID string) {
 // List of containers of a given project
 func List(projectID string) {
 	var containers Containers
-	var req = apihelper.URL("/api/projects/" + projectID + "/containers")
+	var req = apihelper.URL("/projects/" + projectID + "/containers")
 
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Get())
@@ -145,7 +145,7 @@ func List(projectID string) {
 
 // Install container to project
 func Install(projectID string, c *Container) error {
-	var req = apihelper.URL(path.Join("/api/projects", projectID, "containers", c.ID))
+	var req = apihelper.URL(path.Join("/projects", projectID, "containers", c.ID))
 	apihelper.Auth(req)
 
 	var reader, err = apihelper.EncodeJSON(map[string]string{
@@ -166,7 +166,7 @@ func Install(projectID string, c *Container) error {
 
 // GetRegistry gets a list of container images
 func GetRegistry() (registry []Register) {
-	var req = apihelper.URL("/api/registry")
+	var req = apihelper.URL("/registry")
 
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Get())
@@ -177,7 +177,7 @@ func GetRegistry() (registry []Register) {
 
 // Restart restarts a container inside a project
 func Restart(projectID, containerID string) {
-	var req = apihelper.URL("/api/restart/container?projectId=" + projectID + "&containerId=" + containerID)
+	var req = apihelper.URL("/restart/container?projectId=" + projectID + "&containerId=" + containerID)
 
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Post())
@@ -185,7 +185,7 @@ func Restart(projectID, containerID string) {
 
 // Validate container
 func Validate(projectID, containerID string) (err error) {
-	var req = apihelper.URL("/api/validators/containers/id")
+	var req = apihelper.URL("/validators/containers/id")
 
 	apihelper.Auth(req)
 

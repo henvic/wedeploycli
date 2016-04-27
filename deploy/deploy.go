@@ -167,7 +167,7 @@ func Pack(dest, cpath string) error {
 // Deploy POD to Launchpad
 func (d *Deploy) Deploy(src string) error {
 	var projectID = config.Stores["project"].Get("id")
-	var u = path.Join("api/push", projectID, d.Container.ID)
+	var u = path.Join("push", projectID, d.Container.ID)
 	var req = apihelper.URL(u)
 	var fileInfo os.FileInfo
 

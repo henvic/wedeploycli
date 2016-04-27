@@ -30,7 +30,7 @@ func TestCreate(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/projects",
+	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "POST" {
 				t.Errorf("Unexpected method %v", r.Method)
@@ -55,7 +55,7 @@ func TestGetStatus(t *testing.T) {
 	var want = "on (foo)\n"
 
 	servertest.Mux.HandleFunc(
-		"/api/projects/foo/state", tdata.ServerJSONHandler(`"on"`))
+		"/projects/foo/state", tdata.ServerJSONHandler(`"on"`))
 
 	GetStatus("foo")
 
@@ -75,7 +75,7 @@ func TestList(t *testing.T) {
 	var want = tdata.FromFile("mocks/want_projects")
 
 	servertest.Mux.HandleFunc(
-		"/api/projects",
+		"/projects",
 		tdata.ServerJSONFileHandler("mocks/projects_response.json"))
 
 	List()
@@ -93,7 +93,7 @@ func TestRestart(t *testing.T) {
 	globalconfigmock.Setup()
 	bufOutStream.Reset()
 
-	servertest.Mux.HandleFunc("/api/restart/project", func(w http.ResponseWriter, r *http.Request) {
+	servertest.Mux.HandleFunc("/restart/project", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.RawQuery != "projectId=foo" {
 			t.Error("Wrong query parameters for restart method")
 		}
@@ -110,7 +110,7 @@ func TestValidate(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/project/id", func(w http.ResponseWriter, r *http.Request) {
+	servertest.Mux.HandleFunc("/validators/project/id", func(w http.ResponseWriter, r *http.Request) {
 		if r.FormValue("value") != "foo" {
 			t.Errorf("Wrong value form value")
 		}
@@ -128,7 +128,7 @@ func TestValidateAlreadyExists(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/project/id",
+	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)
@@ -147,7 +147,7 @@ func TestValidateInvalidID(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/project/id",
+	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)
@@ -166,7 +166,7 @@ func TestValidateError(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/project/id",
+	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			w.WriteHeader(400)
@@ -189,7 +189,7 @@ func TestValidateInvalidError(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/project/id",
+	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(404)
 		})
@@ -208,7 +208,7 @@ func TestValidateOrCreateAlreadyExists(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/project/id",
+	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)
@@ -228,14 +228,14 @@ func TestValidateOrCreateNotExists(t *testing.T) {
 	globalconfigmock.Setup()
 	bufOutStream.Reset()
 
-	servertest.Mux.HandleFunc("/api/validators/project/id",
+	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.FormValue("value") != "sound" {
 				t.Errorf("Wrong form value")
 			}
 		})
 
-	servertest.Mux.HandleFunc("/api/projects",
+	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "POST" {
 				t.Errorf("Unexpected method %v", r.Method)
@@ -264,7 +264,7 @@ func TestValidateOrCreateInvalidError(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/validators/project/id",
+	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(404)
 		})

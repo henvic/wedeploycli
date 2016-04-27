@@ -58,7 +58,7 @@ func TestGetList(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/api/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+	servertest.Mux.HandleFunc("/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
 		tdata.ServerJSONFileHandler("mocks/logs_response.json"))
 
 	var filter = &Filter{
@@ -83,7 +83,7 @@ func TestList(t *testing.T) {
 	globalconfigmock.Setup()
 	servertest.Setup()
 
-	servertest.Mux.HandleFunc("/api/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+	servertest.Mux.HandleFunc("/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
 		tdata.ServerJSONFileHandler("mocks/logs_response.json"))
 
 	var filter = &Filter{
@@ -115,7 +115,7 @@ func TestWatch(t *testing.T) {
 
 	var missing = true
 
-	servertest.Mux.HandleFunc("/api/logs/foo/bar",
+	servertest.Mux.HandleFunc("/logs/foo/bar",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			switch missing {
@@ -175,7 +175,7 @@ func TestWatcherStart(t *testing.T) {
 
 	var fileNum = 0
 
-	servertest.Mux.HandleFunc("/api/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+	servertest.Mux.HandleFunc("/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			time.Sleep(2 * time.Millisecond)

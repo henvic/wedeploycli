@@ -12,7 +12,7 @@ func TestContainers(t *testing.T) {
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc(
-		"/api/projects/images/containers",
+		"/projects/images/containers",
 		tdata.ServerJSONFileHandler("../containers/mocks/containers_response.json"))
 
 	var cmd = &Command{
@@ -34,7 +34,7 @@ func TestContainersFromProjectDirectory(t *testing.T) {
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc(
-		"/api/projects/images/containers",
+		"/projects/images/containers",
 		tdata.ServerJSONFileHandler("../containers/mocks/containers_response.json"))
 
 	var cmd = &Command{

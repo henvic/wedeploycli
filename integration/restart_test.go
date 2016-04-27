@@ -12,7 +12,7 @@ func TestRestartProject(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc("/api/restart/project",
+	servertest.IntegrationMux.HandleFunc("/restart/project",
 		func(w http.ResponseWriter, r *http.Request) {
 			handled = true
 
@@ -45,7 +45,7 @@ func TestRestartContainer(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc("/api/restart/container",
+	servertest.IntegrationMux.HandleFunc("/restart/container",
 		func(w http.ResponseWriter, r *http.Request) {
 			handled = true
 

@@ -13,19 +13,19 @@ func TestDeploy(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc("/api/validators/project/id",
+	servertest.IntegrationMux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.IntegrationMux.HandleFunc("/api/projects",
+	servertest.IntegrationMux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.IntegrationMux.HandleFunc("/api/validators/containers/id",
+	servertest.IntegrationMux.HandleFunc("/validators/containers/id",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.IntegrationMux.HandleFunc("/api/projects/app/containers/container",
+	servertest.IntegrationMux.HandleFunc("/projects/app/containers/container",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.IntegrationMux.HandleFunc("/api/push/app/container",
+	servertest.IntegrationMux.HandleFunc("/push/app/container",
 		func(w http.ResponseWriter, r *http.Request) {
 			var _, _, err = r.FormFile("pod")
 

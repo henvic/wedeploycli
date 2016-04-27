@@ -33,7 +33,7 @@ var (
 
 // Create new project
 func Create(projectID, name string) error {
-	var req = apihelper.URL(path.Join("/api/projects"))
+	var req = apihelper.URL(path.Join("/projects"))
 	verbose.Debug("Creating project")
 
 	apihelper.Auth(req)
@@ -46,7 +46,7 @@ func Create(projectID, name string) error {
 // GetStatus gets the status for the project
 func GetStatus(id string) {
 	var status string
-	var req = apihelper.URL("/api/projects/" + id + "/state")
+	var req = apihelper.URL("/projects/" + id + "/state")
 
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Get())
@@ -57,7 +57,7 @@ func GetStatus(id string) {
 // List projects
 func List() {
 	var projects []Project
-	var req = apihelper.URL("/api/projects")
+	var req = apihelper.URL("/projects")
 
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Get())
@@ -72,7 +72,7 @@ func List() {
 
 // Restart restarts a project
 func Restart(id string) {
-	var req = apihelper.URL("/api/restart/project?projectId=" + id)
+	var req = apihelper.URL("/restart/project?projectId=" + id)
 
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Post())
@@ -80,7 +80,7 @@ func Restart(id string) {
 
 // Validate project
 func Validate(projectID string) (err error) {
-	var req = apihelper.URL("/api/validators/project/id")
+	var req = apihelper.URL("/validators/project/id")
 
 	apihelper.Auth(req)
 
