@@ -9,7 +9,6 @@
       }
     ],
     "name": "Cloud Search",
-    "bootstrap": "launchpad",
     "id": "search7606",
     "state": "on",
     "maxInstances": 5
@@ -24,7 +23,6 @@
       }
     ],
     "name": "Node.js",
-    "bootstrap": "docker",
     "id": "nodejs5143",
     "state": "on",
     "maxInstances": 5

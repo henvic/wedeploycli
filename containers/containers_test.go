@@ -209,10 +209,8 @@ func TestInstall(t *testing.T) {
 		tdata.ServerHandler(""))
 
 	var c = &Container{
-		ID:        "speaker",
-		Name:      "Speaker",
-		Bootstrap: "",
-		Template:  "",
+		ID:   "speaker",
+		Name: "Speaker",
 	}
 
 	var err = Install("sound", c)
@@ -431,10 +429,8 @@ func TestValidateOrCreateNotExists(t *testing.T) {
 		tdata.ServerHandler(""))
 
 	var c = &Container{
-		ID:        "speaker",
-		Name:      "Speaker",
-		Bootstrap: "",
-		Template:  "",
+		ID:   "speaker",
+		Name: "Speaker",
 	}
 
 	var ok, err = ValidateOrCreate("sound", c)
@@ -457,10 +453,8 @@ func TestValidateOrCreateInvalidError(t *testing.T) {
 		})
 
 	var c = &Container{
-		ID:        "speaker",
-		Name:      "Speaker",
-		Bootstrap: "",
-		Template:  "",
+		ID:   "speaker",
+		Name: "Speaker",
 	}
 
 	var _, err = ValidateOrCreate("foo", c)

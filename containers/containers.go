@@ -26,9 +26,7 @@ type Containers map[string]*Container
 type Container struct {
 	ID           string       `json:"id"`
 	Name         string       `json:"name"`
-	Bootstrap    string       `json:"bootstrap"`
 	State        string       `json:"state,omitempty"`
-	Template     string       `json:"template"`
 	Type         string       `json:"type"`
 	Hooks        *hooks.Hooks `json:"hooks,omitempty"`
 	DeployIgnore []string     `json:"deploy_ignore,omitempty"`
@@ -36,12 +34,10 @@ type Container struct {
 
 // Register for the container structure
 type Register struct {
-	Bootstrap   string `json:"bootstrap"`
 	Category    string `json:"category"`
 	Description string `json:"description"`
 	ID          string `json:"id"`
 	Name        string `json:"name"`
-	Template    string `json:"template"`
 	Type        string `json:"type"`
 }
 
@@ -149,10 +145,8 @@ func Install(projectID string, c *Container) error {
 	apihelper.Auth(req)
 
 	var reader, err = apihelper.EncodeJSON(map[string]string{
-		"id":        c.ID,
-		"bootstrap": c.Bootstrap,
-		"name":      c.Name,
-		"template":  c.Template,
+		"id":   c.ID,
+		"name": c.Name,
 	})
 
 	if err == nil {
