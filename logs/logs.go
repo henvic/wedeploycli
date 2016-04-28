@@ -99,9 +99,9 @@ func Watch(watcher *Watcher) {
 
 	go func() {
 		<-sigs
-		done <- true
 		fmt.Fprintln(outStream, "")
 		watcher.Stop()
+		done <- true
 	}()
 
 	<-done
