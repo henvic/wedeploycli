@@ -20,9 +20,21 @@ import (
 
 // APIFault is sent by the server when errors happen
 type APIFault struct {
-	Code    int             `json:"code"`
-	Message string          `json:"message"`
-	Errors  []APIFaultError `json:"errors"`
+	Code    int            `json:"code"`
+	Message string         `json:"message"`
+	Errors  APIFaultErrors `json:"errors"`
+}
+
+// APIFaultErrors is the array of APIFaultError
+type APIFaultErrors []APIFaultError
+
+// PrintList of errors
+func (afe APIFaultErrors) PrintList() {
+	if afe != nil {
+		for _, value := range afe {
+			fmt.Fprintln(errStream, value.Message)
+		}
+	}
 }
 
 // APIFaultError is the error structure for the errors described by a fault
@@ -179,11 +191,13 @@ func URL(paths ...string) *launchpad.Launchpad {
 func Validate(request *launchpad.Launchpad, err error) error {
 	RequestVerboseFeedback(request)
 
+	var af APIFault
+
 	switch err {
 	case nil:
 		return nil
 	case launchpad.ErrUnexpectedResponse:
-		printHTTPError(request)
+		reportHTTPError(&af, request)
 	default:
 		fmt.Fprintln(errStream, err)
 	}
@@ -267,23 +281,13 @@ func feedbackResponseBody(response *http.Response) {
 	verbose.Debug(color.MagentaString(out.String()) + "\n")
 }
 
-func printErrorList(list []APIFaultError) {
-	if list != nil {
-		for _, value := range list {
-			fmt.Fprintln(errStream, value.Message)
-		}
-	}
-}
-
-func printHTTPError(request *launchpad.Launchpad) {
-	var af APIFault
-
+func reportHTTPError(af *APIFault, request *launchpad.Launchpad) {
 	fmt.Fprintln(errStream, request.Response.Status)
 
 	body, err := ioutil.ReadAll(request.Response.Body)
 
 	if err == nil {
-		err = json.Unmarshal(body, &af)
+		err = json.Unmarshal(body, af)
 	}
 
 	if err != nil {
@@ -291,5 +295,5 @@ func printHTTPError(request *launchpad.Launchpad) {
 		return
 	}
 
-	printErrorList(af.Errors)
+	af.Errors.PrintList()
 }
