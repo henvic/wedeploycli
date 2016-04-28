@@ -51,15 +51,28 @@ func GetLaunchpadHost() (string, error) {
 	verbose.Debug("Environment variable $DOCKER_HOST not found.")
 
 	// Docker native on non-Linux sets up the docker.local address
-	_, err = net.LookupHost("docker.local")
+	addrs, err := net.LookupHost("docker.local")
 
-	if err == nil {
-		verbose.Debug("Falling back to docker.local.")
-		return "docker.local", nil
+	if err != nil {
+		verbose.Debug("docker.local not found. Falling back to localhost.")
+		return "localhost", nil
 	}
 
-	verbose.Debug("Falling back to localhost.")
-	return "localhost", nil
+	if len(addrs) == 0 {
+		println("Warning: docker.local resolves to 0 IP addresses.")
+		println("Falling back to localhost.")
+		return "localhost", nil
+	}
+
+	verbose.Debug("Falling back to docker.local.")
+	verbose.Debug("Resolving docker.local = ", addrs[0])
+
+	if len(addrs) > 1 {
+		println("Warning: docker.local resolves to too many hosts. Using 1st.")
+		fmt.Fprintln(os.Stderr, addrs)
+	}
+
+	return addrs[0], nil
 }
 
 // Run runs the Launchpad infrastructure
@@ -86,6 +99,9 @@ func Run(flags Flags) {
 	if !flags.Detach && !flags.ViewMode {
 		stopListener(dockerContainer)
 	}
+
+	fmt.Println("You can now test your apps locally.",
+		"Press Ctrl+C to shut it down when you are done.")
 
 	if !flags.Detach {
 		listen(dockerContainer)
