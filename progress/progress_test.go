@@ -78,6 +78,39 @@ func TestNew(t *testing.T) {
 	progressList.Out = defaultOutStream
 }
 
+func TestFail(t *testing.T) {
+	// there is currently a hack that makes setting 100 => 99, see below
+	var defaultOutStream = progressList.Out
+	var tmp, err = ioutil.TempFile(os.TempDir(), "launchpad-cli-test")
+
+	if err != nil {
+		panic(err)
+	}
+
+	progressList.Out = tmp
+	Start()
+
+	bar := New("failure")
+	bar.Set(47)
+	assertProgress(t, 47, bar.Current())
+
+	bar.Fail()
+
+	time.Sleep(50 * time.Millisecond)
+
+	Stop()
+
+	var want = tdata.FromFile("mocks/progress_output_failure")
+	var got = tdata.FromFile(tmp.Name())
+
+	if !strings.Contains(got, want) {
+		t.Error("Progress output doesn't contains any of the wanted progress")
+	}
+
+	os.Remove(tmp.Name())
+	progressList.Out = defaultOutStream
+}
+
 func assertProgress(t *testing.T, want, got int) {
 	if got != want {
 		t.Errorf("Wanted bar to be %v, got %v instead", want, got)

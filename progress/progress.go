@@ -84,6 +84,11 @@ func (b *Bar) Set(n int) error {
 	return b.adapter.Set(n)
 }
 
+// Fail (give up)
+func (b *Bar) Fail() {
+	b.adapter.Head = byte('x')
+}
+
 func (b *Bar) setup() {
 	b.adapter = progressList.AddBar(Total)
 	b.adapter.Width = Width
