@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
@@ -206,7 +207,29 @@ func TestInstall(t *testing.T) {
 
 	servertest.Mux.HandleFunc(
 		"/projects/sound/containers/speaker",
-		tdata.ServerHandler(""))
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != "POST" {
+				t.Errorf("Expected install method to be POST")
+			}
+
+			var body, err = ioutil.ReadAll(r.Body)
+
+			if err != nil {
+				t.Error(err)
+			}
+
+			var data map[string]string
+
+			err = json.Unmarshal(body, &data)
+
+			if err != nil {
+				t.Error(err)
+			}
+
+			jsonlib.AssertJSONMarshal(t,
+				`{"id":"speaker", "name": "Speaker"}`,
+				data)
+		})
 
 	var c = &Container{
 		ID:   "speaker",

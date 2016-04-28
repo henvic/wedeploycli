@@ -152,7 +152,7 @@ func Install(projectID string, c *Container) error {
 	if err == nil {
 		req.Body(reader)
 		verbose.Debug("Installing container")
-		err = apihelper.Validate(req, req.Put())
+		err = apihelper.Validate(req, req.Post())
 	}
 
 	return err
