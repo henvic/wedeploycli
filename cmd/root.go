@@ -9,9 +9,9 @@ import (
 	"github.com/fatih/color"
 	"github.com/launchpad-project/cli/cmd/auth"
 	cmdcontainers "github.com/launchpad-project/cli/cmd/containers"
+	cmdcreate "github.com/launchpad-project/cli/cmd/createctx"
 	cmddeploy "github.com/launchpad-project/cli/cmd/deploy"
 	cmdhooks "github.com/launchpad-project/cli/cmd/hooks"
-	cmdinit "github.com/launchpad-project/cli/cmd/initctx"
 	cmdlogs "github.com/launchpad-project/cli/cmd/logs"
 	cmdprojects "github.com/launchpad-project/cli/cmd/projects"
 	cmdrestart "github.com/launchpad-project/cli/cmd/restart"
@@ -98,13 +98,13 @@ func init() {
 
 	RootCmd.AddCommand(cmdauth.LoginCmd)
 	RootCmd.AddCommand(cmdauth.LogoutCmd)
+	RootCmd.AddCommand(cmdcreate.CreateCmd)
 	RootCmd.AddCommand(cmdlogs.LogsCmd)
 	RootCmd.AddCommand(cmdprojects.ProjectsCmd)
 	RootCmd.AddCommand(cmdcontainers.ContainersCmd)
 	RootCmd.AddCommand(cmdstatus.StatusCmd)
 	RootCmd.AddCommand(cmdrestart.RestartCmd)
 	RootCmd.AddCommand(cmdhooks.BuildCmd)
-	RootCmd.AddCommand(cmdinit.InitCmd)
 	RootCmd.AddCommand(cmdrun.RunCmd)
 	RootCmd.AddCommand(cmddeploy.DeployCmd)
 	RootCmd.AddCommand(cmdupdate.UpdateCmd)
