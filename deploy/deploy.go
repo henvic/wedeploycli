@@ -222,14 +222,17 @@ func (d *Deploy) Deploy(src string) error {
 		return errMultipart
 	}
 
-	if err == nil || err == launchpad.ErrUnexpectedResponse {
+	if err == launchpad.ErrUnexpectedResponse {
+		d.progress.Append = "(Failure)"
+		d.progress.Fail()
+	}
+
+	if err == nil {
 		d.progress.Append = fmt.Sprintf(
 			"%s (Complete)",
 			humanize.Bytes(uint64(packageSize)))
 		d.progress.Set(progress.Total)
-	}
 
-	if err == nil {
 		fmt.Fprintf(outStream, "Ready! %v.%v.liferay.io\n", d.Container.ID, projectID)
 	}
 
