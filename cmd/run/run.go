@@ -1,0 +1,45 @@
+package cmdrun
+
+import (
+	"os"
+
+	"github.com/launchpad-project/cli/run"
+	"github.com/spf13/cobra"
+)
+
+// RunCmd runs the Launchpad structure for development locally
+var RunCmd = &cobra.Command{
+	Use:   "run",
+	Short: "Run Launchpad infrastructure for development locally",
+	Run:   runRun,
+}
+
+var (
+	detach   bool
+	dryRun   bool
+	viewMode bool
+)
+
+func runRun(cmd *cobra.Command, args []string) {
+	if len(args) != 0 {
+		println("This command doesn't take arguments.")
+		os.Exit(1)
+	}
+
+	run.Run(run.Flags{
+		Detach:   detach,
+		DryRun:   dryRun,
+		ViewMode: viewMode,
+	})
+}
+
+func init() {
+	RunCmd.Flags().BoolVarP(&detach, "detach", "d", false,
+		"run in background")
+
+	RunCmd.Flags().BoolVar(&dryRun, "dry-run", false,
+		"obtain a summary of what docker command is invoked")
+
+	RunCmd.Flags().BoolVar(&viewMode, "view-mode", false,
+		"view only mode (no controls)")
+}
