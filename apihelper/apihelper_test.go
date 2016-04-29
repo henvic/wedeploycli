@@ -80,7 +80,7 @@ func TestAPIError(t *testing.T) {
 		Message: "Resource Not Found",
 	}
 
-	if fmt.Sprintf("%v", e) != "Launchpad API error: Resource Not Found" {
+	if fmt.Sprintf("%v", e) != "Launchpad API error: 404 Resource Not Found" {
 		t.Errorf("Error interface not implemented.")
 	}
 }
@@ -828,7 +828,7 @@ func TestValidateOrExit(t *testing.T) {
 	ValidateOrExit(r, r.Get())
 
 	if bufErrStream.String() != want {
-		t.Errorf("Wanted %v, got %v", bufErrStream.String(), want)
+		t.Errorf("Wanted %v, got %v", want, bufErrStream.String())
 	}
 
 	haltExitCommand = false
@@ -853,20 +853,23 @@ func TestValidateOrExitUnexpectedResponse(t *testing.T) {
 	defer servertest.Teardown()
 
 	servertest.Mux.HandleFunc("/foo/bah", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-type", "application/json; charset=UTF-8")
 		w.WriteHeader(403)
 		fmt.Fprintf(w, `{
     "code": 403,
     "message": "Forbidden",
     "errors": [
         {
-            "reason": "forbidden",
-            "message": "The requested operation failed because you do not have access."
+            "reason": "The requested operation failed because you do not have access.",
+            "message": "forbidden"
         }
     ]
 }`)
 	})
 
-	var want = "403 Forbidden\nThe requested operation failed because you do not have access.\n"
+	var want = "Launchpad API error: 403 Forbidden\n\t" +
+		"forbidden: The requested operation failed because you do not have access.\n"
+
 	haltExitCommand = true
 	bufErrStream.Reset()
 
@@ -890,7 +893,7 @@ func TestValidateOrExitUnexpectedResponseCustom(t *testing.T) {
 		fmt.Fprintf(w, `Error message.`)
 	})
 
-	var want = "403 Forbidden\nError message.\n"
+	var want = "Launchpad API error: 403 Forbidden\n\tbody: Error message.\n"
 	haltExitCommand = true
 	bufErrStream.Reset()
 
@@ -899,7 +902,7 @@ func TestValidateOrExitUnexpectedResponseCustom(t *testing.T) {
 	ValidateOrExit(r, r.Get())
 
 	if bufErrStream.String() != want {
-		t.Errorf("Wanted %v, got %v", bufErrStream.String(), want)
+		t.Errorf("Wanted %v, got %v", want, bufErrStream.String())
 	}
 
 	haltExitCommand = false

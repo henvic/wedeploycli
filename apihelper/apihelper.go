@@ -25,26 +25,33 @@ type APIFault struct {
 	Errors  APIFaultErrors `json:"errors"`
 }
 
-// APIFaultErrors is the array of APIFaultError
-type APIFaultErrors []APIFaultError
+func (a APIFault) Error() string {
+	var s = fmt.Sprintf("Launchpad API error:")
 
-// PrintList of errors
-func (afe APIFaultErrors) PrintList() {
-	if afe != nil {
-		for _, value := range afe {
-			fmt.Fprintln(errStream, value.Message)
+	if a.Code != 0 {
+		s += fmt.Sprintf(" %v", a.Code)
+	}
+
+	if a.Message != "" {
+		s += " " + a.Message
+	}
+
+	if a.Errors != nil && len(a.Errors) != 0 {
+		for _, value := range a.Errors {
+			s += fmt.Sprintf("\n\t%v: %v", value.Message, value.Reason)
 		}
 	}
+
+	return s
 }
+
+// APIFaultErrors is the array of APIFaultError
+type APIFaultErrors []APIFaultError
 
 // APIFaultError is the error structure for the errors described by a fault
 type APIFaultError struct {
 	Reason  string `json:"reason"`
 	Message string `json:"message"`
-}
-
-func (a APIFault) Error() string {
-	return fmt.Sprintf("Launchpad API error: %v", a.Message)
 }
 
 var (
@@ -191,13 +198,13 @@ func URL(paths ...string) *launchpad.Launchpad {
 func Validate(request *launchpad.Launchpad, err error) error {
 	RequestVerboseFeedback(request)
 
-	var af APIFault
-
 	switch err {
 	case nil:
 		return nil
 	case launchpad.ErrUnexpectedResponse:
-		reportHTTPError(&af, request)
+		if af := reportHTTPError(request); af != nil {
+			return af
+		}
 	default:
 		fmt.Fprintln(errStream, err)
 	}
@@ -281,19 +288,39 @@ func feedbackResponseBody(response *http.Response) {
 	verbose.Debug(color.MagentaString(out.String()) + "\n")
 }
 
-func reportHTTPError(af *APIFault, request *launchpad.Launchpad) {
-	fmt.Fprintln(errStream, request.Response.Status)
+func reportHTTPError(request *launchpad.Launchpad) error {
+	var af APIFault
 
-	body, err := ioutil.ReadAll(request.Response.Body)
-
-	if err == nil {
-		err = json.Unmarshal(body, af)
-	}
+	var response = request.Response
+	var contentType = response.Header.Get("Content-Type")
+	var body, err = ioutil.ReadAll(response.Body)
 
 	if err != nil {
-		fmt.Fprintln(errStream, string(body))
-		return
+		return err
 	}
 
-	af.Errors.PrintList()
+	if strings.Contains(contentType, "application/json") {
+		err = json.Unmarshal(body, &af)
+
+		if err == nil {
+			fmt.Fprintf(errStream, "%v\n", af)
+			return &af
+		} else {
+			fmt.Fprintf(errStream, "Failure decoding JSON error: %v", err)
+		}
+	}
+
+	af = APIFault{
+		Code:    response.StatusCode,
+		Message: http.StatusText(response.StatusCode),
+		Errors: APIFaultErrors{
+			APIFaultError{
+				Reason:  string(body),
+				Message: "body",
+			},
+		},
+	}
+
+	fmt.Fprintf(errStream, "%v\n", af)
+	return &af
 }
