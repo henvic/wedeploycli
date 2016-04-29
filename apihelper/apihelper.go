@@ -198,15 +198,14 @@ func URL(paths ...string) *launchpad.Launchpad {
 func Validate(request *launchpad.Launchpad, err error) error {
 	RequestVerboseFeedback(request)
 
-	switch err {
-	case nil:
+	if err == nil {
 		return nil
-	case launchpad.ErrUnexpectedResponse:
+	}
+
+	if err == launchpad.ErrUnexpectedResponse {
 		if af := reportHTTPError(request); af != nil {
 			return af
 		}
-	default:
-		fmt.Fprintln(errStream, err)
 	}
 
 	return err
@@ -217,6 +216,7 @@ func ValidateOrExit(request *launchpad.Launchpad, err error) {
 	err = Validate(request, err)
 
 	if err != nil {
+		fmt.Fprintf(errStream, "%v\n", err)
 		exitCommand(1)
 	}
 }
@@ -303,7 +303,6 @@ func reportHTTPError(request *launchpad.Launchpad) error {
 		err = json.Unmarshal(body, &af)
 
 		if err == nil {
-			fmt.Fprintf(errStream, "%v\n", af)
 			return &af
 		} else {
 			fmt.Fprintf(errStream, "Failure decoding JSON error: %v", err)
@@ -321,6 +320,5 @@ func reportHTTPError(request *launchpad.Launchpad) error {
 		},
 	}
 
-	fmt.Fprintf(errStream, "%v\n", af)
 	return &af
 }
