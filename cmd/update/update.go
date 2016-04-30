@@ -21,5 +21,5 @@ func updateRun(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	UpdateCmd.Flags().StringVar(&channel, "channel", "stable", "distribution channel")
+	UpdateCmd.Flags().StringVar(&channel, "channel", "stable", "Release channel")
 }

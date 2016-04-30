@@ -67,7 +67,7 @@ func deployRun(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	DeployCmd.Flags().BoolVar(&noHooks, "no-hooks", false, "bypass the deploy pre/pos hooks")
-	DeployCmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "hide progress bar")
+	DeployCmd.Flags().BoolVar(&noHooks, "no-hooks", false, "Bypass the deploy pre/pos hooks")
+	DeployCmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "Hide progress bar")
 	DeployCmd.Flags().StringVarP(&output, "output", "o", "", "Write to a file, instead of deploying")
 }

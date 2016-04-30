@@ -35,11 +35,11 @@ func runRun(cmd *cobra.Command, args []string) {
 
 func init() {
 	RunCmd.Flags().BoolVarP(&detach, "detach", "d", false,
-		"run in background")
+		"Run in background")
 
 	RunCmd.Flags().BoolVar(&dryRun, "dry-run", false,
-		"obtain a summary of what docker command is invoked")
+		"Obtain a summary of what docker command is invoked")
 
 	RunCmd.Flags().BoolVar(&viewMode, "view-mode", false,
-		"view only mode (no controls)")
+		"View only mode (no controls)")
 }

@@ -84,13 +84,13 @@ func init() {
 		"verbose",
 		"v",
 		false,
-		"verbose output")
+		"Verbose output")
 
 	RootCmd.PersistentFlags().BoolVar(
 		&color.NoColor,
 		"no-color",
 		false,
-		"disable color output")
+		"Disable color output")
 
 	RootCmd.Flags().BoolVar(
 		&version,
