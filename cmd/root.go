@@ -46,8 +46,10 @@ Version ` + defaults.Version + `
 Copyright 2016 Liferay, Inc.
 http://liferay.io`,
 	PersistentPreRun: persistentPreRun,
+	Run:              run,
 }
 
+var version bool
 var globalStore *configstore.Store
 
 // Execute is the Entry-point for the CLI
@@ -90,6 +92,11 @@ func init() {
 		false,
 		"disable color output")
 
+	RootCmd.Flags().BoolVar(
+		&version,
+		"version", false, "Print version information and quit")
+	RootCmd.Flags().MarkHidden("version")
+
 	var csg = config.Stores["global"]
 
 	if csg.Get("no_color") == "true" {
@@ -115,9 +122,23 @@ func persistentPreRun(cmd *cobra.Command, args []string) {
 	verifyAuth(cmd.CommandPath())
 }
 
+func run(cmd *cobra.Command, args []string) {
+	if version {
+		cmdversion.VersionCmd.Run(cmd, args)
+	} else {
+		cmd.Help()
+	}
+}
+
 func verifyAuth(commandPath string) {
 	var csg = config.Stores["global"]
-	var test = strings.SplitAfterN(commandPath, " ", 2)[1]
+	var parts = strings.SplitAfterN(commandPath, " ", 2)
+
+	if len(parts) < 2 {
+		return
+	}
+
+	var test = parts[1]
 
 	for key := range WhitelistCmdsNoAuthentication {
 		if key == test {
