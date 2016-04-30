@@ -100,8 +100,13 @@ func Run(flags Flags) {
 		stopListener(dockerContainer)
 	}
 
-	fmt.Println("You can now test your apps locally.",
-		"Press Ctrl+C to shut it down when you are done.")
+	fmt.Print("You can now test your apps locally.")
+
+	if !flags.ViewMode {
+		fmt.Print(" Press Ctrl+C to shut it down when you are done.")
+	}
+
+	fmt.Println("")
 
 	if !flags.Detach {
 		listen(dockerContainer)
