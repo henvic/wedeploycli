@@ -304,9 +304,9 @@ func reportHTTPError(request *launchpad.Launchpad) error {
 
 		if err == nil {
 			return &af
-		} else {
-			fmt.Fprintf(errStream, "Failure decoding JSON error: %v", err)
 		}
+
+		fmt.Fprintf(errStream, "Failure decoding JSON error: %v", err)
 	}
 
 	af = APIFault{
