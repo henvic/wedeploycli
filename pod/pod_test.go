@@ -22,8 +22,101 @@ type FileInfo struct {
 	Linkname string
 }
 
+type PackFiles map[string]*FileInfo
+
+type TestPackProvider struct {
+	MinSize        int64
+	MaxSize        int64
+	IgnoredList    []string
+	NotIgnoredList []string
+	RefuteIgnored  []string
+}
+
+func (*TestPackProvider) CheckSize(t *testing.T, size int64) {
+	if size <= TestPackCase.MinSize || size >= TestPackCase.MaxSize {
+		t.Errorf("Expected size to be around %v-%v bytes, got %v instead",
+			TestPackCase.MinSize,
+			TestPackCase.MaxSize,
+			size)
+	}
+}
+
+func (*TestPackProvider) CheckNotIgnored(t *testing.T, found PackFiles) {
+	for _, k := range TestPackCase.NotIgnoredList {
+		var f = found[k]
+		var ref = Reference[k]
+
+		if f == nil {
+			t.Errorf("%v not found on tar", k)
+		}
+
+		if f.Dir != ref.Dir {
+			t.Errorf("Wanted Dir: %v for %v, got %v instead",
+				ref.Dir, k, f.Dir)
+		}
+
+		if !f.Dir && !f.Symlink && f.MD5 != ref.MD5 {
+			t.Errorf("Wanted MD5: %v for %v, got %v instead",
+				ref.MD5, k, f.MD5)
+		}
+
+		if f.Name != ref.Name {
+			t.Errorf("Wanted Name: %v for %v, got %v instead",
+				ref.Name, k, f.Name)
+		}
+
+		if f.Symlink != ref.Symlink {
+			t.Errorf("Wanted Symlink: %v for %v, got %v instead",
+				ref.Symlink, k, f.Symlink)
+		}
+
+		if f.Linkname != ref.Linkname {
+			t.Errorf("Wanted Linkname: %v for %v, got %v instead",
+				ref.Linkname, k, f.Linkname)
+		}
+	}
+}
+
+func (*TestPackProvider) CheckRefuteIgnored(t *testing.T, found PackFiles) {
+	for _, k := range TestPackCase.RefuteIgnored {
+		if found[k] != nil {
+			t.Errorf("Expected file %v to be ignored.", k)
+		}
+	}
+}
+
+var TestPackCase = TestPackProvider{
+	MinSize: 5,
+	MaxSize: 20,
+	IgnoredList: []string{
+		"ignored",
+		"dir/foo/another_ignored_dir",
+		"ignored_dir",
+		"**/complex/*",
+		"*Ignored*.md",
+		"!NotIgnored.md",
+	},
+	NotIgnoredList: []string{
+		"doc",
+		"dir/",
+		"symlink_dir",
+		"dir/placeholder",
+		"dir/symlink_placeholder",
+	},
+	RefuteIgnored: []string{
+		"ignored",
+		"ignored_dir",
+		"ignored_dir/placeholder",
+		"dir/foo/another_ignored_dir",
+		"dir/foo/another_ignored_dir/placeholder",
+		"dir/sub/complex",
+		"dir/sub/complex/placeholder",
+		"dir/sub/complex/dir/placeholder",
+	},
+}
+
 // Reference for files and directories on mocks/ref/
-var Reference = map[string]*FileInfo{
+var Reference = PackFiles{
 	"dir/": {
 		Name: "dir/",
 		Dir:  true,
@@ -63,15 +156,6 @@ var Reference = map[string]*FileInfo{
 }
 
 func TestPack(t *testing.T) {
-	var ignoredList = []string{
-		"ignored",
-		"dir/foo/another_ignored_dir",
-		"ignored_dir",
-		"**/complex/*",
-		"*Ignored*.md",
-		"!NotIgnored.md",
-	}
-
 	// clean up package.tar.gz that might exist
 	// to detect if it is not generated
 	os.Remove("mocks/res/package.tar.gz")
@@ -79,19 +163,11 @@ func TestPack(t *testing.T) {
 	var size, err = Pack(
 		"mocks/res/package.tar.gz",
 		"mocks/ref",
-		ignoredList,
+		TestPackCase.IgnoredList,
 		progress.New("mock"),
 	)
 
-	var minSize int64 = 5
-	var maxSize int64 = 20
-
-	if size <= minSize || size >= maxSize {
-		t.Errorf("Expected size to be around %v-%v bytes, got %v instead",
-			minSize,
-			maxSize,
-			size)
-	}
+	TestPackCase.CheckSize(t, size)
 
 	if err != nil {
 		t.Errorf("Expected pack to end without errors, got %v error instead", err)
@@ -109,92 +185,9 @@ func TestPack(t *testing.T) {
 		t.Error(err)
 	}
 
-	r := tar.NewReader(gFile)
-
-	var found = map[string]*FileInfo{}
-
-	for {
-		f, err := r.Next()
-
-		if err == io.EOF {
-			break
-		}
-
-		if err != nil {
-			t.Error(err)
-		}
-
-		rdbuf := make([]byte, 8)
-		h := md5.New()
-
-		if _, err := io.CopyBuffer(h, r, rdbuf); err != nil {
-			t.Error(err)
-		}
-
-		found[f.Name] = &FileInfo{
-			Name:     f.Name,
-			MD5:      fmt.Sprintf("%x", h.Sum(nil)),
-			Dir:      f.FileInfo().IsDir(),
-			Symlink:  f.FileInfo().Mode()&os.ModeSymlink == os.ModeSymlink,
-			Linkname: f.Linkname,
-		}
-	}
-
-	var assertNotIgnored = []string{
-		"doc",
-		"dir/",
-		"symlink_dir",
-		"dir/placeholder",
-		"dir/symlink_placeholder",
-	}
-
-	var refuteIgnored = []string{
-		"ignored",
-		"ignored_dir",
-		"ignored_dir/placeholder",
-		"dir/foo/another_ignored_dir",
-		"dir/foo/another_ignored_dir/placeholder",
-		"dir/sub/complex",
-		"dir/sub/complex/placeholder",
-		"dir/sub/complex/dir/placeholder",
-	}
-
-	for _, k := range assertNotIgnored {
-		if found[k] == nil {
-			t.Errorf("%v not found on tar", k)
-		}
-
-		if found[k].Dir != Reference[k].Dir {
-			t.Errorf("Wanted Dir: %v for %v, got %v instead",
-				Reference[k].Dir, k, found[k].Dir)
-		}
-
-		if !found[k].Dir && !found[k].Symlink && found[k].MD5 != Reference[k].MD5 {
-			t.Errorf("Wanted MD5: %v for %v, got %v instead",
-				Reference[k].MD5, k, found[k].MD5)
-		}
-
-		if found[k].Name != Reference[k].Name {
-			t.Errorf("Wanted Name: %v for %v, got %v instead",
-				Reference[k].Name, k, found[k].Name)
-		}
-
-		if found[k].Symlink != Reference[k].Symlink {
-			t.Errorf("Wanted Symlink: %v for %v, got %v instead",
-				Reference[k].Symlink, k, found[k].Symlink)
-		}
-
-		if found[k].Linkname != Reference[k].Linkname {
-			t.Errorf("Wanted Linkname: %v for %v, got %v instead",
-				Reference[k].Linkname, k, found[k].Linkname)
-		}
-	}
-
-	for _, k := range refuteIgnored {
-		if found[k] != nil {
-			t.Errorf("Expected file %v to be ignored.", k)
-		}
-	}
+	var found = readPackFiles(t, tar.NewReader(gFile))
+	TestPackCase.CheckNotIgnored(t, found)
+	TestPackCase.CheckRefuteIgnored(t, found)
 
 	gFile.Close()
 	file.Close()
@@ -229,27 +222,7 @@ func TestNotSelfPack(t *testing.T) {
 		t.Error(err)
 	}
 
-	r := tar.NewReader(gFile)
-
-	var found = map[string]*FileInfo{}
-
-	for {
-		f, err := r.Next()
-
-		if err == io.EOF {
-			break
-		}
-
-		if err != nil {
-			t.Error(err)
-		}
-
-		found[f.Name] = &FileInfo{
-			Name:    f.Name,
-			Dir:     f.FileInfo().IsDir(),
-			Symlink: f.FileInfo().Mode()&os.ModeSymlink == os.ModeSymlink,
-		}
-	}
+	var found = readPackFiles(t, tar.NewReader(gFile))
 
 	if found["placeholder"] == nil {
 		t.Errorf("Expected placeholder to be found")
@@ -341,4 +314,37 @@ pod/mocks/benchmark/install.sh`)
 
 	// clean up any old package.tar.gz that might exist
 	os.Remove("mocks/res/benchmark.tar.gz")
+}
+
+func readPackFiles(t *testing.T, r *tar.Reader) PackFiles {
+	var found = PackFiles{}
+
+	for {
+		f, err := r.Next()
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		rdbuf := make([]byte, 8)
+		h := md5.New()
+
+		if _, err := io.CopyBuffer(h, r, rdbuf); err != nil {
+			t.Error(err)
+		}
+
+		found[f.Name] = &FileInfo{
+			Name:     f.Name,
+			MD5:      fmt.Sprintf("%x", h.Sum(nil)),
+			Dir:      f.FileInfo().IsDir(),
+			Symlink:  f.FileInfo().Mode()&os.ModeSymlink == os.ModeSymlink,
+			Linkname: f.Linkname,
+		}
+	}
+
+	return found
 }
