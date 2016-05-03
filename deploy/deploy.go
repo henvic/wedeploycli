@@ -13,7 +13,6 @@ import (
 	"sync"
 
 	"github.com/dustin/go-humanize"
-	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/apihelper"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/containers"
@@ -222,11 +221,6 @@ func (d *Deploy) Deploy(src string) error {
 		return errMultipart
 	}
 
-	if err == launchpad.ErrUnexpectedResponse {
-		d.progress.Append = "(Failure)"
-		d.progress.Fail()
-	}
-
 	if err == nil {
 		d.progress.Append = fmt.Sprintf(
 			"%s (Complete)",
@@ -234,8 +228,11 @@ func (d *Deploy) Deploy(src string) error {
 		d.progress.Set(progress.Total)
 
 		fmt.Fprintf(outStream, "Ready! %v.%v.liferay.io\n", d.Container.ID, projectID)
+		return nil
 	}
 
+	d.progress.Append = "(Failure)"
+	d.progress.Fail()
 	return err
 }
 

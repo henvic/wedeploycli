@@ -207,6 +207,46 @@ func TestDeployFileNotFound(t *testing.T) {
 	os.Chdir(workingDir)
 }
 
+func TestDeployFailure(t *testing.T) {
+	var defaultOutStream = outStream
+	var bufOutStream bytes.Buffer
+	outStream = &bufOutStream
+	servertest.Setup()
+	var workingDir, _ = os.Getwd()
+	var tmp, _ = ioutil.TempFile(os.TempDir(), "launchpad-cli")
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
+		t.Error(err)
+	}
+
+	config.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/push/project/container",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(500)
+		})
+
+	var deploy, err = New("mycontainer")
+
+	if err != nil {
+		t.Errorf("Expected New error to be null, got %v instead", err)
+	}
+
+	err = deploy.Deploy("../package")
+
+	if err.(*apihelper.APIFault).Code != 500 {
+		t.Errorf("Expected request error code doesn't match.")
+	}
+
+	os.Remove(tmp.Name())
+	globalconfigmock.Teardown()
+	config.Teardown()
+	os.Chdir(workingDir)
+	servertest.Teardown()
+	outStream = defaultOutStream
+}
+
 func TestAll(t *testing.T) {
 	var defaultOutStream = outStream
 	var bufOutStream bytes.Buffer
