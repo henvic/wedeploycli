@@ -15,8 +15,8 @@ import (
 	"github.com/launchpad-project/cli/verbose"
 )
 
-// ErrEmptyHost is used when host is not found
-var ErrEmptyHost = errors.New("Host not found")
+// ErrHostNotFound is used when host is not found
+var ErrHostNotFound = errors.New("Host not found")
 
 // ErrInvalidHost is used when host is in invalid format
 type ErrInvalidHost struct {
@@ -34,6 +34,15 @@ type Flags struct {
 	ViewMode bool
 }
 
+var portsArgs = []string{
+	"-p", "80:80",
+	"-p", "9300:9300",
+	"-p", "5701:5701",
+	"-p", "8001:8001",
+	"-p", "8080:8080",
+	"-p", "5005:5005",
+}
+
 // GetLaunchpadHost gets the Launchpad infrastructure host
 func GetLaunchpadHost() (string, error) {
 	var fromEnv, err = getLaunchpadHostFromEnv()
@@ -42,37 +51,15 @@ func GetLaunchpadHost() (string, error) {
 		return fromEnv, nil
 	}
 
-	if err != ErrEmptyHost {
+	if err != ErrHostNotFound {
 		return "", ErrInvalidHost{
 			Reference: err,
 		}
 	}
 
 	verbose.Debug("Environment variable $DOCKER_HOST not found.")
-
-	// Docker native on non-Linux sets up the docker.local address
-	addrs, err := net.LookupHost("docker.local")
-
-	if err != nil {
-		verbose.Debug("docker.local not found. Falling back to localhost.")
-		return "localhost", nil
-	}
-
-	if len(addrs) == 0 {
-		println("Warning: docker.local resolves to 0 IP addresses.")
-		println("Falling back to localhost.")
-		return "localhost", nil
-	}
-
-	verbose.Debug("Falling back to docker.local.")
-	verbose.Debug("Resolving docker.local = ", addrs[0])
-
-	if len(addrs) > 1 {
-		println("Warning: docker.local resolves to too many hosts. Using 1st.")
-		fmt.Fprintln(os.Stderr, addrs)
-	}
-
-	return addrs[0], nil
+	verbose.Debug("Falling back to localhost")
+	return "localhost", nil
 }
 
 // Run runs the Launchpad infrastructure
@@ -172,17 +159,9 @@ func listen(dockerContainer string) {
 }
 
 func start(flags Flags) string {
-	var args = []string{
-		"run",
-		"-p", "80:80",
-		"-p", "9300:9300",
-		"-p", "5701:5701",
-		"-p", "8001:8001",
-		"-p", "8080:8080",
-		"-p", "5005:5005",
-	}
-
+	var args = []string{"run"}
 	var certPath, hasCertPath = os.LookupEnv("DOCKER_CERT_PATH")
+	args = append(args, portsArgs...)
 
 	if hasCertPath {
 		args = append(args, "-v")
@@ -247,10 +226,10 @@ func stopListener(dockerContainer string) {
 }
 
 func getLaunchpadHostFromEnv() (string, error) {
-	var dhost, _ = os.LookupEnv("DOCKER_HOST")
+	var dhost, exists = os.LookupEnv("DOCKER_HOST")
 
-	if dhost == "" {
-		return "", ErrEmptyHost
+	if !exists {
+		return "", ErrHostNotFound
 	}
 
 	var u, err = url.Parse(dhost)
