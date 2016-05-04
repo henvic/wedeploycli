@@ -76,6 +76,22 @@ func Execute() {
 	}
 }
 
+var commands = []*cobra.Command{
+	cmdauth.LoginCmd,
+	cmdauth.LogoutCmd,
+	cmdcreate.CreateCmd,
+	cmdlogs.LogsCmd,
+	cmdprojects.ProjectsCmd,
+	cmdcontainers.ContainersCmd,
+	cmdstatus.StatusCmd,
+	cmdrestart.RestartCmd,
+	cmdhooks.BuildCmd,
+	cmdrun.RunCmd,
+	cmddeploy.DeployCmd,
+	cmdupdate.UpdateCmd,
+	cmdversion.VersionCmd,
+}
+
 func init() {
 	config.Setup()
 
@@ -103,19 +119,9 @@ func init() {
 		color.NoColor = true
 	}
 
-	RootCmd.AddCommand(cmdauth.LoginCmd)
-	RootCmd.AddCommand(cmdauth.LogoutCmd)
-	RootCmd.AddCommand(cmdcreate.CreateCmd)
-	RootCmd.AddCommand(cmdlogs.LogsCmd)
-	RootCmd.AddCommand(cmdprojects.ProjectsCmd)
-	RootCmd.AddCommand(cmdcontainers.ContainersCmd)
-	RootCmd.AddCommand(cmdstatus.StatusCmd)
-	RootCmd.AddCommand(cmdrestart.RestartCmd)
-	RootCmd.AddCommand(cmdhooks.BuildCmd)
-	RootCmd.AddCommand(cmdrun.RunCmd)
-	RootCmd.AddCommand(cmddeploy.DeployCmd)
-	RootCmd.AddCommand(cmdupdate.UpdateCmd)
-	RootCmd.AddCommand(cmdversion.VersionCmd)
+	for _, c := range commands {
+		RootCmd.AddCommand(c)
+	}
 }
 
 func persistentPreRun(cmd *cobra.Command, args []string) {
