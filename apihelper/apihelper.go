@@ -154,38 +154,11 @@ func RequestVerboseFeedback(request *launchpad.Launchpad) {
 		color.YellowString(request.URL),
 		color.BlueString(request.Request.Proto))
 
-	for h, r := range request.Headers {
-		if len(r) == 1 {
-			verbose.Debug(color.BlueString(h)+color.RedString(":"), color.YellowString(r[0]))
-		} else {
-			verbose.Debug(color.BlueString(h)+color.RedString(":"), r)
-		}
-	}
-
+	verbosePrintHeaders(request.Headers)
 	feedbackRequestBody(request)
 
 	verbose.Debug("\n")
-
-	if request.Response == nil {
-		verbose.Debug(color.RedString("(null response)"))
-		return
-	}
-
-	verbose.Debug("<",
-		color.BlueString(request.Response.Proto),
-		color.RedString(request.Response.Status))
-
-	for h, r := range request.Response.Header {
-		if len(r) == 1 {
-			verbose.Debug(color.BlueString(h)+color.RedString(":"), color.YellowString(r[0]))
-		} else {
-			verbose.Debug(color.BlueString(h)+color.RedString(":"), r)
-		}
-	}
-
-	verbose.Debug("")
-
-	feedbackResponseBody(request.Response)
+	feedbackResponse(request.Response)
 }
 
 // URL creates a Launchpad URL instance
@@ -261,6 +234,22 @@ func feedbackRequestBody(request *launchpad.Launchpad) {
 	}
 }
 
+func feedbackResponse(response *http.Response) {
+	if response == nil {
+		verbose.Debug(color.RedString("(null response)"))
+		return
+	}
+
+	verbose.Debug("<",
+		color.BlueString(response.Proto),
+		color.RedString(response.Status))
+
+	verbosePrintHeaders(response.Header)
+	verbose.Debug("")
+
+	feedbackResponseBody(response)
+}
+
 func feedbackResponseBody(response *http.Response) {
 	var body, err = ioutil.ReadAll(response.Body)
 	var out bytes.Buffer
@@ -321,4 +310,14 @@ func reportHTTPError(request *launchpad.Launchpad) error {
 	}
 
 	return &af
+}
+
+func verbosePrintHeaders(headers http.Header) {
+	for h, r := range headers {
+		if len(r) == 1 {
+			verbose.Debug(color.BlueString(h)+color.RedString(":"), color.YellowString(r[0]))
+		} else {
+			verbose.Debug(color.BlueString(h)+color.RedString(":"), r)
+		}
+	}
 }
