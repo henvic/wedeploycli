@@ -2,6 +2,7 @@ package cmddeploy
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/launchpad-project/cli/cmdcontext"
@@ -19,51 +20,72 @@ var (
 
 // DeployCmd deploys the current project or container
 var DeployCmd = &cobra.Command{
-	Use:   "deploy",
-	Short: "Deploys the current project or container",
-	Run:   deployRun,
+	Use:    "deploy",
+	Short:  "Deploys the current project or container",
+	PreRun: checkContext,
+	Run:    deployRun,
 	Example: `launchpad deploy
 launchpad deploy <container>
 launchpad deploy -o welcome.pod`,
 }
 
 func deployRun(cmd *cobra.Command, args []string) {
-	_, _, err := cmdcontext.GetProjectOrContainerID(args)
+	var list, err = containers.GetListFromScope()
+
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	if output != "" && len(list) != 1 {
+		err = errors.New("Only one container can be written to a file at once.")
+	}
+
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	err = tryDeployMaybeQuiet(list)
+
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+func checkContext(cmd *cobra.Command, args []string) {
+	var _, _, err = cmdcontext.GetProjectOrContainerID(args)
 
 	if err != nil {
 		println("fatal: not a project")
 		os.Exit(1)
 	}
+}
 
-	list, err := containers.GetListFromScope()
-
-	if err == nil && output != "" && len(list) != 1 {
-		err = errors.New("Only one container can be written to a file at once.")
+func tryDeploy(list []string) error {
+	if output == "" {
+		return deploy.All(list, &deploy.Flags{
+			Hooks: !noHooks,
+			Quiet: quiet,
+		})
 	}
 
-	if err == nil {
-		if !quiet {
-			progress.Start()
-		}
+	return deploy.Pack(output, list[0])
+}
 
-		if output == "" {
-			err = deploy.All(list, &deploy.Flags{
-				Hooks: !noHooks,
-				Quiet: quiet,
-			})
-		} else {
-			err = deploy.Pack(output, list[0])
-		}
-
-		if !quiet {
-			progress.Stop()
-		}
+func tryDeployMaybeQuiet(list []string) error {
+	if !quiet {
+		progress.Start()
 	}
 
-	if err != nil {
-		println(err.Error())
-		os.Exit(1)
+	var err = tryDeploy(list)
+
+	if !quiet {
+		progress.Stop()
 	}
+
+	return err
 }
 
 func init() {
