@@ -123,6 +123,31 @@ func getAlreadyRunning() string {
 	return dockerContainer
 }
 
+func getRunCommandEnv() []string {
+	var args = []string{"run"}
+	var certPath, hasCertPath = os.LookupEnv("DOCKER_CERT_PATH")
+	args = append(args, portsArgs...)
+
+	if hasCertPath {
+		args = append(args, "-v")
+		args = append(args, certPath+":/certs")
+	} else {
+		verbose.Debug("Environment var $DOCKER_CERT_PATH not found. Ignoring.")
+	}
+
+	var address, err = GetLaunchpadHost()
+
+	if err != nil {
+		panic(err)
+	}
+
+	args = append(args, "-e")
+	args = append(args, "LP_DEV_IP_ADDRESS="+address)
+	args = append(args, "--detach")
+	args = append(args, "launchpad/dev")
+	return args
+}
+
 func listen(dockerContainer string) {
 	dockerPath, err := exec.LookPath("docker")
 
@@ -159,28 +184,7 @@ func listen(dockerContainer string) {
 }
 
 func start(flags Flags) string {
-	var args = []string{"run"}
-	var certPath, hasCertPath = os.LookupEnv("DOCKER_CERT_PATH")
-	args = append(args, portsArgs...)
-
-	if hasCertPath {
-		args = append(args, "-v")
-		args = append(args, certPath+":/certs")
-	} else {
-		verbose.Debug("Environment var $DOCKER_CERT_PATH not found. Ignoring.")
-	}
-
-	var address, err = GetLaunchpadHost()
-
-	if err != nil {
-		panic(err)
-	}
-
-	args = append(args, "-e")
-	args = append(args, "LP_DEV_IP_ADDRESS="+address)
-	args = append(args, "--detach")
-	args = append(args, "launchpad/dev")
-
+	var args = getRunCommandEnv()
 	var running = "docker " + strings.Join(args, " ")
 
 	if flags.DryRun && !verbose.Enabled {
@@ -189,14 +193,17 @@ func start(flags Flags) string {
 		verbose.Debug(running)
 	}
 
-	fmt.Println("Starting Launchpad")
+	return startCmd(args...)
+}
 
+func startCmd(args ...string) string {
+	fmt.Println("Starting Launchpad")
 	var docker = exec.Command("docker", args...)
 	var dockerContainerBuf bytes.Buffer
 	docker.Stdout = &dockerContainerBuf
 
 	if err := docker.Run(); err != nil {
-		println("docker run error:", err.Error())
+		fmt.Fprintln(os.Stderr, "docker run error:", err)
 		os.Exit(1)
 	}
 
