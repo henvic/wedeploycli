@@ -148,6 +148,16 @@ func (cmd *Command) Run() {
 	cmd.ExitCode = GetExitCode(c.Run())
 }
 
+func build() {
+	var cmd = exec.Command("go", "build")
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+
+	if err := cmd.Run(); err != nil {
+		panic(err)
+	}
+}
+
 func compile() {
 	var workingDir, err = os.Getwd()
 
@@ -162,13 +172,7 @@ func compile() {
 	}
 
 	os.Chdir(binaryDir)
-	cmd := exec.Command("go", "build")
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-
-	if err := cmd.Run(); err != nil {
-		panic(err)
-	}
+	build()
 
 	binary, err = filepath.Abs(filepath.Join(binaryDir, "cli"))
 
