@@ -14,14 +14,20 @@ import (
 	"github.com/sabhiram/go-git-ignore"
 )
 
+type pack struct {
+	File       *os.File
+	GzipWriter *gzip.Writer
+	TarWriter  *tar.Writer
+}
+
 type pod struct {
 	Dest               string
 	Source             string
-	Writer             *tar.Writer
 	NumberFiles        int
 	NumberDirs         int
 	NumberPathsPackage int
 	PackageSize        int64
+	pack               *pack
 	ignoreRules        *ignore.GitIgnore
 	progress           *progress.Bar
 }
@@ -38,41 +44,24 @@ var CommonIgnorePatterns = []string{
 }
 
 // Pack pod
-func Pack(dest,
-	src string,
-	ignorePatterns []string,
-	pb *progress.Bar) (int64, error) {
-	var file *os.File
-	var size int64
-
-	irules, err := ignore.CompileIgnoreLines(ignorePatterns...)
-
-	if err == nil {
-		dest, err = filepath.Abs(dest)
-	}
-
-	if err == nil {
-		src, err = filepath.Abs(src)
-	}
-
-	if err == nil {
-		file, err = os.Create(dest)
-	}
-
-	var gFile = gzip.NewWriter(file)
+func Pack(dest, src string, ignorePatterns []string, pb *progress.Bar) (
+	size int64, err error) {
+	dest, err = filepath.Abs(dest)
 
 	if err != nil {
 		return 0, err
 	}
 
-	verbose.Debug("Saving container to", file.Name())
+	src, err = filepath.Abs(src)
 
-	var pkg = &pod{
-		Dest:        dest,
-		Source:      src,
-		Writer:      tar.NewWriter(gFile),
-		ignoreRules: irules,
-		progress:    pb,
+	if err != nil {
+		return 0, err
+	}
+
+	var pkg, errPod = createPod(dest, src, ignorePatterns, pb)
+
+	if errPod != nil {
+		return 0, errPod
 	}
 
 	// Add 'counting files' progress bar (ya know, user feedback is important)
@@ -93,31 +82,48 @@ func Pack(dest,
 
 	pb.Set(progress.Total)
 	pb.Append = "(Complete)"
-	err = pkg.Writer.Close()
 
-	if err != nil {
-		return 0, err
+	var fi, fiErr = pkg.pack.File.Stat()
+
+	if fiErr != nil {
+		return 0, fiErr
 	}
 
-	var stat os.FileInfo
-
-	stat, err = file.Stat()
-
-	if err != nil {
-		return 0, err
-	}
-
-	err = gFile.Close()
-
-	if err == nil {
-		err = file.Close()
-	}
-
-	if stat != nil {
-		size = stat.Size()
-	}
-
+	size = fi.Size()
+	err = pkg.pack.Close()
 	return size, err
+}
+
+func createPod(dest, src string, ignorePatterns []string, pb *progress.Bar) (*pod, error) {
+	var p pod
+	var err error
+	p.progress = pb
+	p.ignoreRules, err = ignore.CompileIgnoreLines(ignorePatterns...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	p.Dest, err = filepath.Abs(dest)
+
+	if err != nil {
+		return nil, err
+	}
+
+	p.Source, err = filepath.Abs(src)
+
+	if err != nil {
+		return nil, err
+	}
+
+	p.pack, err = createPack(dest)
+
+	if err != nil {
+		return nil, err
+	}
+
+	verbose.Debug("Saving container to", dest)
+	return &p, nil
 }
 
 func (p *pod) countWalkFunc(path string, fi os.FileInfo, ierr error) error {
@@ -238,7 +244,7 @@ func (p *pod) walkFunc(path string, fi os.FileInfo, ierr error) error {
 		header.Linkname = linkDest
 	}
 
-	err = p.Writer.WriteHeader(header)
+	err = p.pack.TarWriter.WriteHeader(header)
 
 	if err != nil {
 		verbose.Debug("Failure to create package header for", path)
@@ -249,7 +255,7 @@ func (p *pod) walkFunc(path string, fi os.FileInfo, ierr error) error {
 		return nil
 	}
 
-	return copy(p.Writer, path, relative)
+	return copy(p.pack.TarWriter, path, relative)
 }
 
 func miniPath(s string) string {
@@ -280,4 +286,37 @@ func copy(writer io.Writer, path, relative string) error {
 	}
 
 	return err
+}
+
+func createPack(dest string) (*pack, error) {
+	var file, err = os.Create(dest)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var gFile = gzip.NewWriter(file)
+
+	return &pack{
+		File:       file,
+		GzipWriter: gFile,
+		TarWriter:  tar.NewWriter(gFile),
+	}, err
+
+}
+
+func (pack *pack) Close() error {
+	var err = pack.TarWriter.Close()
+
+	if err != nil {
+		return err
+	}
+
+	err = pack.GzipWriter.Close()
+
+	if err != nil {
+		return err
+	}
+
+	return pack.File.Close()
 }
