@@ -142,8 +142,12 @@ func (w *Watcher) pool() {
 		return
 	}
 
-	last := list[length-1]
-	next, err := strconv.ParseInt(last.Timestamp, 10, 0)
+	w.incSinceArgument(list)
+}
+
+func (w *Watcher) incSinceArgument(list []Logs) {
+	var last = list[len(list)-1]
+	var next, err = strconv.ParseInt(last.Timestamp, 10, 0)
 
 	if err != nil {
 		panic(err)
