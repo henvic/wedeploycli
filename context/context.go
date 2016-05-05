@@ -56,19 +56,7 @@ func checkContainerNotInProjectRoot(projectRoot string) error {
 	return nil
 }
 
-func getRootDirectory(delimiter, file string) (dir string, err error) {
-	dir, err = os.Getwd()
-
-	if err != nil {
-		return "", err
-	}
-
-	stat, err := os.Stat(delimiter)
-
-	if err != nil || !stat.IsDir() {
-		return "", os.ErrNotExist
-	}
-
+func walkToRootDirectory(dir, delimiter, file string) (string, error) {
 	// sysRoot = / = upper-bound / The Power of Ten rule 2
 	for dir != sysRoot && dir != delimiter {
 		stat, err := os.Stat(filepath.Join(dir, file))
@@ -83,6 +71,22 @@ func getRootDirectory(delimiter, file string) (dir string, err error) {
 	}
 
 	return "", os.ErrNotExist
+}
+
+func getRootDirectory(delimiter, file string) (dir string, err error) {
+	dir, err = os.Getwd()
+
+	if err != nil {
+		return "", err
+	}
+
+	stat, err := os.Stat(delimiter)
+
+	if err != nil || !stat.IsDir() {
+		return "", os.ErrNotExist
+	}
+
+	return walkToRootDirectory(dir, delimiter, file)
 }
 
 func setSysRoot(dir string) {
