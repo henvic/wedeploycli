@@ -193,6 +193,10 @@ func start(flags Flags) string {
 		verbose.Debug(running)
 	}
 
+	if flags.DryRun {
+		os.Exit(0)
+	}
+
 	return startCmd(args...)
 }
 
