@@ -62,12 +62,7 @@ func List() {
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Get())
 	apihelper.DecodeJSONOrExit(req, &projects)
-
-	for _, project := range projects {
-		fmt.Fprintln(outStream, project.ID+"\t"+project.ID+".liferay.io ("+project.Name+") "+project.State)
-	}
-
-	fmt.Fprintln(outStream, "total", len(projects))
+	printProjects(projects)
 }
 
 // Restart restarts a project
@@ -134,4 +129,17 @@ func ValidateOrCreate(projectID, projectName string) (bool, error) {
 	}
 
 	return created, err
+}
+
+func printProject(project Project) {
+	fmt.Fprintln(outStream,
+		project.ID+"\t"+project.ID+".liferay.io ("+project.Name+") "+project.State)
+}
+
+func printProjects(projects []Project) {
+	for _, project := range projects {
+		printProject(project)
+	}
+
+	fmt.Fprintln(outStream, "total", len(projects))
 }
