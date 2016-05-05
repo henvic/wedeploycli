@@ -104,7 +104,7 @@ func Update(channel string) {
 	var csg = config.Stores["global"]
 
 	if defaults.Version == "master" {
-		println(ErrMasterVersion.Error())
+		fmt.Fprintln(os.Stderr, ErrMasterVersion)
 		os.Exit(1)
 	}
 
@@ -112,19 +112,7 @@ func Update(channel string) {
 	fmt.Println("Current installed version is " + defaults.Version)
 
 	var resp, err = check(channel)
-
-	switch err {
-	case nil:
-	case equinox.NotAvailableErr:
-		csg.Set("cache.next_version", "")
-		csg.Set("cache.last_update_check", time.Now().String())
-		csg.Save()
-		fmt.Println("No updates available.")
-		return
-	default:
-		println("Update failed:", err.Error())
-		os.Exit(1)
-	}
+	handleUpdateCheckError(err)
 
 	err = resp.Apply()
 
@@ -152,6 +140,23 @@ func check(channel string) (*equinox.Response, error) {
 	resp, err := equinox.Check(AppID, opts)
 
 	return &resp, err
+}
+
+func handleUpdateCheckError(err error) {
+	var csg = config.Stores["global"]
+
+	switch err {
+	case nil:
+	case equinox.NotAvailableErr:
+		csg.Set("cache.next_version", "")
+		csg.Set("cache.last_update_check", time.Now().String())
+		csg.Save()
+		fmt.Println("No updates available.")
+		return
+	default:
+		println("Update failed:", err.Error())
+		os.Exit(1)
+	}
 }
 
 func isNotifyOn() bool {
