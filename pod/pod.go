@@ -145,18 +145,10 @@ func (p *pod) countWalkFunc(path string, fi os.FileInfo, ierr error) error {
 		return err
 	}
 
-	// Pod, Jar is a gzipped tar bomb!
-	// avoid packing itself 'til starvation also
-	if relative == "." || abs == p.Dest {
-		return nil
-	}
+	var wi, wiErr = p.testWalkIgnore(fi, relative, abs)
 
-	if p.ignoreRules.MatchesPath(relative) {
-		if fi.IsDir() {
-			return filepath.SkipDir
-		}
-
-		return nil
+	if wi {
+		return wiErr
 	}
 
 	if fi.IsDir() {
@@ -192,18 +184,10 @@ func (p *pod) walkFunc(path string, fi os.FileInfo, ierr error) error {
 		return err
 	}
 
-	// Pod, Jar is a gzipped tar bomb!
-	// avoid packing itself 'til starvation also
-	if relative == "." || abs == p.Dest {
-		return nil
-	}
+	var wi, wiErr = p.testWalkIgnore(fi, relative, abs)
 
-	if p.ignoreRules.MatchesPath(relative) {
-		if fi.IsDir() {
-			return filepath.SkipDir
-		}
-
-		return nil
+	if wi {
+		return wiErr
 	}
 
 	p.NumberPathsPackage++
@@ -256,6 +240,25 @@ func (p *pod) walkFunc(path string, fi os.FileInfo, ierr error) error {
 	}
 
 	return copy(p.pack.TarWriter, path, relative)
+}
+
+func (p *pod) testWalkIgnore(fi os.FileInfo, relative, abs string) (
+	ignore bool, err error) {
+	// Pod, Jar is a gzipped tar bomb!
+	// avoid packing itself 'til starvation also
+	if relative == "." || abs == p.Dest {
+		return true, nil
+	}
+
+	if p.ignoreRules.MatchesPath(relative) {
+		if fi.IsDir() {
+			return true, filepath.SkipDir
+		}
+
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func miniPath(s string) string {
