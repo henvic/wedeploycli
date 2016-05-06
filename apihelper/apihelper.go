@@ -266,7 +266,8 @@ func feedbackResponseBody(response *http.Response) {
 		response.Header.Get("Content-Type"),
 		"application/json") {
 		if err := json.Indent(&out, body, "", "    "); err != nil {
-			println(err)
+			verbose.Debug("Response not JSON (as expected by Content-Type)")
+			verbose.Debug(err)
 		}
 	}
 
