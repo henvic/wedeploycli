@@ -19,7 +19,10 @@ import (
 )
 
 // APIFault is sent by the server when errors happen
+// Method and URL MUST NOT have JSON tags
 type APIFault struct {
+	Method  string
+	URL     string
 	Code    int            `json:"code"`
 	Message string         `json:"message"`
 	Errors  APIFaultErrors `json:"errors"`
@@ -34,6 +37,10 @@ func (a APIFault) Error() string {
 
 	if a.Message != "" {
 		s += " " + a.Message
+	}
+
+	if a.Method != "" || a.URL != "" {
+		s += " (" + a.Method + " " + a.URL + ")"
 	}
 
 	if a.Errors != nil && len(a.Errors) != 0 {
@@ -90,8 +97,22 @@ func DecodeJSON(request *launchpad.Launchpad, data interface{}) error {
 
 	body, err := ioutil.ReadAll(response.Body)
 
-	if err == nil {
-		err = json.Unmarshal(body, &data)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(body, &data)
+
+	if err != nil {
+		return err
+	}
+
+	switch err.(type) {
+	case *APIFault:
+		var ea = err.(*APIFault)
+		ea.Method = request.Request.Method
+		ea.URL = request.URL
+		return ea
 	}
 
 	return err
@@ -293,6 +314,8 @@ func reportHTTPError(request *launchpad.Launchpad) error {
 		err = json.Unmarshal(body, &af)
 
 		if err == nil {
+			af.Method = request.Request.Method
+			af.URL = request.URL
 			return &af
 		}
 
@@ -300,6 +323,8 @@ func reportHTTPError(request *launchpad.Launchpad) error {
 	}
 
 	af = APIFault{
+		Method:  request.Request.Method,
+		URL:     request.URL,
 		Code:    response.StatusCode,
 		Message: http.StatusText(response.StatusCode),
 		Errors: APIFaultErrors{

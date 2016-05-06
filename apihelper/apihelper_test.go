@@ -867,7 +867,7 @@ func TestValidateOrExitUnexpectedResponse(t *testing.T) {
 }`)
 	})
 
-	var want = "Launchpad API error: 403 Forbidden\n\t" +
+	var want = "Launchpad API error: 403 Forbidden (GET http://www.example.com/foo/bah)\n\t" +
 		"forbidden: The requested operation failed because you do not have access.\n"
 
 	haltExitCommand = true
@@ -893,7 +893,7 @@ func TestValidateOrExitUnexpectedResponseCustom(t *testing.T) {
 		fmt.Fprintf(w, `Error message.`)
 	})
 
-	var want = "Launchpad API error: 403 Forbidden\n\tbody: Error message.\n"
+	var want = tdata.FromFile("mocks/unexpected_response_error")
 	haltExitCommand = true
 	bufErrStream.Reset()
 

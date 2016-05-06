@@ -1,0 +1,2 @@
+Launchpad API error: 403 Forbidden (GET http://www.example.com/foo/bah)
+	body: Error message.
