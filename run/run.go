@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"net/url"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -16,16 +15,7 @@ import (
 )
 
 // ErrHostNotFound is used when host is not found
-var ErrHostNotFound = errors.New("Host not found")
-
-// ErrInvalidHost is used when host is in invalid format
-type ErrInvalidHost struct {
-	Reference error
-}
-
-func (e ErrInvalidHost) Error() string {
-	return fmt.Sprintf("Host is invalid: %v", e.Reference)
-}
+var ErrHostNotFound = errors.New("You need to be connected to a network.")
 
 // Flags modifiers
 type Flags struct {
@@ -44,22 +34,23 @@ var portsArgs = []string{
 }
 
 // GetLaunchpadHost gets the Launchpad infrastructure host
+// This is a temporary solution and it is NOT reliable
 func GetLaunchpadHost() (string, error) {
-	var fromEnv, err = getLaunchpadHostFromEnv()
+	var addrs, err = net.InterfaceAddrs()
 
-	if err == nil {
-		return fromEnv, nil
+	if err != nil {
+		return "", err
 	}
 
-	if err != ErrHostNotFound {
-		return "", ErrInvalidHost{
-			Reference: err,
+	for _, addr := range addrs {
+		var ip = addr.(*net.IPNet)
+
+		if !ip.IP.IsLoopback() && ip.IP.To4() != nil {
+			return strings.SplitN(ip.String(), "/", 2)[0], nil
 		}
 	}
 
-	verbose.Debug("Environment variable $DOCKER_HOST not found.")
-	verbose.Debug("Falling back to localhost")
-	return "localhost", nil
+	return "", ErrHostNotFound
 }
 
 // Run runs the Launchpad infrastructure
@@ -125,15 +116,7 @@ func getAlreadyRunning() string {
 
 func getRunCommandEnv() []string {
 	var args = []string{"run"}
-	var certPath, hasCertPath = os.LookupEnv("DOCKER_CERT_PATH")
 	args = append(args, portsArgs...)
-
-	if hasCertPath {
-		args = append(args, "-v")
-		args = append(args, certPath+":/certs")
-	} else {
-		verbose.Debug("Environment var $DOCKER_CERT_PATH not found. Ignoring.")
-	}
 
 	var address, err = GetLaunchpadHost()
 
@@ -234,23 +217,6 @@ func stopListener(dockerContainer string) {
 		fmt.Println("\nStopping Launchpad.")
 		stop(dockerContainer)
 	}()
-}
-
-func getLaunchpadHostFromEnv() (string, error) {
-	var dhost, exists = os.LookupEnv("DOCKER_HOST")
-
-	if !exists {
-		return "", ErrHostNotFound
-	}
-
-	var u, err = url.Parse(dhost)
-
-	if err != nil {
-		return "", err
-	}
-
-	host, _, err := net.SplitHostPort(u.Host)
-	return host, err
 }
 
 func existsDependency(cmd string) bool {
