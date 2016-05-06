@@ -126,6 +126,8 @@ func getRunCommandEnv() []string {
 
 	args = append(args, "-e")
 	args = append(args, "LP_DEV_IP_ADDRESS="+address)
+	args = append(args, "-e")
+	args = append(args, "LP_DEV_DOCKER_HOST=tcp://"+address+":2375")
 	args = append(args, "--detach")
 	args = append(args, "launchpad/dev")
 	return args
