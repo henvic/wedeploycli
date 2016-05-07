@@ -7,7 +7,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"sort"
 
@@ -63,6 +62,7 @@ func GetConfig(dir string, c *Container) error {
 }
 
 // GetListFromScope returns a list of containers on the current context
+// actually, directories...
 func GetListFromScope() ([]string, error) {
 	var projectRoot = config.Context.ProjectRoot
 	var list []string
@@ -139,23 +139,24 @@ func List(projectID string) {
 	fmt.Fprintln(outStream, "total", len(containers))
 }
 
-// Install container to project
-func Install(projectID string, c *Container) error {
-	var req = apihelper.URL(path.Join("/projects", projectID, "containers", c.ID))
+// InstallFromDefinition container to project
+func InstallFromDefinition(projectID string, container *Container) error {
+	verbose.Debug("Installing container from definition")
+
+	var req = apihelper.URL("/containers")
 	apihelper.Auth(req)
 
-	var reader, err = apihelper.EncodeJSON(map[string]string{
-		"id":   c.ID,
-		"name": c.Name,
-	})
+	req.Param("projectId", projectID)
 
-	if err == nil {
-		req.Body(reader)
-		verbose.Debug("Installing container")
-		err = apihelper.Validate(req, req.Post())
+	var r, err = apihelper.EncodeJSON(&container)
+
+	if err != nil {
+		return err
 	}
 
-	return err
+	req.Body(r)
+
+	return apihelper.Validate(req, req.Put())
 }
 
 // GetRegistry gets a list of container images
@@ -212,26 +213,4 @@ func Validate(projectID, containerID string) (err error) {
 	}
 
 	return errDoc
-}
-
-// ValidateOrCreate container
-func ValidateOrCreate(projectID string, c *Container) (bool, error) {
-	var created bool
-	var err = Validate(projectID, c.ID)
-
-	if err == ErrContainerAlreadyExists {
-		return false, nil
-	}
-
-	if err != nil {
-		return false, err
-	}
-
-	err = Install(projectID, c)
-
-	if err == nil {
-		created = true
-	}
-
-	return created, err
 }

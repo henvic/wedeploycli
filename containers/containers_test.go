@@ -200,15 +200,15 @@ func TestList(t *testing.T) {
 	globalconfigmock.Teardown()
 }
 
-func TestInstall(t *testing.T) {
+func TestInstallFromDefinition(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 	bufOutStream.Reset()
 
 	servertest.Mux.HandleFunc(
-		"/projects/sound/containers/speaker",
+		"/containers",
 		func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "POST" {
+			if r.Method != "PUT" {
 				t.Errorf("Expected install method to be POST")
 			}
 
@@ -227,16 +227,17 @@ func TestInstall(t *testing.T) {
 			}
 
 			jsonlib.AssertJSONMarshal(t,
-				`{"id":"speaker", "name": "Speaker"}`,
+				`{"id":"speaker", "name": "Speaker", "type": "nodejs"}`,
 				data)
 		})
 
 	var c = &Container{
 		ID:   "speaker",
 		Name: "Speaker",
+		Type: "nodejs",
 	}
 
-	var err = Install("sound", c)
+	var err = InstallFromDefinition("sound", c)
 
 	if err != nil {
 		t.Errorf("Unexpected error on Install: %v", err)
@@ -402,88 +403,6 @@ func TestValidateInvalidError(t *testing.T) {
 
 	if err == nil || err.Error() != "unexpected end of JSON input" {
 		t.Errorf("Expected error didn't happen")
-	}
-
-	servertest.Teardown()
-	globalconfigmock.Teardown()
-}
-
-func TestValidateOrCreateAlreadyExists(t *testing.T) {
-	servertest.Setup()
-	globalconfigmock.Setup()
-
-	servertest.Mux.HandleFunc("/validators/containers/id",
-		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-type", "application/json; charset=UTF-8")
-			w.WriteHeader(404)
-			fmt.Fprintf(w, tdata.FromFile("mocks/container_already_exists_response.json"))
-		})
-
-	var c = &Container{
-		ID: "bar",
-	}
-
-	if ok, err := ValidateOrCreate("foo", c); ok != false || err != nil {
-		t.Errorf("Wanted (%v, %v), got (%v, %v) instead", nil, false, ok, err)
-	}
-
-	servertest.Teardown()
-	globalconfigmock.Teardown()
-}
-
-func TestValidateOrCreateNotExists(t *testing.T) {
-	servertest.Setup()
-	globalconfigmock.Setup()
-	bufOutStream.Reset()
-
-	servertest.Mux.HandleFunc("/validators/containers/id",
-		func(w http.ResponseWriter, r *http.Request) {
-			if r.FormValue("projectId") != "sound" {
-				t.Errorf("Wrong projectId form value")
-			}
-
-			if r.FormValue("value") != "speaker" {
-				t.Errorf("Wrong containerId form value")
-			}
-		})
-
-	servertest.Mux.HandleFunc(
-		"/projects/sound/containers/speaker",
-		tdata.ServerHandler(""))
-
-	var c = &Container{
-		ID:   "speaker",
-		Name: "Speaker",
-	}
-
-	var ok, err = ValidateOrCreate("sound", c)
-
-	if ok != true || err != nil {
-		t.Errorf("Unexpected error on Install: (%v, %v)", ok, err)
-	}
-
-	servertest.Teardown()
-	globalconfigmock.Teardown()
-}
-
-func TestValidateOrCreateInvalidError(t *testing.T) {
-	servertest.Setup()
-	globalconfigmock.Setup()
-
-	servertest.Mux.HandleFunc("/validators/containers/id",
-		func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(404)
-		})
-
-	var c = &Container{
-		ID:   "speaker",
-		Name: "Speaker",
-	}
-
-	var _, err = ValidateOrCreate("foo", c)
-
-	if err != apihelper.ErrInvalidContentType {
-		t.Errorf("Expected content-type error didn't happen")
 	}
 
 	servertest.Teardown()
