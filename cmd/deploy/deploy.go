@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/launchpad-project/cli/cmdcontext"
 	"github.com/launchpad-project/cli/containers"
@@ -46,7 +47,20 @@ func deployRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	err = tryDeployMaybeQuiet(list)
+	var success []string
+	success, err = tryDeployMaybeQuiet(list)
+
+	// wait for next tick to the progress bar cleanup goroutine to clear the
+	// buffer and end, so the message here is not erased by it
+	time.Sleep(time.Millisecond)
+
+	for _, s := range success {
+		fmt.Println(s)
+	}
+
+	if len(success) != 0 && err != nil {
+		fmt.Println("")
+	}
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -63,7 +77,7 @@ func checkContext(cmd *cobra.Command, args []string) {
 	}
 }
 
-func tryDeploy(list []string) error {
+func tryDeploy(list []string) (success []string, err error) {
 	if output == "" {
 		return deploy.All(list, &deploy.Flags{
 			Hooks: !noHooks,
@@ -71,21 +85,21 @@ func tryDeploy(list []string) error {
 		})
 	}
 
-	return deploy.Pack(output, list[0])
+	return success, deploy.Pack(output, list[0])
 }
 
-func tryDeployMaybeQuiet(list []string) error {
+func tryDeployMaybeQuiet(list []string) (success []string, err error) {
 	if !quiet {
 		progress.Start()
 	}
 
-	var err = tryDeploy(list)
+	success, err = tryDeploy(list)
 
 	if !quiet {
 		progress.Stop()
 	}
 
-	return err
+	return success, err
 }
 
 func init() {
