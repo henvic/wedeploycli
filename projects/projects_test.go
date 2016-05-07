@@ -3,6 +3,7 @@ package projects
 import (
 	"bytes"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"os"
 	"testing"
@@ -25,7 +26,7 @@ func TestMain(m *testing.M) {
 	os.Exit(ec)
 }
 
-func TestCreate(t *testing.T) {
+func TestCreateFromDefinition(t *testing.T) {
 	defer servertest.Teardown()
 	servertest.Setup()
 	globalconfigmock.Setup()
@@ -37,13 +38,21 @@ func TestCreate(t *testing.T) {
 			}
 		})
 
-	err := Create("myProjectID", "myName")
+	err := CreateFromDefinition("mocks/project.json")
 
 	if err != nil {
 		t.Errorf("Wanted err to be nil, got %v instead", err)
 	}
 
 	globalconfigmock.Teardown()
+}
+
+func TestCreateFromDefinitionFailureNotFound(t *testing.T) {
+	var err = CreateFromDefinition(fmt.Sprintf("foo-%d.json", rand.Int()))
+
+	if !os.IsNotExist(err) {
+		t.Errorf("Wanted err to be due to file not found, got %v instead", err)
+	}
 }
 
 func TestGetStatus(t *testing.T) {
@@ -208,15 +217,15 @@ func TestValidateOrCreateAlreadyExists(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/validators/project/id",
+	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
-			w.WriteHeader(404)
-			fmt.Fprintf(w, tdata.FromFile("mocks/project_already_exists_response.json"))
+			w.WriteHeader(400)
+			fmt.Fprintf(w, tdata.FromFile("mocks/create_already_exists_response.json"))
 		})
 
-	if ok, err := ValidateOrCreate("foo", "bar"); ok != false || err != nil {
-		t.Errorf("Wanted (%v, %v), got (%v, %v) instead", nil, false, ok, err)
+	if ok, err := ValidateOrCreate("mocks/project.json"); ok != false || err != nil {
+		t.Errorf("Wanted (%v, %v), got (%v, %v) instead", false, nil, ok, err)
 	}
 
 	servertest.Teardown()
@@ -228,29 +237,14 @@ func TestValidateOrCreateNotExists(t *testing.T) {
 	globalconfigmock.Setup()
 	bufOutStream.Reset()
 
-	servertest.Mux.HandleFunc("/validators/project/id",
-		func(w http.ResponseWriter, r *http.Request) {
-			if r.FormValue("value") != "sound" {
-				t.Errorf("Wrong form value")
-			}
-		})
-
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "POST" {
 				t.Errorf("Unexpected method %v", r.Method)
 			}
-
-			if r.FormValue("id") != "sound" {
-				t.Errorf("Wrong value form value")
-			}
-
-			if r.FormValue("name") != "Sound" {
-				t.Errorf("Wrong value form value")
-			}
 		})
 
-	var ok, err = ValidateOrCreate("sound", "Sound")
+	var ok, err = ValidateOrCreate("mocks/project.json")
 
 	if ok != true || err != nil {
 		t.Errorf("Unexpected error on Install: (%v, %v)", ok, err)
@@ -264,15 +258,10 @@ func TestValidateOrCreateInvalidError(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/validators/project/id",
-		func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(404)
-		})
+	var _, err = ValidateOrCreate("mocks/project.json")
 
-	var _, err = ValidateOrCreate("foo", "Foo")
-
-	if err != apihelper.ErrInvalidContentType {
-		t.Errorf("Expected content-type error didn't happen")
+	if err == nil {
+		t.Errorf("Expected error, got %v instead", err)
 	}
 
 	servertest.Teardown()

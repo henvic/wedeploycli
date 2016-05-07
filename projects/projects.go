@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
+	"strings"
 
 	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/apihelper"
@@ -16,8 +16,8 @@ import (
 type Project struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
-	Domain      string `json:"domain"`
-	State       string `json:"state"`
+	Domain      string `json:"domain,omitempty"`
+	State       string `json:"state,omitempty"`
 	Description string `json:"description,omitempty"`
 }
 
@@ -31,14 +31,21 @@ var (
 	outStream io.Writer = os.Stdout
 )
 
-// Create new project
-func Create(projectID, name string) error {
-	var req = apihelper.URL(path.Join("/projects"))
-	verbose.Debug("Creating project")
+// CreateFromDefinition creates a project on Launchpad using a JSON definition
+func CreateFromDefinition(filename string) error {
+	var file, err = os.Open(filename)
 
+	if err != nil {
+		return err
+	}
+
+	verbose.Debug("Creating project from definition:")
+	verbose.Debug(filename)
+
+	var req = apihelper.URL("/projects")
 	apihelper.Auth(req)
-	req.Form("id", projectID)
-	req.Form("name", name)
+
+	req.Body(file)
 
 	return apihelper.Validate(req, req.Post())
 }
@@ -110,25 +117,27 @@ func Validate(projectID string) (err error) {
 }
 
 // ValidateOrCreate project
-func ValidateOrCreate(projectID, projectName string) (bool, error) {
-	var created bool
-	var err = Validate(projectID)
+func ValidateOrCreate(filename string) (created bool, err error) {
+	err = CreateFromDefinition(filename)
 
-	if err == ErrProjectAlreadyExists {
-		return false, nil
+	switch err.(type) {
+	case nil:
+		return true, err
+	case *apihelper.APIFault:
+		var ae = err.(*apihelper.APIFault)
+		var errorList = ae.Errors
+
+		if len(errorList) != 0 {
+			for _, e := range errorList {
+				if e.Reason == "invalidDocumentValue" &&
+					strings.Contains(e.Message, "already exists") {
+					return false, nil
+				}
+			}
+		}
 	}
 
-	if err != nil {
-		return false, err
-	}
-
-	err = Create(projectID, projectName)
-
-	if err == nil {
-		created = true
-	}
-
-	return created, err
+	return false, err
 }
 
 func printProject(project Project) {
