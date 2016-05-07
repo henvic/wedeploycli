@@ -13,16 +13,10 @@ func TestDeploy(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc("/validators/project/id",
-		func(w http.ResponseWriter, r *http.Request) {})
-
 	servertest.IntegrationMux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.IntegrationMux.HandleFunc("/validators/containers/id",
-		func(w http.ResponseWriter, r *http.Request) {})
-
-	servertest.IntegrationMux.HandleFunc("/projects/app/containers/container",
+	servertest.IntegrationMux.HandleFunc("/containers",
 		func(w http.ResponseWriter, r *http.Request) {})
 
 	servertest.IntegrationMux.HandleFunc("/push/app/container",
