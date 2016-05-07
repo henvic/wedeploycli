@@ -10,7 +10,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/dustin/go-humanize"
 	"github.com/launchpad-project/cli/apihelper"
@@ -25,8 +24,8 @@ import (
 
 // ContainerError struct
 type ContainerError struct {
-	Container string
-	Error     error
+	ContainerPath string
+	Error         error
 }
 
 // Deploy holds the information of a POD to be packed or deployed
@@ -56,50 +55,41 @@ func (de Errors) Error() string {
 	var msgs = []string{}
 
 	for _, e := range de.List {
-		msgs = append(msgs, fmt.Sprintf("%v: %v", e.Container, e.Error.Error()))
+		msgs = append(msgs, fmt.Sprintf("%v: %v", e.ContainerPath, e.Error.Error()))
 	}
 
-	return fmt.Sprintf("List of errors (format is container: error)\n%v",
+	return fmt.Sprintf("List of errors (format is container path: error)\n%v",
 		strings.Join(msgs, "\n"))
 }
 
 // All deploys a list of containers on the given context
-func All(list []string, df *Flags) (err error) {
-	var wg sync.WaitGroup
-	var mutex sync.Mutex
-	var de = &Errors{
-		List: []ContainerError{},
+func All(list []string, df *Flags) (success []string, err error) {
+	var projectID = config.Stores["project"].Get("id")
+
+	var dm = &Machine{
+		ProjectID: projectID,
+		Flags:     df,
 	}
 
-	wg.Add(len(list))
+	created, err := projects.ValidateOrCreate(
+		filepath.Join(config.Context.ProjectRoot, "/project.json"))
 
-	for _, container := range list {
-		go func(container string) {
-			var err = Only(container, df)
-
-			if err != nil {
-				mutex.Lock()
-				de.List = append(de.List, ContainerError{
-					Container: container,
-					Error:     err,
-				})
-				mutex.Unlock()
-			}
-
-			wg.Done()
-		}(container)
+	if created {
+		dm.Success = append(dm.Success, "New project "+projectID+" created")
 	}
 
-	wg.Wait()
-
-	if len(de.List) != 0 {
-		err = de
+	if err != nil {
+		return success, err
 	}
 
-	return err
+	err = dm.Run(list)
+
+	success = dm.Success
+
+	return success, err
 }
 
-// Only PODify a container and deploys it to Launchpad
+// Only PODify a single container and deploys it to Launchpad
 func Only(container string, df *Flags) error {
 	var deploy, err = New(container)
 
@@ -110,8 +100,7 @@ func Only(container string, df *Flags) error {
 	var projectID = config.Stores["project"].Get("id")
 
 	created, err := projects.ValidateOrCreate(
-		projectID,
-		config.Stores["project"].Get("name"))
+		filepath.Join(config.Context.ProjectRoot, "/project.json"))
 
 	if created {
 		fmt.Fprintf(outStream, "New project %v created\n", projectID)
@@ -121,35 +110,7 @@ func Only(container string, df *Flags) error {
 		return err
 	}
 
-	created, err = containers.ValidateOrCreate(projectID, deploy.Container)
-
-	if created {
-		fmt.Fprintf(outStream, "New container %v created\n", deploy.Container.ID)
-	}
-
-	if err != nil {
-		return err
-	}
-
-	return deploy.HooksAndOnly(df)
-}
-
-// New Deploy instance
-func New(cpath string) (*Deploy, error) {
-	var deploy = &Deploy{
-		ContainerPath: path.Join(config.Context.ProjectRoot, cpath),
-		progress:      progress.New(cpath),
-	}
-
-	var c containers.Container
-	var err = containers.GetConfig(deploy.ContainerPath, &c)
-	deploy.Container = &c
-
-	if err != nil {
-		return nil, err
-	}
-
-	return deploy, err
+	return installContainerDefinition(projectID, deploy, df)
 }
 
 // Pack packages a POD to a .pod package
@@ -221,18 +182,17 @@ func (d *Deploy) Deploy(src string) error {
 		return errMultipart
 	}
 
-	if err == nil {
-		d.progress.Append = fmt.Sprintf(
-			"%s (Complete)",
-			humanize.Bytes(uint64(packageSize)))
-		d.progress.Set(progress.Total)
-
-		fmt.Fprintf(outStream, "Ready! %v.%v.liferay.io\n", d.Container.ID, projectID)
-		return nil
+	if err != nil {
+		d.progress.Append = "(Failure)"
+		d.progress.Fail()
+		return err
 	}
 
-	d.progress.Append = "(Failure)"
-	d.progress.Fail()
+	d.progress.Append = fmt.Sprintf(
+		"%s (Complete)",
+		humanize.Bytes(uint64(packageSize)))
+	d.progress.Set(progress.Total)
+
 	return err
 }
 

@@ -23,13 +23,13 @@ import (
 
 func TestErrors(t *testing.T) {
 	var fooe = ContainerError{
-		Container: "foo",
-		Error:     os.ErrExist,
+		ContainerPath: "foo",
+		Error:         os.ErrExist,
 	}
 
 	var bare = ContainerError{
-		Container: "bar",
-		Error:     os.ErrNotExist,
+		ContainerPath: "bar",
+		Error:         os.ErrNotExist,
 	}
 
 	var e error = Errors{
@@ -101,9 +101,6 @@ func TestPack(t *testing.T) {
 }
 
 func TestDeploy(t *testing.T) {
-	var defaultOutStream = outStream
-	var bufOutStream bytes.Buffer
-	outStream = &bufOutStream
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
 	var tmp, _ = ioutil.TempFile(os.TempDir(), "launchpad-cli")
@@ -164,18 +161,11 @@ func TestDeploy(t *testing.T) {
 		t.Errorf("Unexpected error: %v", err)
 	}
 
-	var wantFeedback = "Ready! container.project.liferay.io\n"
-
-	if bufOutStream.String() != wantFeedback {
-		t.Errorf("Wanted feedback %v, got %v instead", wantFeedback, bufOutStream.String())
-	}
-
 	os.Remove(tmp.Name())
 	globalconfigmock.Teardown()
 	config.Teardown()
 	os.Chdir(workingDir)
 	servertest.Teardown()
-	outStream = defaultOutStream
 }
 
 func TestDeployFileNotFound(t *testing.T) {
@@ -248,9 +238,6 @@ func TestDeployFailure(t *testing.T) {
 }
 
 func TestAll(t *testing.T) {
-	var defaultOutStream = outStream
-	var bufOutStream bytes.Buffer
-	outStream = &bufOutStream
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
 
@@ -261,16 +248,10 @@ func TestAll(t *testing.T) {
 	config.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/validators/project/id",
-		func(w http.ResponseWriter, r *http.Request) {})
-
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/validators/containers/id",
-		func(w http.ResponseWriter, r *http.Request) {})
-
-	servertest.Mux.HandleFunc("/projects/project/containers/container",
+	servertest.Mux.HandleFunc("/containers",
 		func(w http.ResponseWriter, r *http.Request) {})
 
 	servertest.Mux.HandleFunc("/push/project/container",
@@ -282,7 +263,7 @@ func TestAll(t *testing.T) {
 			}
 		})
 
-	var err = All([]string{"mycontainer"}, &Flags{})
+	var success, err = All([]string{"mycontainer"}, &Flags{})
 
 	if err != nil {
 		t.Errorf("Unexpected error %v on deploy", err)
@@ -290,15 +271,14 @@ func TestAll(t *testing.T) {
 
 	var wantFeedback = tdata.FromFile("../deploy_feedback")
 
-	if !strings.Contains(bufOutStream.String(), wantFeedback) {
-		t.Errorf("Wanted feedback to contain %v, got %v instead", wantFeedback, bufOutStream.String())
+	if !strings.Contains(wantFeedback, strings.Join(success, "\n")) {
+		t.Errorf("Wanted feedback to contain %v, got %v instead", wantFeedback, success)
 	}
 
 	globalconfigmock.Teardown()
 	config.Teardown()
 	os.Chdir(workingDir)
 	servertest.Teardown()
-	outStream = defaultOutStream
 }
 
 func TestAllWithHooks(t *testing.T) {
@@ -306,9 +286,6 @@ func TestAllWithHooks(t *testing.T) {
 		t.Skip("Not testing with hooks on Windows")
 	}
 
-	var defaultOutStream = outStream
-	var bufOutStream bytes.Buffer
-	outStream = &bufOutStream
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
 
@@ -319,16 +296,10 @@ func TestAllWithHooks(t *testing.T) {
 	config.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/validators/project/id",
-		func(w http.ResponseWriter, r *http.Request) {})
-
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/validators/containers/id",
-		func(w http.ResponseWriter, r *http.Request) {})
-
-	servertest.Mux.HandleFunc("/projects/project/containers/container",
+	servertest.Mux.HandleFunc("/containers",
 		func(w http.ResponseWriter, r *http.Request) {})
 
 	servertest.Mux.HandleFunc("/push/project/container",
@@ -340,7 +311,7 @@ func TestAllWithHooks(t *testing.T) {
 			}
 		})
 
-	var err = All([]string{"mycontainer"}, &Flags{
+	var _, err = All([]string{"mycontainer"}, &Flags{
 		Hooks: true,
 	})
 
@@ -348,17 +319,10 @@ func TestAllWithHooks(t *testing.T) {
 		t.Errorf("Unexpected error %v on deploy", err)
 	}
 
-	var wantFeedback = tdata.FromFile("../deploy_feedback")
-
-	if !strings.Contains(bufOutStream.String(), wantFeedback) {
-		t.Errorf("Wanted feedback to contain %v, got %v instead", wantFeedback, bufOutStream.String())
-	}
-
 	globalconfigmock.Teardown()
 	config.Teardown()
 	os.Chdir(workingDir)
 	servertest.Teardown()
-	outStream = defaultOutStream
 }
 
 func TestAllWithBeforeHookFailure(t *testing.T) {
@@ -366,9 +330,6 @@ func TestAllWithBeforeHookFailure(t *testing.T) {
 		t.Skip("Not testing with hooks on Windows")
 	}
 
-	var defaultOutStream = outStream
-	var bufOutStream bytes.Buffer
-	outStream = &bufOutStream
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
 
@@ -379,16 +340,10 @@ func TestAllWithBeforeHookFailure(t *testing.T) {
 	config.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/validators/project/id",
-		func(w http.ResponseWriter, r *http.Request) {})
-
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/validators/containers/id",
-		func(w http.ResponseWriter, r *http.Request) {})
-
-	servertest.Mux.HandleFunc("/projects/project/containers/container_before_hook_failure",
+	servertest.Mux.HandleFunc("/containers",
 		func(w http.ResponseWriter, r *http.Request) {})
 
 	servertest.Mux.HandleFunc("/push/project/container_before_hook_failure",
@@ -400,26 +355,25 @@ func TestAllWithBeforeHookFailure(t *testing.T) {
 			}
 		})
 
-	var err = All([]string{"container_before_hook_failure"}, &Flags{
+	var success, err = All([]string{"container_before_hook_failure"}, &Flags{
 		Hooks: true,
 	})
 
-	if err == nil || err.Error() != `List of errors (format is container: error)
+	if err == nil || err.Error() != `List of errors (format is container path: error)
 container_before_hook_failure: exit status 1` {
 		t.Errorf("Expected error didn't happen, got %v instead", err)
 	}
 
 	var wantFeedback = tdata.FromFile("../deploy_before_hook_failure_feedback")
 
-	if !strings.Contains(bufOutStream.String(), wantFeedback) {
-		t.Errorf("Wanted feedback to contain %v, got %v instead", wantFeedback, bufOutStream.String())
+	if !strings.Contains(wantFeedback, strings.Join(success, "\n")) {
+		t.Errorf("Wanted feedback to contain %v, got %v instead", wantFeedback, success)
 	}
 
 	globalconfigmock.Teardown()
 	config.Teardown()
 	os.Chdir(workingDir)
 	servertest.Teardown()
-	outStream = defaultOutStream
 }
 
 func TestAllWithAfterHookFailure(t *testing.T) {
@@ -427,9 +381,6 @@ func TestAllWithAfterHookFailure(t *testing.T) {
 		t.Skip("Not testing with hooks on Windows")
 	}
 
-	var defaultOutStream = outStream
-	var bufOutStream bytes.Buffer
-	outStream = &bufOutStream
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
 
@@ -440,16 +391,10 @@ func TestAllWithAfterHookFailure(t *testing.T) {
 	config.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/validators/project/id",
-		func(w http.ResponseWriter, r *http.Request) {})
-
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/validators/containers/id",
-		func(w http.ResponseWriter, r *http.Request) {})
-
-	servertest.Mux.HandleFunc("/projects/project/containers/container_after_hook_failure",
+	servertest.Mux.HandleFunc("/containers",
 		func(w http.ResponseWriter, r *http.Request) {})
 
 	servertest.Mux.HandleFunc("/push/project/container_after_hook_failure",
@@ -461,33 +406,34 @@ func TestAllWithAfterHookFailure(t *testing.T) {
 			}
 		})
 
-	var err = All([]string{"container_after_hook_failure"}, &Flags{
+	var success, err = All([]string{"container_after_hook_failure"}, &Flags{
 		Hooks: true,
 	})
 
-	if err == nil || err.Error() != `List of errors (format is container: error)
+	if err == nil || err.Error() != `List of errors (format is container path: error)
 container_after_hook_failure: exit status 1` {
 		t.Errorf("Expected error didn't happen, got %v instead", err)
 	}
 
 	var wantFeedback = tdata.FromFile("../deploy_after_hook_failure_feedback")
 
-	if !strings.Contains(bufOutStream.String(), wantFeedback) {
-		t.Errorf("Wanted feedback to contain %v, got %v instead", wantFeedback, bufOutStream.String())
+	if !strings.Contains(wantFeedback, strings.Join(success, "\n")) {
+		t.Errorf("Wanted feedback to contain %v, got %v instead",
+			wantFeedback, success)
 	}
 
 	globalconfigmock.Teardown()
 	config.Teardown()
 	os.Chdir(workingDir)
 	servertest.Teardown()
-	outStream = defaultOutStream
 }
 
 func TestAllOnlyNewError(t *testing.T) {
-	var defaultOutStream = outStream
-	var bufOutStream bytes.Buffer
-	outStream = &bufOutStream
+	servertest.Setup()
 	var workingDir, _ = os.Getwd()
+
+	servertest.Mux.HandleFunc("/projects",
+		func(w http.ResponseWriter, r *http.Request) {})
 
 	var err = os.Chdir(filepath.Join(workingDir, "mocks/myproject"))
 
@@ -498,7 +444,7 @@ func TestAllOnlyNewError(t *testing.T) {
 	config.Setup()
 	globalconfigmock.Setup()
 
-	err = All([]string{"nil"}, &Flags{})
+	_, err = All([]string{"nil"}, &Flags{})
 
 	switch err.(type) {
 	case *Errors:
@@ -510,7 +456,7 @@ func TestAllOnlyNewError(t *testing.T) {
 
 		var nilerr = list[0]
 
-		if nilerr.Container != "nil" {
+		if nilerr.ContainerPath != "nil" {
 			t.Errorf("Expected container to be 'nil'")
 		}
 
@@ -524,13 +470,10 @@ func TestAllOnlyNewError(t *testing.T) {
 	globalconfigmock.Teardown()
 	config.Teardown()
 	os.Chdir(workingDir)
-	outStream = defaultOutStream
+	servertest.Teardown()
 }
 
 func TestAllMultipleWithOnlyNewError(t *testing.T) {
-	var defaultOutStream = outStream
-	var bufOutStream bytes.Buffer
-	outStream = &bufOutStream
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
 
@@ -543,16 +486,10 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 	config.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/validators/project/id",
-		func(w http.ResponseWriter, r *http.Request) {})
-
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/validators/containers/id",
-		func(w http.ResponseWriter, r *http.Request) {})
-
-	servertest.Mux.HandleFunc("/projects/project/containers/container",
+	servertest.Mux.HandleFunc("/containers",
 		func(w http.ResponseWriter, r *http.Request) {})
 
 	servertest.Mux.HandleFunc("/push/project/container",
@@ -564,7 +501,7 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 			}
 		})
 
-	err = All([]string{"mycontainer", "nil", "nil2"}, &Flags{})
+	_, err = All([]string{"mycontainer", "nil", "nil2"}, &Flags{})
 
 	switch err.(type) {
 	case *Errors:
@@ -580,25 +517,19 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 		}
 
 		for _, e := range list {
-			if !find[e.Container] {
-				t.Errorf("Unexpected %v on the error list %v", e.Container, list)
+			if !find[e.ContainerPath] {
+				t.Errorf("Unexpected %v on the error list %v",
+					e.ContainerPath, list)
 			}
 		}
 	default:
 		t.Errorf("Error is not of expected type.")
 	}
 
-	var wantFeedback = tdata.FromFile("../deploy_feedback")
-
-	if !strings.Contains(bufOutStream.String(), wantFeedback) {
-		t.Errorf("Wanted feedback to contain %v, got %v instead", wantFeedback, bufOutStream.String())
-	}
-
 	globalconfigmock.Teardown()
 	config.Teardown()
 	servertest.Teardown()
 	os.Chdir(workingDir)
-	outStream = defaultOutStream
 }
 
 func TestOnly(t *testing.T) {
@@ -615,16 +546,10 @@ func TestOnly(t *testing.T) {
 	config.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/validators/project/id",
-		func(w http.ResponseWriter, r *http.Request) {})
-
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/validators/containers/id",
-		func(w http.ResponseWriter, r *http.Request) {})
-
-	servertest.Mux.HandleFunc("/projects/project/containers/container",
+	servertest.Mux.HandleFunc("/containers",
 		func(w http.ResponseWriter, r *http.Request) {})
 
 	servertest.Mux.HandleFunc("/push/project/container",
@@ -642,12 +567,6 @@ func TestOnly(t *testing.T) {
 		t.Errorf("Unexpected error %v on deploy", err)
 	}
 
-	var wantFeedback = tdata.FromFile("../deploy_feedback")
-
-	if !strings.Contains(bufOutStream.String(), wantFeedback) {
-		t.Errorf("Wanted feedback to contain %v, got %v instead", wantFeedback, bufOutStream.String())
-	}
-
 	globalconfigmock.Teardown()
 	config.Teardown()
 	os.Chdir(workingDir)
@@ -656,9 +575,6 @@ func TestOnly(t *testing.T) {
 }
 
 func TestOnlyNewError(t *testing.T) {
-	var defaultOutStream = outStream
-	var bufOutStream bytes.Buffer
-	outStream = &bufOutStream
 	var workingDir, _ = os.Getwd()
 
 	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
@@ -677,7 +593,6 @@ func TestOnlyNewError(t *testing.T) {
 	globalconfigmock.Teardown()
 	config.Teardown()
 	os.Chdir(workingDir)
-	outStream = defaultOutStream
 }
 
 func TestOnlyProjectValidationOrCreationFailure(t *testing.T) {
@@ -696,8 +611,10 @@ func TestOnlyProjectValidationOrCreationFailure(t *testing.T) {
 
 	var err = Only("mycontainer", &Flags{})
 
-	if err != apihelper.ErrInvalidContentType {
-		t.Errorf("Wanted error to be %v, got %v instead", apihelper.ErrInvalidContentType, err)
+	switch err.(type) {
+	case *apihelper.APIFault:
+	default:
+		t.Errorf("Wanted error to be of type *apihelper.APIFault, got error %v instead", err)
 	}
 
 	globalconfigmock.Teardown()
@@ -721,16 +638,15 @@ func TestOnlyContainerValidationOrCreationFailure(t *testing.T) {
 	config.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/validators/project/id",
-		func(w http.ResponseWriter, r *http.Request) {})
-
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
 	var err = Only("mycontainer", &Flags{})
 
-	if err != apihelper.ErrInvalidContentType {
-		t.Errorf("Wanted error to be %v, got %v instead", apihelper.ErrInvalidContentType, err)
+	switch err.(type) {
+	case *apihelper.APIFault:
+	default:
+		t.Errorf("Wanted error to be of type *apihelper.APIFault, got error %v instead", err)
 	}
 
 	globalconfigmock.Teardown()
@@ -741,9 +657,6 @@ func TestOnlyContainerValidationOrCreationFailure(t *testing.T) {
 }
 
 func TestDeployOnly(t *testing.T) {
-	var defaultOutStream = outStream
-	var bufOutStream bytes.Buffer
-	outStream = &bufOutStream
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
 
@@ -790,15 +703,8 @@ func TestDeployOnly(t *testing.T) {
 		t.Errorf("Unexpected error: %v", err)
 	}
 
-	var wantFeedback = "Ready! container.project.liferay.io\n"
-
-	if bufOutStream.String() != wantFeedback {
-		t.Errorf("Wanted feedback %v, got %v instead", wantFeedback, bufOutStream.String())
-	}
-
 	globalconfigmock.Teardown()
 	config.Teardown()
 	os.Chdir(workingDir)
 	servertest.Teardown()
-	outStream = defaultOutStream
 }
