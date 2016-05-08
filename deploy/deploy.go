@@ -178,13 +178,26 @@ func (d *Deploy) Deploy(src string) error {
 
 	err = apihelper.Validate(req, req.Post())
 
-	if errMultipart := <-errMultipartChan; errMultipart != nil {
+	var errMultipart = <-errMultipartChan
+
+	if err != nil || errMultipart != nil {
+		d.progress.Append = "(Failure)"
+		d.progress.Fail()
+	}
+
+	if err != nil && errMultipart != nil {
+		verbose.Debug("Error both in multipart and error")
+		verbose.Debug("Error:")
+		verbose.Debug(err.Error())
+		verbose.Debug("Multipart error:")
+		verbose.Debug(errMultipart.Error())
+	}
+
+	if errMultipart != nil {
 		return errMultipart
 	}
 
 	if err != nil {
-		d.progress.Append = "(Failure)"
-		d.progress.Fail()
 		return err
 	}
 
