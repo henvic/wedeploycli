@@ -80,7 +80,7 @@ func Run(flags Flags) {
 
 	fmt.Print("You can now test your apps locally.")
 
-	if !flags.ViewMode {
+	if !flags.ViewMode && !flags.Detach {
 		fmt.Print(" Press Ctrl+C to shut it down when you are done.")
 	}
 
