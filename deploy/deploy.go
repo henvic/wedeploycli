@@ -169,11 +169,12 @@ func (d *Deploy) Deploy(src string) error {
 	var errMultipartChan = make(chan error, 1)
 
 	go func() {
-		errMultipartChan <- multipartWriter(mpw, w, file, wc)
+		errMultipartChan <- multipartWriter(mpw, w, file)
 		close(errMultipartChan)
 	}()
 
-	req.Body(r)
+	req.Body(io.TeeReader(r, wc))
+
 	req.Headers.Set("Content-Type", mpw.FormDataContentType())
 
 	err = apihelper.Validate(req, req.Post())
@@ -283,8 +284,7 @@ func getPackageSHA1(file io.ReadSeeker) (string, error) {
 func multipartWriter(
 	mpw *multipart.Writer,
 	w io.Closer,
-	file io.ReadCloser,
-	wc io.Writer) (err error) {
+	file io.ReadCloser) (err error) {
 	var part io.Writer
 	defer w.Close()
 	defer file.Close()
@@ -293,7 +293,6 @@ func multipartWriter(
 		return err
 	}
 
-	part = io.MultiWriter(part, wc)
 	if _, err = io.Copy(part, file); err != nil {
 		return err
 	}
