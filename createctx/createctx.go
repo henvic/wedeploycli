@@ -82,7 +82,7 @@ func NewContainer() error {
 	fmt.Println("Please choose an option to create a container")
 
 	for pos, r := range registry {
-		fmt.Fprintf(os.Stdout, "%d) %s\n", pos+1, r.Name)
+		fmt.Fprintf(os.Stdout, "%d) %s\n", pos+1, r.ContainerDefault.Name)
 	}
 
 	var option = prompt.Prompt(fmt.Sprintf("\nSelect from 1..%d", len(registry)))
@@ -99,19 +99,26 @@ func NewContainer() error {
 
 	var reg = registry[index]
 
-	c.ID = prompt.Prompt("ID [default: " + reg.ID + "]")
+	if reg.ContainerDefault.Env != nil {
+		c.Env = map[string]string{}
+		for k, v := range reg.ContainerDefault.Env {
+			c.Env[k] = v
+		}
+	}
+
+	c.ID = prompt.Prompt("ID [default: " + reg.ContainerDefault.ID + "]")
 
 	if c.ID == "" {
-		c.ID = reg.ID
+		c.ID = reg.ContainerDefault.ID
 	}
 
-	c.Name = prompt.Prompt("Name [default: " + reg.Name + "]")
+	c.Name = prompt.Prompt("Name [default: " + reg.ContainerDefault.Name + "]")
 
 	if c.Name == "" {
-		c.Name = reg.Name
+		c.Name = reg.ContainerDefault.Name
 	}
 
-	c.Type = reg.Type
+	c.Type = reg.ContainerDefault.Type
 
 	bin, err = json.MarshalIndent(c, "", "    ")
 

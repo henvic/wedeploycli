@@ -23,21 +23,27 @@ type Containers map[string]*Container
 
 // Container structure
 type Container struct {
-	ID           string       `json:"id"`
-	Name         string       `json:"name"`
-	State        string       `json:"state,omitempty"`
-	Type         string       `json:"type"`
-	Hooks        *hooks.Hooks `json:"hooks,omitempty"`
-	DeployIgnore []string     `json:"deploy_ignore,omitempty"`
+	ID           string            `json:"id"`
+	Name         string            `json:"name"`
+	State        string            `json:"state,omitempty"`
+	Type         string            `json:"type,omitempty"`
+	Hooks        *hooks.Hooks      `json:"hooks,omitempty"`
+	DeployIgnore []string          `json:"deploy_ignore,omitempty"`
+	Env          map[string]string `json:"env,omitempty"`
 }
 
 // Register for the container structure
 type Register struct {
-	Category    string `json:"category"`
-	Description string `json:"description"`
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Type        string `json:"type"`
+	Category         string                   `json:"category"`
+	ContainerDefault RegisterContainerDefault `json:"containerDefault"`
+	Description      string                   `json:"description"`
+}
+
+type RegisterContainerDefault struct {
+	ID   string            `json:"id"`
+	Name string            `json:"name"`
+	Type string            `json:"type"`
+	Env  map[string]string `json:"env"`
 }
 
 var (
