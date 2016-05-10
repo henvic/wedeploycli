@@ -55,7 +55,7 @@ func TestDeployOutputErrorMultiple(t *testing.T) {
 
 	var e = &Expect{
 		Stdout:   "",
-		Stderr:   "Only one container can be written to a file at once.",
+		Stderr:   "Can only output a single container to file, not a whole project.",
 		ExitCode: 1,
 	}
 

@@ -38,8 +38,8 @@ func deployRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	if output != "" && len(list) != 1 {
-		err = errors.New("Only one container can be written to a file at once.")
+	if output != "" && config.Context.Scope != "container" {
+		err = errors.New("Can only output a single container to file, not a whole project.")
 	}
 
 	if err != nil {
