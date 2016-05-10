@@ -28,6 +28,9 @@ func TestDeploy(t *testing.T) {
 			}
 		})
 
+	servertest.IntegrationMux.HandleFunc("/restart/project",
+		func(w http.ResponseWriter, r *http.Request) {})
+
 	var cmd = &Command{
 		Args: []string{"deploy", "-q"},
 		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLoginHome()},

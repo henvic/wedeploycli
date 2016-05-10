@@ -11,6 +11,8 @@ import (
 	"github.com/launchpad-project/cli/containers"
 	"github.com/launchpad-project/cli/deploy"
 	"github.com/launchpad-project/cli/progress"
+	"github.com/launchpad-project/cli/projects"
+	"github.com/launchpad-project/cli/verbose"
 	"github.com/spf13/cobra"
 )
 
@@ -67,6 +69,11 @@ func deployRun(cmd *cobra.Command, args []string) {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+
+	if output == "" {
+		verbose.Debug("Restarting project")
+		projects.Restart(config.Stores["project"].Get("id"))
+	}
 }
 
 func checkContext(cmd *cobra.Command, args []string) {
@@ -80,10 +87,12 @@ func checkContext(cmd *cobra.Command, args []string) {
 
 func tryDeploy(list []string) (success []string, err error) {
 	if output == "" {
-		return deploy.All(list, &deploy.Flags{
+		var success, err = deploy.All(list, &deploy.Flags{
 			Hooks: !noHooks,
 			Quiet: quiet,
 		})
+
+		return success, err
 	}
 
 	return success, deploy.Pack(output, list[0])
