@@ -25,6 +25,7 @@ type Flags struct {
 }
 
 var portsArgs = []string{
+	"-p", "53:53",
 	"-p", "80:80",
 	"-p", "9300:9300",
 	"-p", "5701:5701",
@@ -124,7 +125,9 @@ func getRunCommandEnv() []string {
 		panic(err)
 	}
 
+	args = append(args, "--cap-add=NET_ADMIN")
 	args = append(args, "-e")
+	args = append(args, "LP_DEV_DOMAIN=liferay.local")
 	args = append(args, "LP_DEV_IP_ADDRESS="+address)
 	args = append(args, "-e")
 	args = append(args, "LP_DEV_DOCKER_HOST=tcp://"+address+":2375")
