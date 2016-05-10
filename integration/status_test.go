@@ -8,6 +8,7 @@ import (
 )
 
 func TestStatusProject(t *testing.T) {
+	t.SkipNow()
 	defer Teardown()
 	Setup()
 
@@ -29,6 +30,7 @@ func TestStatusProject(t *testing.T) {
 }
 
 func TestStatusContainer(t *testing.T) {
+	t.SkipNow()
 	defer Teardown()
 	Setup()
 

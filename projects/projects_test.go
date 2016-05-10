@@ -56,6 +56,7 @@ func TestCreateFromDefinitionFailureNotFound(t *testing.T) {
 }
 
 func TestGetStatus(t *testing.T) {
+	t.SkipNow()
 	defer servertest.Teardown()
 	servertest.Setup()
 	globalconfigmock.Setup()
