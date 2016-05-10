@@ -16,7 +16,6 @@ import (
 	cmdprojects "github.com/launchpad-project/cli/cmd/projects"
 	cmdrestart "github.com/launchpad-project/cli/cmd/restart"
 	"github.com/launchpad-project/cli/cmd/run"
-	cmdstatus "github.com/launchpad-project/cli/cmd/status"
 	cmdupdate "github.com/launchpad-project/cli/cmd/update"
 	cmdversion "github.com/launchpad-project/cli/cmd/version"
 	"github.com/launchpad-project/cli/config"
@@ -83,7 +82,6 @@ var commands = []*cobra.Command{
 	cmdlogs.LogsCmd,
 	cmdprojects.ProjectsCmd,
 	cmdcontainers.ContainersCmd,
-	cmdstatus.StatusCmd,
 	cmdrestart.RestartCmd,
 	cmdhooks.BuildCmd,
 	cmdrun.RunCmd,
