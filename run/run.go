@@ -129,6 +129,7 @@ func getRunCommandEnv() []string {
 	args = append(args, "--cap-add=NET_ADMIN")
 	args = append(args, "-e")
 	args = append(args, "LP_DEV_DOMAIN=liferay.local")
+	args = append(args, "-e")
 	args = append(args, "LP_DEV_IP_ADDRESS="+address)
 	args = append(args, "-e")
 	args = append(args, "LP_DEV_DOCKER_HOST=tcp://"+address+":2375")
