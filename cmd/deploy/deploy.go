@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/launchpad-project/cli/cmdcontext"
+	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/containers"
 	"github.com/launchpad-project/cli/deploy"
 	"github.com/launchpad-project/cli/progress"
