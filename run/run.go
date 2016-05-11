@@ -9,8 +9,11 @@ import (
 	"os/exec"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
+	"time"
 
+	"github.com/launchpad-project/cli/apihelper"
 	"github.com/launchpad-project/cli/verbose"
 )
 
@@ -55,6 +58,13 @@ func GetLaunchpadHost() (string, error) {
 	return "", ErrHostNotFound
 }
 
+// Reset Launchpad infrastructure
+func Reset() error {
+	var req = apihelper.URL("/reset")
+	apihelper.Auth(req)
+	return apihelper.Validate(req, req.Post())
+}
+
 // Run runs the Launchpad infrastructure
 func Run(flags Flags) {
 	if !existsDependency("docker") {
@@ -68,6 +78,14 @@ func Run(flags Flags) {
 		fmt.Println("Launchpad is already running.")
 	} else if !flags.ViewMode {
 		dockerContainer = start(flags)
+		var wg sync.WaitGroup
+
+		wg.Add(1)
+		go func() {
+			resetWhenReady()
+			wg.Done()
+		}()
+		wg.Wait()
 	} else {
 		println("View mode is not available.")
 		println("Launchpad is shutdown.")
@@ -173,6 +191,26 @@ func listen(dockerContainer string) {
 	}
 }
 
+func resetWhenReady() {
+	var tries = 1
+	verbose.Debug("Trying to reset Launchpad containers in 20 seconds")
+	time.Sleep(20 * time.Second)
+	for tries <= 10 {
+		var err = Reset()
+
+		if err == nil {
+			fmt.Println("Launchpad is ready!")
+			return
+		}
+
+		verbose.Debug(fmt.Sprintf("Reset try #%v: %v", tries, err))
+		tries++
+		time.Sleep(4 * time.Second)
+	}
+
+	println("Launchpad is online, but failed to reset environment.")
+}
+
 func start(flags Flags) string {
 	var args = getRunCommandEnv()
 	var running = "docker " + strings.Join(args, " ")
@@ -206,6 +244,13 @@ func startCmd(args ...string) string {
 }
 
 func stop(dockerContainer string) {
+	var err = Reset()
+
+	if err != nil {
+		println(err.Error())
+		os.Exit(1)
+	}
+
 	var stop = exec.Command("docker", "stop", dockerContainer)
 
 	if err := stop.Run(); err != nil {
