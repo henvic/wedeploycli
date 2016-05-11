@@ -25,6 +25,7 @@ type Containers map[string]*Container
 type Container struct {
 	ID           string            `json:"id"`
 	Name         string            `json:"name"`
+	Port         int               `json:"port,omitempty"`
 	State        string            `json:"state,omitempty"`
 	Type         string            `json:"type,omitempty"`
 	Hooks        *hooks.Hooks      `json:"hooks,omitempty"`
