@@ -213,6 +213,19 @@ func (d *Deploy) Deploy(src string) error {
 // HooksAndOnly run the hooks and Only method
 func (d *Deploy) HooksAndOnly(df *Flags) (err error) {
 	var ch = d.Container.Hooks
+	var workingDir string
+
+	workingDir, err = os.Getwd()
+
+	if err != nil {
+		return err
+	}
+
+	err = os.Chdir(d.ContainerPath)
+
+	if err != nil {
+		return err
+	}
 
 	if df.Hooks && ch != nil && ch.BeforeDeploy != "" {
 		err = hooks.Run(ch.BeforeDeploy)
@@ -224,6 +237,12 @@ func (d *Deploy) HooksAndOnly(df *Flags) (err error) {
 
 	if err == nil && df.Hooks && ch != nil && ch.AfterDeploy != "" {
 		err = hooks.Run(ch.AfterDeploy)
+	}
+
+	err = os.Chdir(workingDir)
+
+	if err != nil {
+		return err
 	}
 
 	return err
