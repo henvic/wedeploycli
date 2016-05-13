@@ -148,13 +148,14 @@ func List(projectID string) {
 }
 
 // InstallFromDefinition container to project
-func InstallFromDefinition(projectID string, container *Container) error {
+func InstallFromDefinition(projectID, dir string, container *Container) error {
 	verbose.Debug("Installing container from definition")
 
 	var req = apihelper.URL("/containers")
 	apihelper.Auth(req)
 
 	req.Param("projectId", projectID)
+	req.Param("source", filepath.Join(config.Context.ProjectRoot, dir))
 
 	var r, err = apihelper.EncodeJSON(&container)
 

@@ -110,7 +110,7 @@ func Only(container string, df *Flags) error {
 		return err
 	}
 
-	return installContainerDefinition(projectID, deploy, df)
+	return installContainerDefinition(projectID, filepath.Join(config.Context.ProjectRoot, container), deploy, df)
 }
 
 // Pack packages a POD to a .pod package

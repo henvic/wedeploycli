@@ -103,7 +103,7 @@ func (m *Machine) installContainerDefinitions(container string) {
 	var deploy, err = New(container)
 
 	if err == nil {
-		err = installContainerDefinition(m.ProjectID, deploy, m.Flags)
+		err = installContainerDefinition(m.ProjectID, container, deploy, m.Flags)
 	}
 
 	if err != nil {
@@ -116,8 +116,8 @@ func (m *Machine) installContainerDefinitions(container string) {
 	}
 }
 
-func installContainerDefinition(projectID string, deploy *Deploy, df *Flags) error {
-	var err = containers.InstallFromDefinition(projectID, deploy.Container)
+func installContainerDefinition(projectID, container string, deploy *Deploy, df *Flags) error {
+	var err = containers.InstallFromDefinition(projectID, container, deploy.Container)
 
 	if err != nil {
 		return err

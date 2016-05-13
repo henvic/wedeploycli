@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/apihelper"
+	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/verbose"
 )
 
@@ -44,6 +46,7 @@ func CreateFromDefinition(filename string) error {
 
 	var req = apihelper.URL("/projects")
 	apihelper.Auth(req)
+	req.Param("source", filepath.Join(config.Context.ProjectRoot))
 
 	req.Body(file)
 
