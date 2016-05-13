@@ -231,6 +231,10 @@ func (d *Deploy) HooksAndOnly(df *Flags) (err error) {
 
 // Only PODify a container and deploys it to Launchpad
 func (d *Deploy) Only() error {
+	if config.Stores["global"].Get("local") == "true" {
+		return nil
+	}
+
 	var tmp, err = ioutil.TempFile(os.TempDir(), "launchpad-cli")
 
 	err = d.Pack(tmp.Name())
