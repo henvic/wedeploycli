@@ -46,7 +46,10 @@ func CreateFromDefinition(filename string) error {
 
 	var req = apihelper.URL("/projects")
 	apihelper.Auth(req)
-	req.Param("source", filepath.Join(config.Context.ProjectRoot))
+
+	if config.Stores["global"].Get("local") == "true" {
+		req.Param("source", filepath.Join(config.Context.ProjectRoot))
+	}
 
 	req.Body(file)
 

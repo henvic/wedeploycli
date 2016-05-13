@@ -155,7 +155,10 @@ func InstallFromDefinition(projectID, dir string, container *Container) error {
 	apihelper.Auth(req)
 
 	req.Param("projectId", projectID)
-	req.Param("source", filepath.Join(config.Context.ProjectRoot, dir))
+
+	if config.Stores["global"].Get("local") == "true" {
+		req.Param("source", filepath.Join(config.Context.ProjectRoot, dir))
+	}
 
 	var r, err = apihelper.EncodeJSON(&container)
 
