@@ -231,8 +231,20 @@ func (d *Deploy) HooksAndOnly(df *Flags) (err error) {
 		err = hooks.Run(ch.BeforeDeploy)
 	}
 
+	err = os.Chdir(workingDir)
+
+	if err != nil {
+		return err
+	}
+
 	if err == nil {
 		err = d.Only()
+	}
+
+	err = os.Chdir(d.ContainerPath)
+
+	if err != nil {
+		return err
 	}
 
 	if err == nil && df.Hooks && ch != nil && ch.AfterDeploy != "" {
