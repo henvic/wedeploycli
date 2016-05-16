@@ -110,7 +110,17 @@ func Only(container string, df *Flags) error {
 		return err
 	}
 
-	return installContainerDefinition(projectID, filepath.Join(config.Context.ProjectRoot, container), deploy, df)
+	err = containers.InstallFromDefinition(projectID,
+		deploy.ContainerPath,
+		deploy.Container)
+
+	if err != nil {
+		return err
+	}
+
+	verbose.Debug(deploy.Container.ID, "container definition installed")
+
+	return deploy.HooksAndOnly(df)
 }
 
 // Pack packages a POD to a .pod package

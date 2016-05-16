@@ -47,7 +47,7 @@ func (m *Machine) Run(list []string) (err error) {
 	}
 
 	for _, dir := range list {
-		m.installContainerDefinitions(dir)
+		m.installContainerDefinition(dir)
 	}
 
 	m.queue.Add(len(list))
@@ -99,11 +99,11 @@ func (m *Machine) mountAndDeploy(container string) error {
 	return err
 }
 
-func (m *Machine) installContainerDefinitions(container string) {
+func (m *Machine) installContainerDefinition(container string) {
 	var deploy, err = New(container)
 
 	if err == nil {
-		err = installContainerDefinition(m.ProjectID, container, deploy, m.Flags)
+		err = containers.InstallFromDefinition(m.ProjectID, deploy.ContainerPath, deploy.Container)
 	}
 
 	if err != nil {
@@ -113,17 +113,8 @@ func (m *Machine) installContainerDefinitions(container string) {
 			Error:         err,
 		})
 		m.ErrorsMutex.Unlock()
-	}
-}
-
-func installContainerDefinition(projectID, container string, deploy *Deploy, df *Flags) error {
-	var err = containers.InstallFromDefinition(projectID, container, deploy.Container)
-
-	if err != nil {
-		return err
+		return
 	}
 
 	verbose.Debug(deploy.Container.ID, "container definition installed")
-
-	return deploy.HooksAndOnly(df)
 }
