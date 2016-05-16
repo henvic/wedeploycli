@@ -16,7 +16,7 @@ func TestVersion(t *testing.T) {
 	var os = runtime.GOOS
 	var arch = runtime.GOARCH
 	var version = fmt.Sprintf(
-		"Launchpad CLI version %s %s/%s\n",
+		"WeDeploy CLI version %s %s/%s\n",
 		defaults.Version,
 		os,
 		arch)

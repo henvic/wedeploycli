@@ -33,7 +33,7 @@ var (
 	outStream io.Writer = os.Stdout
 )
 
-// CreateFromDefinition creates a project on Launchpad using a JSON definition
+// CreateFromDefinition creates a project on WeDeploy using a JSON definition
 func CreateFromDefinition(filename string) error {
 	var file, err = os.Open(filename)
 

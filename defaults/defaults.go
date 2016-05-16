@@ -1,7 +1,7 @@
 package defaults
 
 var (
-	// Version of the Launchpad Project CLI tool
+	// Version of the WeDeploy Project CLI tool
 	Version = "master"
 
 	// Endpoint default to the client

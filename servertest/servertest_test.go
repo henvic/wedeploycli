@@ -15,7 +15,7 @@ func TestSetupAndTeardown(t *testing.T) {
 	Setup()
 
 	if launchpadHTTPClient == launchpad.Client {
-		t.Error("Expected different Launchpad HTTP Client instance")
+		t.Error("Expected different WeDeploy HTTP Client instance")
 	}
 
 	Mux.HandleFunc("/foo", func(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +37,7 @@ func TestSetupAndTeardown(t *testing.T) {
 	Teardown()
 
 	if launchpadHTTPClient != launchpad.Client {
-		t.Error("Expected same Launchpad HTTP Client instance")
+		t.Error("Expected same WeDeploy HTTP Client instance")
 	}
 
 	if server != nil {

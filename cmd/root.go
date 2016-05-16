@@ -38,9 +38,9 @@ var WhitelistCmdsNoAuthentication = map[string]bool{
 
 // RootCmd is the main command for the CLI
 var RootCmd = &cobra.Command{
-	Use:   "launchpad",
-	Short: "Launchpad CLI tool",
-	Long: `Launchpad Command Line Interface
+	Use:   "we",
+	Short: "WeDeploy CLI tool",
+	Long: `WeDeploy Command Line Interface
 Version ` + defaults.Version + `
 Copyright 2016 Liferay, Inc.
 http://liferay.io`,
@@ -158,6 +158,6 @@ func verifyAuth(commandPath string) {
 		return
 	}
 
-	fmt.Fprintf(os.Stderr, "Please run \"launchpad login\" first.\n")
+	fmt.Fprintf(os.Stderr, "Please run \"we login\" first.\n")
 	os.Exit(1)
 }

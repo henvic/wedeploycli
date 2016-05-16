@@ -80,7 +80,7 @@ func TestAPIError(t *testing.T) {
 		Message: "Resource Not Found",
 	}
 
-	if fmt.Sprintf("%v", e) != "Launchpad API error: 404 Resource Not Found" {
+	if fmt.Sprintf("%v", e) != "WeDeploy API error: 404 Resource Not Found" {
 		t.Errorf("Error interface not implemented.")
 	}
 }
@@ -867,7 +867,7 @@ func TestValidateOrExitUnexpectedResponse(t *testing.T) {
 }`)
 	})
 
-	var want = "Launchpad API error: 403 Forbidden (GET http://www.example.com/foo/bah)\n\t" +
+	var want = "WeDeploy API error: 403 Forbidden (GET http://www.example.com/foo/bah)\n\t" +
 		"forbidden: The requested operation failed because you do not have access.\n"
 
 	haltExitCommand = true

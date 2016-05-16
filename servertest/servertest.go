@@ -22,7 +22,7 @@ var (
 	server            *httptest.Server
 )
 
-// Setup the mock server and setup Launchpad client setup with it
+// Setup the mock server and setup WeDeploy client setup with it
 func Setup() {
 	Mux = http.NewServeMux()
 	server = httptest.NewServer(Mux)
@@ -43,7 +43,7 @@ func SetupIntegration() {
 	IntegrationServer = httptest.NewServer(IntegrationMux)
 }
 
-// Teardown the mock server and teardown Launchpad client
+// Teardown the mock server and teardown WeDeploy client
 func Teardown() {
 	launchpad.Client = defaultHTTPClient
 	server.Close()

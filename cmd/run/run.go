@@ -7,10 +7,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// RunCmd runs the Launchpad structure for development locally
+// RunCmd runs the WeDeploy structure for development locally
 var RunCmd = &cobra.Command{
 	Use:   "run",
-	Short: "Run Launchpad infrastructure for development locally",
+	Short: "Run WeDeploy infrastructure for development locally",
 	Run:   runRun,
 }
 

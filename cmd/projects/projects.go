@@ -8,7 +8,7 @@ import (
 // ProjectsCmd is used for getting projects about a given scope
 var ProjectsCmd = &cobra.Command{
 	Use:   "projects",
-	Short: "Projects running on Launchpad",
+	Short: "Projects running on WeDeploy",
 	Run:   projectsRun,
 }
 

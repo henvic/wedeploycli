@@ -89,7 +89,7 @@ func All(list []string, df *Flags) (success []string, err error) {
 	return success, err
 }
 
-// Only PODify a single container and deploys it to Launchpad
+// Only PODify a single container and deploys it to WeDeploy
 func Only(container string, df *Flags) error {
 	var deploy, err = New(container)
 
@@ -124,7 +124,7 @@ func Pack(dest, cpath string) error {
 	return err
 }
 
-// Deploy POD to Launchpad
+// Deploy POD to WeDeploy
 func (d *Deploy) Deploy(src string) error {
 	var projectID = config.Stores["project"].Get("id")
 	var u = path.Join("push", projectID, d.Container.ID)
@@ -160,8 +160,8 @@ func (d *Deploy) Deploy(src string) error {
 		return esha1
 	}
 
-	req.Header("Launchpad-Package-Size", fmt.Sprintf("%d", packageSize))
-	req.Header("Launchpad-Package-SHA1", hash)
+	req.Header("WeDeploy-Package-Size", fmt.Sprintf("%d", packageSize))
+	req.Header("WeDeploy-Package-SHA1", hash)
 
 	var r, w = io.Pipe()
 	var mpw = multipart.NewWriter(w)
@@ -260,7 +260,7 @@ func (d *Deploy) HooksAndOnly(df *Flags) (err error) {
 	return err
 }
 
-// Only PODify a container and deploys it to Launchpad
+// Only PODify a container and deploys it to WeDeploy
 func (d *Deploy) Only() error {
 	if config.Stores["global"].Get("local") == "true" {
 		return nil

@@ -13,7 +13,7 @@ var CreateCmd = &cobra.Command{
 	Use:     "create",
 	Short:   "Creates a project or container",
 	Run:     createRun,
-	Example: `launchpad create (from inside project or container)`,
+	Example: `we create (from inside project or container)`,
 }
 
 func createRun(cmd *cobra.Command, args []string) {

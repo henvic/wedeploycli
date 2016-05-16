@@ -14,8 +14,8 @@ var StatusCmd = &cobra.Command{
 	Use:   "status [project] [container]",
 	Short: "Get running status for project or container",
 	Run:   statusRun,
-	Example: `launchpad status portal
-launchpad status portal email`,
+	Example: `we status portal
+we status portal email`,
 }
 
 func statusRun(cmd *cobra.Command, args []string) {

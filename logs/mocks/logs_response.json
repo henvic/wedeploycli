@@ -37,7 +37,7 @@
         "level": 6,
         "logger": {
             "line": 69,
-            "message": "Launchpad is ready\r",
+            "message": "WeDeploy is ready\r",
             "method": "start",
             "name": "com.liferay.launchpad.Launchpad",
             "thread": "main"

@@ -28,7 +28,7 @@ var DeployCmd = &cobra.Command{
 	Short:  "Deploys the current project or container",
 	PreRun: checkContext,
 	Run:    deployRun,
-	Example: `launchpad deploy
+	Example: `we deploy
 launchpad deploy <container>
 launchpad deploy -o welcome.pod`,
 }

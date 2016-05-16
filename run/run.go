@@ -38,9 +38,9 @@ var portsArgs = []string{
 	"-p", "5005:5005",
 }
 
-// GetLaunchpadHost gets the Launchpad infrastructure host
+// GetWeDeployHost gets the WeDeploy infrastructure host
 // This is a temporary solution and it is NOT reliable
-func GetLaunchpadHost() (string, error) {
+func GetWeDeployHost() (string, error) {
 	var addrs, err = net.InterfaceAddrs()
 
 	if err != nil {
@@ -58,14 +58,14 @@ func GetLaunchpadHost() (string, error) {
 	return "", ErrHostNotFound
 }
 
-// Reset Launchpad infrastructure
+// Reset WeDeploy infrastructure
 func Reset() error {
 	var req = apihelper.URL("/reset")
 	apihelper.Auth(req)
 	return apihelper.Validate(req, req.Post())
 }
 
-// Run runs the Launchpad infrastructure
+// Run runs the WeDeploy infrastructure
 func Run(flags Flags) {
 	if !existsDependency("docker") {
 		println("Docker is not installed. Download it from http://docker.com/")
@@ -75,7 +75,7 @@ func Run(flags Flags) {
 	var dockerContainer = getAlreadyRunning()
 
 	if len(dockerContainer) != 0 {
-		fmt.Println("Launchpad is already running.")
+		fmt.Println("WeDeploy is already running.")
 	} else if !flags.ViewMode {
 		dockerContainer = start(flags)
 		var wg sync.WaitGroup
@@ -88,7 +88,7 @@ func Run(flags Flags) {
 		wg.Wait()
 	} else {
 		println("View mode is not available.")
-		println("Launchpad is shutdown.")
+		println("WeDeploy is shutdown.")
 		os.Exit(1)
 	}
 
@@ -138,7 +138,7 @@ func getRunCommandEnv() []string {
 	var args = []string{"run"}
 	args = append(args, portsArgs...)
 
-	var address, err = GetLaunchpadHost()
+	var address, err = GetWeDeployHost()
 
 	if err != nil {
 		panic(err)
@@ -173,33 +173,33 @@ func listen(dockerContainer string) {
 		})
 
 	if err != nil {
-		println("Launchpad wait error:", err.Error())
+		println("WeDeploy wait error:", err.Error())
 		os.Exit(1)
 	}
 
 	ps, err := procWait.Wait()
 
 	if err != nil {
-		println("Launchpad wait.Wait error:", err.Error())
+		println("WeDeploy wait.Wait error:", err.Error())
 		os.Exit(1)
 	}
 
 	if ps.Success() {
-		fmt.Println("Launchpad is shutdown.")
+		fmt.Println("WeDeploy is shutdown.")
 	} else {
-		println("Launchpad wait failure.")
+		println("WeDeploy wait failure.")
 	}
 }
 
 func resetWhenReady() {
 	var tries = 1
-	verbose.Debug("Trying to reset Launchpad containers in 20 seconds")
+	verbose.Debug("Trying to reset WeDeploy containers in 20 seconds")
 	time.Sleep(20 * time.Second)
 	for tries <= 10 {
 		var err = Reset()
 
 		if err == nil {
-			fmt.Println("Launchpad is ready!")
+			fmt.Println("WeDeploy is ready!")
 			return
 		}
 
@@ -208,7 +208,7 @@ func resetWhenReady() {
 		time.Sleep(4 * time.Second)
 	}
 
-	println("Launchpad is online, but failed to reset environment.")
+	println("WeDeploy is online, but failed to reset environment.")
 }
 
 func start(flags Flags) string {
@@ -229,7 +229,7 @@ func start(flags Flags) string {
 }
 
 func startCmd(args ...string) string {
-	fmt.Println("Starting Launchpad")
+	fmt.Println("Starting WeDeploy")
 	var docker = exec.Command("docker", args...)
 	var dockerContainerBuf bytes.Buffer
 	docker.Stdout = &dockerContainerBuf
@@ -266,7 +266,7 @@ func stopListener(dockerContainer string) {
 
 	go func() {
 		<-sigs
-		fmt.Println("\nStopping Launchpad.")
+		fmt.Println("\nStopping WeDeploy.")
 		stop(dockerContainer)
 	}()
 }

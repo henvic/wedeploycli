@@ -12,10 +12,10 @@ import (
 // RestartCmd is used for getting restart
 var RestartCmd = &cobra.Command{
 	Use:   "restart [project] [container]",
-	Short: "Restart project or container running on Launchpad",
+	Short: "Restart project or container running on WeDeploy",
 	Run:   restartRun,
-	Example: `launchpad restart portal
-launchpad restart portal email`,
+	Example: `we restart portal
+we restart portal email`,
 }
 
 func restartRun(cmd *cobra.Command, args []string) {

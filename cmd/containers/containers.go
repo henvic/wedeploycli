@@ -12,12 +12,12 @@ import (
 // ContainersCmd is used for getting containers
 var ContainersCmd = &cobra.Command{
 	Use:   "containers [project] or containers from inside a project",
-	Short: "Container running on Launchpad",
+	Short: "Container running on WeDeploy",
 	Run:   containersRun,
 }
 
 func errFeedback() {
-	fmt.Fprintln(os.Stderr, "Use launchpad containers <project> or launchpad containers from inside a project")
+	fmt.Fprintln(os.Stderr, "Use we containers <project> or we containers from inside a project")
 	os.Exit(1)
 }
 

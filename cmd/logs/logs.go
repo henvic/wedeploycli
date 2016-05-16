@@ -19,11 +19,11 @@ var (
 // LogsCmd is used for getting logs about a given scope
 var LogsCmd = &cobra.Command{
 	Use:   "logs [project] [container] [instance]",
-	Short: "Logs running on Launchpad",
+	Short: "Logs running on WeDeploy",
 	Run:   logsRun,
-	Example: `launchpad logs (on container directory)
-launchpad logs portal email
-launchpad logs portal email email5932`,
+	Example: `we logs (on container directory)
+we logs portal email
+we logs portal email email5932`,
 }
 
 func logsRun(cmd *cobra.Command, args []string) {

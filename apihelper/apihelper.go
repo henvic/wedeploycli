@@ -29,7 +29,7 @@ type APIFault struct {
 }
 
 func (a APIFault) Error() string {
-	var s = fmt.Sprintf("Launchpad API error:")
+	var s = fmt.Sprintf("WeDeploy API error:")
 
 	if a.Code != 0 {
 		s += fmt.Sprintf(" %v", a.Code)
@@ -72,7 +72,7 @@ var (
 	haltExitCommand           = false
 )
 
-// Auth a Launchpad request with the global authentication data
+// Auth a WeDeploy request with the global authentication data
 func Auth(request *launchpad.Launchpad) {
 	var csg = config.Stores["global"]
 	var token = csg.Get("token")
@@ -182,7 +182,7 @@ func RequestVerboseFeedback(request *launchpad.Launchpad) {
 	feedbackResponse(request.Response)
 }
 
-// URL creates a Launchpad URL instance
+// URL creates a WeDeploy URL instance
 func URL(paths ...string) *launchpad.Launchpad {
 	var csg = config.Stores["global"]
 	return launchpad.URL(csg.Get("endpoint"), paths...)

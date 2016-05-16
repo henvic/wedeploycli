@@ -95,7 +95,7 @@ func Notify() {
 		}
 
 		println(color.RedString(
-			`WARNING: Launchpad CLI tool is outdated. Run "` + cmd + `".`))
+			`WARNING: WeDeploy CLI tool is outdated. Run "` + cmd + `".`))
 	}
 }
 

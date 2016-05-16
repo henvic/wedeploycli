@@ -7,7 +7,7 @@ import (
 
 func main() {
 	header := &doc.GenManHeader{
-		Title:  "Launchpad CLI Tool",
+		Title:  "WeDeploy CLI Tool",
 		Source: "Docs created automatically from the source files",
 	}
 

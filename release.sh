@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Launchpad CLI tool publishing script
+# WeDeploy CLI tool publishing script
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -10,7 +10,7 @@ IFS=$'\n\t'
 config=${1-}
 
 if [ -z $config ] || [ $config == "help" ] || [ $config == "--help" ]; then
-	echo "Launchpad CLI Tool publishing script:
+	echo "WeDeploy CLI Tool publishing script:
 
 1) check if all changes are commited
 2) run tests on a local drone.io instance
