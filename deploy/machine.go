@@ -93,7 +93,7 @@ func (m *Machine) mountAndDeploy(container string) error {
 		var host = "liferay.io"
 
 		if config.Stores["global"].Get("local") == "true" {
-			host = "local"
+			host = "liferay.local"
 		}
 
 		m.SuccessMutex.Lock()
