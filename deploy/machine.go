@@ -90,9 +90,15 @@ func (m *Machine) mountAndDeploy(container string) error {
 	err = deploy.HooksAndOnly(m.Flags)
 
 	if err == nil {
+		var host = "liferay.io"
+
+		if config.Stores["global"].Get("local") {
+			host = "local"
+		}
+
 		m.SuccessMutex.Lock()
 		m.Success = append(m.Success, fmt.Sprintf(
-			"Ready! %v.%v.liferay.io", deploy.Container.ID, m.ProjectID))
+			"Ready! %v.%v.%v", deploy.Container.ID, m.ProjectID, host))
 		m.SuccessMutex.Unlock()
 	}
 
