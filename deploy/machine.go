@@ -92,7 +92,7 @@ func (m *Machine) mountAndDeploy(container string) error {
 	if err == nil {
 		var host = "liferay.io"
 
-		if config.Stores["global"].Get("local") {
+		if config.Stores["global"].Get("local") == "true" {
 			host = "local"
 		}
 
