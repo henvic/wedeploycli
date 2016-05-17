@@ -900,6 +900,49 @@ func TestValidateOrExitUnexpectedResponse(t *testing.T) {
 	haltExitCommand = false
 }
 
+func TestValidateOrExitUnexpectedNonJSONResponse(t *testing.T) {
+	var defaultVerboseErrStream = verbose.ErrStream
+	var defaultNoColor = color.NoColor
+	color.NoColor = true
+	verbose.Enabled = true
+	verbose.ErrStream = &bufErrStream
+	haltExitCommand = true
+	servertest.Setup()
+
+	servertest.Mux.HandleFunc("/foo/bah", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-type", "application/json; charset=UTF-8")
+		w.WriteHeader(403)
+		fmt.Fprintf(w, `x`)
+	})
+
+	bufErrStream.Reset()
+
+	var r = URL("/foo/bah")
+	var err = Validate(r, r.Get())
+
+	if err == nil {
+		t.Errorf("Expected error, got %v instead", err)
+	}
+
+	var bes = bufErrStream.String()
+
+	if !strings.Contains(bes,
+		"Response not JSON (as expected by Content-Type)") {
+		t.Errorf("Missing wrong response error")
+	}
+
+	if !strings.Contains(bes,
+		"invalid character 'x' looking for beginning of value") {
+		t.Errorf("Missing invalid error message")
+	}
+
+	color.NoColor = defaultNoColor
+	verbose.Enabled = false
+	verbose.ErrStream = defaultVerboseErrStream
+	haltExitCommand = false
+	servertest.Teardown()
+}
+
 func TestValidateOrExitUnexpectedResponseCustom(t *testing.T) {
 	servertest.Setup()
 	defer servertest.Teardown()
