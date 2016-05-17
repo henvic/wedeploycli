@@ -148,7 +148,7 @@ func List(projectID string) {
 }
 
 // InstallFromDefinition container to project
-func InstallFromDefinition(projectID, dir string, container *Container) error {
+func InstallFromDefinition(projectID, containerPath string, container *Container) error {
 	verbose.Debug("Installing container from definition")
 
 	var req = apihelper.URL("/containers")
@@ -157,7 +157,7 @@ func InstallFromDefinition(projectID, dir string, container *Container) error {
 	req.Param("projectId", projectID)
 
 	if config.Stores["global"].Get("local") == "true" {
-		req.Param("source", filepath.Join(config.Context.ProjectRoot, dir))
+		req.Param("source", containerPath)
 	}
 
 	var r, err = apihelper.EncodeJSON(&container)
