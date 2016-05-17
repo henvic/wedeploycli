@@ -237,7 +237,7 @@ func TestInstallFromDefinition(t *testing.T) {
 		Type: "nodejs",
 	}
 
-	var err = InstallFromDefinition("sound", c)
+	var err = InstallFromDefinition("sound", "", c)
 
 	if err != nil {
 		t.Errorf("Unexpected error on Install: %v", err)
