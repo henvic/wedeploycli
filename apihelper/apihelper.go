@@ -103,21 +103,7 @@ func DecodeJSON(request *launchpad.Launchpad, data interface{}) error {
 		return err
 	}
 
-	err = json.Unmarshal(body, &data)
-
-	if err != nil {
-		return err
-	}
-
-	switch err.(type) {
-	case *APIFault:
-		var ea = err.(*APIFault)
-		ea.Method = request.Request.Method
-		ea.URL = request.URL
-		return ea
-	}
-
-	return err
+	return json.Unmarshal(body, &data)
 }
 
 // DecodeJSONOrExit decodes a JSON response or exits the process on error
