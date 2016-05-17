@@ -14,11 +14,14 @@ import (
 	"time"
 
 	"github.com/launchpad-project/cli/apihelper"
+	"github.com/launchpad-project/cli/defaults"
 	"github.com/launchpad-project/cli/verbose"
 )
 
 // ErrHostNotFound is used when host is not found
 var ErrHostNotFound = errors.New("You need to be connected to a network.")
+
+var WeDeployImage = "launchpad/dev:" + defaults.WeDeployImageTag
 
 // Flags modifiers
 type Flags struct {
@@ -115,7 +118,7 @@ func getAlreadyRunning() string {
 	var args = []string{
 		"ps",
 		"--filter",
-		"ancestor=launchpad/dev",
+		"ancestor=" + WeDeployImage,
 		"--format",
 		"{{.ID}}",
 	}
@@ -152,8 +155,26 @@ func getRunCommandEnv() []string {
 	args = append(args, "-e")
 	args = append(args, "LP_DEV_DOCKER_HOST=tcp://"+address+":2375")
 	args = append(args, "--detach")
-	args = append(args, "launchpad/dev")
+	args = append(args, WeDeployImage)
 	return args
+}
+
+func hasCurrentWeDeployImage() bool {
+	var args = []string{
+		"inspect",
+		"--type",
+		"image",
+		WeDeployImage,
+	}
+
+	var docker = exec.Command("docker", args...)
+
+	if err := docker.Run(); err != nil {
+		verbose.Debug("docker inspect error:", err.Error())
+		return false
+	}
+
+	return true
 }
 
 func listen(dockerContainer string) {
@@ -191,6 +212,18 @@ func listen(dockerContainer string) {
 	}
 }
 
+func pull() {
+	fmt.Println("Pulling Launchpad infrastructure docker image. Hold on.")
+	var docker = exec.Command("docker", "pull", WeDeployImage)
+	docker.Stderr = os.Stderr
+	docker.Stdout = os.Stdout
+
+	if err := docker.Run(); err != nil {
+		println("docker pull error:", err.Error())
+		os.Exit(1)
+	}
+}
+
 func resetWhenReady() {
 	var tries = 1
 	verbose.Debug("Trying to reset WeDeploy containers in 20 seconds")
@@ -225,6 +258,10 @@ func start(flags Flags) string {
 		os.Exit(0)
 	}
 
+	if !hasCurrentWeDeployImage() {
+		pull()
+	}
+
 	return startCmd(args...)
 }
 
@@ -247,8 +284,10 @@ func stop(dockerContainer string) {
 	var err = Reset()
 
 	if err != nil {
+		println("Failure running reset environment procedure",
+			"for Launchpad before shutdown.")
 		println(err.Error())
-		os.Exit(1)
+		println("Ignoring reset failure and proceeding with shutdown.")
 	}
 
 	var stop = exec.Command("docker", "stop", dockerContainer)
