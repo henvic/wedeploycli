@@ -28,6 +28,8 @@ type APIFault struct {
 	Errors  APIFaultErrors `json:"errors"`
 }
 
+var errInvalidGlobalConfig = errors.New("Can't get endpoint: global config is null")
+
 func (a APIFault) Error() string {
 	var s = fmt.Sprintf("WeDeploy API error:")
 
@@ -185,6 +187,11 @@ func RequestVerboseFeedback(request *launchpad.Launchpad) {
 // URL creates a WeDeploy URL instance
 func URL(paths ...string) *launchpad.Launchpad {
 	var csg = config.Stores["global"]
+
+	if csg == nil {
+		panic(errInvalidGlobalConfig)
+	}
+
 	return launchpad.URL(csg.Get("endpoint"), paths...)
 }
 

@@ -45,6 +45,22 @@ func TestMain(m *testing.M) {
 	os.Exit(ec)
 }
 
+func TestURLFailure(t *testing.T) {
+	config.Stores["global"] = nil
+
+	defer func() {
+		r := recover()
+
+		if r != errInvalidGlobalConfig {
+			t.Errorf("Expected panic with %v error, got %v instead", errInvalidGlobalConfig, r)
+		}
+
+		globalconfigmock.Setup()
+	}()
+
+	URL("foo")
+}
+
 func TestAuth(t *testing.T) {
 	r := launchpad.URL("http://localhost/")
 
