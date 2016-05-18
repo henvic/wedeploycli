@@ -241,27 +241,31 @@ func (d *Deploy) HooksAndOnly(df *Flags) (err error) {
 		err = hooks.Run(ch.BeforeDeploy)
 	}
 
-	err = os.Chdir(workingDir)
+	if ech := os.Chdir(workingDir); ech != nil {
+		panic(ech)
+	}
 
 	if err != nil {
 		return err
 	}
 
-	if err == nil {
-		err = d.Only()
-	}
+	err = d.Only()
 
-	err = os.Chdir(d.ContainerPath)
+	if ech := os.Chdir(d.ContainerPath); ech != nil {
+		panic(ech)
+	}
 
 	if err != nil {
 		return err
 	}
 
-	if err == nil && df.Hooks && ch != nil && ch.AfterDeploy != "" {
+	if df.Hooks && ch != nil && ch.AfterDeploy != "" {
 		err = hooks.Run(ch.AfterDeploy)
 	}
 
-	err = os.Chdir(workingDir)
+	if ech := os.Chdir(workingDir); ech != nil {
+		panic(ech)
+	}
 
 	if err != nil {
 		return err
