@@ -213,7 +213,7 @@ func listen(dockerContainer string) {
 }
 
 func pull() {
-	fmt.Println("Pulling Launchpad infrastructure docker image. Hold on.")
+	fmt.Println("Pulling WeDeploy infrastructure docker image. Hold on.")
 	var docker = exec.Command("docker", "pull", WeDeployImage)
 	docker.Stderr = os.Stderr
 	docker.Stdout = os.Stdout

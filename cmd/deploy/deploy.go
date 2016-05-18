@@ -29,8 +29,8 @@ var DeployCmd = &cobra.Command{
 	PreRun: checkContext,
 	Run:    deployRun,
 	Example: `we deploy
-launchpad deploy <container>
-launchpad deploy -o welcome.pod`,
+we deploy <container>
+we deploy -o welcome.pod`,
 }
 
 func deployRun(cmd *cobra.Command, args []string) {

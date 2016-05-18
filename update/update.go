@@ -88,7 +88,7 @@ func Notify() {
 
 	if nextVersion != "" && nextVersion != defaults.Version {
 		var channel = csg.Get("release_channel")
-		var cmd = "launchpad update"
+		var cmd = "we update"
 
 		if channel != "" && channel != "stable" {
 			cmd += " --channel " + channel

@@ -21,7 +21,7 @@
         "appName": "foo",
         "instanceId": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
         "level": 6,
-        "message": "[2016-03-29 18:55:51,240] INFO  [main] com.liferay.launchpad.Launchpad#start:69 - Launchpad is ready\r",
+        "message": "[2016-03-29 18:55:51,240] INFO  [main] com.liferay.launchpad.Launchpad#start:69 - WeDeploy is ready\r",
         "podName": "nodejs5143",
         "severity": "INFO",
         "timestamp": "1459277751240"
