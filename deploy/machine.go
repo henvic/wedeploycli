@@ -3,6 +3,7 @@ package deploy
 import (
 	"fmt"
 	"path"
+	"runtime"
 	"sync"
 
 	"github.com/launchpad-project/cli/config"
@@ -19,6 +20,7 @@ type Machine struct {
 	Errors       *Errors
 	SuccessMutex sync.Mutex
 	ErrorsMutex  sync.Mutex
+	dirMutex     sync.Mutex
 	queue        sync.WaitGroup
 }
 
@@ -44,10 +46,6 @@ func New(cpath string) (*Deploy, error) {
 func (m *Machine) Run(list []string) (err error) {
 	m.Errors = &Errors{
 		List: []ContainerError{},
-	}
-
-	for _, dir := range list {
-		m.installContainerDefinition(dir)
 	}
 
 	m.queue.Add(len(list))
@@ -87,6 +85,17 @@ func (m *Machine) mountAndDeploy(container string) error {
 		return err
 	}
 
+	m.dirMutex.Lock()
+	err = containers.InstallFromDefinition(m.ProjectID, deploy.ContainerPath, deploy.Container)
+	m.dirMutex.Unlock()
+	runtime.Gosched()
+
+	if err != nil {
+		return err
+	}
+
+	verbose.Debug(deploy.Container.ID, "container definition installed")
+
 	err = deploy.HooksAndOnly(m.Flags)
 
 	if err == nil {
@@ -103,24 +112,4 @@ func (m *Machine) mountAndDeploy(container string) error {
 	}
 
 	return err
-}
-
-func (m *Machine) installContainerDefinition(container string) {
-	var deploy, err = New(container)
-
-	if err == nil {
-		err = containers.InstallFromDefinition(m.ProjectID, deploy.ContainerPath, deploy.Container)
-	}
-
-	if err != nil {
-		m.ErrorsMutex.Lock()
-		m.Errors.List = append(m.Errors.List, ContainerError{
-			ContainerPath: container,
-			Error:         err,
-		})
-		m.ErrorsMutex.Unlock()
-		return
-	}
-
-	verbose.Debug(deploy.Container.ID, "container definition installed")
 }
