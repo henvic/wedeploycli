@@ -346,7 +346,7 @@ func TestAllWithBeforeHookFailure(t *testing.T) {
 	servertest.Mux.HandleFunc("/containers",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/push/project/container_before_hook_failure",
+	servertest.Mux.HandleFunc("/push/project/container-before-hook-failure",
 		func(w http.ResponseWriter, r *http.Request) {
 			var _, _, err = r.FormFile("pod")
 
