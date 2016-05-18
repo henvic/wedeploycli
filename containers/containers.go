@@ -31,7 +31,7 @@ type Container struct {
 	Hooks        *hooks.Hooks      `json:"hooks,omitempty"`
 	DeployIgnore []string          `json:"deploy_ignore,omitempty"`
 	Env          map[string]string `json:"env,omitempty"`
-	Instances    int               `json:"number,omitempty"`
+	Instances    int               `json:"instances,omitempty"`
 }
 
 // Register for the container structure
