@@ -21,6 +21,7 @@ import (
 // ErrHostNotFound is used when host is not found
 var ErrHostNotFound = errors.New("You need to be connected to a network.")
 
+// WeDeployImage is the docker image for the WeDeploy infrastructure
 var WeDeployImage = "launchpad/dev:" + defaults.WeDeployImageTag
 
 // Flags modifiers
