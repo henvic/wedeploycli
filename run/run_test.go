@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"math/rand"
 	"testing"
+
+	"github.com/launchpad-project/cli/globalconfigmock"
+	"github.com/launchpad-project/cli/servertest"
+	"github.com/launchpad-project/cli/tdata"
 )
 
 type ExistsDependencyProvider struct {
@@ -24,4 +28,20 @@ func TestExistsDependency(t *testing.T) {
 			t.Errorf("existsDependency(%v) should return %v", c.cmd, c.find)
 		}
 	}
+}
+
+func TestReset(t *testing.T) {
+	globalconfigmock.Setup()
+	servertest.Setup()
+
+	servertest.Mux.HandleFunc("/reset", tdata.ServerHandler(""))
+
+	var err = Reset()
+
+	if err != nil {
+		t.Errorf("Unexpected error %v on reset", err)
+	}
+
+	globalconfigmock.Teardown()
+	servertest.Teardown()
 }
