@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gosuri/uiprogress"
+	"github.com/henvic/uiprogress"
 )
 
 // Bar holds the progress bar data
