@@ -9,5 +9,6 @@
         "deploy": "",
         "after_deploy": ""
     },
-    "deploy_ignore": ["xoo", "foo"]
+    "deploy_ignore": ["xoo", "foo"],
+    "instances": 1
 }

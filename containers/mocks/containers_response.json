@@ -2,12 +2,7 @@
   "search7606": {
     "type": "cloudsearch",
     "basePath": "\/search",
-    "instances": [
-      {
-        "id": "foo_search7606_vdafpgw8twrjmnyhlqul6yvp",
-        "state": "OFF"
-      }
-    ],
+    "instances": 7,
     "name": "Cloud Search",
     "id": "search7606",
     "state": "on",
@@ -16,12 +11,7 @@
   "nodejs5143": {
     "type": "nodejs",
     "basePath": "\/nodejs",
-    "instances": [
-      {
-        "id": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
-        "state": "OFF"
-      }
-    ],
+    "instances": 5,
     "name": "Node.js",
     "id": "nodejs5143",
     "state": "on",
