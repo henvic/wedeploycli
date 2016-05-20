@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gosuri/uilive"
 	"github.com/launchpad-project/cli/apihelper"
 	"github.com/launchpad-project/cli/defaults"
 	"github.com/launchpad-project/cli/verbose"
@@ -227,13 +228,19 @@ func pull() {
 
 func resetWhenReady() {
 	var tries = 1
-	verbose.Debug("Trying to reset WeDeploy containers in 20 seconds")
-	time.Sleep(20 * time.Second)
-	for tries <= 10 {
+	var livew = uilive.New()
+	verbose.Debug("Trying to reset WeDeploy containers in 10 seconds")
+	livew.Start()
+	var tdone = warmup(livew)
+	time.Sleep(10 * time.Second)
+	for tries <= 20 {
 		var err = Reset()
 
 		if err == nil {
-			fmt.Println("WeDeploy is ready!")
+			close(tdone)
+			time.Sleep(2 * livew.RefreshInterval)
+			fmt.Fprintf(livew, "WeDeploy is ready!\n")
+			livew.Stop()
 			return
 		}
 
@@ -242,6 +249,10 @@ func resetWhenReady() {
 		time.Sleep(4 * time.Second)
 	}
 
+	close(tdone)
+	time.Sleep(2 * livew.RefreshInterval)
+	fmt.Fprintf(livew, "WeDeploy is up.\n")
+	livew.Stop()
 	println("WeDeploy is online, but failed to reset environment.")
 }
 
@@ -314,4 +325,32 @@ func stopListener(dockerContainer string) {
 func existsDependency(cmd string) bool {
 	_, err := exec.LookPath(cmd)
 	return err == nil
+}
+
+func warmup(writer *uilive.Writer) chan bool {
+	var on = '○'
+	var off = '●'
+	var ticker = time.NewTicker(time.Second)
+	var tdone = make(chan bool, 1)
+
+	go func() {
+		now := time.Now()
+		for {
+			select {
+			case t := <-ticker.C:
+				var p = on
+				if t.Second()%2 == 0 {
+					p = off
+				}
+
+				fmt.Fprintf(writer, "%c warming up %ds\n", p, int(-now.Sub(t).Seconds()))
+			case <-tdone:
+				ticker.Stop()
+				ticker = nil
+				return
+			}
+		}
+	}()
+
+	return tdone
 }
