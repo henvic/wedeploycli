@@ -159,12 +159,7 @@ func build() {
 }
 
 func compile() {
-	var workingDir, err = os.Getwd()
-
-	if err != nil {
-		panic(err)
-	}
-
+	var err error
 	binaryDir, err = filepath.Abs(filepath.Join(binaryDir, ".."))
 
 	if err != nil {
@@ -179,8 +174,6 @@ func compile() {
 	if err != nil {
 		panic(err)
 	}
-
-	os.Chdir(workingDir)
 }
 
 func getHomePath(home string) string {
@@ -194,7 +187,15 @@ func getHomePath(home string) string {
 }
 
 func init() {
+	var workingDir, err = os.Getwd()
+
+	if err != nil {
+		panic(err)
+	}
+
 	compile()
+
+	os.Chdir(workingDir)
 }
 
 func setupLoginHome() {
