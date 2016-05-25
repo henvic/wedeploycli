@@ -89,40 +89,6 @@ func All(list []string, df *Flags) (success []string, err error) {
 	return success, err
 }
 
-// Only PODify a single container and deploys it to WeDeploy
-func Only(container string, df *Flags) error {
-	var deploy, err = New(container)
-
-	if err != nil {
-		return err
-	}
-
-	var projectID = config.Stores["project"].Get("id")
-
-	created, err := projects.ValidateOrCreate(
-		filepath.Join(config.Context.ProjectRoot, "/project.json"))
-
-	if created {
-		fmt.Fprintf(outStream, "New project %v created\n", projectID)
-	}
-
-	if err != nil {
-		return err
-	}
-
-	err = containers.InstallFromDefinition(projectID,
-		deploy.ContainerPath,
-		deploy.Container)
-
-	if err != nil {
-		return err
-	}
-
-	verbose.Debug(deploy.Container.ID, "container definition installed")
-
-	return deploy.HooksAndOnly(df)
-}
-
 // Pack packages a POD to a .pod package
 func Pack(dest, cpath string) error {
 	var deploy, err = New(cpath)
