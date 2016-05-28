@@ -74,12 +74,10 @@ func GetConfig(dir string, c *Container) error {
 // actually, directories...
 func GetListFromScope() ([]string, error) {
 	var projectRoot = config.Context.ProjectRoot
-	var list []string
 
 	if config.Context.ContainerRoot != "" {
 		_, container := filepath.Split(config.Context.ContainerRoot)
-		list = append(list, container)
-		return list, nil
+		return []string{container}, nil
 	}
 
 	files, err := ioutil.ReadDir(projectRoot)
@@ -88,29 +86,7 @@ func GetListFromScope() ([]string, error) {
 		return nil, err
 	}
 
-	for _, file := range files {
-		if !file.IsDir() {
-			continue
-		}
-
-		var cs = configstore.Store{
-			Name: file.Name(),
-			Path: filepath.Join(projectRoot, file.Name(), "container.json"),
-		}
-
-		err = cs.Load()
-
-		if err == nil {
-			list = append(list, file.Name())
-			continue
-		}
-
-		if !os.IsNotExist(err) {
-			return nil, err
-		}
-	}
-
-	return list, nil
+	return getContainersFromScope(files)
 }
 
 // GetStatus gets the status for a container
@@ -226,4 +202,33 @@ func Validate(projectID, containerID string) (err error) {
 	}
 
 	return errDoc
+}
+
+func getContainersFromScope(files []os.FileInfo) ([]string, error) {
+	var projectRoot = config.Context.ProjectRoot
+	var list []string
+
+	for _, file := range files {
+		if !file.IsDir() {
+			continue
+		}
+
+		var cs = configstore.Store{
+			Name: file.Name(),
+			Path: filepath.Join(projectRoot, file.Name(), "container.json"),
+		}
+
+		var err = cs.Load()
+
+		if err == nil {
+			list = append(list, file.Name())
+			continue
+		}
+
+		if !os.IsNotExist(err) {
+			return nil, err
+		}
+	}
+
+	return list, nil
 }
