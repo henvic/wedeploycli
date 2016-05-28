@@ -13,7 +13,6 @@ import (
 	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/apihelper"
 	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/configstore"
 	"github.com/launchpad-project/cli/hooks"
 	"github.com/launchpad-project/cli/verbose"
 )
@@ -213,12 +212,7 @@ func getContainersFromScope(files []os.FileInfo) ([]string, error) {
 			continue
 		}
 
-		var cs = configstore.Store{
-			Name: file.Name(),
-			Path: filepath.Join(projectRoot, file.Name(), "container.json"),
-		}
-
-		var err = cs.Load()
+		var err = GetConfig(filepath.Join(projectRoot, file.Name()), nil)
 
 		if err == nil {
 			list = append(list, file.Name())
