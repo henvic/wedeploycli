@@ -57,14 +57,14 @@ func CreateFromDefinition(filename string) error {
 }
 
 // GetStatus gets the status for the project
-func GetStatus(id string) {
+func GetStatus(id string) string {
 	var status string
 	var req = apihelper.URL("/projects/" + id + "/state")
 
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Get())
 	apihelper.DecodeJSONOrExit(req, &status)
-	fmt.Fprintln(outStream, status+" ("+id+")")
+	return status
 }
 
 // List projects

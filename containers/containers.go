@@ -90,14 +90,14 @@ func GetListFromScope() ([]string, error) {
 }
 
 // GetStatus gets the status for a container
-func GetStatus(projectID, containerID string) {
+func GetStatus(projectID, containerID string) string {
 	var status string
 	var req = apihelper.URL("/projects/" + projectID + "/containers/" + containerID + "/state")
 
 	apihelper.Auth(req)
 	apihelper.ValidateOrExit(req, req.Get())
 	apihelper.DecodeJSONOrExit(req, &status)
-	fmt.Fprintln(outStream, status+" ("+projectID+" "+containerID+")")
+	return status
 }
 
 // List of containers of a given project

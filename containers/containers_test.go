@@ -248,19 +248,17 @@ func TestInstallFromDefinition(t *testing.T) {
 }
 
 func TestGetStatus(t *testing.T) {
-	t.SkipNow()
 	servertest.Setup()
 	globalconfigmock.Setup()
-	bufOutStream.Reset()
 
-	var want = "on (foo bar)\n"
 	servertest.Mux.HandleFunc("/projects/foo/containers/bar/state",
 		tdata.ServerJSONHandler(`"on"`))
 
-	GetStatus("foo", "bar")
+	var want = "on"
+	var got = GetStatus("foo", "bar")
 
-	if bufOutStream.String() != want {
-		t.Errorf("Wanted %v, got %v instead", want, bufOutStream.String())
+	if got != want {
+		t.Errorf("Wanted %v, got %v instead", want, got)
 	}
 
 	servertest.Teardown()

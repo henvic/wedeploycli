@@ -1,6 +1,7 @@
 package cmdstatus
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/launchpad-project/cli/cmdcontext"
@@ -19,7 +20,8 @@ we status portal email`,
 }
 
 func statusRun(cmd *cobra.Command, args []string) {
-	project, container, err := cmdcontext.GetProjectOrContainerID(args)
+	var project, container, err = cmdcontext.GetProjectOrContainerID(args)
+	var status string
 
 	if err != nil {
 		cmd.Help()
@@ -28,8 +30,10 @@ func statusRun(cmd *cobra.Command, args []string) {
 
 	switch container {
 	case "":
-		projects.GetStatus(project)
+		status = projects.GetStatus(project)
+		fmt.Println(status + " (" + project + ")")
 	default:
-		containers.GetStatus(project, container)
+		status = containers.GetStatus(project, container)
+		fmt.Println(status + " (" + project + " " + container + ")")
 	}
 }

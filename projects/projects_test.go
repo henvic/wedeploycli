@@ -56,23 +56,20 @@ func TestCreateFromDefinitionFailureNotFound(t *testing.T) {
 }
 
 func TestGetStatus(t *testing.T) {
-	t.SkipNow()
-	defer servertest.Teardown()
 	servertest.Setup()
 	globalconfigmock.Setup()
-	bufOutStream.Reset()
-
-	var want = "on (foo)\n"
 
 	servertest.Mux.HandleFunc(
 		"/projects/foo/state", tdata.ServerJSONHandler(`"on"`))
 
-	GetStatus("foo")
+	var want = "on"
+	var got = GetStatus("foo")
 
-	if bufOutStream.String() != want {
-		t.Errorf("Wanted %v, got %v instead", want, bufOutStream.String())
+	if got != want {
+		t.Errorf("Wanted %v, got %v instead", want, got)
 	}
 
+	servertest.Teardown()
 	globalconfigmock.Teardown()
 }
 
