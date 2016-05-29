@@ -91,36 +91,35 @@ func GetListFromScope() ([]string, error) {
 // GetStatus gets the status for a container
 func GetStatus(projectID, containerID string) string {
 	var status string
-	var req = apihelper.URL("/projects/" + projectID + "/containers/" + containerID + "/state")
-
-	apihelper.Auth(req)
-	apihelper.ValidateOrExit(req, req.Get())
-	apihelper.DecodeJSONOrExit(req, &status)
+	apihelper.AuthGetOrExit(
+		"/projects/"+projectID+"/containers/"+containerID+"/state",
+		&status)
 	return status
 }
 
 // List of containers of a given project
 func List(projectID string) {
-	var containers Containers
-	var req = apihelper.URL("/projects/" + projectID + "/containers")
-
-	apihelper.Auth(req)
-	apihelper.ValidateOrExit(req, req.Get())
-	apihelper.DecodeJSONOrExit(req, &containers)
-
-	keys := make([]string, 0, len(containers))
-	for k := range containers {
+	var cs Containers
+	apihelper.AuthGetOrExit("/projects/"+projectID+"/containers", &cs)
+	var keys = make([]string, 0, len(cs))
+	for k := range cs {
 		keys = append(keys, k)
 	}
 
 	sort.Strings(keys)
 
 	for _, k := range keys {
-		container := containers[k]
-		fmt.Fprintln(outStream, container.ID+"\t"+container.ID+"."+projectID+".liferay.io ("+container.Name+") "+container.State)
+		container := cs[k]
+		fmt.Fprintf(outStream,
+			"%s\t%s.%s.liferay.io (%s) %s\n",
+			container.ID,
+			container.ID,
+			projectID,
+			container.Name,
+			container.State)
 	}
 
-	fmt.Fprintln(outStream, "total", len(containers))
+	fmt.Fprintln(outStream, "total", len(cs))
 }
 
 // InstallFromDefinition container to project
@@ -149,12 +148,7 @@ func InstallFromDefinition(projectID, containerPath string, container *Container
 
 // GetRegistry gets a list of container images
 func GetRegistry() (registry []Register) {
-	var req = apihelper.URL("/registry")
-
-	apihelper.Auth(req)
-	apihelper.ValidateOrExit(req, req.Get())
-	apihelper.DecodeJSONOrExit(req, &registry)
-
+	apihelper.AuthGetOrExit("/registry", &registry)
 	return registry
 }
 

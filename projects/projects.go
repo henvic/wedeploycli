@@ -59,22 +59,14 @@ func CreateFromDefinition(filename string) error {
 // GetStatus gets the status for the project
 func GetStatus(id string) string {
 	var status string
-	var req = apihelper.URL("/projects/" + id + "/state")
-
-	apihelper.Auth(req)
-	apihelper.ValidateOrExit(req, req.Get())
-	apihelper.DecodeJSONOrExit(req, &status)
+	apihelper.AuthGetOrExit("/projects/"+id+"/state", &status)
 	return status
 }
 
 // List projects
 func List() {
 	var projects []Project
-	var req = apihelper.URL("/projects")
-
-	apihelper.Auth(req)
-	apihelper.ValidateOrExit(req, req.Get())
-	apihelper.DecodeJSONOrExit(req, &projects)
+	apihelper.AuthGetOrExit("/projects", &projects)
 	printProjects(projects)
 }
 
