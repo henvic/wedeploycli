@@ -109,8 +109,7 @@ func DecodeJSON(request *launchpad.Launchpad, data interface{}) error {
 // DecodeJSONOrExit decodes a JSON response or exits the process on error
 func DecodeJSONOrExit(request *launchpad.Launchpad, data interface{}) {
 	if err := DecodeJSON(request, data); err != nil {
-		fmt.Fprintln(errStream, err)
-		exitCommand(1)
+		exitError(err)
 	}
 }
 
@@ -203,9 +202,13 @@ func ValidateOrExit(request *launchpad.Launchpad, err error) {
 	err = Validate(request, err)
 
 	if err != nil {
-		fmt.Fprintf(errStream, "%v\n", err)
-		exitCommand(1)
+		exitError(err)
 	}
+}
+
+func exitError(err error) {
+	fmt.Fprintln(errStream, err)
+	exitCommand(1)
 }
 
 func exitCommand(code int) {
