@@ -258,6 +258,8 @@ func TestDecodeJSON(t *testing.T) {
 	var wantBody = "to be written"
 	var wantComments = 30
 
+	bufErrStream.Reset()
+
 	r := URL("/posts/1")
 
 	ValidateOrExit(r, r.Get())
