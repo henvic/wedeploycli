@@ -163,15 +163,7 @@ func Restart(projectID, containerID string) {
 // Validate container
 func Validate(projectID, containerID string) (err error) {
 	var req = apihelper.URL("/validators/containers/id")
-
-	apihelper.Auth(req)
-
-	req.Param("projectId", projectID)
-	req.Param("value", containerID)
-
-	err = req.Get()
-
-	apihelper.RequestVerboseFeedback(req)
+	err = doValidate(projectID, containerID, req)
 
 	if err == nil || err != launchpad.ErrUnexpectedResponse {
 		return err
@@ -186,6 +178,18 @@ func Validate(projectID, containerID string) (err error) {
 	}
 
 	return getAPIFaultError(errDoc)
+}
+
+func doValidate(projectID, containerID string, req *launchpad.Launchpad) error {
+	apihelper.Auth(req)
+
+	req.Param("projectId", projectID)
+	req.Param("value", containerID)
+
+	var err = req.Get()
+
+	apihelper.RequestVerboseFeedback(req)
+	return err
 }
 
 func getAPIFaultError(errDoc apihelper.APIFault) error {
