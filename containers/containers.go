@@ -185,6 +185,10 @@ func Validate(projectID, containerID string) (err error) {
 		return err
 	}
 
+	return getAPIFaultError(errDoc)
+}
+
+func getAPIFaultError(errDoc apihelper.APIFault) error {
 	for _, ed := range errDoc.Errors {
 		switch ed.Reason {
 		case "invalidContainerId":
