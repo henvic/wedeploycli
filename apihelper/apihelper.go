@@ -191,6 +191,18 @@ func RequestVerboseFeedback(request *launchpad.Launchpad) {
 	feedbackResponse(request.Response)
 }
 
+// SetBody sets the body of a request with the JSON encoded from an object
+func SetBody(request *launchpad.Launchpad, data interface{}) error {
+	var r, err = EncodeJSON(&data)
+
+	if err != nil {
+		return err
+	}
+
+	request.Body(r)
+	return err
+}
+
 // URL creates a WeDeploy URL instance
 func URL(paths ...string) *launchpad.Launchpad {
 	var csg = config.Stores["global"]

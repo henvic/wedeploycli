@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -949,6 +950,66 @@ func TestRequestVerboseFeedbackNotComplete(t *testing.T) {
 	verbose.Enabled = defaultVerboseEnabled
 	verbose.ErrStream = defaultVerboseErrStream
 	color.NoColor = defaultNoColor
+}
+
+func TestSetBody(t *testing.T) {
+	var got string
+	servertest.Setup()
+
+	servertest.Mux.HandleFunc("/foo", func(w http.ResponseWriter, r *http.Request) {
+		var body, err = ioutil.ReadAll(r.Body)
+
+		if err != nil {
+			t.Errorf("Wanted err to be nil, got %v instead", err)
+		}
+
+		got = string(body)
+	})
+
+	var request = URL("/foo")
+
+	type simple struct {
+		Foo string `json:"foo"`
+	}
+
+	var m = &simple{
+		Foo: "bar",
+	}
+
+	var err = SetBody(request, m)
+
+	if err != nil {
+		t.Errorf("Wanted err to be nil, got %v instead", err)
+	}
+
+	err = request.Get()
+
+	if err != nil {
+		t.Errorf("Wanted err to be nil, got %v instead", err)
+	}
+
+	var want = `{"foo":"bar"}`
+
+	if want != got {
+		t.Errorf("Wanted encoded JSON to be %v, got %v instead", want, got)
+	}
+
+	servertest.Teardown()
+}
+
+func TestSetBodyUnsupportedType(t *testing.T) {
+	var request = URL("/foo")
+
+	var m = map[int]string{
+		3: "bar",
+	}
+
+	var err = SetBody(request, m)
+	var wantErr = "json: unsupported type: map[int]string"
+
+	if err == nil || err.Error() != wantErr {
+		t.Errorf("Wanted err to be %v, got %v instead", wantErr, wantErr)
+	}
 }
 
 func TestURL(t *testing.T) {
