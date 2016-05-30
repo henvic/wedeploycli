@@ -130,20 +130,22 @@ func InstallFromDefinition(projectID, containerPath string, container *Container
 	apihelper.Auth(req)
 
 	req.Param("projectId", projectID)
+	maybeSetLocalContainerPath(containerPath, req)
 
-	if config.Stores["global"].Get("local") == "true" {
-		req.Param("source", containerPath)
-	}
-
-	var r, err = apihelper.EncodeJSON(&container)
+	var err = apihelper.SetBody(req, &container)
 
 	if err != nil {
 		return err
 	}
 
-	req.Body(r)
-
 	return apihelper.Validate(req, req.Put())
+}
+
+func maybeSetLocalContainerPath(containerPath string,
+	req *launchpad.Launchpad) {
+	if config.Stores["global"].Get("local") == "true" {
+		req.Param("source", containerPath)
+	}
 }
 
 // GetRegistry gets a list of container images
