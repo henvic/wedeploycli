@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/launchpad-project/api.go"
@@ -47,10 +46,7 @@ func CreateFromDefinition(filename string) error {
 	var req = apihelper.URL("/projects")
 	apihelper.Auth(req)
 
-	if config.Stores["global"].Get("local") == "true" {
-		req.Param("source", filepath.Join(config.Context.ProjectRoot))
-	}
-
+	maybeSetLocalProjectRoot(req)
 	req.Body(file)
 
 	return apihelper.Validate(req, req.Post())
@@ -136,6 +132,12 @@ func ValidateOrCreate(filename string) (created bool, err error) {
 	}
 
 	return false, err
+}
+
+func maybeSetLocalProjectRoot(req *launchpad.Launchpad) {
+	if config.Stores["global"].Get("local") == "true" {
+		req.Param("source", config.Context.ProjectRoot)
+	}
 }
 
 func printProject(project Project) {
