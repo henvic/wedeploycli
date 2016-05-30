@@ -179,7 +179,7 @@ func Validate(projectID, containerID string) (err error) {
 		return err
 	}
 
-	return getAPIFaultError(errDoc)
+	return getValidateAPIFaultError(errDoc)
 }
 
 func doValidate(projectID, containerID string, req *launchpad.Launchpad) error {
@@ -194,14 +194,12 @@ func doValidate(projectID, containerID string, req *launchpad.Launchpad) error {
 	return err
 }
 
-func getAPIFaultError(errDoc apihelper.APIFault) error {
-	for _, ed := range errDoc.Errors {
-		switch ed.Reason {
-		case "invalidContainerId":
-			return ErrInvalidContainerID
-		case "containerAlreadyExists":
-			return ErrContainerAlreadyExists
-		}
+func getValidateAPIFaultError(errDoc apihelper.APIFault) error {
+	switch {
+	case errDoc.Has("invalidContainerId"):
+		return ErrInvalidContainerID
+	case errDoc.Has("containerAlreadyExists"):
+		return ErrContainerAlreadyExists
 	}
 
 	return errDoc
