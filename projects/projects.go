@@ -76,14 +76,7 @@ func Restart(id string) {
 // Validate project
 func Validate(projectID string) (err error) {
 	var req = apihelper.URL("/validators/project/id")
-
-	apihelper.Auth(req)
-
-	req.Param("value", projectID)
-
-	err = req.Get()
-
-	apihelper.RequestVerboseFeedback(req)
+	err = doValidate(projectID, req)
 
 	if err == nil || err != launchpad.ErrUnexpectedResponse {
 		return err
@@ -97,14 +90,7 @@ func Validate(projectID string) (err error) {
 		return err
 	}
 
-	switch {
-	case errDoc.Has("invalidProjectId"):
-		return ErrInvalidProjectID
-	case errDoc.Has("projectAlreadyExists"):
-		return ErrProjectAlreadyExists
-	}
-
-	return errDoc
+	return getValidateAPIFaultError(errDoc)
 }
 
 // ValidateOrCreate project
@@ -123,6 +109,28 @@ func ValidateOrCreate(filename string) (created bool, err error) {
 	}
 
 	return false, err
+}
+
+func doValidate(projectID string, req *launchpad.Launchpad) error {
+	apihelper.Auth(req)
+
+	req.Param("value", projectID)
+
+	var err = req.Get()
+
+	apihelper.RequestVerboseFeedback(req)
+	return err
+}
+
+func getValidateAPIFaultError(errDoc apihelper.APIFault) error {
+	switch {
+	case errDoc.Has("invalidProjectId"):
+		return ErrInvalidProjectID
+	case errDoc.Has("projectAlreadyExists"):
+		return ErrProjectAlreadyExists
+	}
+
+	return errDoc
 }
 
 func maybeSetLocalProjectRoot(req *launchpad.Launchpad) {
