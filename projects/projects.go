@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 
 	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/apihelper"
@@ -98,13 +97,11 @@ func Validate(projectID string) (err error) {
 		return err
 	}
 
-	for _, ed := range errDoc.Errors {
-		switch ed.Reason {
-		case "invalidProjectId":
-			return ErrInvalidProjectID
-		case "projectAlreadyExists":
-			return ErrProjectAlreadyExists
-		}
+	switch {
+	case errDoc.Has("invalidProjectId"):
+		return ErrInvalidProjectID
+	case errDoc.Has("projectAlreadyExists"):
+		return ErrProjectAlreadyExists
 	}
 
 	return errDoc
@@ -119,15 +116,9 @@ func ValidateOrCreate(filename string) (created bool, err error) {
 		return true, err
 	case *apihelper.APIFault:
 		var ae = err.(*apihelper.APIFault)
-		var errorList = ae.Errors
 
-		if len(errorList) != 0 {
-			for _, e := range errorList {
-				if e.Reason == "invalidDocumentValue" &&
-					strings.Contains(e.Message, "already exists") {
-					return false, nil
-				}
-			}
+		if ae.Has("invalidDocumentValue") {
+			return false, nil
 		}
 	}
 
