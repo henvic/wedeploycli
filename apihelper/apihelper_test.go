@@ -238,6 +238,77 @@ func TestAPIError(t *testing.T) {
 	}
 }
 
+func TestAPIFaultGet(t *testing.T) {
+	var e = &APIFault{
+		Code:    404,
+		Message: "Resource Not Found",
+		Errors: APIFaultErrors{
+			APIFaultError{
+				Reason:  "x",
+				Message: "y",
+			},
+		},
+	}
+
+	var has, msg = e.Get("x")
+
+	if !has {
+		t.Errorf("Expected reason to exist.")
+	}
+
+	var want = "y"
+
+	if msg != want {
+		t.Errorf("Wanted reason to be %v, got %v", want, msg)
+	}
+}
+
+func TestAPIFaultGetNotFound(t *testing.T) {
+	var e = &APIFault{
+		Code:    404,
+		Message: "Resource Not Found",
+		Errors:  APIFaultErrors{},
+	}
+
+	var has, msg = e.Get("x")
+
+	if has || msg != "" {
+		t.Errorf("Unexpected APIFault given error reason reported as existing")
+	}
+}
+
+func TestAPIFaultGetNil(t *testing.T) {
+	var e = &APIFault{
+		Code:    404,
+		Message: "Resource Not Found",
+	}
+
+	var has, msg = e.Get("x")
+
+	if has || msg != "" {
+		t.Errorf("Unexpected APIFault given error reason reported as existing")
+	}
+}
+
+func TestAPIFaultHas(t *testing.T) {
+	var e = &APIFault{
+		Code:    404,
+		Message: "Resource Not Found",
+		Errors: APIFaultErrors{
+			APIFaultError{
+				Reason:  "x",
+				Message: "y",
+			},
+		},
+	}
+
+	var has = e.Has("x")
+
+	if !has {
+		t.Errorf("Expected reason to exist.")
+	}
+}
+
 func TestDecodeJSON(t *testing.T) {
 	servertest.Setup()
 	defer servertest.Teardown()

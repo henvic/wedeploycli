@@ -54,6 +54,27 @@ func (a APIFault) Error() string {
 	return s
 }
 
+// Get error message for a given reason if it exists
+func (a APIFault) Get(reason string) (bool, string) {
+	if a.Errors == nil {
+		return false, ""
+	}
+
+	for _, ed := range a.Errors {
+		if ed.Reason == reason {
+			return true, ed.Message
+		}
+	}
+
+	return false, ""
+}
+
+// Has checks if given error reason exists
+func (a APIFault) Has(reason string) bool {
+	var has, _ = a.Get(reason)
+	return has
+}
+
 // APIFaultErrors is the array of APIFaultError
 type APIFaultErrors []APIFaultError
 
