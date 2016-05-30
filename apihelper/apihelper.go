@@ -31,7 +31,7 @@ type APIFault struct {
 var errInvalidGlobalConfig = errors.New("Can't get endpoint: global config is null")
 
 func (a APIFault) Error() string {
-	var s = fmt.Sprintf("WeDeploy API error:")
+	var s = "WeDeploy API error:"
 
 	if a.Code != 0 {
 		s += fmt.Sprintf(" %v", a.Code)
@@ -45,11 +45,7 @@ func (a APIFault) Error() string {
 		s += " (" + a.Method + " " + a.URL + ")"
 	}
 
-	if a.Errors != nil && len(a.Errors) != 0 {
-		for _, value := range a.Errors {
-			s += fmt.Sprintf("\n\t%v: %v", value.Message, value.Reason)
-		}
-	}
+	s += a.getErrorMessages()
 
 	return s
 }
@@ -73,6 +69,20 @@ func (a APIFault) Get(reason string) (bool, string) {
 func (a APIFault) Has(reason string) bool {
 	var has, _ = a.Get(reason)
 	return has
+}
+
+func (a APIFault) getErrorMessages() string {
+	var s []string
+
+	if a.Errors == nil {
+		return ""
+	}
+
+	for _, value := range a.Errors {
+		s = append(s, fmt.Sprintf("\n\t%v: %v", value.Message, value.Reason))
+	}
+
+	return strings.Join(s, "")
 }
 
 // APIFaultErrors is the array of APIFaultError
