@@ -27,6 +27,7 @@ type APIFault struct {
 }
 
 var errInvalidGlobalConfig = errors.New("Can't get endpoint: global config is null")
+var errJSONDecodeFailure = errors.New("Can't decode JSON, fallback to body content")
 
 func (a APIFault) Error() string {
 	return fmt.Sprintf("WeDeploy API error:%s%s%s",
@@ -269,29 +270,47 @@ func exitCommand(code int) {
 }
 
 func reportHTTPError(request *launchpad.Launchpad) error {
-	var af APIFault
-
-	var response = request.Response
-	var contentType = response.Header.Get("Content-Type")
-	var body, err = ioutil.ReadAll(response.Body)
+	var body, err = ioutil.ReadAll(request.Response.Body)
 
 	if err != nil {
 		return err
 	}
 
-	if strings.Contains(contentType, "application/json") {
-		err = json.Unmarshal(body, &af)
+	switch err = reportHTTPErrorTryJSON(request, body); err {
+	case nil, errJSONDecodeFailure:
+		return reportHTTPErrorNotJSON(request, body)
+	default:
+		return err
+	}
+}
 
-		if err == nil {
-			af.Method = request.Request.Method
-			af.URL = request.URL
-			return &af
-		}
+func reportHTTPErrorTryJSON(request *launchpad.Launchpad, body []byte) error {
+	var response = request.Response
+	var contentType = response.Header.Get("Content-Type")
+	var af APIFault
 
-		fmt.Fprintf(errStream, "Failure decoding JSON error: %v", err)
+	if !strings.Contains(contentType, "application/json") {
+		return nil
 	}
 
-	af = APIFault{
+	if ed := json.Unmarshal(body, &af); ed != nil {
+		fmt.Fprintf(errStream, "Failure decoding JSON error: %v", ed)
+		return errJSONDecodeFailure
+	}
+
+	return reportHTTPErrorJSON(request, af)
+}
+
+func reportHTTPErrorJSON(request *launchpad.Launchpad, af APIFault) error {
+	af.Method = request.Request.Method
+	af.URL = request.URL
+	return &af
+}
+
+func reportHTTPErrorNotJSON(
+	request *launchpad.Launchpad, body []byte) *APIFault {
+	var response = request.Response
+	return &APIFault{
 		Method:  request.Request.Method,
 		URL:     request.URL,
 		Code:    response.StatusCode,
@@ -303,6 +322,4 @@ func reportHTTPError(request *launchpad.Launchpad) error {
 			},
 		},
 	}
-
-	return &af
 }
