@@ -124,6 +124,10 @@ func TestDeploy(t *testing.T) {
 				t.Errorf("Expected multipart/form-data")
 			}
 
+			if r.Header.Get("WeDeploy-Package-Size") == "0" {
+				t.Errorf("Expected package size to have length > 0")
+			}
+
 			if r.Header.Get("WeDeploy-Package-SHA1") != packageSHA1 {
 				t.Errorf("Expected SHA1 on the header doesn't match expected value")
 			}
