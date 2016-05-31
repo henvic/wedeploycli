@@ -116,19 +116,39 @@ func (d *Deploy) Deploy(src string) error {
 	}
 }
 
+type deploySubmission struct {
+	emc chan error
+	mpw *multipart.Writer
+	pw  io.Closer
+	rc  io.ReadCloser
+}
+
+func (ds *deploySubmission) Writer() {
+	ds.emc <- multipartWriter(ds.mpw, ds.pw, ds.rc)
+	close(ds.emc)
+}
+
+func (ds *deploySubmission) Setup(rc io.ReadCloser) *io.PipeReader {
+	var pr, pw = io.Pipe()
+	ds.rc = rc
+	ds.pw = pw
+	ds.emc = make(chan error, 1)
+	ds.mpw = multipart.NewWriter(pw)
+	return pr
+}
+
 func (d *Deploy) deployUpload(
 	request *launchpad.Launchpad, rc io.ReadCloser, wc io.Writer) error {
-	var r, w = io.Pipe()
-	var mpw = multipart.NewWriter(w)
-	var errMultipartChan = make(chan error, 1)
+	var ds = &deploySubmission{}
+	var pr = ds.Setup(rc)
 
-	go deployWriter(errMultipartChan, mpw, w, rc)
-	request.Body(io.TeeReader(r, wc))
-	request.Headers.Set("Content-Type", mpw.FormDataContentType())
+	go ds.Writer()
+	request.Body(io.TeeReader(pr, wc))
+	request.Headers.Set("Content-Type", ds.mpw.FormDataContentType())
 
 	return d.deployFeedback(
 		apihelper.Validate(request, request.Post()),
-		<-errMultipartChan)
+		<-ds.emc)
 }
 
 // HooksAndOnly run the hooks and Only method
@@ -181,12 +201,6 @@ func chdir(dir string) {
 	if ech := os.Chdir(dir); ech != nil {
 		panic(ech)
 	}
-}
-
-func deployWriter(
-	emw chan error, mpw *multipart.Writer, w io.Closer, file io.ReadCloser) {
-	emw <- multipartWriter(mpw, w, file)
-	close(emw)
 }
 
 func getPackageSHA1(file io.ReadSeeker) (string, error) {
