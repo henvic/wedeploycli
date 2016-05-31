@@ -221,6 +221,10 @@ func RequestVerboseFeedback(request *launchpad.Launchpad) {
 		return
 	}
 
+	requestVerboseFeedback(request)
+}
+
+func requestVerboseFeedback(request *launchpad.Launchpad) {
 	verbose.Debug(">",
 		color.BlueString(request.Request.Method),
 		color.YellowString(request.URL),
