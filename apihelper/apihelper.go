@@ -349,7 +349,6 @@ func feedbackResponse(response *http.Response) {
 
 func feedbackResponseBody(response *http.Response) {
 	var body, err = ioutil.ReadAll(response.Body)
-	var out bytes.Buffer
 
 	if err != nil {
 		verbose.Debug("Error reading response body")
@@ -357,11 +356,15 @@ func feedbackResponseBody(response *http.Response) {
 		return
 	}
 
+	feedbackResponseBodyAll(response, body)
+}
+
+func feedbackResponseBodyAll(response *http.Response, body []byte) {
+	var out bytes.Buffer
 	response.Body = ioutil.NopCloser(bytes.NewReader(body))
 
 	if strings.Contains(
-		response.Header.Get("Content-Type"),
-		"application/json") {
+		response.Header.Get("Content-Type"), "application/json") {
 		if err := json.Indent(&out, body, "", "    "); err != nil {
 			verbose.Debug("Response not JSON (as expected by Content-Type)")
 			verbose.Debug(err)
