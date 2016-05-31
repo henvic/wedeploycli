@@ -234,7 +234,6 @@ func TestAPIError(t *testing.T) {
 	}
 
 	if fmt.Sprintf("%v", e) != "WeDeploy API error: 404 Resource Not Found" {
-		fmt.Println(e)
 		t.Errorf("APIFault error, got %v", e)
 	}
 }
