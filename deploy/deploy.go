@@ -162,13 +162,7 @@ func (d *Deploy) Deploy(src string) error {
 		d.progress.Fail()
 	}
 
-	if err != nil && errMultipart != nil {
-		verbose.Debug("Error both in multipart and error")
-		verbose.Debug("Error:")
-		verbose.Debug(err.Error())
-		verbose.Debug("Multipart error:")
-		verbose.Debug(errMultipart.Error())
-	}
+	reportDeployMultipleError(err, errMultipart)
 
 	if errMultipart != nil {
 		return errMultipart
@@ -313,4 +307,14 @@ func multipartWriter(
 	}
 
 	return mpw.Close()
+}
+
+func reportDeployMultipleError(err, errMultipart error) {
+	if err != nil && errMultipart != nil {
+		verbose.Debug("Error both in multipart and error")
+		verbose.Debug("Error:")
+		verbose.Debug(err.Error())
+		verbose.Debug("Multipart error:")
+		verbose.Debug(errMultipart.Error())
+	}
 }
