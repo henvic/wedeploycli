@@ -156,19 +156,7 @@ func (d *Deploy) Only() error {
 		return nil
 	}
 
-	var tmp, err = ioutil.TempFile(os.TempDir(), "launchpad-cli")
-
-	err = d.Pack(tmp.Name())
-
-	if err == nil {
-		err = d.Deploy(tmp.Name())
-	}
-
-	if tmp != nil {
-		os.Remove(tmp.Name())
-	}
-
-	return err
+	return d.only()
 }
 
 // Pack packages a POD to a .pod package
@@ -297,6 +285,22 @@ func (d *Deploy) getPackageFD(src string) (*os.File, uint64, error) {
 	}
 
 	return file, size, err
+}
+
+func (d *Deploy) only() error {
+	var tmp, err = ioutil.TempFile(os.TempDir(), "launchpad-cli")
+
+	err = d.Pack(tmp.Name())
+
+	if err == nil {
+		err = d.Deploy(tmp.Name())
+	}
+
+	if tmp != nil {
+		os.Remove(tmp.Name())
+	}
+
+	return err
 }
 
 func (d *Deploy) runHook(df *Flags, wdir, path string) error {
