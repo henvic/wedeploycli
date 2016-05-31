@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/apihelper"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/containers"
@@ -32,7 +33,7 @@ type ContainerError struct {
 type Deploy struct {
 	Container     *containers.Container
 	ContainerPath string
-	PackageSize   int64
+	PackageSize   uint64
 	progress      *progress.Bar
 }
 
@@ -102,82 +103,32 @@ func Pack(dest, cpath string) error {
 
 // Deploy POD to WeDeploy
 func (d *Deploy) Deploy(src string) error {
-	var projectID = config.Stores["project"].Get("id")
-	var u = path.Join("push", projectID, d.Container.ID)
-	var req = apihelper.URL(u)
-	var fileInfo os.FileInfo
+	var request, file, err = d.setupPackage(src)
 
-	apihelper.Auth(req)
-
-	var file, err = os.Open(src)
-
-	if err != nil {
+	switch {
+	case err != nil:
 		return err
+	default:
+		return d.deployUpload(request, file, &writeCounter{
+			progress: d.progress,
+			Size:     d.PackageSize,
+		})
 	}
+}
 
-	fileInfo, err = file.Stat()
-
-	if err != nil {
-		return err
-	}
-
-	var packageSize = fileInfo.Size()
-
-	var wc = &writeCounter{
-		progress: d.progress,
-		Size:     uint64(packageSize),
-	}
-
-	d.progress.Reset("Uploading", "")
-
-	var hash, esha1 = getPackageSHA1(file)
-
-	if esha1 != nil {
-		return esha1
-	}
-
-	req.Header("WeDeploy-Package-Size", fmt.Sprintf("%d", packageSize))
-	req.Header("WeDeploy-Package-SHA1", hash)
-
+func (d *Deploy) deployUpload(
+	request *launchpad.Launchpad, rc io.ReadCloser, wc io.Writer) error {
 	var r, w = io.Pipe()
 	var mpw = multipart.NewWriter(w)
-
 	var errMultipartChan = make(chan error, 1)
 
-	go func() {
-		errMultipartChan <- multipartWriter(mpw, w, file)
-		close(errMultipartChan)
-	}()
+	go deployWriter(errMultipartChan, mpw, w, rc)
+	request.Body(io.TeeReader(r, wc))
+	request.Headers.Set("Content-Type", mpw.FormDataContentType())
 
-	req.Body(io.TeeReader(r, wc))
-
-	req.Headers.Set("Content-Type", mpw.FormDataContentType())
-
-	err = apihelper.Validate(req, req.Post())
-
-	var errMultipart = <-errMultipartChan
-
-	if err != nil || errMultipart != nil {
-		d.progress.Append = "(Failure)"
-		d.progress.Fail()
-	}
-
-	reportDeployMultipleError(err, errMultipart)
-
-	if errMultipart != nil {
-		return errMultipart
-	}
-
-	if err != nil {
-		return err
-	}
-
-	d.progress.Append = fmt.Sprintf(
-		"%s (Complete)",
-		humanize.Bytes(uint64(packageSize)))
-	d.progress.Set(progress.Total)
-
-	return err
+	return d.deployFeedback(
+		apihelper.Validate(request, request.Post()),
+		<-errMultipartChan)
 }
 
 // HooksAndOnly run the hooks and Only method
@@ -244,6 +195,12 @@ func chdir(dir string) {
 	}
 }
 
+func deployWriter(
+	emw chan error, mpw *multipart.Writer, w io.Closer, file io.ReadCloser) {
+	emw <- multipartWriter(mpw, w, file)
+	close(emw)
+}
+
 func getPackageSHA1(file io.ReadSeeker) (string, error) {
 	var hash = sha1.New()
 	var _, err = io.Copy(hash, file)
@@ -290,6 +247,58 @@ func reportDeployMultipleError(err, errMultipart error) {
 	}
 }
 
+func (d *Deploy) createDeployRequest(rs io.ReadSeeker) (
+	*launchpad.Launchpad, error) {
+	var projectID = config.Stores["project"].Get("id")
+	var request *launchpad.Launchpad
+	var hash, err = getPackageSHA1(rs)
+
+	if err == nil {
+		request = apihelper.URL(path.Join("push", projectID, d.Container.ID))
+		apihelper.Auth(request)
+		request.Header("Package-Size", fmt.Sprintf("%d", d.PackageSize))
+		request.Header("Package-SHA1", hash)
+	}
+
+	return request, err
+}
+
+func (d *Deploy) deployFeedback(err, errMultipart error) error {
+	if err != nil || errMultipart != nil {
+		d.setProgressFailure()
+	}
+
+	reportDeployMultipleError(err, errMultipart)
+
+	switch {
+	case errMultipart != nil:
+		return errMultipart
+	case err != nil:
+		return err
+	default:
+		d.setProgressComplete(d.PackageSize)
+		return err
+	}
+}
+
+func (d *Deploy) getPackageFD(src string) (*os.File, uint64, error) {
+	var fileInfo os.FileInfo
+	var size uint64
+	var file, err = os.Open(src)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	fileInfo, err = file.Stat()
+
+	if err == nil {
+		size = uint64(fileInfo.Size())
+	}
+
+	return file, size, err
+}
+
 func (d *Deploy) runHook(df *Flags, wdir, path string) error {
 	var ch = d.Container.Hooks
 
@@ -312,4 +321,34 @@ func (d *Deploy) runBeforeHook(df *Flags, wdir string) error {
 func (d *Deploy) runAfterHook(df *Flags, wdir string) error {
 	var hooks = d.Container.Hooks
 	return d.runHook(df, wdir, hooks.AfterDeploy)
+}
+
+func (d *Deploy) setProgressComplete(size uint64) {
+	d.progress.Append = fmt.Sprintf(
+		"%s (Complete)",
+		humanize.Bytes(size))
+	d.progress.Set(progress.Total)
+}
+
+func (d *Deploy) setProgressFailure() {
+	d.progress.Append = "(Failure)"
+	d.progress.Fail()
+}
+
+func (d *Deploy) setProgressUploading() {
+	d.progress.Reset("Uploading", "")
+}
+
+func (d *Deploy) setupPackage(src string) (
+	*launchpad.Launchpad, *os.File, error) {
+	var file, size, errFD = d.getPackageFD(src)
+	d.PackageSize = size
+
+	if errFD != nil {
+		return nil, nil, errFD
+	}
+
+	d.setProgressUploading()
+	var request, err = d.createDeployRequest(file)
+	return request, file, err
 }
