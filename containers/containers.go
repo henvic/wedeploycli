@@ -15,6 +15,7 @@ import (
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/hooks"
 	"github.com/launchpad-project/cli/verbose"
+	"github.com/launchpad-project/cli/verbosereq"
 )
 
 // Containers map
@@ -190,7 +191,7 @@ func doValidate(projectID, containerID string, req *launchpad.Launchpad) error {
 
 	var err = req.Get()
 
-	apihelper.RequestVerboseFeedback(req)
+	verbosereq.Feedback(req)
 	return err
 }
 

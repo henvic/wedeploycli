@@ -649,11 +649,9 @@ func TestRequestVerboseFeedback(t *testing.T) {
 	request.Headers.Add("Accept", "application/json")
 	request.Headers.Add("Accept", "text/plain")
 
-	if err := request.Get(); err != nil {
+	if err := Validate(request, request.Get()); err != nil {
 		panic(err)
 	}
-
-	RequestVerboseFeedback(request)
 
 	var got = bufErrStream.String()
 
@@ -707,11 +705,9 @@ func TestRequestVerboseFeedbackUpload(t *testing.T) {
 
 	request.Body(file)
 
-	if err := request.Get(); err != nil {
+	if err := Validate(request, request.Get()); err != nil {
 		panic(err)
 	}
-
-	RequestVerboseFeedback(request)
 
 	var got = bufErrStream.String()
 
@@ -756,11 +752,9 @@ func TestRequestVerboseFeedbackStringReader(t *testing.T) {
 
 	request.Body(strings.NewReader("custom body"))
 
-	if err := request.Get(); err != nil {
+	if err := Validate(request, request.Get()); err != nil {
 		panic(err)
 	}
-
-	RequestVerboseFeedback(request)
 
 	var got = bufErrStream.String()
 
@@ -810,11 +804,9 @@ func TestRequestVerboseFeedbackBytesReader(t *testing.T) {
 
 	request.Body(bytes.NewReader(b.Bytes()))
 
-	if err := request.Get(); err != nil {
+	if err := Validate(request, request.Get()); err != nil {
 		panic(err)
 	}
-
-	RequestVerboseFeedback(request)
 
 	var got = bufErrStream.String()
 
@@ -863,11 +855,9 @@ func TestRequestVerboseFeedbackOtherReader(t *testing.T) {
 
 	request.Body(io.TeeReader(body, b))
 
-	if err := request.Get(); err != nil {
+	if err := Validate(request, request.Get()); err != nil {
 		panic(err)
 	}
-
-	RequestVerboseFeedback(request)
 
 	var got = bufErrStream.String()
 
@@ -927,11 +917,9 @@ func TestRequestVerboseFeedbackJSONResponse(t *testing.T) {
 
 	request.Body(bytes.NewBuffer(b))
 
-	if err := request.Post(); err != nil {
+	if err := Validate(request, request.Post()); err != nil {
 		panic(err)
 	}
-
-	RequestVerboseFeedback(request)
 
 	var got = bufErrStream.String()
 
@@ -972,11 +960,9 @@ func TestRequestVerboseFeedbackNullResponse(t *testing.T) {
 
 	request.URL = "x://"
 
-	// this returns an error, but we are not going to validate it here and
-	// shortcut because we want to see what verbose returns
-	request.Get()
-
-	RequestVerboseFeedback(request)
+	// this returns an error, but we are not going to shortcut to avoid getting
+	// validation value here because we want to see what verbose returns
+	Validate(request, request.Get())
 
 	var got = bufErrStream.String()
 
@@ -1012,7 +998,10 @@ func TestRequestVerboseFeedbackNotComplete(t *testing.T) {
 	verbose.ErrStream = &bufErrStream
 	bufErrStream.Reset()
 
-	RequestVerboseFeedback(URL("/foo"))
+	var request = URL("/foo")
+	if err := Validate(request, nil); err != nil {
+		panic(err)
+	}
 
 	stringlib.AssertSimilar(t,
 		"> (wait) http://www.example.com/foo",

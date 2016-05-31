@@ -10,6 +10,7 @@ import (
 	"github.com/launchpad-project/cli/apihelper"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/verbose"
+	"github.com/launchpad-project/cli/verbosereq"
 )
 
 // Project structure
@@ -118,7 +119,7 @@ func doValidate(projectID string, req *launchpad.Launchpad) error {
 
 	var err = req.Get()
 
-	apihelper.RequestVerboseFeedback(req)
+	verbosereq.Feedback(req)
 	return err
 }
 
