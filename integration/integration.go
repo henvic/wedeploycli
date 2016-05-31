@@ -107,37 +107,9 @@ func (e *Expect) Assert(t *testing.T, cmd *Command) {
 // Prepare prepares the executable command
 func (cmd *Command) Prepare() *exec.Cmd {
 	child := exec.Command(binary, cmd.Args...)
-
-	if cmd.Stdin != nil {
-		child.Stdin = cmd.Stdin
-	}
-
-	var serr = new(bytes.Buffer)
-	var sout = new(bytes.Buffer)
-
-	var customHome, err = filepath.Abs("./mocks/home")
-
-	if err != nil {
-		panic(err)
-	}
-
-	cmd.Env = append(cmd.Env, "LAUNCHPAD_CUSTOM_HOME="+customHome)
-	cmd.Env = append(cmd.Env, os.Environ()...)
-
-	if cmd.Dir != "" {
-		cmd.Dir, err = filepath.Abs(cmd.Dir)
-
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	child.Env = cmd.Env
-	child.Dir = cmd.Dir
-	child.Stderr = serr
-	child.Stdout = sout
-	cmd.Stderr = serr
-	cmd.Stdout = sout
+	cmd.setEnv()
+	cmd.absDir()
+	cmd.setChildChannels(child)
 
 	return child
 }
@@ -146,6 +118,40 @@ func (cmd *Command) Prepare() *exec.Cmd {
 func (cmd *Command) Run() {
 	c := cmd.Prepare()
 	cmd.ExitCode = GetExitCode(c.Run())
+}
+
+func (cmd *Command) absDir() {
+	if cmd.Dir == "" {
+		return
+	}
+
+	var dir, err = filepath.Abs(cmd.Dir)
+	cmd.Dir = dir
+
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (cmd *Command) setChildChannels(child *exec.Cmd) {
+	cmd.Stderr = new(bytes.Buffer)
+	cmd.Stdout = new(bytes.Buffer)
+	child.Env = cmd.Env
+	child.Dir = cmd.Dir
+	child.Stdin = cmd.Stdin
+	child.Stderr = cmd.Stderr
+	child.Stdout = cmd.Stdout
+}
+
+func (cmd *Command) setEnv() {
+	var ch, err = filepath.Abs("./mocks/home")
+
+	if err != nil {
+		panic(err)
+	}
+
+	cmd.Env = append(cmd.Env, "LAUNCHPAD_CUSTOM_HOME="+ch)
+	cmd.Env = append(cmd.Env, os.Environ()...)
 }
 
 func build() {
