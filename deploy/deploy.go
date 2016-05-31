@@ -181,57 +181,22 @@ func (d *Deploy) Deploy(src string) error {
 }
 
 // HooksAndOnly run the hooks and Only method
-func (d *Deploy) HooksAndOnly(df *Flags) (err error) {
-	var ch = d.Container.Hooks
-	var workingDir string
-
-	workingDir, err = os.Getwd()
+func (d *Deploy) HooksAndOnly(df *Flags) error {
+	var wdir, err = os.Getwd()
 
 	if err != nil {
 		return err
 	}
 
-	err = os.Chdir(d.ContainerPath)
-
-	if err != nil {
+	if err = d.runBeforeHook(df, wdir); err != nil {
 		return err
 	}
 
-	if df.Hooks && ch != nil && ch.BeforeDeploy != "" {
-		err = hooks.Run(ch.BeforeDeploy)
-	}
-
-	if ech := os.Chdir(workingDir); ech != nil {
-		panic(ech)
-	}
-
-	if err != nil {
+	if err = d.Only(); err != nil {
 		return err
 	}
 
-	err = d.Only()
-
-	if ech := os.Chdir(d.ContainerPath); ech != nil {
-		panic(ech)
-	}
-
-	if err != nil {
-		return err
-	}
-
-	if df.Hooks && ch != nil && ch.AfterDeploy != "" {
-		err = hooks.Run(ch.AfterDeploy)
-	}
-
-	if ech := os.Chdir(workingDir); ech != nil {
-		panic(ech)
-	}
-
-	if err != nil {
-		return err
-	}
-
-	return err
+	return d.runAfterHook(df, wdir)
 }
 
 // Only PODify a container and deploys it to WeDeploy
@@ -271,6 +236,12 @@ func (d *Deploy) Pack(dest string) (err error) {
 	verbose.Debug("Saving container to", dest)
 
 	return err
+}
+
+func chdir(dir string) {
+	if ech := os.Chdir(dir); ech != nil {
+		panic(ech)
+	}
 }
 
 func getPackageSHA1(file io.ReadSeeker) (string, error) {
@@ -317,4 +288,28 @@ func reportDeployMultipleError(err, errMultipart error) {
 		verbose.Debug("Multipart error:")
 		verbose.Debug(errMultipart.Error())
 	}
+}
+
+func (d *Deploy) runHook(df *Flags, wdir, path string) error {
+	var ch = d.Container.Hooks
+
+	if df.Hooks && ch != nil && path != "" {
+		chdir(d.ContainerPath)
+		var err = hooks.Run(path)
+		chdir(wdir)
+
+		return err
+	}
+
+	return nil
+}
+
+func (d *Deploy) runBeforeHook(df *Flags, wdir string) error {
+	var hooks = d.Container.Hooks
+	return d.runHook(df, wdir, hooks.BeforeDeploy)
+}
+
+func (d *Deploy) runAfterHook(df *Flags, wdir string) error {
+	var hooks = d.Container.Hooks
+	return d.runHook(df, wdir, hooks.AfterDeploy)
 }
