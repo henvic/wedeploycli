@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/launchpad-project/cli/apihelper"
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/deploy"
 	"github.com/launchpad-project/cli/globalconfigmock"
@@ -331,4 +332,65 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 	config.Teardown()
 	servertest.Teardown()
 	os.Chdir(workingDir)
+}
+
+func TestAllValidateOrCreateFailure(t *testing.T) {
+	servertest.Setup()
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
+		t.Error(err)
+	}
+
+	config.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/projects",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(403)
+		})
+
+	var _, err = All([]string{"mycontainer"}, &deploy.Flags{})
+
+	if err == nil || err.(*apihelper.APIFault).Code != 403 {
+		t.Errorf("Expected 403 Forbidden error, got %v instead", err)
+	}
+
+	globalconfigmock.Teardown()
+	config.Teardown()
+	os.Chdir(workingDir)
+	servertest.Teardown()
+}
+
+func TestAllInstallContainerError(t *testing.T) {
+	servertest.Setup()
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
+		t.Error(err)
+	}
+
+	config.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/projects",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/containers",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(403)
+		})
+
+	var _, err = All([]string{"mycontainer"}, &deploy.Flags{})
+	var el = err.(*Errors).List
+	var af = el[0].Error.(*apihelper.APIFault)
+
+	if err == nil || af.Code != 403 {
+		t.Errorf("Expected 403 Forbidden error, got %v instead", err)
+	}
+
+	globalconfigmock.Teardown()
+	config.Teardown()
+	os.Chdir(workingDir)
+	servertest.Teardown()
 }
