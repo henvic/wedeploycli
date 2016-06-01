@@ -296,12 +296,24 @@ func (d *Deploy) runHook(df *Flags, wdir, path string) error {
 
 func (d *Deploy) runBeforeHook(df *Flags, wdir string) error {
 	var hooks = d.Container.Hooks
-	return d.runHook(df, wdir, hooks.BeforeDeploy)
+
+	switch hooks {
+	case nil:
+		return nil
+	default:
+		return d.runHook(df, wdir, hooks.BeforeDeploy)
+	}
 }
 
 func (d *Deploy) runAfterHook(df *Flags, wdir string) error {
 	var hooks = d.Container.Hooks
-	return d.runHook(df, wdir, hooks.AfterDeploy)
+
+	switch hooks {
+	case nil:
+		return nil
+	default:
+		return d.runHook(df, wdir, hooks.AfterDeploy)
+	}
 }
 
 func (d *Deploy) setProgressComplete(size uint64) {
