@@ -16,22 +16,26 @@ var CreateCmd = &cobra.Command{
 	Example: `we create (from inside project or container)`,
 }
 
+func handleError(err error) {
+	if err != nil {
+		println(err.Error())
+		os.Exit(1)
+	}
+}
+
 func createRun(cmd *cobra.Command, args []string) {
 	var err error
+	var length = len(args)
 	switch {
-	case len(args) == 0:
+	case length == 0:
 		err = createctx.New()
-		break
-	case len(args) == 1 && args[0] == "project":
+	case length == 1 && args[0] == "project":
 		err = createctx.NewProject()
-	case len(args) == 1 && args[0] == "container":
+	case length == 1 && args[0] == "container":
 		err = createctx.NewContainer()
 	default:
 		err = errors.New("Invalid scope")
 	}
 
-	if err != nil {
-		println(err.Error())
-		os.Exit(1)
-	}
+	handleError(err)
 }
