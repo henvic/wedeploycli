@@ -26,7 +26,7 @@ type Deploy struct {
 	Container     *containers.Container
 	ContainerPath string
 	PackageSize   uint64
-	progress      *progress.Bar
+	progress      *deployProgress
 }
 
 // Flags modifiers
@@ -50,7 +50,7 @@ func Pack(dest, cpath string) error {
 func New(cpath string) (*Deploy, error) {
 	var deploy = &Deploy{
 		ContainerPath: path.Join(config.Context.ProjectRoot, cpath),
-		progress:      progress.New(cpath),
+		progress:      &deployProgress{progress.New(cpath)},
 	}
 
 	var c containers.Container
@@ -73,7 +73,7 @@ func (d *Deploy) Deploy(src string) error {
 		return err
 	default:
 		return d.deployUpload(request, file, &writeCounter{
-			progress: d.progress,
+			progress: d.progress.bar,
 			Size:     d.PackageSize,
 		})
 	}
@@ -144,15 +144,15 @@ func (d *Deploy) Only() error {
 
 // Pack packages a POD to a .pod package
 func (d *Deploy) Pack(dest string) (err error) {
-	d.progress.Reset("Packing", "")
+	d.progress.setPacking()
 	dest, _ = filepath.Abs(dest)
 
 	var ignorePatterns = append(d.Container.DeployIgnore, pod.CommonIgnorePatterns...)
 
-	_, err = pod.Pack(dest, d.ContainerPath, ignorePatterns, d.progress)
+	_, err = pod.Pack(dest, d.ContainerPath, ignorePatterns, d.progress.bar)
 
 	if err == nil {
-		d.progress.Set(progress.Total)
+		d.progress.bar.Set(progress.Total)
 	}
 
 	verbose.Debug("Saving container to", dest)
@@ -230,7 +230,7 @@ func (d *Deploy) createDeployRequest(rs io.ReadSeeker) (
 
 func (d *Deploy) deployFeedback(err, errMultipart error) error {
 	if err != nil || errMultipart != nil {
-		d.setProgressFailure()
+		d.progress.setFailure()
 	}
 
 	reportDeployMultipleError(err, errMultipart)
@@ -241,7 +241,7 @@ func (d *Deploy) deployFeedback(err, errMultipart error) error {
 	case err != nil:
 		return err
 	default:
-		d.setProgressComplete(d.PackageSize)
+		d.progress.setComplete(d.PackageSize)
 		return err
 	}
 }
@@ -316,22 +316,6 @@ func (d *Deploy) runAfterHook(df *Flags, wdir string) error {
 	}
 }
 
-func (d *Deploy) setProgressComplete(size uint64) {
-	d.progress.Append = fmt.Sprintf(
-		"%s (Complete)",
-		humanize.Bytes(size))
-	d.progress.Set(progress.Total)
-}
-
-func (d *Deploy) setProgressFailure() {
-	d.progress.Append = "(Failure)"
-	d.progress.Fail()
-}
-
-func (d *Deploy) setProgressUploading() {
-	d.progress.Reset("Uploading", "")
-}
-
 func (d *Deploy) setupPackage(src string) (
 	*launchpad.Launchpad, *os.File, error) {
 	var file, size, errFD = d.getPackageFD(src)
@@ -341,7 +325,31 @@ func (d *Deploy) setupPackage(src string) (
 		return nil, nil, errFD
 	}
 
-	d.setProgressUploading()
+	d.progress.setUploading()
 	var request, err = d.createDeployRequest(file)
 	return request, file, err
+}
+
+type deployProgress struct {
+	bar *progress.Bar
+}
+
+func (dp *deployProgress) setComplete(size uint64) {
+	dp.bar.Append = fmt.Sprintf(
+		"%s (Complete)",
+		humanize.Bytes(size))
+	dp.bar.Set(progress.Total)
+}
+
+func (dp *deployProgress) setFailure() {
+	dp.bar.Append = "(Failure)"
+	dp.bar.Fail()
+}
+
+func (dp *deployProgress) setUploading() {
+	dp.bar.Reset("Uploading", "")
+}
+
+func (dp *deployProgress) setPacking() {
+	dp.bar.Reset("Packing", "")
 }
