@@ -23,6 +23,8 @@ var (
 	output  string
 )
 
+var ErrOutputScope = errors.New("Can only output a single container to file, not a whole project.")
+
 // DeployCmd deploys the current project or container
 var DeployCmd = &cobra.Command{
 	Use:    "deploy",
@@ -42,19 +44,18 @@ func getDeployListFromScope() []string {
 		os.Exit(1)
 	}
 
-	if output != "" && config.Context.Scope != "container" {
-		err = errors.New("Can only output a single container to file, not a whole project.")
-	}
-
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-
 	return list
 }
 
-func deployFeedback(success []string, err error) {
+func verifyOutputScope() {
+	// should output to file only when scope is container
+	if output != "" && config.Context.Scope != "container" {
+		fmt.Fprintln(os.Stderr, ErrOutputScope)
+		os.Exit(1)
+	}
+}
+
+func deployContainersFeedback(success []string, err error) {
 	for _, s := range success {
 		fmt.Println(s)
 	}
@@ -70,13 +71,14 @@ func deployFeedback(success []string, err error) {
 }
 
 func deployRun(cmd *cobra.Command, args []string) {
+	verifyOutputScope()
 	var success, err = tryDeployMaybeQuiet(getDeployListFromScope())
 
 	// wait for next tick to the progress bar cleanup goroutine to clear the
 	// buffer and end, so the message here is not erased by it
 	time.Sleep(time.Millisecond)
 
-	deployFeedback(success, err)
+	deployContainersFeedback(success, err)
 
 	if output == "" {
 		verbose.Debug("Restarting project")
