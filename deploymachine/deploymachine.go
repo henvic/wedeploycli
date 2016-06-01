@@ -11,7 +11,6 @@ import (
 	"github.com/launchpad-project/cli/containers"
 	"github.com/launchpad-project/cli/deploy"
 	"github.com/launchpad-project/cli/projects"
-	"github.com/launchpad-project/cli/verbose"
 )
 
 // Machine structure
@@ -111,15 +110,11 @@ func (m *Machine) start(container string) {
 	m.queue.Done()
 }
 
-func (m *Machine) mountAndDeploy(container string) error {
-	var deploy, err = deploy.New(container)
-
-	if err != nil {
-		return err
-	}
-
+func (m *Machine) deploy(deploy *deploy.Deploy) error {
 	m.dirMutex.Lock()
-	err = containers.InstallFromDefinition(m.ProjectID, deploy.ContainerPath, deploy.Container)
+	var err = containers.InstallFromDefinition(m.ProjectID,
+		deploy.ContainerPath,
+		deploy.Container)
 	m.dirMutex.Unlock()
 	runtime.Gosched()
 
@@ -127,21 +122,33 @@ func (m *Machine) mountAndDeploy(container string) error {
 		return err
 	}
 
-	verbose.Debug(deploy.Container.ID, "container definition installed")
+	return deploy.HooksAndOnly(m.Flags)
+}
 
-	err = deploy.HooksAndOnly(m.Flags)
+func (m *Machine) successFeedback(containerID string) {
+	var host = "liferay.io"
+
+	if config.Stores["global"].Get("local") == "true" {
+		host = "liferay.local"
+	}
+
+	m.SuccessMutex.Lock()
+	m.Success = append(m.Success, fmt.Sprintf(
+		"Ready! %v.%v.%v", containerID, m.ProjectID, host))
+	m.SuccessMutex.Unlock()
+}
+
+func (m *Machine) mountAndDeploy(container string) error {
+	var deploy, err = deploy.New(container)
+
+	if err != nil {
+		return err
+	}
+
+	err = m.deploy(deploy)
 
 	if err == nil {
-		var host = "liferay.io"
-
-		if config.Stores["global"].Get("local") == "true" {
-			host = "liferay.local"
-		}
-
-		m.SuccessMutex.Lock()
-		m.Success = append(m.Success, fmt.Sprintf(
-			"Ready! %v.%v.%v", deploy.Container.ID, m.ProjectID, host))
-		m.SuccessMutex.Unlock()
+		m.successFeedback(deploy.Container.ID)
 	}
 
 	return err
