@@ -10,6 +10,7 @@ import (
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/containers"
 	"github.com/launchpad-project/cli/deploy"
+	"github.com/launchpad-project/cli/deploymachine"
 	"github.com/launchpad-project/cli/progress"
 	"github.com/launchpad-project/cli/projects"
 	"github.com/launchpad-project/cli/verbose"
@@ -87,7 +88,7 @@ func checkContext(cmd *cobra.Command, args []string) {
 
 func tryDeploy(list []string) (success []string, err error) {
 	if output == "" {
-		var success, err = deploy.All(list, &deploy.Flags{
+		var success, err = deploymachine.All(list, &deploy.Flags{
 			Hooks: !noHooks,
 			Quiet: quiet,
 		})

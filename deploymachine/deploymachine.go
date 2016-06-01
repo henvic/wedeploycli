@@ -1,21 +1,23 @@
-package deploy
+package deploymachine
 
 import (
 	"fmt"
-	"path"
+	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 
 	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/containers"
-	"github.com/launchpad-project/cli/progress"
+	"github.com/launchpad-project/cli/deploy"
+	"github.com/launchpad-project/cli/projects"
 	"github.com/launchpad-project/cli/verbose"
 )
 
 // Machine structure
 type Machine struct {
 	ProjectID    string
-	Flags        *Flags
+	Flags        *deploy.Flags
 	Success      []string
 	Errors       *Errors
 	SuccessMutex sync.Mutex
@@ -24,22 +26,53 @@ type Machine struct {
 	queue        sync.WaitGroup
 }
 
-// New Deploy instance
-func New(cpath string) (*Deploy, error) {
-	var deploy = &Deploy{
-		ContainerPath: path.Join(config.Context.ProjectRoot, cpath),
-		progress:      progress.New(cpath),
+// ContainerError struct
+type ContainerError struct {
+	ContainerPath string
+	Error         error
+}
+
+// Errors list
+type Errors struct {
+	List []ContainerError
+}
+
+func (de Errors) Error() string {
+	var msgs = []string{}
+
+	for _, e := range de.List {
+		msgs = append(msgs, fmt.Sprintf("%v: %v", e.ContainerPath, e.Error.Error()))
 	}
 
-	var c containers.Container
-	var err = containers.GetConfig(deploy.ContainerPath, &c)
-	deploy.Container = &c
+	return fmt.Sprintf("List of errors (format is container path: error)\n%v",
+		strings.Join(msgs, "\n"))
+}
+
+// All deploys a list of containers on the given context
+func All(list []string, df *deploy.Flags) (success []string, err error) {
+	var projectID = config.Stores["project"].Get("id")
+
+	var dm = &Machine{
+		ProjectID: projectID,
+		Flags:     df,
+	}
+
+	created, err := projects.ValidateOrCreate(
+		filepath.Join(config.Context.ProjectRoot, "/project.json"))
+
+	if created {
+		dm.Success = append(dm.Success, "New project "+projectID+" created")
+	}
 
 	if err != nil {
-		return nil, err
+		return success, err
 	}
 
-	return deploy, err
+	err = dm.Run(list)
+
+	success = dm.Success
+
+	return success, err
 }
 
 // Run deployments
@@ -79,7 +112,7 @@ func (m *Machine) start(container string) {
 }
 
 func (m *Machine) mountAndDeploy(container string) error {
-	var deploy, err = New(container)
+	var deploy, err = deploy.New(container)
 
 	if err != nil {
 		return err

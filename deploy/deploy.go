@@ -9,7 +9,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 
 	"github.com/dustin/go-humanize"
 	"github.com/launchpad-project/api.go"
@@ -19,15 +18,8 @@ import (
 	"github.com/launchpad-project/cli/hooks"
 	"github.com/launchpad-project/cli/pod"
 	"github.com/launchpad-project/cli/progress"
-	"github.com/launchpad-project/cli/projects"
 	"github.com/launchpad-project/cli/verbose"
 )
-
-// ContainerError struct
-type ContainerError struct {
-	ContainerPath string
-	Error         error
-}
 
 // Deploy holds the information of a POD to be packed or deployed
 type Deploy struct {
@@ -37,57 +29,10 @@ type Deploy struct {
 	progress      *progress.Bar
 }
 
-// Errors list
-type Errors struct {
-	List []ContainerError
-}
-
 // Flags modifiers
 type Flags struct {
 	Quiet bool
 	Hooks bool
-}
-
-var (
-	outStream io.Writer = os.Stdout
-)
-
-func (de Errors) Error() string {
-	var msgs = []string{}
-
-	for _, e := range de.List {
-		msgs = append(msgs, fmt.Sprintf("%v: %v", e.ContainerPath, e.Error.Error()))
-	}
-
-	return fmt.Sprintf("List of errors (format is container path: error)\n%v",
-		strings.Join(msgs, "\n"))
-}
-
-// All deploys a list of containers on the given context
-func All(list []string, df *Flags) (success []string, err error) {
-	var projectID = config.Stores["project"].Get("id")
-
-	var dm = &Machine{
-		ProjectID: projectID,
-		Flags:     df,
-	}
-
-	created, err := projects.ValidateOrCreate(
-		filepath.Join(config.Context.ProjectRoot, "/project.json"))
-
-	if created {
-		dm.Success = append(dm.Success, "New project "+projectID+" created")
-	}
-
-	if err != nil {
-		return success, err
-	}
-
-	err = dm.Run(list)
-
-	success = dm.Success
-
-	return success, err
 }
 
 // Pack packages a POD to a .pod package
@@ -99,6 +44,24 @@ func Pack(dest, cpath string) error {
 	}
 
 	return err
+}
+
+// New Deploy instance
+func New(cpath string) (*Deploy, error) {
+	var deploy = &Deploy{
+		ContainerPath: path.Join(config.Context.ProjectRoot, cpath),
+		progress:      progress.New(cpath),
+	}
+
+	var c containers.Container
+	var err = containers.GetConfig(deploy.ContainerPath, &c)
+	deploy.Container = &c
+
+	if err != nil {
+		return nil, err
+	}
+
+	return deploy, err
 }
 
 // Deploy POD to WeDeploy
