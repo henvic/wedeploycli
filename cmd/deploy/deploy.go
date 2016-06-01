@@ -34,7 +34,7 @@ we deploy <container>
 we deploy -o welcome.pod`,
 }
 
-func deployRun(cmd *cobra.Command, args []string) {
+func getDeployListFromScope() []string {
 	var list, err = containers.GetListFromScope()
 
 	if err != nil {
@@ -51,13 +51,10 @@ func deployRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	var success []string
-	success, err = tryDeployMaybeQuiet(list)
+	return list
+}
 
-	// wait for next tick to the progress bar cleanup goroutine to clear the
-	// buffer and end, so the message here is not erased by it
-	time.Sleep(time.Millisecond)
-
+func deployFeedback(success []string, err error) {
 	for _, s := range success {
 		fmt.Println(s)
 	}
@@ -70,6 +67,16 @@ func deployRun(cmd *cobra.Command, args []string) {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+}
+
+func deployRun(cmd *cobra.Command, args []string) {
+	var success, err = tryDeployMaybeQuiet(getDeployListFromScope())
+
+	// wait for next tick to the progress bar cleanup goroutine to clear the
+	// buffer and end, so the message here is not erased by it
+	time.Sleep(time.Millisecond)
+
+	deployFeedback(success, err)
 
 	if output == "" {
 		verbose.Debug("Restarting project")
