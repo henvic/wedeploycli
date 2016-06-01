@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -257,6 +258,156 @@ func TestDeployOnly(t *testing.T) {
 
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
+	}
+
+	globalconfigmock.Teardown()
+	config.Teardown()
+	os.Chdir(workingDir)
+	servertest.Teardown()
+}
+
+func TestDeployWithHooks(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Not testing with hooks on Windows")
+	}
+
+	servertest.Setup()
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
+		t.Error(err)
+	}
+
+	config.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/projects",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/containers",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/push/project/container",
+		func(w http.ResponseWriter, r *http.Request) {
+			var _, _, err = r.FormFile("pod")
+
+			if err != nil {
+				t.Error(err)
+			}
+		})
+
+	var deploy, err = New("mycontainer")
+
+	if err != nil {
+		t.Errorf("Unexpected error %v", err)
+	}
+
+	err = deploy.HooksAndOnly(&Flags{
+		Hooks: true,
+	})
+
+	if err != nil {
+		t.Errorf("Unexpected error %v on deploy", err)
+	}
+
+	globalconfigmock.Teardown()
+	config.Teardown()
+	os.Chdir(workingDir)
+	servertest.Teardown()
+}
+
+func TestAllWithBeforeHookFailure(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Not testing with hooks on Windows")
+	}
+
+	servertest.Setup()
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
+		t.Error(err)
+	}
+
+	config.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/projects",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/containers",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/push/project/container-before-hook-failure",
+		func(w http.ResponseWriter, r *http.Request) {
+			var _, _, err = r.FormFile("pod")
+
+			if err != nil {
+				t.Error(err)
+			}
+		})
+
+	var deploy, err = New("container_before_hook_failure")
+
+	if err != nil {
+		t.Errorf("Unexpected error %v", err)
+	}
+
+	err = deploy.HooksAndOnly(&Flags{
+		Hooks: true,
+	})
+
+	if err == nil || err.Error() != "exit status 1" {
+		t.Errorf("Expected error didn't happen, got %v instead", err)
+	}
+
+	globalconfigmock.Teardown()
+	config.Teardown()
+	os.Chdir(workingDir)
+	servertest.Teardown()
+}
+
+func TestAllWithAfterHookFailure(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Not testing with hooks on Windows")
+	}
+
+	servertest.Setup()
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
+		t.Error(err)
+	}
+
+	config.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/projects",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/containers",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/push/project/container_after_hook_failure",
+		func(w http.ResponseWriter, r *http.Request) {
+			var _, _, err = r.FormFile("pod")
+
+			if err != nil {
+				t.Error(err)
+			}
+		})
+
+	var deploy, err = New("container_after_hook_failure")
+
+	if err != nil {
+		t.Errorf("Unexpected error %v", err)
+	}
+
+	err = deploy.HooksAndOnly(&Flags{
+		Hooks: true,
+	})
+
+	if err == nil || err.Error() != "exit status 1" {
+		t.Errorf("Expected error didn't happen, got %v instead", err)
 	}
 
 	globalconfigmock.Teardown()
