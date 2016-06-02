@@ -139,25 +139,33 @@ func getAlreadyRunning() string {
 	return dockerContainer
 }
 
-func getRunCommandEnv() []string {
-	var args = []string{"run"}
-	args = append(args, portsArgs...)
-
+func getWeDeployHost() string {
 	var address, err = GetWeDeployHost()
 
 	if err != nil {
 		panic(err)
 	}
 
-	args = append(args, "--cap-add=NET_ADMIN")
-	args = append(args, "-e")
-	args = append(args, "LP_DEV_DOMAIN=liferay.local")
-	args = append(args, "-e")
-	args = append(args, "LP_DEV_IP_ADDRESS="+address)
-	args = append(args, "-e")
-	args = append(args, "LP_DEV_DOCKER_HOST=tcp://"+address+":2375")
-	args = append(args, "--detach")
-	args = append(args, WeDeployImage)
+	return address
+}
+
+func getRunCommandEnv() []string {
+	var address = getWeDeployHost()
+	var args = []string{"run"}
+
+	args = append(args, portsArgs...)
+	args = append(args, []string{
+		"--cap-add=NET_ADMIN",
+		"-e",
+		"LP_DEV_DOMAIN=liferay.local",
+		"-e",
+		"LP_DEV_IP_ADDRESS=" + address,
+		"-e",
+		"LP_DEV_DOCKER_HOST=tcp://" + address + ":2375",
+		"--detach",
+		WeDeployImage,
+	}...)
+
 	return args
 }
 
