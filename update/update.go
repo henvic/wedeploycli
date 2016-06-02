@@ -187,13 +187,18 @@ func notify() {
 }
 
 func updateApply(channel string, resp *equinox.Response) {
-	var csg = config.Stores["global"]
 	var err = resp.Apply()
 
 	if err != nil {
 		println(err.Error())
 		os.Exit(1)
 	}
+
+	updateConfig(channel)
+}
+
+func updateConfig(channel string) {
+	var csg = config.Stores["global"]
 
 	csg.Set("release_channel", channel)
 	csg.Set("cache.next_version", "")
