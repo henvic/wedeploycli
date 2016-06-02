@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"sync"
 
 	"github.com/fatih/color"
 	"github.com/launchpad-project/cli/cmd/auth"
@@ -53,25 +52,29 @@ var globalStore *configstore.Store
 
 // Execute is the Entry-point for the CLI
 func Execute() {
-	var wgUpdate sync.WaitGroup
-	var errUpdate error
-
-	wgUpdate.Add(1)
-	go func() {
-		errUpdate = update.NotifierCheck()
-		wgUpdate.Done()
-	}()
+	var cue = checkUpdate()
 
 	if err := RootCmd.Execute(); err != nil {
 		os.Exit(-1)
 	}
 
-	wgUpdate.Wait()
+	updateFeedback(<-cue)
+}
 
-	if errUpdate == nil {
+func checkUpdate() chan error {
+	var euc = make(chan error, 1)
+	go func() {
+		euc <- update.NotifierCheck()
+	}()
+	return euc
+}
+
+func updateFeedback(err error) {
+	switch err {
+	case nil:
 		update.Notify()
-	} else {
-		println("Update notification error:", errUpdate.Error())
+	default:
+		println("Update notification error:", err.Error())
 	}
 }
 
