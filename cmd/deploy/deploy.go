@@ -23,6 +23,7 @@ var (
 	output  string
 )
 
+// ErrOutputScope happens when we deploy -o is used outside a container scope
 var ErrOutputScope = errors.New("Can only output a single container to file, not a whole project.")
 
 // DeployCmd deploys the current project or container
