@@ -345,8 +345,8 @@ func (pack *pack) Close() error {
 	return pack.File.Close()
 }
 
-func (p *pack) getSize() (int64, error) {
-	var fi, err = p.File.Stat()
+func (pack *pack) getSize() (int64, error) {
+	var fi, err = pack.File.Stat()
 
 	if err != nil {
 		return 0, err
