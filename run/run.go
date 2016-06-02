@@ -136,6 +136,7 @@ func getAlreadyRunning() string {
 	var docker = exec.Command("docker", args...)
 
 	var dockerContainerBuf bytes.Buffer
+	docker.Stderr = os.Stderr
 	docker.Stdout = &dockerContainerBuf
 
 	if err := docker.Run(); err != nil {
@@ -186,6 +187,7 @@ func hasCurrentWeDeployImage() bool {
 	}
 
 	var docker = exec.Command("docker", args...)
+	docker.Stderr = os.Stderr
 
 	if err := docker.Run(); err != nil {
 		verbose.Debug("docker inspect error:", err.Error())
@@ -297,6 +299,7 @@ func startCmd(args ...string) string {
 	fmt.Println("Starting WeDeploy")
 	var docker = exec.Command("docker", args...)
 	var dockerContainerBuf bytes.Buffer
+	docker.Stderr = os.Stderr
 	docker.Stdout = &dockerContainerBuf
 
 	if err := docker.Run(); err != nil {
