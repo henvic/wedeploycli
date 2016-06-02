@@ -197,14 +197,18 @@ func hasCurrentWeDeployImage() bool {
 	return true
 }
 
-func listen(dockerContainer string) {
-	dockerPath, err := exec.LookPath("docker")
+func getDockerPath() string {
+	var path, err = exec.LookPath("docker")
 
 	if err != nil {
 		panic(err)
 	}
 
-	procWait, err := os.StartProcess(dockerPath,
+	return path
+}
+
+func dockerWait(dockerContainer string) *os.Process {
+	var procWait, err = os.StartProcess(getDockerPath(),
 		[]string{"docker", "wait", dockerContainer},
 		&os.ProcAttr{
 			Sys: &syscall.SysProcAttr{
@@ -218,7 +222,11 @@ func listen(dockerContainer string) {
 		os.Exit(1)
 	}
 
-	ps, err := procWait.Wait()
+	return procWait
+}
+
+func listen(dockerContainer string) {
+	var ps, err = dockerWait(dockerContainer).Wait()
 
 	if err != nil {
 		println("WeDeploy wait.Wait error:", err.Error())
