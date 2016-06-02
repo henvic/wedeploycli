@@ -19,6 +19,14 @@ import (
 	"github.com/launchpad-project/cli/verbose"
 )
 
+const (
+	// WarmupOn symbol
+	WarmupOn = '○'
+
+	// WarmupOff symbol
+	WarmupOff = '●'
+)
+
 // ErrHostNotFound is used when host is not found
 var ErrHostNotFound = errors.New("You need to be connected to a network.")
 
@@ -336,29 +344,30 @@ func existsDependency(cmd string) bool {
 }
 
 func warmup(writer *uilive.Writer) chan bool {
-	var on = '○'
-	var off = '●'
 	var ticker = time.NewTicker(time.Second)
 	var tdone = make(chan bool, 1)
 
-	go func() {
-		now := time.Now()
-		for {
-			select {
-			case t := <-ticker.C:
-				var p = on
-				if t.Second()%2 == 0 {
-					p = off
-				}
-
-				fmt.Fprintf(writer, "%c warming up %ds\n", p, int(-now.Sub(t).Seconds()))
-			case <-tdone:
-				ticker.Stop()
-				ticker = nil
-				return
-			}
-		}
-	}()
+	go warmupCounter(writer, ticker, tdone)
 
 	return tdone
+}
+
+func warmupCounter(w *uilive.Writer, ticker *time.Ticker, tdone chan bool) {
+	var now = time.Now()
+
+	for {
+		select {
+		case t := <-ticker.C:
+			var p = WarmupOn
+			if t.Second()%2 == 0 {
+				p = WarmupOff
+			}
+
+			fmt.Fprintf(w, "%c warming up %ds\n", p, int(-now.Sub(t).Seconds()))
+		case <-tdone:
+			ticker.Stop()
+			ticker = nil
+			return
+		}
+	}
 }
