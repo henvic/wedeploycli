@@ -43,87 +43,26 @@ var CommonIgnorePatterns = []string{
 	"*.pod",
 }
 
-// Pack pod
-func Pack(dest, src string, ignorePatterns []string, pb *progress.Bar) (
-	size int64, err error) {
-	dest, err = filepath.Abs(dest)
-
-	if err != nil {
-		return 0, err
-	}
-
-	src, err = filepath.Abs(src)
-
-	if err != nil {
-		return 0, err
-	}
-
-	var pkg, errPod = createPod(dest, src, ignorePatterns, pb)
-
-	if errPod != nil {
-		return 0, errPod
-	}
-
-	// Add 'counting files' progress bar (ya know, user feedback is important)
-	pb.Reset("Counting files", "")
-	err = filepath.Walk(src, pkg.countWalkFunc)
-
-	if err != nil {
-		return 0, err
-	}
-
-	pb.Reset("Packing", "")
-
-	err = filepath.Walk(src, pkg.walkFunc)
-
-	if err != nil {
-		return 0, err
-	}
-
-	pb.Set(progress.Total)
-	pb.Append = "(Complete)"
-
-	var fi, fiErr = pkg.pack.File.Stat()
-
-	if fiErr != nil {
-		return 0, fiErr
-	}
-
-	size = fi.Size()
-	err = pkg.pack.Close()
-	return size, err
+// PackParams are package params for the packing process
+type PackParams struct {
+	RelDest        string
+	RelSource      string
+	IgnorePatterns []string
 }
 
-func createPod(dest, src string, ignorePatterns []string, pb *progress.Bar) (*pod, error) {
-	var p pod
-	var err error
-	p.progress = pb
-	p.ignoreRules, err = ignore.CompileIgnoreLines(ignorePatterns...)
-
-	if err != nil {
-		return nil, err
+// Pack pod
+func Pack(pp PackParams, pb *progress.Bar) (size int64, err error) {
+	var pkg = pod{
+		progress: pb,
 	}
 
-	p.Dest, err = filepath.Abs(dest)
+	err = pkg.start(pp.RelDest, pp.RelSource, pp.IgnorePatterns)
 
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	p.Source, err = filepath.Abs(src)
-
-	if err != nil {
-		return nil, err
-	}
-
-	p.pack, err = createPack(dest)
-
-	if err != nil {
-		return nil, err
-	}
-
-	verbose.Debug("Saving container to", dest)
-	return &p, nil
+	return pkg.do()
 }
 
 func (p *pod) countWalkFunc(path string, fi os.FileInfo, ierr error) error {
@@ -165,6 +104,105 @@ func (p *pod) countWalkFunc(path string, fi os.FileInfo, ierr error) error {
 	)
 
 	return nil
+}
+
+func (p *pod) createPack(dest string) error {
+	var file, err = os.Create(dest)
+
+	if err != nil {
+		return err
+	}
+
+	var gFile = gzip.NewWriter(file)
+
+	p.pack = &pack{
+		File:       file,
+		GzipWriter: gFile,
+		TarWriter:  tar.NewWriter(gFile),
+	}
+
+	return err
+}
+
+func (p *pod) do() (size int64, err error) {
+	err = p.runPacking()
+
+	if err != nil {
+		return 0, err
+	}
+
+	p.progress.Set(progress.Total)
+	p.progress.Append = "(Complete)"
+
+	size, err = p.pack.getSize()
+
+	if err != nil {
+		return 0, err
+	}
+
+	err = p.pack.Close()
+
+	if err != nil {
+		return 0, err
+	}
+
+	verbose.Debug("Saving container to", p.Dest)
+	return size, err
+}
+
+func (p *pod) loadIgnorePatterns(ignorePatterns []string) error {
+	var rules, err = ignore.CompileIgnoreLines(ignorePatterns...)
+	p.ignoreRules = rules
+	return err
+}
+
+func (p *pod) runPacking() (err error) {
+	// Add 'counting files' progress bar (ya know, user feedback is important)
+	p.progress.Reset("Counting files", "")
+	err = p.walkSource(p.countWalkFunc)
+
+	if err != nil {
+		return err
+	}
+
+	p.progress.Reset("Packing", "")
+	err = p.walkSource(p.walkFunc)
+
+	return err
+}
+
+func (p *pod) setAbsPaths(dest, src string) (err error) {
+	p.Dest, err = filepath.Abs(dest)
+
+	if err != nil {
+		return err
+	}
+
+	p.Source, err = filepath.Abs(src)
+	return err
+}
+
+func (p *pod) start(dest, src string, ignorePatterns []string) error {
+	var err = p.loadIgnorePatterns(ignorePatterns)
+
+	if err != nil {
+		return err
+	}
+
+	err = p.setAbsPaths(dest, src)
+
+	if err != nil {
+		return err
+	}
+
+	err = p.createPack(dest)
+
+	return err
+}
+
+func (p *pod) walkSource(
+	f func(path string, fi os.FileInfo, ierr error) error) error {
+	return filepath.Walk(p.Source, f)
 }
 
 func (p *pod) walkFunc(path string, fi os.FileInfo, ierr error) error {
@@ -291,23 +329,6 @@ func copy(writer io.Writer, path, relative string) error {
 	return err
 }
 
-func createPack(dest string) (*pack, error) {
-	var file, err = os.Create(dest)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var gFile = gzip.NewWriter(file)
-
-	return &pack{
-		File:       file,
-		GzipWriter: gFile,
-		TarWriter:  tar.NewWriter(gFile),
-	}, err
-
-}
-
 func (pack *pack) Close() error {
 	var err = pack.TarWriter.Close()
 
@@ -322,4 +343,14 @@ func (pack *pack) Close() error {
 	}
 
 	return pack.File.Close()
+}
+
+func (p *pack) getSize() (int64, error) {
+	var fi, err = p.File.Stat()
+
+	if err != nil {
+		return 0, err
+	}
+
+	return fi.Size(), err
 }

@@ -149,13 +149,15 @@ func (d *Deploy) Pack(dest string) (err error) {
 
 	var ignorePatterns = append(d.Container.DeployIgnore, pod.CommonIgnorePatterns...)
 
-	_, err = pod.Pack(dest, d.ContainerPath, ignorePatterns, d.progress.bar)
+	_, err = pod.Pack(pod.PackParams{
+		RelDest:        dest,
+		RelSource:      d.ContainerPath,
+		IgnorePatterns: ignorePatterns,
+	}, d.progress.bar)
 
 	if err == nil {
 		d.progress.bar.Set(progress.Total)
 	}
-
-	verbose.Debug("Saving container to", dest)
 
 	return err
 }

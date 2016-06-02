@@ -160,10 +160,10 @@ func TestPack(t *testing.T) {
 	// to detect if it is not generated
 	os.Remove("mocks/res/package.tar.gz")
 
-	var size, err = Pack(
-		"mocks/res/package.tar.gz",
-		"mocks/ref",
-		TestPackCase.IgnoredList,
+	var size, err = Pack(PackParams{
+		RelDest:        "mocks/res/package.tar.gz",
+		RelSource:      "mocks/ref",
+		IgnorePatterns: TestPackCase.IgnoredList},
 		progress.New("mock"),
 	)
 
@@ -203,10 +203,10 @@ func TestNotSelfPack(t *testing.T) {
 		panic(err)
 	}
 
-	var _, err = Pack(
-		"mocks/self/package.tar.gz",
-		"mocks/self",
-		nil,
+	var _, err = Pack(PackParams{
+		RelDest:        "mocks/self/package.tar.gz",
+		RelSource:      "mocks/self",
+		IgnorePatterns: nil},
 		progress.New("mock"),
 	)
 
@@ -242,7 +242,11 @@ func TestNotSelfPack(t *testing.T) {
 
 func TestPackInvalidDestination(t *testing.T) {
 	var invalid = fmt.Sprintf("mocks/res/invalid-dest-%d/foo.pod", rand.Int())
-	var size, err = Pack(invalid, "mocks/ref", nil, progress.New("invalid"))
+	var size, err = Pack(PackParams{
+		RelDest:        invalid,
+		RelSource:      "mocks/ref",
+		IgnorePatterns: nil},
+		progress.New("invalid"))
 
 	if size != 0 {
 		t.Errorf("Expected size to be zero on invalid destination")
@@ -275,10 +279,10 @@ pod/mocks/benchmark/install.sh`)
 	// clean up any old package.tar.gz that might exist
 	os.Remove("mocks/res/benchmark.tar.gz")
 
-	var size, err = Pack(
-		"mocks/res/benchmark.tar.gz",
-		"mocks/benchmark",
-		ignoredList,
+	var size, err = Pack(PackParams{
+		RelSource:      "mocks/res/benchmark.tar.gz",
+		RelDest:        "mocks/benchmark",
+		IgnorePatterns: ignoredList},
 		progress.New("mock"),
 	)
 
