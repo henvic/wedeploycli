@@ -134,20 +134,27 @@ func run(cmd *cobra.Command, args []string) {
 	}
 }
 
-func verifyAuth(commandPath string) {
-	var csg = config.Stores["global"]
+func isCmdWhitelistNoAuth(commandPath string) bool {
 	var parts = strings.SplitAfterN(commandPath, " ", 2)
 
 	if len(parts) < 2 {
-		return
+		return true
 	}
 
-	var test = parts[1]
-
 	for key := range WhitelistCmdsNoAuthentication {
-		if key == test {
-			return
+		if key == parts[1] {
+			return true
 		}
+	}
+
+	return false
+}
+
+func verifyAuth(commandPath string) {
+	var csg = config.Stores["global"]
+
+	if isCmdWhitelistNoAuth(commandPath) {
+		return
 	}
 
 	_, err1 := csg.GetString("endpoint")
@@ -158,6 +165,10 @@ func verifyAuth(commandPath string) {
 		return
 	}
 
+	pleaseLoginFeedback()
+}
+
+func pleaseLoginFeedback() {
 	fmt.Fprintf(os.Stderr, "Please run \"we login\" first.\n")
 	os.Exit(1)
 }
