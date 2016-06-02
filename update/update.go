@@ -32,38 +32,60 @@ GENiOKpfivw5FIiTN14MZeMTagiKJUOq
 -----END ECDSA PUBLIC KEY-----
 `)
 
-// NotifierCheck enquires equinox if a new version is available
-func NotifierCheck() error {
+// GetReleaseChannel gets the channel user has used last time (or stable)
+func GetReleaseChannel() string {
 	var csg = config.Stores["global"]
-
-	if !isNotifyOn() {
-		return nil
-	}
-
-	var nextVersion = csg.Get("cache.next_version")
-
-	if nextVersion != "" && nextVersion != defaults.Version {
-		return nil
-	}
-
-	// how long since last non availability result?
-	var lastUpdate = csg.Get("cache.last_update_check")
-	var luc, luce = time.Parse(lucFormat, lastUpdate)
-
-	if luce == nil && time.Since(luc).Hours() < float64(cacheNonAvailabilityDays*24) {
-		return nil
-	}
-
-	// save, just to be safe (e.g., if the check below breaks)
-	csg.SetAndSave("cache.last_update_check", time.Now().String())
-
 	var channel = csg.Get("release_channel")
 
 	if channel == "" {
 		channel = "stable"
 	}
 
-	var resp, err = check(channel)
+	return channel
+}
+
+func canVerify() bool {
+	var csg = config.Stores["global"]
+	var next = csg.Get("cache.next_version")
+
+	// is there an update being rolled at this exec time?
+	if next != "" && next != defaults.Version {
+		return false
+	}
+
+	// how long since last non availability result?
+	return canVerifyAgain()
+}
+
+func canVerifyAgain() bool {
+	var csg = config.Stores["global"]
+	var lastUpdate = csg.Get("cache.last_update_check")
+	var luc, luce = time.Parse(lucFormat, lastUpdate)
+
+	if luce == nil && time.Since(luc).Hours() < float64(cacheNonAvailabilityDays*24) {
+		return false
+	}
+
+	return true
+}
+
+// NotifierCheck enquires equinox if a new version is available
+func NotifierCheck() error {
+	switch {
+	case isNotifyOn() && canVerify():
+		return notifierCheck()
+	default:
+		return nil
+	}
+}
+
+func notifierCheck() error {
+	var csg = config.Stores["global"]
+
+	// save, just to be safe (e.g., if the check below breaks)
+	csg.SetAndSave("cache.last_update_check", time.Now().String())
+
+	var resp, err = check(GetReleaseChannel())
 
 	switch err {
 	case nil:
@@ -84,25 +106,14 @@ func Notify() {
 		return
 	}
 
-	var nextVersion = csg.Get("cache.next_version")
-
-	if nextVersion != "" && nextVersion != defaults.Version {
-		var channel = csg.Get("release_channel")
-		var cmd = "we update"
-
-		if channel != "" && channel != "stable" {
-			cmd += " --channel " + channel
-		}
-
-		println(color.RedString(
-			`WARNING: WeDeploy CLI tool is outdated. Run "` + cmd + `".`))
+	var next = csg.Get("cache.next_version")
+	if next != "" && next != defaults.Version {
+		notify()
 	}
 }
 
 // Update this tool
 func Update(channel string) {
-	var csg = config.Stores["global"]
-
 	if defaults.Version == "master" {
 		fmt.Fprintln(os.Stderr, ErrMasterVersion)
 		os.Exit(1)
@@ -113,18 +124,7 @@ func Update(channel string) {
 
 	var resp, err = check(channel)
 	handleUpdateCheckError(err)
-
-	err = resp.Apply()
-
-	if err != nil {
-		println(err.Error())
-		os.Exit(1)
-	}
-
-	csg.Set("release_channel", channel)
-	csg.Set("cache.next_version", "")
-	csg.Set("cache.last_update_check", time.Now().String())
-	csg.Save()
+	updateApply(channel, resp)
 
 	fmt.Println("Updated to new version:", resp.ReleaseVersion)
 }
@@ -171,4 +171,32 @@ func isNotifyOn() bool {
 	}
 
 	return true
+}
+
+func notify() {
+	var csg = config.Stores["global"]
+	var channel = csg.Get("release_channel")
+	var cmd = "we update"
+
+	if channel != "" && channel != "stable" {
+		cmd += " --channel " + channel
+	}
+
+	println(color.RedString(
+		`WARNING: WeDeploy CLI tool is outdated. Run "` + cmd + `".`))
+}
+
+func updateApply(channel string, resp *equinox.Response) {
+	var csg = config.Stores["global"]
+	var err = resp.Apply()
+
+	if err != nil {
+		println(err.Error())
+		os.Exit(1)
+	}
+
+	csg.Set("release_channel", channel)
+	csg.Set("cache.next_version", "")
+	csg.Set("cache.last_update_check", time.Now().String())
+	csg.Save()
 }
