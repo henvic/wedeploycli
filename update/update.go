@@ -12,7 +12,7 @@ import (
 	"github.com/launchpad-project/cli/defaults"
 )
 
-const lucFormat = "2006-01-02 15:04:05 -0700 MST"
+const lucFormat = "Mon Jan _2 15:04:05 MST 2006"
 
 var cacheNonAvailabilityDays = 4
 
