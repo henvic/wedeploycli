@@ -76,6 +76,7 @@ func (c *Config) read() {
 
 	if err != nil {
 		println("Error reading configuration file:", err.Error())
+		println("Fix " + c.Path + " by hand or erase it.")
 		os.Exit(1)
 	}
 
