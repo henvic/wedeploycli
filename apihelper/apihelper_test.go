@@ -38,28 +38,13 @@ func TestMain(m *testing.M) {
 	errStream = &bufErrStream
 
 	globalconfigmock.Setup()
+
 	ec := m.Run()
 	globalconfigmock.Teardown()
 
 	errStream = defaultErrStream
 
 	os.Exit(ec)
-}
-
-func TestURLFailure(t *testing.T) {
-	config.Stores["global"] = nil
-
-	defer func() {
-		r := recover()
-
-		if r != errInvalidGlobalConfig {
-			t.Errorf("Expected panic with %v error, got %v instead", errInvalidGlobalConfig, r)
-		}
-
-		globalconfigmock.Setup()
-	}()
-
-	URL("foo")
 }
 
 func TestAuth(t *testing.T) {
@@ -214,8 +199,7 @@ func TestAuthGetOrExitError(t *testing.T) {
 func TestAuthTokenBearer(t *testing.T) {
 	r := launchpad.URL("http://localhost/")
 
-	var csg = config.Stores["global"]
-	csg.Set("token", "mytoken")
+	config.Global.Token = "mytoken"
 
 	Auth(r)
 

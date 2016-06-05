@@ -18,7 +18,6 @@ import (
 	cmdupdate "github.com/launchpad-project/cli/cmd/update"
 	cmdversion "github.com/launchpad-project/cli/cmd/version"
 	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/configstore"
 	"github.com/launchpad-project/cli/defaults"
 	"github.com/launchpad-project/cli/update"
 	"github.com/launchpad-project/cli/verbose"
@@ -48,7 +47,6 @@ http://liferay.io`,
 }
 
 var version bool
-var globalStore *configstore.Store
 
 // Execute is the Entry-point for the CLI
 func Execute() {
@@ -114,9 +112,7 @@ func init() {
 		"version", false, "Print version information and quit")
 	RootCmd.Flags().MarkHidden("version")
 
-	var csg = config.Stores["global"]
-
-	if csg.Get("no_color") == "true" {
+	if config.Global.NoColor {
 		color.NoColor = true
 	}
 
@@ -154,17 +150,13 @@ func isCmdWhitelistNoAuth(commandPath string) bool {
 }
 
 func verifyAuth(commandPath string) {
-	var csg = config.Stores["global"]
-
 	if isCmdWhitelistNoAuth(commandPath) {
 		return
 	}
 
-	_, err1 := csg.GetString("endpoint")
-	_, err2 := csg.GetString("username")
-	_, err3 := csg.GetString("password")
+	var g = config.Global
 
-	if err1 == nil && err2 == nil && err3 == nil {
+	if g.Endpoint != "" && g.Username != "" && g.Password != "" {
 		return
 	}
 

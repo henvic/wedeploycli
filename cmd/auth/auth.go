@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/defaults"
 	"github.com/launchpad-project/cli/prompt"
 	"github.com/spf13/cobra"
 )
@@ -24,22 +23,22 @@ var LogoutCmd = &cobra.Command{
 }
 
 func loginRun(cmd *cobra.Command, args []string) {
-	var csg = config.Stores["global"]
 	var username = prompt.Prompt("Username")
 	var password = prompt.Prompt("Password")
+	var g = config.Global
 
-	csg.Set("endpoint", defaults.Endpoint)
-	csg.Set("username", username)
-	csg.Set("password", password)
-	csg.Save()
+	g.Username = username
+	g.Password = password
+	g.Save()
 
 	fmt.Println("Authentication information saved.")
 }
 
 func logoutRun(cmd *cobra.Command, args []string) {
-	var csg = config.Stores["global"]
+	var g = config.Global
 
-	csg.Set("username", "")
-	csg.Set("password", "")
-	csg.Save()
+	g.Username = ""
+	g.Password = ""
+	g.Token = ""
+	g.Save()
 }

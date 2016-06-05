@@ -135,7 +135,7 @@ func getValidateAPIFaultError(errDoc apihelper.APIFault) error {
 }
 
 func maybeSetLocalProjectRoot(req *launchpad.Launchpad) {
-	if config.Stores["global"].Get("local") == "true" {
+	if config.Global.Local {
 		req.Param("source", config.Context.ProjectRoot)
 	}
 }

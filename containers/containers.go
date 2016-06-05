@@ -144,7 +144,7 @@ func InstallFromDefinition(projectID, containerPath string, container *Container
 
 func maybeSetLocalContainerPath(containerPath string,
 	req *launchpad.Launchpad) {
-	if config.Stores["global"].Get("local") == "true" {
+	if config.Global.Local {
 		req.Param("source", containerPath)
 	}
 }

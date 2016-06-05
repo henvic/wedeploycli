@@ -4,7 +4,7 @@ doc/*.1
 
 # Temporary mocks
 configstore/mocks/temporary.json
-integration/mocks/login/.launchpad.json
+integration/mocks/login/.we
 pod/mocks/res/package.tar.gz
 pod/mocks/self/package.tar.gz
 pod/mocks/benchmark/linux-4.6-rc2

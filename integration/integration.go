@@ -11,7 +11,7 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/launchpad-project/cli/configstore"
+	"github.com/launchpad-project/cli/config"
 	"github.com/launchpad-project/cli/servertest"
 	"github.com/launchpad-project/cli/stringlib"
 )
@@ -204,14 +204,28 @@ func init() {
 	os.Chdir(workingDir)
 }
 
+func removeLoginHomeMock() {
+	var file = filepath.Join(GetLoginHome(), ".we")
+
+	var err = os.Remove(file)
+
+	if err != nil && !os.IsNotExist(err) {
+		panic(err)
+	}
+}
+
 func setupLoginHome() {
-	var csg = &configstore.Store{
-		Name: "global",
-		Path: filepath.Join(GetLoginHome(), "/.launchpad.json"),
+	var file = filepath.Join(GetLoginHome(), ".we")
+	removeLoginHomeMock()
+
+	var mock = &config.Config{
+		Path: file,
 	}
 
-	csg.Set("endpoint", servertest.IntegrationServer.URL)
-	csg.Set("username", "foo")
-	csg.Set("password", "bar")
-	csg.Save()
+	mock.Load()
+	mock.Endpoint = servertest.IntegrationServer.URL
+	mock.Username = "foo"
+	mock.Password = "bar"
+	mock.Local = false
+	mock.Save()
 }

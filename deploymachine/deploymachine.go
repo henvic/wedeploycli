@@ -128,7 +128,7 @@ func (m *Machine) deploy(deploy *deploy.Deploy) error {
 func (m *Machine) successFeedback(containerID string) {
 	var host = "liferay.io"
 
-	if config.Stores["global"].Get("local") == "true" {
+	if config.Global.Local {
 		host = "liferay.local"
 	}
 

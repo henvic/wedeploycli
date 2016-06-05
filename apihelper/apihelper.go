@@ -26,7 +26,6 @@ type APIFault struct {
 	Errors  APIFaultErrors `json:"errors"`
 }
 
-var errInvalidGlobalConfig = errors.New("Can't get endpoint: global config is null")
 var errJSONDecodeFailure = errors.New("Can't decode JSON, fallback to body content")
 
 func (a APIFault) Error() string {
@@ -117,15 +116,12 @@ var (
 
 // Auth a WeDeploy request with the global authentication data
 func Auth(request *launchpad.Launchpad) {
-	var csg = config.Stores["global"]
-	var token = csg.Get("token")
+	var token = config.Global.Token
 
 	if token == "" {
-		var username = csg.Get("username")
-		var password = csg.Get("password")
-		request.Auth(username, password)
+		request.Auth(config.Global.Username, config.Global.Password)
 	} else {
-		request.Auth(csg.Get("token"))
+		request.Auth(config.Global.Token)
 	}
 }
 
@@ -223,13 +219,7 @@ func SetBody(request *launchpad.Launchpad, data interface{}) error {
 
 // URL creates a WeDeploy URL instance
 func URL(paths ...string) *launchpad.Launchpad {
-	var csg = config.Stores["global"]
-
-	if csg == nil {
-		panic(errInvalidGlobalConfig)
-	}
-
-	return launchpad.URL(csg.Get("endpoint"), paths...)
+	return launchpad.URL(config.Global.Endpoint, paths...)
 }
 
 // Validate validates a request and sends an error on error

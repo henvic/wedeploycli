@@ -135,7 +135,7 @@ func (d *Deploy) HooksAndOnly(df *Flags) error {
 
 // Only PODify a container and deploys it to WeDeploy
 func (d *Deploy) Only() error {
-	if config.Stores["global"].Get("local") == "true" {
+	if config.Global.Local {
 		return nil
 	}
 

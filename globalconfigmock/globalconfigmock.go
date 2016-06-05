@@ -1,30 +1,38 @@
 package globalconfigmock
 
 import (
+	"os"
+
 	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/configstore"
 )
 
-var originalCSG *configstore.Store
+var original *config.Config
 
 // Setup the global config mock
 func Setup() {
-	originalCSG = config.Stores["global"]
+	original = config.Global
 
-	var mockGlobal = configstore.Store{
-		Name: "global",
-		Data: map[string]interface{}{
-			"username": "admin",
-			"password": "safe",
-			"endpoint": "http://www.example.com/",
-		},
+	var mock = &config.Config{
+		Path: os.DevNull,
 	}
 
-	mockGlobal.Load()
-	config.Stores["global"] = &mockGlobal
+	mock.Load()
+	setMockDefaults(mock)
+	config.Global = mock
 }
 
 // Teardown the global config mock
 func Teardown() {
-	config.Stores["global"] = originalCSG
+	config.Global = original
+}
+
+func setMockDefaults(mock *config.Config) {
+	mock.Username = "admin"
+	mock.Password = "safe"
+	mock.Local = false
+	mock.NoColor = false
+	mock.Endpoint = "http://www.example.com"
+	mock.NotifyUpdates = true
+	mock.ReleaseChannel = "stable"
+	mock.LastUpdateCheck = "Sat Jun  4 04:47:03 BRT 2016"
 }

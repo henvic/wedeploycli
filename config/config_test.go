@@ -19,17 +19,13 @@ func TestSetupAndTeardown(t *testing.T) {
 
 	Setup()
 
-	if len(Stores) != 1 || Stores["global"] == nil {
-		t.Errorf("Should have global store")
-	}
-
 	if err := os.Chdir(filepath.Join(workingDir, "mocks/project")); err != nil {
 		t.Error(err)
 	}
 
 	Setup()
 
-	if len(Stores) != 2 || Stores["global"] == nil || Stores["project"] == nil {
+	if len(Stores) != 1 || Stores["project"] == nil {
 		t.Errorf("Should have global and project store")
 	}
 
@@ -39,12 +35,11 @@ func TestSetupAndTeardown(t *testing.T) {
 
 	Setup()
 
-	if len(Stores) != 3 {
-		t.Error("Should have 3 config stores")
+	if len(Stores) != 2 {
+		t.Error("Should have 2 config stores")
 	}
 
 	var list = []string{
-		"global",
 		"project",
 		"container",
 	}

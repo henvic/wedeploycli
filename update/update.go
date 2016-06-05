@@ -34,8 +34,7 @@ GENiOKpfivw5FIiTN14MZeMTagiKJUOq
 
 // GetReleaseChannel gets the channel user has used last time (or stable)
 func GetReleaseChannel() string {
-	var csg = config.Stores["global"]
-	var channel = csg.Get("release_channel")
+	var channel = config.Global.ReleaseChannel
 
 	if channel == "" {
 		channel = "stable"
@@ -45,8 +44,7 @@ func GetReleaseChannel() string {
 }
 
 func canVerify() bool {
-	var csg = config.Stores["global"]
-	var next = csg.Get("cache.next_version")
+	var next = config.Global.NextVersion
 
 	// is there an update being rolled at this exec time?
 	if next != "" && next != defaults.Version {
@@ -58,9 +56,7 @@ func canVerify() bool {
 }
 
 func canVerifyAgain() bool {
-	var csg = config.Stores["global"]
-	var lastUpdate = csg.Get("cache.last_update_check")
-	var luc, luce = time.Parse(lucFormat, lastUpdate)
+	var luc, luce = time.Parse(lucFormat, config.Global.LastUpdateCheck)
 
 	if luce == nil && time.Since(luc).Hours() < float64(cacheNonAvailabilityDays*24) {
 		return false
@@ -80,18 +76,20 @@ func NotifierCheck() error {
 }
 
 func notifierCheck() error {
-	var csg = config.Stores["global"]
-
 	// save, just to be safe (e.g., if the check below breaks)
-	csg.SetAndSave("cache.last_update_check", time.Now().String())
+	var g = config.Global
+	g.LastUpdateCheck = getCurrentTime()
+	g.Save()
 
 	var resp, err = check(GetReleaseChannel())
 
 	switch err {
 	case nil:
-		csg.SetAndSave("cache.next_version", resp.ReleaseVersion)
+		g.NextVersion = resp.ReleaseVersion
+		g.Save()
 	case equinox.NotAvailableErr:
-		csg.SetAndSave("cache.next_version", "")
+		g.NextVersion = ""
+		g.Save()
 		err = nil
 	}
 
@@ -100,13 +98,11 @@ func notifierCheck() error {
 
 // Notify is called every time this tool executes to verify if it is outdated
 func Notify() {
-	var csg = config.Stores["global"]
-
 	if !isNotifyOn() {
 		return
 	}
 
-	var next = csg.Get("cache.next_version")
+	var next = config.Global.NextVersion
 	if next != "" && next != defaults.Version {
 		notify()
 	}
@@ -142,15 +138,18 @@ func check(channel string) (*equinox.Response, error) {
 	return &resp, err
 }
 
-func handleUpdateCheckError(err error) {
-	var csg = config.Stores["global"]
+func getCurrentTime() string {
+	return time.Now().Format(lucFormat)
+}
 
+func handleUpdateCheckError(err error) {
 	switch err {
 	case nil:
 	case equinox.NotAvailableErr:
-		csg.Set("cache.next_version", "")
-		csg.Set("cache.last_update_check", time.Now().String())
-		csg.Save()
+		var g = config.Global
+		g.NextVersion = ""
+		g.LastUpdateCheck = getCurrentTime()
+		g.Save()
 		fmt.Println("No updates available.")
 		return
 	default:
@@ -160,13 +159,11 @@ func handleUpdateCheckError(err error) {
 }
 
 func isNotifyOn() bool {
-	var csg = config.Stores["global"]
-
 	if len(os.Args) == 2 && os.Args[1] == "update" {
 		return false
 	}
 
-	if defaults.Version == "master" || csg.Get("notify_updates") == "false" {
+	if defaults.Version == "master" || !config.Global.NotifyUpdates {
 		return false
 	}
 
@@ -174,8 +171,7 @@ func isNotifyOn() bool {
 }
 
 func notify() {
-	var csg = config.Stores["global"]
-	var channel = csg.Get("release_channel")
+	var channel = config.Global.ReleaseChannel
 	var cmd = "we update"
 
 	if channel != "" && channel != "stable" {
@@ -198,10 +194,10 @@ func updateApply(channel string, resp *equinox.Response) {
 }
 
 func updateConfig(channel string) {
-	var csg = config.Stores["global"]
+	var g = config.Global
 
-	csg.Set("release_channel", channel)
-	csg.Set("cache.next_version", "")
-	csg.Set("cache.last_update_check", time.Now().String())
-	csg.Save()
+	g.ReleaseChannel = channel
+	g.NextVersion = ""
+	g.LastUpdateCheck = getCurrentTime()
+	g.Save()
 }

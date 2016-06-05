@@ -110,13 +110,14 @@ func tryDeploy(list []string) (success []string, err error) {
 }
 
 func tryDeployMaybeQuiet(list []string) (success []string, err error) {
-	if !quiet && config.Stores["global"].Get("local") != "true" {
+	var local = config.Global.Local
+	if !quiet && !local {
 		progress.Start()
 	}
 
 	success, err = tryDeploy(list)
 
-	if !quiet && config.Stores["global"].Get("local") != "true" {
+	if !quiet && !local {
 		progress.Stop()
 	}
 
