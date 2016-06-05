@@ -47,7 +47,7 @@ func Get() (*Context, error) {
 }
 
 func checkContainerNotInProjectRoot(projectRoot string) error {
-	stat, err := os.Stat(projectRoot + "/container.json")
+	stat, err := os.Stat(filepath.Join(projectRoot, "container.json"))
 
 	if err == nil && !stat.IsDir() {
 		return ErrContainerInProjectRoot
