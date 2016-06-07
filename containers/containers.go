@@ -50,6 +50,9 @@ type RegisterContainer struct {
 }
 
 var (
+	// ErrContainerNotFound happens when a container.json is not found
+	ErrContainerNotFound = errors.New("Container not found")
+
 	// ErrContainerAlreadyExists happens when a container ID already exists
 	ErrContainerAlreadyExists = errors.New("Container already exists")
 
@@ -58,17 +61,6 @@ var (
 
 	outStream io.Writer = os.Stdout
 )
-
-// GetConfig reads the container configuration file in a given directory
-func GetConfig(dir string, c *Container) error {
-	content, err := ioutil.ReadFile(filepath.Join(dir, "container.json"))
-
-	if err == nil {
-		err = json.Unmarshal(content, &c)
-	}
-
-	return err
-}
 
 // GetListFromScope returns a list of containers on the current context
 // actually, directories...
@@ -155,6 +147,33 @@ func GetRegistry() (registry []Register) {
 	return registry
 }
 
+// Read a container directory properties (defined by a container.json on it)
+func Read(path string) (*Container, error) {
+	var content, err = ioutil.ReadFile(filepath.Join(path, "container.json"))
+	var data Container
+
+	if err != nil {
+		return nil, readValidate(data, err)
+	}
+
+	err = json.Unmarshal(content, &data)
+
+	return &data, readValidate(data, err)
+}
+
+func readValidate(container Container, err error) error {
+	switch {
+	case os.IsNotExist(err):
+		return ErrContainerNotFound
+	case err != nil:
+		return err
+	case container.ID == "":
+		return ErrInvalidContainerID
+	default:
+		return err
+	}
+}
+
 // Restart restarts a container inside a project
 func Restart(projectID, containerID string) {
 	var req = apihelper.URL("/restart/container?projectId=" + projectID + "&containerId=" + containerID)
@@ -215,14 +234,14 @@ func getContainersFromScope(files []os.FileInfo) ([]string, error) {
 			continue
 		}
 
-		var err = GetConfig(filepath.Join(projectRoot, file.Name()), nil)
+		var _, err = Read(filepath.Join(projectRoot, file.Name()))
 
 		if err == nil {
 			list = append(list, file.Name())
 			continue
 		}
 
-		if !os.IsNotExist(err) {
+		if err != ErrContainerNotFound {
 			return nil, err
 		}
 	}

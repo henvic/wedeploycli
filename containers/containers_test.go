@@ -32,60 +32,6 @@ func TestMain(m *testing.M) {
 	os.Exit(ec)
 }
 
-func TestGetConfig(t *testing.T) {
-	var workingDir, _ = os.Getwd()
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/app")); err != nil {
-		t.Error(err)
-	}
-
-	var c Container
-
-	if err := GetConfig("email", &c); err != nil {
-		t.Errorf("Wanted err to be nil, got %v instead", err)
-	}
-
-	jsonlib.AssertJSONMarshal(t, tdata.FromFile(
-		filepath.Join(workingDir, "mocks/app/email/container_ref.json")),
-		c)
-
-	os.Chdir(workingDir)
-}
-
-func TestGetConfigFileNotFound(t *testing.T) {
-	var workingDir, _ = os.Getwd()
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/app")); err != nil {
-		t.Error(err)
-	}
-
-	var c Container
-
-	if err := GetConfig("unknown", &c); !os.IsNotExist(err) {
-		t.Errorf("Wanted file to not exist, got %v error instead", err)
-	}
-
-	os.Chdir(workingDir)
-}
-
-func TestGetConfigCorrupted(t *testing.T) {
-	var workingDir, _ = os.Getwd()
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/app-with-invalid-container")); err != nil {
-		t.Error(err)
-	}
-
-	var c Container
-
-	var err = GetConfig("corrupted", &c)
-
-	if _, ok := err.(*json.SyntaxError); !ok {
-		t.Errorf("Wanted err to be *json.SyntaxError, got %v instead", err)
-	}
-
-	os.Chdir(workingDir)
-}
-
 func TestGetListFromScopeFromProject(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 
@@ -282,6 +228,42 @@ func TestRegistry(t *testing.T) {
 
 	servertest.Teardown()
 	globalconfigmock.Teardown()
+}
+
+func TestRead(t *testing.T) {
+	var c, err = Read("mocks/app/email")
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	jsonlib.AssertJSONMarshal(t, tdata.FromFile(
+		"mocks/app/email/container_ref.json"),
+		c)
+}
+
+func TestReadFileNotFound(t *testing.T) {
+	var _, err = Read("mocks/app/unknown")
+
+	if err != ErrContainerNotFound {
+		t.Errorf("Expected %v, got %v instead", ErrContainerNotFound, err)
+	}
+}
+
+func TestReadInvalidContainerID(t *testing.T) {
+	var _, err = Read("mocks/app-for/missing-email-id")
+
+	if err != ErrInvalidContainerID {
+		t.Errorf("Expected %v, got %v instead", ErrInvalidContainerID, err)
+	}
+}
+
+func TestReadCorrupted(t *testing.T) {
+	var _, err = Read("mocks/app-with-invalid-container/corrupted")
+
+	if _, ok := err.(*json.SyntaxError); !ok {
+		t.Errorf("Wanted err to be *json.SyntaxError, got %v instead", err)
+	}
 }
 
 func TestRestart(t *testing.T) {
