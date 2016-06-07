@@ -2,12 +2,14 @@ package projects
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/http"
 	"os"
 	"testing"
 
+	"github.com/launchpad-project/api.go/jsonlib"
 	"github.com/launchpad-project/cli/apihelper"
 	"github.com/launchpad-project/cli/globalconfigmock"
 	"github.com/launchpad-project/cli/servertest"
@@ -38,7 +40,7 @@ func TestCreateFromDefinition(t *testing.T) {
 			}
 		})
 
-	err := CreateFromDefinition("mocks/project.json")
+	err := CreateFromDefinition("mocks/little/project.json")
 
 	if err != nil {
 		t.Errorf("Wanted err to be nil, got %v instead", err)
@@ -92,6 +94,42 @@ func TestList(t *testing.T) {
 	}
 
 	globalconfigmock.Teardown()
+}
+
+func TestRead(t *testing.T) {
+	var c, err = Read("mocks/little")
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	jsonlib.AssertJSONMarshal(t, tdata.FromFile(
+		"mocks/little/project_ref.json"),
+		c)
+}
+
+func TestReadFileNotFound(t *testing.T) {
+	var _, err = Read("mocks/unknown")
+
+	if err != ErrProjectNotFound {
+		t.Errorf("Expected %v, got %v instead", ErrProjectNotFound, err)
+	}
+}
+
+func TestReadInvalidProjectID(t *testing.T) {
+	var _, err = Read("mocks/missing-id")
+
+	if err != ErrInvalidProjectID {
+		t.Errorf("Expected %v, got %v instead", ErrInvalidProjectID, err)
+	}
+}
+
+func TestReadCorrupted(t *testing.T) {
+	var _, err = Read("mocks/corrupted")
+
+	if _, ok := err.(*json.SyntaxError); !ok {
+		t.Errorf("Wanted err to be *json.SyntaxError, got %v instead", err)
+	}
 }
 
 func TestRestart(t *testing.T) {
@@ -222,7 +260,7 @@ func TestValidateOrCreateAlreadyExists(t *testing.T) {
 			fmt.Fprintf(w, tdata.FromFile("mocks/create_already_exists_response.json"))
 		})
 
-	if ok, err := ValidateOrCreate("mocks/project.json"); ok != false || err != nil {
+	if ok, err := ValidateOrCreate("mocks/little/project.json"); ok != false || err != nil {
 		t.Errorf("Wanted (%v, %v), got (%v, %v) instead", false, nil, ok, err)
 	}
 
@@ -242,7 +280,7 @@ func TestValidateOrCreateNotExists(t *testing.T) {
 			}
 		})
 
-	var ok, err = ValidateOrCreate("mocks/project.json")
+	var ok, err = ValidateOrCreate("mocks/little/project.json")
 
 	if ok != true || err != nil {
 		t.Errorf("Unexpected error on Install: (%v, %v)", ok, err)
@@ -256,7 +294,7 @@ func TestValidateOrCreateInvalidError(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	var _, err = ValidateOrCreate("mocks/project.json")
+	var _, err = ValidateOrCreate("mocks/little/project.json")
 
 	if err == nil {
 		t.Errorf("Expected error, got %v instead", err)

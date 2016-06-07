@@ -1,10 +1,13 @@
 package projects
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/launchpad-project/api.go"
 	"github.com/launchpad-project/cli/apihelper"
@@ -23,6 +26,9 @@ type Project struct {
 }
 
 var (
+	// ErrProjectNotFound happens when a project.json is not found
+	ErrProjectNotFound = errors.New("Project not found")
+
 	// ErrProjectAlreadyExists happens when a Project ID already exists
 	ErrProjectAlreadyExists = errors.New("Project already exists")
 
@@ -64,6 +70,33 @@ func List() {
 	var projects []Project
 	apihelper.AuthGetOrExit("/projects", &projects)
 	printProjects(projects)
+}
+
+// Read a project directory properties (defined by a project.json on it)
+func Read(path string) (*Project, error) {
+	var content, err = ioutil.ReadFile(filepath.Join(path, "project.json"))
+	var data Project
+
+	if err != nil {
+		return nil, readValidate(data, err)
+	}
+
+	err = json.Unmarshal(content, &data)
+
+	return &data, readValidate(data, err)
+}
+
+func readValidate(project Project, err error) error {
+	switch {
+	case os.IsNotExist(err):
+		return ErrProjectNotFound
+	case err != nil:
+		return err
+	case project.ID == "":
+		return ErrInvalidProjectID
+	default:
+		return err
+	}
 }
 
 // Restart restarts a project
