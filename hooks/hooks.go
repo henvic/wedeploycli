@@ -7,12 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-
-	"github.com/launchpad-project/cli/configstore"
-	"github.com/launchpad-project/cli/context"
-
-	"github.com/launchpad-project/cli/config"
-	"github.com/mitchellh/mapstructure"
 )
 
 // Hooks (after / deploy / main action)
@@ -32,73 +26,6 @@ var (
 	outStream io.Writer = os.Stdout
 	errStream io.Writer = os.Stderr
 )
-
-// Build invokes the build hooks
-func Build(ctx *context.Context) error {
-	var hooks, err = Get(ctx.Scope)
-
-	if err != nil {
-		return err
-	}
-
-	if hooks.Build == "" {
-		return ErrMissingHook
-	}
-
-	if hooks.BeforeBuild != "" {
-		RunAndExitOnFailure(hooks.BeforeBuild)
-	}
-
-	RunAndExitOnFailure(hooks.Build)
-
-	if hooks.AfterBuild != "" {
-		RunAndExitOnFailure(hooks.AfterBuild)
-	}
-
-	return err
-}
-
-// Deploy invokes the deploy hooks
-func Deploy(ctx *context.Context) error {
-	var hooks, err = Get(ctx.Scope)
-
-	if err != nil {
-		return err
-	}
-
-	if hooks.Deploy == "" {
-		return ErrMissingHook
-	}
-
-	if hooks.BeforeDeploy != "" {
-		RunAndExitOnFailure(hooks.BeforeDeploy)
-	}
-
-	RunAndExitOnFailure(hooks.Deploy)
-
-	if hooks.AfterDeploy != "" {
-		RunAndExitOnFailure(hooks.AfterDeploy)
-	}
-
-	return err
-}
-
-// Get returns the available hooks
-func Get(scope string) (Hooks, error) {
-	var s = config.Stores[scope]
-	var i, err = s.GetInterface("hooks")
-	var hooks Hooks
-
-	if err == nil {
-		err = mapstructure.Decode(i, &hooks)
-	}
-
-	if err == configstore.ErrConfigKeyNotFound {
-		err = ErrMissingHook
-	}
-
-	return hooks, err
-}
 
 // Run a process synchronously inheriting stderr and stdout
 func Run(command string) error {
