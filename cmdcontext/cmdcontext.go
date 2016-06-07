@@ -4,11 +4,13 @@ import (
 	"errors"
 
 	"github.com/launchpad-project/cli/config"
+	"github.com/launchpad-project/cli/containers"
+	"github.com/launchpad-project/cli/projects"
 )
 
 var (
-	// ErrNotFound error message
-	ErrNotFound = errors.New("ID Not found")
+	// ErrContextNotFound error message
+	ErrContextNotFound = errors.New("Context is not set")
 
 	// ErrInvalidArgumentLength error message
 	ErrInvalidArgumentLength = errors.New("Unexpected arguments length")
@@ -18,7 +20,7 @@ var (
 func GetProjectID(args []string) (projectID string, err error) {
 	switch len(args) {
 	case 0:
-		return getCtxID("project")
+		return getCtxProjectID()
 	case 1:
 		return args[0], nil
 	default:
@@ -73,30 +75,48 @@ func SplitArguments(recArgs []string, offset, limit int) []string {
 	return c
 }
 
-func getCtxID(store string) (id string, err error) {
-	var configStore = config.Stores[store]
-
-	if configStore == nil {
-		return "", ErrNotFound
+func getCtxProjectID() (id string, err error) {
+	if config.Context == nil {
+		return "", ErrContextNotFound
 	}
 
-	id, err = configStore.GetString("id")
+	var path = config.Context.ProjectRoot
+	var project *projects.Project
+
+	project, err = projects.Read(path)
 
 	if err != nil {
-		return "", ErrNotFound
+		return "", err
 	}
 
-	return id, nil
+	return project.ID, err
+}
+
+func getCtxContainerID() (id string, err error) {
+	if config.Context == nil {
+		return "", ErrContextNotFound
+	}
+
+	var path = config.Context.ContainerRoot
+	var container *containers.Container
+
+	container, err = containers.Read(path)
+
+	if err != nil {
+		return "", err
+	}
+
+	return container.ID, err
 }
 
 func getCtxProjectAndContainerID() (projectID, containerID string, err error) {
-	projectID, err = getCtxID("project")
+	projectID, err = getCtxProjectID()
 
 	if err != nil {
 		return projectID, "", err
 	}
 
-	containerID, err = getCtxID("container")
+	containerID, err = getCtxContainerID()
 
 	if err != nil {
 		return projectID, "", err
@@ -106,10 +126,10 @@ func getCtxProjectAndContainerID() (projectID, containerID string, err error) {
 }
 
 func getCtxProjectOrContainerID() (projectID, containerID string, err error) {
-	projectID, err = getCtxID("project")
+	projectID, err = getCtxProjectID()
 
 	if err == nil {
-		containerID, _ = getCtxID("container")
+		containerID, _ = getCtxContainerID()
 	}
 
 	return projectID, containerID, err

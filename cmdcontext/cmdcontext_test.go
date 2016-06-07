@@ -1,11 +1,13 @@
 package cmdcontext
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
 	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/configstore"
+	"github.com/launchpad-project/cli/containers"
+	"github.com/launchpad-project/cli/projects"
 )
 
 type GetProjectProvider struct {
@@ -29,20 +31,20 @@ type SplitArgumentsProvider struct {
 }
 
 var GetProjectIDCases = []GetProjectProvider{
-	{[]string{}, "", ErrNotFound},
+	{[]string{}, "", ErrContextNotFound},
 	{[]string{"x123", "y454"}, "", ErrInvalidArgumentLength},
 	{[]string{"x522"}, "x522", nil},
 }
 
 var GetProjectAndContainerIDCases = []GetContainerProvider{
-	{[]string{}, "", "", ErrNotFound},
+	{[]string{}, "", "", ErrContextNotFound},
 	{[]string{"x433"}, "", "", ErrInvalidArgumentLength},
 	{[]string{"x544", "y532", "z752"}, "", "", ErrInvalidArgumentLength},
 	{[]string{"x211", "y2224"}, "x211", "y2224", nil},
 }
 
 var GetProjectOrContainerIDCases = []GetContainerProvider{
-	{[]string{}, "", "", ErrNotFound},
+	{[]string{}, "", "", ErrContextNotFound},
 	{[]string{"x007"}, "x007", "", nil},
 	{[]string{"x445", "y445"}, "x445", "y445", nil},
 	{[]string{"x695", "y151", "z615"}, "", "", ErrInvalidArgumentLength},
@@ -56,14 +58,14 @@ var GetProjectIDWithProjectStoreCases = []GetProjectProvider{
 }
 
 var GetProjectIDWithInvalidProjectStoreCases = []GetProjectProvider{
-	{[]string{}, "", ErrNotFound},
+	{[]string{}, "", projects.ErrInvalidProjectID},
 	{[]string{"x484"}, "x484", nil},
 	{[]string{"x321", "y625"}, "", ErrInvalidArgumentLength},
 	{[]string{"x414"}, "x414", nil},
 }
 
 var GetProjectAndContainerIDWithProjectStoreCases = []GetContainerProvider{
-	{[]string{}, "extraction", "", ErrNotFound},
+	{[]string{}, "extraction", "", containers.ErrContainerNotFound},
 	{[]string{"extraction", "mycontainer"}, "extraction", "mycontainer", nil},
 	{[]string{"extraction", "x4242"}, "extraction", "x4242", nil},
 	{[]string{"x555", "y777"}, "x555", "y777", nil},
@@ -168,16 +170,9 @@ func TestGetProjectOrContainerID(t *testing.T) {
 }
 
 func TestGetProjectIDWithProjectStore(t *testing.T) {
-	var projectStore = configstore.Store{
-		Name: "project",
-		Path: "./mocks/project/project.json",
-	}
-
-	if err := projectStore.Load(); err != nil {
-		panic(err)
-	}
-
-	config.Stores["project"] = &projectStore
+	var workingDir, _ = os.Getwd()
+	chdir("./mocks/project/")
+	config.Setup()
 
 	for _, c := range GetProjectIDWithProjectStoreCases {
 		project, err := GetProjectID(c.Args)
@@ -191,21 +186,14 @@ func TestGetProjectIDWithProjectStore(t *testing.T) {
 		}
 	}
 
-	config.Stores["project"] = nil
-	config.Stores["container"] = nil
+	chdir(workingDir)
+	config.Teardown()
 }
 
 func TestGetProjectIDWithInvalidProjectStore(t *testing.T) {
-	var projectStore = configstore.Store{
-		Name: "project",
-		Path: "./mocks/invalid-project/project.json",
-	}
-
-	if err := projectStore.Load(); err != nil {
-		panic(err)
-	}
-
-	config.Stores["project"] = &projectStore
+	var workingDir, _ = os.Getwd()
+	chdir("./mocks/invalid-project/")
+	config.Setup()
 
 	for _, c := range GetProjectIDWithInvalidProjectStoreCases {
 		project, err := GetProjectID(c.Args)
@@ -219,20 +207,14 @@ func TestGetProjectIDWithInvalidProjectStore(t *testing.T) {
 		}
 	}
 
-	config.Stores["project"] = nil
+	chdir(workingDir)
+	config.Teardown()
 }
 
 func TestGetProjectAndContainerIDWithProjectStore(t *testing.T) {
-	var projectStore = configstore.Store{
-		Name: "project",
-		Path: "./mocks/project/project.json",
-	}
-
-	if err := projectStore.Load(); err != nil {
-		panic(err)
-	}
-
-	config.Stores["project"] = &projectStore
+	var workingDir, _ = os.Getwd()
+	chdir("./mocks/project/")
+	config.Setup()
 
 	for _, c := range GetProjectAndContainerIDWithProjectStoreCases {
 		project, container, err := GetProjectAndContainerID(c.Args)
@@ -250,30 +232,14 @@ func TestGetProjectAndContainerIDWithProjectStore(t *testing.T) {
 		}
 	}
 
-	config.Stores["project"] = nil
+	chdir(workingDir)
+	config.Teardown()
 }
 
 func TestGetProjectAndContainerIDWithProjectAndContainerStore(t *testing.T) {
-	var projectStore = configstore.Store{
-		Name: "project",
-		Path: "./mocks/project/project.json",
-	}
-
-	var containerStore = configstore.Store{
-		Name: "container",
-		Path: "./mocks/project/container/container.json",
-	}
-
-	if err := projectStore.Load(); err != nil {
-		panic(err)
-	}
-
-	if err := containerStore.Load(); err != nil {
-		panic(err)
-	}
-
-	config.Stores["project"] = &projectStore
-	config.Stores["container"] = &containerStore
+	var workingDir, _ = os.Getwd()
+	chdir("./mocks/project/container")
+	config.Setup()
 
 	for _, c := range GetProjectAndContainerIDWithProjectAndContainerStoreCases {
 		project, container, err := GetProjectAndContainerID(c.Args)
@@ -291,21 +257,14 @@ func TestGetProjectAndContainerIDWithProjectAndContainerStore(t *testing.T) {
 		}
 	}
 
-	config.Stores["project"] = nil
-	config.Stores["container"] = nil
+	chdir(workingDir)
+	config.Teardown()
 }
 
 func TestGetProjectOrContainerIDWithProjectStore(t *testing.T) {
-	var projectStore = configstore.Store{
-		Name: "project",
-		Path: "./mocks/project/project.json",
-	}
-
-	if err := projectStore.Load(); err != nil {
-		panic(err)
-	}
-
-	config.Stores["project"] = &projectStore
+	var workingDir, _ = os.Getwd()
+	chdir("./mocks/project")
+	config.Setup()
 
 	for _, c := range GetProjectOrContainerIDWithProjectStoreCases {
 		project, container, err := GetProjectOrContainerID(c.Args)
@@ -323,30 +282,14 @@ func TestGetProjectOrContainerIDWithProjectStore(t *testing.T) {
 		}
 	}
 
-	config.Stores["project"] = nil
+	chdir(workingDir)
+	config.Teardown()
 }
 
 func TestGetProjectOrContainerIDWithProjectOrContainerStore(t *testing.T) {
-	var projectStore = configstore.Store{
-		Name: "project",
-		Path: "./mocks/project/project.json",
-	}
-
-	var containerStore = configstore.Store{
-		Name: "container",
-		Path: "./mocks/project/container/container.json",
-	}
-
-	if err := projectStore.Load(); err != nil {
-		panic(err)
-	}
-
-	if err := containerStore.Load(); err != nil {
-		panic(err)
-	}
-
-	config.Stores["project"] = &projectStore
-	config.Stores["container"] = &containerStore
+	var workingDir, _ = os.Getwd()
+	chdir("./mocks/project/container")
+	config.Setup()
 
 	for _, c := range GetProjectOrContainerIDWithProjectOrContainerStoreCases {
 		project, container, err := GetProjectOrContainerID(c.Args)
@@ -364,8 +307,8 @@ func TestGetProjectOrContainerIDWithProjectOrContainerStore(t *testing.T) {
 		}
 	}
 
-	config.Stores["project"] = nil
-	config.Stores["container"] = nil
+	chdir(workingDir)
+	config.Teardown()
 }
 
 func TestSplitArguments(t *testing.T) {
@@ -375,5 +318,11 @@ func TestSplitArguments(t *testing.T) {
 		if !reflect.DeepEqual(args, c.Args) {
 			t.Errorf("Wanted %v normalized slice, got %v instead", c.Args, args)
 		}
+	}
+}
+
+func chdir(dir string) {
+	if ech := os.Chdir(dir); ech != nil {
+		panic(ech)
 	}
 }
