@@ -14,9 +14,9 @@ import (
 	"time"
 
 	"github.com/gosuri/uilive"
-	"github.com/launchpad-project/cli/apihelper"
-	"github.com/launchpad-project/cli/defaults"
-	"github.com/launchpad-project/cli/verbose"
+	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/verbose"
 )
 
 const (
@@ -31,7 +31,7 @@ const (
 var ErrHostNotFound = errors.New("You need to be connected to a network.")
 
 // WeDeployImage is the docker image for the WeDeploy infrastructure
-var WeDeployImage = "launchpad/dev:" + defaults.WeDeployImageTag
+var WeDeployImage = "wedeploy/dev:" + defaults.WeDeployImageTag
 
 // Flags modifiers
 type Flags struct {
@@ -324,7 +324,7 @@ func stop(dockerContainer string) {
 
 	if err != nil {
 		println("Failure running reset environment procedure",
-			"for Launchpad before shutdown.")
+			"for WeDeploy before shutdown.")
 		println(err.Error())
 		println("Ignoring reset failure and proceeding with shutdown.")
 	}

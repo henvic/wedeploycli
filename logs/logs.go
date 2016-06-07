@@ -10,8 +10,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/launchpad-project/cli/apihelper"
-	"github.com/launchpad-project/cli/verbose"
+	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/verbose"
 )
 
 // Logs structure

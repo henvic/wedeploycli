@@ -3,8 +3,8 @@ package cmdrun
 import (
 	"os"
 
-	"github.com/launchpad-project/cli/run"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/run"
 )
 
 // RunCmd runs the WeDeploy structure for development locally

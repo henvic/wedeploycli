@@ -4,17 +4,17 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/launchpad-project/api.go"
+	"github.com/wedeploy/api-go"
 )
 
 func TestSetupAndTeardown(t *testing.T) {
 	var completed = false
 	var wantStatusCode = 201
-	var launchpadHTTPClient = launchpad.Client
+	var wedeployHTTPClient = wedeploy.Client
 
 	Setup()
 
-	if launchpadHTTPClient == launchpad.Client {
+	if wedeployHTTPClient == wedeploy.Client {
 		t.Error("Expected different WeDeploy HTTP Client instance")
 	}
 
@@ -23,7 +23,7 @@ func TestSetupAndTeardown(t *testing.T) {
 		completed = true
 	})
 
-	req := launchpad.URL("http://example.com/foo")
+	req := wedeploy.URL("http://example.com/foo")
 	req.Post()
 
 	if !completed {
@@ -36,7 +36,7 @@ func TestSetupAndTeardown(t *testing.T) {
 
 	Teardown()
 
-	if launchpadHTTPClient != launchpad.Client {
+	if wedeployHTTPClient != wedeploy.Client {
 		t.Error("Expected same WeDeploy HTTP Client instance")
 	}
 
@@ -60,7 +60,7 @@ func TestSetupAndTeardownIntegration(t *testing.T) {
 		completed = true
 	})
 
-	req := launchpad.URL(IntegrationServer.URL, "/foo")
+	req := wedeploy.URL(IntegrationServer.URL, "/foo")
 	req.Post()
 
 	if !completed {

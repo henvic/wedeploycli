@@ -11,12 +11,12 @@ import (
 	"testing"
 
 	"github.com/fatih/color"
-	"github.com/launchpad-project/api.go"
-	"github.com/launchpad-project/cli/globalconfigmock"
-	"github.com/launchpad-project/cli/servertest"
-	"github.com/launchpad-project/cli/stringlib"
-	"github.com/launchpad-project/cli/tdata"
-	"github.com/launchpad-project/cli/verbose"
+	"github.com/wedeploy/api-go"
+	"github.com/wedeploy/cli/globalconfigmock"
+	"github.com/wedeploy/cli/servertest"
+	"github.com/wedeploy/cli/stringlib"
+	"github.com/wedeploy/cli/tdata"
+	"github.com/wedeploy/cli/verbose"
 )
 
 var (
@@ -59,7 +59,7 @@ func TestRequestVerboseFeedback(t *testing.T) {
 		fmt.Fprintf(w, "Hello")
 	})
 
-	var request = launchpad.URL("http://www.example.com/foo")
+	var request = wedeploy.URL("http://www.example.com/foo")
 
 	request.Headers.Add("Accept", "application/json")
 	request.Headers.Add("Accept", "text/plain")
@@ -104,7 +104,7 @@ func TestRequestVerboseFeedbackOff(t *testing.T) {
 	servertest.Mux.HandleFunc("/foo", func(w http.ResponseWriter, r *http.Request) {
 	})
 
-	var request = launchpad.URL("http://www.example.com/foo")
+	var request = wedeploy.URL("http://www.example.com/foo")
 
 	if err := request.Get(); err != nil {
 		panic(err)
@@ -128,7 +128,7 @@ func TestRequestVerboseFeedbackUpload(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/foo", tdata.ServerHandler(""))
 
-	var request = launchpad.URL("http://www.example.com/foo")
+	var request = wedeploy.URL("http://www.example.com/foo")
 
 	var file, err = os.Open("mocks/config.json")
 
@@ -173,7 +173,7 @@ func TestRequestVerboseFeedbackStringReader(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/foo", tdata.ServerHandler(""))
 
-	var request = launchpad.URL("http://www.example.com/foo")
+	var request = wedeploy.URL("http://www.example.com/foo")
 
 	request.Body(strings.NewReader("custom body"))
 
@@ -212,7 +212,7 @@ func TestRequestVerboseFeedbackBytesReader(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/foo", tdata.ServerHandler(""))
 
-	var request = launchpad.URL("http://www.example.com/foo")
+	var request = wedeploy.URL("http://www.example.com/foo")
 
 	var sr = strings.NewReader("custom body")
 
@@ -256,7 +256,7 @@ func TestRequestVerboseFeedbackOtherReader(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/foo", tdata.ServerHandler(""))
 
-	var request = launchpad.URL("http://www.example.com/foo")
+	var request = wedeploy.URL("http://www.example.com/foo")
 
 	var body = strings.NewReader("custom body")
 
@@ -302,7 +302,7 @@ func TestRequestVerboseFeedbackJSONResponse(t *testing.T) {
 		fmt.Fprintf(w, `{"Hello": "World"}`)
 	})
 
-	var request = launchpad.URL("http://www.example.com/foo")
+	var request = wedeploy.URL("http://www.example.com/foo")
 
 	type Foo struct {
 		Bar string `json:"bar"`
@@ -357,7 +357,7 @@ func TestRequestVerboseFeedbackInvalidJSONResponse(t *testing.T) {
 		fmt.Fprintf(w, `{"Hello": "World!"`)
 	})
 
-	var request = launchpad.URL("http://www.example.com/foo")
+	var request = wedeploy.URL("http://www.example.com/foo")
 
 	type Foo struct {
 		Bar string `json:"bar"`
@@ -408,7 +408,7 @@ func TestRequestVerboseFeedbackInvalidJSONResponse(t *testing.T) {
 func TestRequestVerboseFeedbackNullResponse(t *testing.T) {
 	bufErrStream.Reset()
 
-	var request = launchpad.URL("http://www.example.com/foo")
+	var request = wedeploy.URL("http://www.example.com/foo")
 
 	request.URL = "x://"
 
@@ -442,7 +442,7 @@ func TestRequestVerboseFeedbackNullResponse(t *testing.T) {
 func TestRequestVerboseFeedbackNotComplete(t *testing.T) {
 	bufErrStream.Reset()
 
-	var request = launchpad.URL("http://www.example.com/foo")
+	var request = wedeploy.URL("http://www.example.com/foo")
 
 	Feedback(request)
 

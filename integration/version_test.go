@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/launchpad-project/cli/defaults"
+	"github.com/wedeploy/cli/defaults"
 )
 
 func TestVersion(t *testing.T) {

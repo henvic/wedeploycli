@@ -11,9 +11,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/launchpad-project/api.go"
-	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/verbosereq"
+	"github.com/wedeploy/api-go"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/verbosereq"
 )
 
 // APIFault is sent by the server when errors happen
@@ -115,7 +115,7 @@ var (
 )
 
 // Auth a WeDeploy request with the global authentication data
-func Auth(request *launchpad.Launchpad) {
+func Auth(request *wedeploy.WeDeploy) {
 	var token = config.Global.Token
 
 	if token == "" {
@@ -148,7 +148,7 @@ func AuthGetOrExit(path string, data interface{}) {
 }
 
 // DecodeJSON decodes a JSON response
-func DecodeJSON(request *launchpad.Launchpad, data interface{}) error {
+func DecodeJSON(request *wedeploy.WeDeploy, data interface{}) error {
 	var response = request.Response
 	var contentType = response.Header.Get("Content-Type")
 
@@ -166,7 +166,7 @@ func DecodeJSON(request *launchpad.Launchpad, data interface{}) error {
 }
 
 // DecodeJSONOrExit decodes a JSON response or exits the process on error
-func DecodeJSONOrExit(request *launchpad.Launchpad, data interface{}) {
+func DecodeJSONOrExit(request *wedeploy.WeDeploy, data interface{}) {
 	if err := DecodeJSON(request, data); err != nil {
 		exitError(err)
 	}
@@ -180,7 +180,7 @@ func EncodeJSON(data interface{}) (*bytes.Reader, error) {
 }
 
 // ParamsFromJSON creates query string params from a flat object with JSON tags
-func ParamsFromJSON(request *launchpad.Launchpad, data interface{}) {
+func ParamsFromJSON(request *wedeploy.WeDeploy, data interface{}) {
 	var v map[string]interface{}
 
 	b, err := json.Marshal(data)
@@ -206,7 +206,7 @@ func ParamsFromJSON(request *launchpad.Launchpad, data interface{}) {
 }
 
 // SetBody sets the body of a request with the JSON encoded from an object
-func SetBody(request *launchpad.Launchpad, data interface{}) error {
+func SetBody(request *wedeploy.WeDeploy, data interface{}) error {
 	var r, err = EncodeJSON(&data)
 
 	if err != nil {
@@ -218,19 +218,19 @@ func SetBody(request *launchpad.Launchpad, data interface{}) error {
 }
 
 // URL creates a WeDeploy URL instance
-func URL(paths ...string) *launchpad.Launchpad {
-	return launchpad.URL(config.Global.Endpoint, paths...)
+func URL(paths ...string) *wedeploy.WeDeploy {
+	return wedeploy.URL(config.Global.Endpoint, paths...)
 }
 
 // Validate validates a request and sends an error on error
-func Validate(request *launchpad.Launchpad, err error) error {
+func Validate(request *wedeploy.WeDeploy, err error) error {
 	verbosereq.Feedback(request)
 
 	if err == nil {
 		return nil
 	}
 
-	if err == launchpad.ErrUnexpectedResponse {
+	if err == wedeploy.ErrUnexpectedResponse {
 		if af := reportHTTPError(request); af != nil {
 			return af
 		}
@@ -240,7 +240,7 @@ func Validate(request *launchpad.Launchpad, err error) error {
 }
 
 // ValidateOrExit validates a request or exits the process on error
-func ValidateOrExit(request *launchpad.Launchpad, err error) {
+func ValidateOrExit(request *wedeploy.WeDeploy, err error) {
 	err = Validate(request, err)
 
 	if err != nil {
@@ -259,7 +259,7 @@ func exitCommand(code int) {
 	}
 }
 
-func reportHTTPError(request *launchpad.Launchpad) error {
+func reportHTTPError(request *wedeploy.WeDeploy) error {
 	var body, err = ioutil.ReadAll(request.Response.Body)
 
 	if err != nil {
@@ -274,7 +274,7 @@ func reportHTTPError(request *launchpad.Launchpad) error {
 	}
 }
 
-func reportHTTPErrorTryJSON(request *launchpad.Launchpad, body []byte) error {
+func reportHTTPErrorTryJSON(request *wedeploy.WeDeploy, body []byte) error {
 	var response = request.Response
 	var contentType = response.Header.Get("Content-Type")
 	var af APIFault
@@ -291,14 +291,14 @@ func reportHTTPErrorTryJSON(request *launchpad.Launchpad, body []byte) error {
 	return reportHTTPErrorJSON(request, af)
 }
 
-func reportHTTPErrorJSON(request *launchpad.Launchpad, af APIFault) error {
+func reportHTTPErrorJSON(request *wedeploy.WeDeploy, af APIFault) error {
 	af.Method = request.Request.Method
 	af.URL = request.URL
 	return &af
 }
 
 func reportHTTPErrorNotJSON(
-	request *launchpad.Launchpad, body []byte) *APIFault {
+	request *wedeploy.WeDeploy, body []byte) *APIFault {
 	var response = request.Response
 	return &APIFault{
 		Method:  request.Request.Method,

@@ -3,7 +3,7 @@ package globalconfigmock
 import (
 	"testing"
 
-	"github.com/launchpad-project/cli/config"
+	"github.com/wedeploy/cli/config"
 )
 
 func TestGlobalConfigMock(t *testing.T) {

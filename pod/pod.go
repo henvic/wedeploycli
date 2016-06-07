@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 
 	"github.com/dustin/go-humanize"
-	"github.com/launchpad-project/cli/progress"
-	"github.com/launchpad-project/cli/verbose"
 	"github.com/sabhiram/go-git-ignore"
+	"github.com/wedeploy/cli/progress"
+	"github.com/wedeploy/cli/verbose"
 )
 
 type pack struct {

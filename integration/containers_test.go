@@ -3,8 +3,8 @@ package integration
 import (
 	"testing"
 
-	"github.com/launchpad-project/cli/servertest"
-	"github.com/launchpad-project/cli/tdata"
+	"github.com/wedeploy/cli/servertest"
+	"github.com/wedeploy/cli/tdata"
 )
 
 func TestContainers(t *testing.T) {
@@ -17,7 +17,7 @@ func TestContainers(t *testing.T) {
 
 	var cmd = &Command{
 		Args: []string{"containers", "images"},
-		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLoginHome()},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
 	var e = &Expect{
@@ -39,7 +39,7 @@ func TestContainersFromProjectDirectory(t *testing.T) {
 
 	var cmd = &Command{
 		Args: []string{"containers"},
-		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLoginHome()},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/home/bucket/images",
 	}
 
@@ -58,7 +58,7 @@ func TestContainersWithouProjectContext(t *testing.T) {
 
 	var cmd = &Command{
 		Args: []string{"containers"},
-		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLoginHome()},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/home/bucket/",
 	}
 

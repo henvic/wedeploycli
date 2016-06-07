@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/launchpad-project/cli/servertest"
-	"github.com/launchpad-project/cli/tdata"
+	"github.com/wedeploy/cli/servertest"
+	"github.com/wedeploy/cli/tdata"
 )
 
 func TestDeploy(t *testing.T) {
@@ -33,7 +33,7 @@ func TestDeploy(t *testing.T) {
 
 	var cmd = &Command{
 		Args: []string{"deploy", "-q"},
-		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLoginHome()},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/home/bucket/project/container",
 	}
 
@@ -52,7 +52,7 @@ func TestDeployOutputErrorMultiple(t *testing.T) {
 
 	var cmd = &Command{
 		Args: []string{"deploy", "-o", "foo.pod"},
-		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLoginHome()},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/home/bucket/images",
 	}
 
@@ -72,7 +72,7 @@ func TestDeployOutput(t *testing.T) {
 
 	var cmd = &Command{
 		Args: []string{"deploy", "-o", os.DevNull, "--quiet"},
-		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLoginHome()},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/home/bucket/project/container",
 	}
 

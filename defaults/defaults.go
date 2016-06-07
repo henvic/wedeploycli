@@ -5,7 +5,7 @@ var (
 	Version = "master"
 
 	// Endpoint default to the client
-	Endpoint = "https://launchpad.io"
+	Endpoint = "https://wedeploy.io"
 
 	// WeDeployImageTag is the WeDeploy image tag for docker
 	WeDeployImageTag = "latest"

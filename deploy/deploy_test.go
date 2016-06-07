@@ -13,11 +13,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/launchpad-project/cli/apihelper"
-	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/containers"
-	"github.com/launchpad-project/cli/globalconfigmock"
-	"github.com/launchpad-project/cli/servertest"
+	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/globalconfigmock"
+	"github.com/wedeploy/cli/servertest"
 )
 
 func TestNew(t *testing.T) {
@@ -80,7 +80,7 @@ func TestPack(t *testing.T) {
 func TestDeploy(t *testing.T) {
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
-	var tmp, _ = ioutil.TempFile(os.TempDir(), "launchpad-cli")
+	var tmp, _ = ioutil.TempFile(os.TempDir(), "wedeploy-cli")
 
 	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
 		t.Error(err)
@@ -151,7 +151,7 @@ func TestDeploy(t *testing.T) {
 
 func TestDeployFileNotFound(t *testing.T) {
 	var workingDir, _ = os.Getwd()
-	var tmp, _ = ioutil.TempFile(os.TempDir(), "launchpad-cli")
+	var tmp, _ = ioutil.TempFile(os.TempDir(), "wedeploy-cli")
 
 	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
 		t.Error(err)
@@ -181,7 +181,7 @@ func TestDeployFileNotFound(t *testing.T) {
 func TestDeployFailure(t *testing.T) {
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
-	var tmp, _ = ioutil.TempFile(os.TempDir(), "launchpad-cli")
+	var tmp, _ = ioutil.TempFile(os.TempDir(), "wedeploy-cli")
 
 	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
 		t.Error(err)

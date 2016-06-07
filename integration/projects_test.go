@@ -3,8 +3,8 @@ package integration
 import (
 	"testing"
 
-	"github.com/launchpad-project/cli/servertest"
-	"github.com/launchpad-project/cli/tdata"
+	"github.com/wedeploy/cli/servertest"
+	"github.com/wedeploy/cli/tdata"
 )
 
 func TestProjects(t *testing.T) {
@@ -17,7 +17,7 @@ func TestProjects(t *testing.T) {
 
 	var cmd = &Command{
 		Args: []string{"projects"},
-		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLoginHome()},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
 	var e = &Expect{

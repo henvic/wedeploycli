@@ -12,8 +12,8 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/launchpad-project/api.go"
-	"github.com/launchpad-project/cli/verbose"
+	"github.com/wedeploy/api-go"
+	"github.com/wedeploy/cli/verbose"
 )
 
 // DebugRequestBody prints verbose messages when debugging is enabled
@@ -70,7 +70,7 @@ func debugUnknownTypeBody(body io.Reader) {
 }
 
 // Feedback prints to the verbose err stream info about request
-func Feedback(request *launchpad.Launchpad) {
+func Feedback(request *wedeploy.WeDeploy) {
 	if !verbose.Enabled {
 		return
 	}
@@ -83,7 +83,7 @@ func Feedback(request *launchpad.Launchpad) {
 	requestVerboseFeedback(request)
 }
 
-func requestVerboseFeedback(request *launchpad.Launchpad) {
+func requestVerboseFeedback(request *wedeploy.WeDeploy) {
 	verbose.Debug(">",
 		color.BlueString(request.Request.Method),
 		color.YellowString(request.URL),

@@ -8,8 +8,8 @@ import (
 
 	"github.com/equinox-io/equinox"
 	"github.com/fatih/color"
-	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/defaults"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/defaults"
 )
 
 const lucFormat = "Mon Jan _2 15:04:05 MST 2006"

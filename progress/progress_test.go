@@ -7,13 +7,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/launchpad-project/cli/tdata"
+	"github.com/wedeploy/cli/tdata"
 )
 
 func TestNew(t *testing.T) {
 	// there is currently a hack that makes setting 100 => 99, see below
 	var defaultOutStream = progressList.Out
-	var tmp, err = ioutil.TempFile(os.TempDir(), "launchpad-cli-test")
+	var tmp, err = ioutil.TempFile(os.TempDir(), "wedeploy-cli-test")
 
 	if err != nil {
 		panic(err)
@@ -85,7 +85,7 @@ func TestFail(t *testing.T) {
 
 	// there is currently a hack that makes setting 100 => 99, see below
 	var defaultOutStream = progressList.Out
-	var tmp, err = ioutil.TempFile(os.TempDir(), "launchpad-cli-test")
+	var tmp, err = ioutil.TempFile(os.TempDir(), "wedeploy-cli-test")
 
 	if err != nil {
 		panic(err)

@@ -3,8 +3,8 @@ package integration
 import (
 	"testing"
 
-	"github.com/launchpad-project/cli/servertest"
-	"github.com/launchpad-project/cli/tdata"
+	"github.com/wedeploy/cli/servertest"
+	"github.com/wedeploy/cli/tdata"
 )
 
 func TestStatusProject(t *testing.T) {
@@ -17,7 +17,7 @@ func TestStatusProject(t *testing.T) {
 
 	var cmd = &Command{
 		Args: []string{"status", "foo"},
-		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLoginHome()},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
 	var e = &Expect{
@@ -40,7 +40,7 @@ func TestStatusContainer(t *testing.T) {
 
 	var cmd = &Command{
 		Args: []string{"status", "foo", "bar"},
-		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLoginHome()},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
 	var e = &Expect{

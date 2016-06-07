@@ -3,9 +3,9 @@ package cmdauth
 import (
 	"fmt"
 
-	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/prompt"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/prompt"
 )
 
 // LoginCmd sets the user credential

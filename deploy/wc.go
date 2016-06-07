@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dustin/go-humanize"
-	"github.com/launchpad-project/cli/progress"
+	"github.com/wedeploy/cli/progress"
 )
 
 // writeCounter is a writer for writing to the progress bar

@@ -15,9 +15,9 @@ func TestHomeDir(t *testing.T) {
 
 func TestCustomHomeDir(t *testing.T) {
 	var want = "foo"
-	var defaultEnv = os.Getenv("LAUNCHPAD_CUSTOM_HOME")
+	var defaultEnv = os.Getenv("WEDEPLOY_CUSTOM_HOME")
 
-	if err := os.Setenv("LAUNCHPAD_CUSTOM_HOME", "foo"); err != nil {
+	if err := os.Setenv("WEDEPLOY_CUSTOM_HOME", "foo"); err != nil {
 		panic(err)
 	}
 
@@ -27,7 +27,7 @@ func TestCustomHomeDir(t *testing.T) {
 		t.Errorf("Wanted custom home to be %v, got %v instead", want, got)
 	}
 
-	if err := os.Setenv("LAUNCHPAD_CUSTOM_HOME", defaultEnv); err != nil {
+	if err := os.Setenv("WEDEPLOY_CUSTOM_HOME", defaultEnv); err != nil {
 		panic(err)
 	}
 }

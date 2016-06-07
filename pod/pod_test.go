@@ -11,7 +11,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/launchpad-project/cli/progress"
+	"github.com/wedeploy/cli/progress"
 )
 
 type FileInfo struct {

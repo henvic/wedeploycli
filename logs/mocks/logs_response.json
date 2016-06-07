@@ -7,10 +7,10 @@
             "line": 125,
             "message": "Server started\r",
             "method": "start",
-            "name": "com.liferay.launchpad.server.AppServer",
+            "name": "com.liferay.wedeploy.server.AppServer",
             "thread": "main"
         },
-        "message": "[2016-03-29 18:55:51,234] INFO  [main] com.liferay.launchpad.server.AppServer#start:125 - Server started\r",
+        "message": "[2016-03-29 18:55:51,234] INFO  [main] com.liferay.wedeploy.server.AppServer#start:125 - Server started\r",
         "podName": "nodejs5143",
         "severity": "INFO",
         "timestamp": "1459277751234"
@@ -23,10 +23,10 @@
             "line": 163,
             "message": "Server is up and running\r",
             "method": "startServer",
-            "name": "com.liferay.launchpad.Launchpad",
+            "name": "com.liferay.wedeploy.WeDeploy",
             "thread": "main"
         },
-        "message": "[2016-03-29 18:55:51,237] INFO  [main] com.liferay.launchpad.Launchpad#startServer:163 - Server is up and running\r",
+        "message": "[2016-03-29 18:55:51,237] INFO  [main] com.liferay.wedeploy.WeDeploy#startServer:163 - Server is up and running\r",
         "podName": "nodejs5143",
         "severity": "INFO",
         "timestamp": "1459277751237"
@@ -39,10 +39,10 @@
             "line": 69,
             "message": "WeDeploy is ready\r",
             "method": "start",
-            "name": "com.liferay.launchpad.Launchpad",
+            "name": "com.liferay.wedeploy.WeDeploy",
             "thread": "main"
         },
-        "message": "[2016-03-29 18:55:51,240] INFO  [main] com.liferay.launchpad.Launchpad#start:69 - WeDeploy is ready\r",
+        "message": "[2016-03-29 18:55:51,240] INFO  [main] com.liferay.wedeploy.WeDeploy#start:69 - WeDeploy is ready\r",
         "podName": "nodejs5143",
         "severity": "INFO",
         "timestamp": "1459277751240"

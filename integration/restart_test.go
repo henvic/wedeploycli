@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/launchpad-project/cli/servertest"
+	"github.com/wedeploy/cli/servertest"
 )
 
 func TestRestartProject(t *testing.T) {
@@ -25,7 +25,7 @@ func TestRestartProject(t *testing.T) {
 
 	var cmd = &Command{
 		Args: []string{"restart", "foo"},
-		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLoginHome()},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
 	var e = &Expect{
@@ -58,7 +58,7 @@ func TestRestartContainer(t *testing.T) {
 
 	var cmd = &Command{
 		Args: []string{"restart", "foo", "bar"},
-		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLoginHome()},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
 	var e = &Expect{

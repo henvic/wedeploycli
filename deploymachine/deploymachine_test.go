@@ -9,13 +9,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/launchpad-project/cli/apihelper"
-	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/containers"
-	"github.com/launchpad-project/cli/deploy"
-	"github.com/launchpad-project/cli/globalconfigmock"
-	"github.com/launchpad-project/cli/servertest"
-	"github.com/launchpad-project/cli/tdata"
+	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/deploy"
+	"github.com/wedeploy/cli/globalconfigmock"
+	"github.com/wedeploy/cli/servertest"
+	"github.com/wedeploy/cli/tdata"
 )
 
 func TestErrors(t *testing.T) {

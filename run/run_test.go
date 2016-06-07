@@ -5,9 +5,9 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/launchpad-project/cli/globalconfigmock"
-	"github.com/launchpad-project/cli/servertest"
-	"github.com/launchpad-project/cli/tdata"
+	"github.com/wedeploy/cli/globalconfigmock"
+	"github.com/wedeploy/cli/servertest"
+	"github.com/wedeploy/cli/tdata"
 )
 
 type ExistsDependencyProvider struct {

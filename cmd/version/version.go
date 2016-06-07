@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/launchpad-project/cli/defaults"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/defaults"
 )
 
 // VersionCmd is used for reading the version of this tool

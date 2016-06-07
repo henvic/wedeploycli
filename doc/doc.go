@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/launchpad-project/cli/cmd"
 	"github.com/spf13/cobra/doc"
+	"github.com/wedeploy/cli/cmd"
 )
 
 func main() {

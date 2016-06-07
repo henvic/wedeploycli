@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/launchpad-project/cli/tdata"
+	"github.com/wedeploy/cli/tdata"
 )
 
 func TestUnset(t *testing.T) {
@@ -20,7 +20,7 @@ func TestUnset(t *testing.T) {
 }
 
 func TestSetupAndTeardown(t *testing.T) {
-	os.Setenv("LAUNCHPAD_CUSTOM_HOME", abs("./mocks/home"))
+	os.Setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/home"))
 
 	if Global != nil {
 		t.Errorf("Expected config.Global to be null")
@@ -68,7 +68,7 @@ func TestSetupAndTeardown(t *testing.T) {
 		t.Errorf("Expected Context.ContainerRoot to be empty")
 	}
 
-	os.Unsetenv("LAUNCHPAD_CUSTOM_HOME")
+	os.Unsetenv("WEDEPLOY_CUSTOM_HOME")
 	Teardown()
 
 	if Global != nil {
@@ -81,7 +81,7 @@ func TestSetupAndTeardown(t *testing.T) {
 }
 
 func TestSetupAndTeardownProject(t *testing.T) {
-	os.Setenv("LAUNCHPAD_CUSTOM_HOME", abs("./mocks/home"))
+	os.Setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/home"))
 	var workingDir, _ = os.Getwd()
 
 	if err := os.Chdir(filepath.Join(workingDir, "mocks/project/non-container")); err != nil {
@@ -106,12 +106,12 @@ func TestSetupAndTeardownProject(t *testing.T) {
 		panic(err)
 	}
 
-	os.Unsetenv("LAUNCHPAD_CUSTOM_HOME")
+	os.Unsetenv("WEDEPLOY_CUSTOM_HOME")
 	Teardown()
 }
 
 func TestSetupAndTeardownProjectAndContainer(t *testing.T) {
-	os.Setenv("LAUNCHPAD_CUSTOM_HOME", abs("./mocks/home"))
+	os.Setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/home"))
 	var workingDir, _ = os.Getwd()
 
 	if err := os.Chdir(filepath.Join(workingDir, "mocks/project/container/inside")); err != nil {
@@ -136,12 +136,12 @@ func TestSetupAndTeardownProjectAndContainer(t *testing.T) {
 		panic(err)
 	}
 
-	os.Unsetenv("LAUNCHPAD_CUSTOM_HOME")
+	os.Unsetenv("WEDEPLOY_CUSTOM_HOME")
 	Teardown()
 }
 
 func TestSave(t *testing.T) {
-	os.Setenv("LAUNCHPAD_CUSTOM_HOME", abs("./mocks/home"))
+	os.Setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/home"))
 	Setup()
 
 	var tmp, err = ioutil.TempFile(os.TempDir(), "we")
@@ -167,7 +167,7 @@ func TestSave(t *testing.T) {
 }
 
 func TestSaveAfterCreation(t *testing.T) {
-	os.Setenv("LAUNCHPAD_CUSTOM_HOME", abs("./mocks/homeless"))
+	os.Setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/homeless"))
 	Setup()
 
 	var tmp, err = ioutil.TempFile(os.TempDir(), "we")

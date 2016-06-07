@@ -1,8 +1,8 @@
 package cmdprojects
 
 import (
-	"github.com/launchpad-project/cli/projects"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/projects"
 )
 
 // ProjectsCmd is used for getting projects about a given scope

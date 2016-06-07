@@ -3,7 +3,7 @@ package globalconfigmock
 import (
 	"os"
 
-	"github.com/launchpad-project/cli/config"
+	"github.com/wedeploy/cli/config"
 )
 
 var original *config.Config

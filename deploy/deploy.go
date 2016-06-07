@@ -11,15 +11,15 @@ import (
 	"path/filepath"
 
 	"github.com/dustin/go-humanize"
-	"github.com/launchpad-project/api.go"
-	"github.com/launchpad-project/cli/apihelper"
-	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/containers"
-	"github.com/launchpad-project/cli/hooks"
-	"github.com/launchpad-project/cli/pod"
-	"github.com/launchpad-project/cli/progress"
-	"github.com/launchpad-project/cli/projects"
-	"github.com/launchpad-project/cli/verbose"
+	"github.com/wedeploy/api-go"
+	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/hooks"
+	"github.com/wedeploy/cli/pod"
+	"github.com/wedeploy/cli/progress"
+	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/verbose"
 )
 
 // Deploy holds the information of a POD to be packed or deployed
@@ -109,7 +109,7 @@ func (ds *deploySubmission) Setup(rc io.ReadCloser) *io.PipeReader {
 }
 
 func (d *Deploy) deployUpload(
-	request *launchpad.Launchpad, rc io.ReadCloser, wc io.Writer) error {
+	request *wedeploy.WeDeploy, rc io.ReadCloser, wc io.Writer) error {
 	var ds = &deploySubmission{}
 	var pr = ds.Setup(rc)
 
@@ -223,8 +223,8 @@ func reportDeployMultipleError(err, errMultipart error) {
 }
 
 func (d *Deploy) createDeployRequest(rs io.ReadSeeker) (
-	*launchpad.Launchpad, error) {
-	var request *launchpad.Launchpad
+	*wedeploy.WeDeploy, error) {
+	var request *wedeploy.WeDeploy
 	var hash, err = getPackageSHA1(rs)
 
 	if err == nil {
@@ -274,7 +274,7 @@ func (d *Deploy) getPackageFD(src string) (*os.File, uint64, error) {
 }
 
 func (d *Deploy) only() error {
-	var tmp, err = ioutil.TempFile(os.TempDir(), "launchpad-cli")
+	var tmp, err = ioutil.TempFile(os.TempDir(), "wedeploy-cli")
 
 	err = d.Pack(tmp.Name())
 
@@ -326,7 +326,7 @@ func (d *Deploy) runAfterHook(df *Flags, wdir string) error {
 }
 
 func (d *Deploy) setupPackage(src string) (
-	*launchpad.Launchpad, *os.File, error) {
+	*wedeploy.WeDeploy, *os.File, error) {
 	var file, size, errFD = d.getPackageFD(src)
 	d.PackageSize = size
 

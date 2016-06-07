@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 
-	"github.com/launchpad-project/api.go"
+	"github.com/wedeploy/api-go"
 )
 
 var (
@@ -33,8 +33,8 @@ func Setup() {
 		},
 	}
 
-	defaultHTTPClient = launchpad.Client
-	launchpad.Client = &http.Client{Transport: transport}
+	defaultHTTPClient = wedeploy.Client
+	wedeploy.Client = &http.Client{Transport: transport}
 }
 
 // SetupIntegration sets up the integration tests mock server
@@ -45,7 +45,7 @@ func SetupIntegration() {
 
 // Teardown the mock server and teardown WeDeploy client
 func Teardown() {
-	launchpad.Client = defaultHTTPClient
+	wedeploy.Client = defaultHTTPClient
 	server.Close()
 	Mux = nil
 	server = nil

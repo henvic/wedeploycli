@@ -10,12 +10,12 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/launchpad-project/api.go"
-	"github.com/launchpad-project/cli/apihelper"
-	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/hooks"
-	"github.com/launchpad-project/cli/verbose"
-	"github.com/launchpad-project/cli/verbosereq"
+	"github.com/wedeploy/api-go"
+	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/hooks"
+	"github.com/wedeploy/cli/verbose"
+	"github.com/wedeploy/cli/verbosereq"
 )
 
 // Containers map
@@ -135,7 +135,7 @@ func InstallFromDefinition(projectID, containerPath string, container *Container
 }
 
 func maybeSetLocalContainerPath(containerPath string,
-	req *launchpad.Launchpad) {
+	req *wedeploy.WeDeploy) {
 	if config.Global.Local {
 		req.Param("source", containerPath)
 	}
@@ -187,7 +187,7 @@ func Validate(projectID, containerID string) (err error) {
 	var req = apihelper.URL("/validators/containers/id")
 	err = doValidate(projectID, containerID, req)
 
-	if err == nil || err != launchpad.ErrUnexpectedResponse {
+	if err == nil || err != wedeploy.ErrUnexpectedResponse {
 		return err
 	}
 
@@ -202,7 +202,7 @@ func Validate(projectID, containerID string) (err error) {
 	return getValidateAPIFaultError(errDoc)
 }
 
-func doValidate(projectID, containerID string, req *launchpad.Launchpad) error {
+func doValidate(projectID, containerID string, req *wedeploy.WeDeploy) error {
 	apihelper.Auth(req)
 
 	req.Param("projectId", projectID)

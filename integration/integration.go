@@ -11,9 +11,9 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/servertest"
-	"github.com/launchpad-project/cli/stringlib"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/servertest"
+	"github.com/wedeploy/cli/stringlib"
 )
 
 // Expect structure
@@ -155,7 +155,7 @@ func (cmd *Command) setEnv() {
 		panic(err)
 	}
 
-	cmd.Env = append(cmd.Env, "LAUNCHPAD_CUSTOM_HOME="+ch)
+	cmd.Env = append(cmd.Env, "WEDEPLOY_CUSTOM_HOME="+ch)
 	cmd.Env = append(cmd.Env, os.Environ()...)
 }
 

@@ -15,13 +15,13 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/kylelemons/godebug/pretty"
-	"github.com/launchpad-project/api.go"
-	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/globalconfigmock"
-	"github.com/launchpad-project/cli/servertest"
-	"github.com/launchpad-project/cli/stringlib"
-	"github.com/launchpad-project/cli/tdata"
-	"github.com/launchpad-project/cli/verbose"
+	"github.com/wedeploy/api-go"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/globalconfigmock"
+	"github.com/wedeploy/cli/servertest"
+	"github.com/wedeploy/cli/stringlib"
+	"github.com/wedeploy/cli/tdata"
+	"github.com/wedeploy/cli/verbose"
 )
 
 type postMock struct {
@@ -48,7 +48,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAuth(t *testing.T) {
-	r := launchpad.URL("http://localhost/")
+	r := wedeploy.URL("http://localhost/")
 
 	Auth(r)
 
@@ -197,7 +197,7 @@ func TestAuthGetOrExitError(t *testing.T) {
 }
 
 func TestAuthTokenBearer(t *testing.T) {
-	r := launchpad.URL("http://localhost/")
+	r := wedeploy.URL("http://localhost/")
 
 	config.Global.Token = "mytoken"
 
@@ -552,7 +552,7 @@ func TestParamsFromJSON(t *testing.T) {
 		password: "c#swift",
 	}
 
-	var req = launchpad.URL("htt://example.com/")
+	var req = wedeploy.URL("htt://example.com/")
 	ParamsFromJSON(req, musician)
 
 	var want = url.Values{
@@ -580,7 +580,7 @@ func TestParamsFromJSONFailure(t *testing.T) {
 	}
 
 	var invalid = &invalidMock{}
-	var req = launchpad.URL("htt://example.com/")
+	var req = wedeploy.URL("htt://example.com/")
 
 	defer func() {
 		r := recover()
@@ -597,7 +597,7 @@ func TestParamsFromJSONInvalidSstructure(t *testing.T) {
 	var invalid = map[int]string{
 		10: "foo",
 	}
-	var req = launchpad.URL("htt://example.com/")
+	var req = wedeploy.URL("htt://example.com/")
 
 	defer func() {
 		r := recover()
@@ -1068,7 +1068,7 @@ func TestURL(t *testing.T) {
 func TestValidate(t *testing.T) {
 	var want = "Get x://localhost: unsupported protocol scheme \"x\""
 
-	r := launchpad.URL("x://localhost/")
+	r := wedeploy.URL("x://localhost/")
 
 	err := Validate(r, r.Get())
 
@@ -1082,7 +1082,7 @@ func TestValidateOrExit(t *testing.T) {
 	haltExitCommand = true
 	bufErrStream.Reset()
 
-	r := launchpad.URL("x://localhost/")
+	r := wedeploy.URL("x://localhost/")
 
 	ValidateOrExit(r, r.Get())
 
@@ -1097,7 +1097,7 @@ func TestValidateOrExitNoError(t *testing.T) {
 	haltExitCommand = true
 	bufErrStream.Reset()
 
-	r := launchpad.URL("x://localhost/")
+	r := wedeploy.URL("x://localhost/")
 	ValidateOrExit(r, nil)
 
 	if bufErrStream.Len() != 0 {

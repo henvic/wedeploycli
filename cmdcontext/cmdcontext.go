@@ -3,9 +3,9 @@ package cmdcontext
 import (
 	"errors"
 
-	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/containers"
-	"github.com/launchpad-project/cli/projects"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/projects"
 )
 
 var (

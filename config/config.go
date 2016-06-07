@@ -6,10 +6,10 @@ import (
 
 	"gopkg.in/ini.v1"
 
-	"github.com/launchpad-project/cli/context"
-	"github.com/launchpad-project/cli/defaults"
-	"github.com/launchpad-project/cli/user"
-	"github.com/launchpad-project/cli/verbose"
+	"github.com/wedeploy/cli/context"
+	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/user"
+	"github.com/wedeploy/cli/verbose"
 )
 
 // Config of the application

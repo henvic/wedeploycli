@@ -1,6 +1,6 @@
-[2016-03-29 18:55:51,234] INFO  [main] com.liferay.launchpad.server.AppServer#start:125 - Server started
-[2016-03-29 18:55:51,237] INFO  [main] com.liferay.launchpad.Launchpad#startServer:163 - Server is up and running
-[2016-03-29 18:55:51,240] INFO  [main] com.liferay.launchpad.Launchpad#start:69 - WeDeploy is ready
+[2016-03-29 18:55:51,234] INFO  [main] com.liferay.wedeploy.server.AppServer#start:125 - Server started
+[2016-03-29 18:55:51,237] INFO  [main] com.liferay.wedeploy.WeDeploy#startServer:163 - Server is up and running
+[2016-03-29 18:55:51,240] INFO  [main] com.liferay.wedeploy.WeDeploy#start:69 - WeDeploy is ready
 	Member [172.21.0.2]:5701
 Mar 29, 2016 7:43:30 PM com.hazelcast.core.LifecycleService
 Mar 29, 2016 7:43:30 PM com.hazelcast.client.connection.nio.ClientConnectionManagerImpl

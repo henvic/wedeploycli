@@ -8,7 +8,7 @@ import (
 func TestCorruptConfig(t *testing.T) {
 	var cmd = &Command{
 		Args: []string{"projects", "-v"},
-		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetBrokenHome()},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetBrokenHome()},
 	}
 
 	cmd.Run()
@@ -27,7 +27,7 @@ func TestCorruptConfig(t *testing.T) {
 func TestLoggedOut(t *testing.T) {
 	var cmd = &Command{
 		Args: []string{"projects", "-v"},
-		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLogoutHome()},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLogoutHome()},
 	}
 
 	var e = &Expect{

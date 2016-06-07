@@ -5,8 +5,6 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-# "/Users/henvic/projects/launchpad/equinox.yml"
-
 config=${1-}
 
 if [ -z $config ] || [ $config == "help" ] || [ $config == "--help" ]; then
@@ -31,7 +29,7 @@ fi
 echo "Release announcements should start with v<version>.
 
 You may want to verify the differences between two versions with
-git log HEAD..(past version) --pretty=\"format:%s https://github.com/launchpad-project/cli/commit/%h\"
+git log HEAD..(past version) --pretty=\"format:%s https://github.com/wedeploy/cli/commit/%h\"
 
 To create a summary of changes.
 "
@@ -61,5 +59,5 @@ equinox release \
 --channel=$RELEASE_CHANNEL \
 --config=$config \
 -- \
--ldflags="-X github.com/launchpad-project/cli/defaults.Version=$NEW_RELEASE_VERSION" \
-github.com/launchpad-project/cli
+-ldflags="-X github.com/wedeploy/cli/defaults.Version=$NEW_RELEASE_VERSION" \
+github.com/wedeploy/cli

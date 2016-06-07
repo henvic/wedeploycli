@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/launchpad-project/cli/servertest"
-	"github.com/launchpad-project/cli/tdata"
+	"github.com/wedeploy/cli/servertest"
+	"github.com/wedeploy/cli/tdata"
 )
 
 func TestLogs(t *testing.T) {
@@ -20,7 +20,7 @@ func TestLogs(t *testing.T) {
 
 	var cmd = &Command{
 		Args: []string{"logs", "foo", "nodejs5143", "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj"},
-		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLoginHome()},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/home/",
 	}
 
@@ -43,7 +43,7 @@ func TestWatch(t *testing.T) {
 
 	var cmd = &Command{
 		Args: []string{"logs", "foo", "nodejs5143", "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj", "-f"},
-		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetLoginHome()},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/home/",
 	}
 

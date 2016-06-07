@@ -10,10 +10,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/containers"
-	"github.com/launchpad-project/cli/projects"
-	"github.com/launchpad-project/cli/prompt"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/prompt"
 )
 
 var (

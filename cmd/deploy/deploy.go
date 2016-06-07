@@ -6,15 +6,15 @@ import (
 	"os"
 	"time"
 
-	"github.com/launchpad-project/cli/cmdcontext"
-	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/containers"
-	"github.com/launchpad-project/cli/deploy"
-	"github.com/launchpad-project/cli/deploymachine"
-	"github.com/launchpad-project/cli/progress"
-	"github.com/launchpad-project/cli/projects"
-	"github.com/launchpad-project/cli/verbose"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmdcontext"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/deploy"
+	"github.com/wedeploy/cli/deploymachine"
+	"github.com/wedeploy/cli/progress"
+	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/verbose"
 )
 
 var (

@@ -5,9 +5,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/launchpad-project/cli/cmdcontext"
-	"github.com/launchpad-project/cli/logs"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmdcontext"
+	"github.com/wedeploy/cli/logs"
 )
 
 var (

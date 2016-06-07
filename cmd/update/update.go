@@ -1,8 +1,8 @@
 package cmdupdate
 
 import (
-	"github.com/launchpad-project/cli/update"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/update"
 )
 
 // UpdateCmd is used for updating this tool

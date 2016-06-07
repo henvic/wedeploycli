@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/launchpad-project/cli/cmdcontext"
-	ccontainers "github.com/launchpad-project/cli/containers"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmdcontext"
+	"github.com/wedeploy/cli/containers"
 )
 
 // ContainersCmd is used for getting containers
@@ -29,5 +29,5 @@ func containersRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	ccontainers.List(projectID)
+	containers.List(projectID)
 }

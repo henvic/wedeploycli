@@ -12,12 +12,12 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/launchpad-project/api.go/jsonlib"
-	"github.com/launchpad-project/cli/apihelper"
-	"github.com/launchpad-project/cli/config"
-	"github.com/launchpad-project/cli/globalconfigmock"
-	"github.com/launchpad-project/cli/servertest"
-	"github.com/launchpad-project/cli/tdata"
+	"github.com/wedeploy/api-go/jsonlib"
+	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/globalconfigmock"
+	"github.com/wedeploy/cli/servertest"
+	"github.com/wedeploy/cli/tdata"
 )
 
 var bufOutStream bytes.Buffer
