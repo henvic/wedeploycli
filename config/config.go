@@ -6,13 +6,13 @@ import (
 
 	"gopkg.in/ini.v1"
 
-	"github.com/launchpad-project/cli/configstore"
 	"github.com/launchpad-project/cli/context"
 	"github.com/launchpad-project/cli/defaults"
 	"github.com/launchpad-project/cli/user"
 	"github.com/launchpad-project/cli/verbose"
 )
 
+// Config of the application
 type Config struct {
 	Username        string    `ini:"username"`
 	Password        string    `ini:"password"`
@@ -28,21 +28,48 @@ type Config struct {
 	file            *ini.File `ini:"-"`
 }
 
-var UserConfigurableKeys = []string{
-	"username",
-	"password",
-	"endpoint",
-}
-
 var (
+	// Global configuration
 	Global *Config
 
 	// Context stores the environmental context
 	Context *context.Context
-
-	// Stores sets the map of available config stores
-	Stores = map[string]*configstore.Store{}
 )
+
+// Load the configuration
+func (c *Config) Load() {
+	c.setDefaults()
+	c.read()
+
+	if err := c.file.MapTo(c); err != nil {
+		panic(err)
+	}
+}
+
+// Save the configuration
+func (c *Config) Save() {
+	var err = c.file.ReflectFrom(c)
+
+	if err != nil {
+		panic(err)
+	}
+
+	if c.NextVersion == "" {
+		c.file.Section("").DeleteKey("next_version")
+	}
+
+	err = c.file.SaveTo(c.Path)
+
+	if err != nil {
+		panic(err)
+	}
+}
+
+// Setup the environment
+func Setup() {
+	setupContext()
+	setupGlobal()
+}
 
 func (c *Config) setDefaults() {
 	c.Local = true
@@ -65,14 +92,15 @@ func (c *Config) configExists() bool {
 }
 
 func (c *Config) read() {
-	var cfg, err = ini.LooseLoad(c.Path)
-	c.file = cfg
-
 	if !c.configExists() {
 		verbose.Debug("Config file not found.")
+		c.file = ini.Empty()
 		c.banner()
 		return
 	}
+
+	var err error
+	c.file, err = ini.Load(c.Path)
 
 	if err != nil {
 		println("Error reading configuration file:", err.Error())
@@ -87,43 +115,7 @@ func (c *Config) banner() {
 # https://wedeploy.io`
 }
 
-func (c *Config) Load() {
-	c.setDefaults()
-	c.read()
-
-	if err := c.file.MapTo(c); err != nil {
-		panic(err)
-	}
-}
-
-func (c *Config) Save() {
-	var err = c.file.ReflectFrom(c)
-
-	if err != nil {
-		panic(err)
-	}
-
-	if c.NextVersion == "" {
-		c.file.Section("").DeleteKey("next_version")
-	}
-
-	err = c.file.SaveTo(c.Path)
-
-	if err != nil {
-		panic(err)
-	}
-}
-
-// Setup the environment
-func Setup() {
-	Stores = map[string]*configstore.Store{}
-
-	Global = &Config{
-		Path: filepath.Join(user.GetHomeDir(), "/.we"),
-	}
-
-	Global.Load()
-
+func setupContext() {
 	var err error
 	Context, err = context.Get()
 
@@ -131,41 +123,26 @@ func Setup() {
 		println(err.Error())
 		os.Exit(-1)
 	}
+}
 
-	if Context.Scope == "project" || Context.Scope == "container" {
-		Stores["project"] = &configstore.Store{
-			Name: "project",
-			ConfigurableKeys: []string{
-				"id",
-				"name",
-				"description",
-				"domain",
-			},
-			Path: filepath.Join(Context.ProjectRoot, "/project.json"),
-		}
+func setupGlobal() {
+	Global = &Config{
+		Path: filepath.Join(user.GetHomeDir(), ".we"),
 	}
 
-	if Context.Scope == "container" {
-		Stores["container"] = &configstore.Store{
-			Name: "container",
-			Path: filepath.Join(Context.ContainerRoot, "/container.json"),
-		}
-	}
-
-	for k := range Stores {
-		err := Stores[k].Load()
-
-		if err != nil && !os.IsNotExist(err) {
-			println("Unexpected error reading configuration file.")
-			println("Fix " + Stores[k].Path + " by hand or erase it.")
-			os.Exit(1)
-		}
-	}
+	Global.Load()
 }
 
 // Teardown resets the configuration environment
 func Teardown() {
+	teardownContext()
+	teardownGlobal()
+}
+
+func teardownContext() {
 	Context = nil
+}
+
+func teardownGlobal() {
 	Global = nil
-	Stores = map[string]*configstore.Store{}
 }

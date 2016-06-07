@@ -1,0 +1,14 @@
+# Configuration file for WeDeploy CLI
+# https://wedeploy.io
+auto_update       = true
+release_channel   = stable
+last_update_check = 
+next_version      = 
+notify_updates    = true
+no_color          = false
+endpoint          = http://www.example.com/
+local             = false
+username          = 
+password          = 
+token             = 
+

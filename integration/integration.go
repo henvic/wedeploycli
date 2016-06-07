@@ -60,6 +60,11 @@ func GetExitCode(err error) int {
 	panic(ErrExitCodeNotAvailable)
 }
 
+// GetBrokenHome gets mocked broken user's home path
+func GetBrokenHome() string {
+	return getHomePath("broken")
+}
+
 // GetRegularHome gets mocked regular user's home path
 func GetRegularHome() string {
 	return getHomePath("home")

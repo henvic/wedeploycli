@@ -11,6 +11,7 @@ import (
 
 	"github.com/launchpad-project/cli/apihelper"
 	"github.com/launchpad-project/cli/config"
+	"github.com/launchpad-project/cli/containers"
 	"github.com/launchpad-project/cli/deploy"
 	"github.com/launchpad-project/cli/globalconfigmock"
 	"github.com/launchpad-project/cli/servertest"
@@ -65,7 +66,7 @@ func TestAll(t *testing.T) {
 			}
 		})
 
-	var success, err = All([]string{"mycontainer"}, &deploy.Flags{})
+	var success, err = All("project", []string{"mycontainer"}, &deploy.Flags{})
 
 	if err != nil {
 		t.Errorf("Unexpected error %v on deploy", err)
@@ -113,7 +114,7 @@ func TestAllWithHooks(t *testing.T) {
 			}
 		})
 
-	var _, err = All([]string{"mycontainer"}, &deploy.Flags{
+	var _, err = All("project", []string{"mycontainer"}, &deploy.Flags{
 		Hooks: true,
 	})
 
@@ -157,7 +158,7 @@ func TestAllWithBeforeHookFailure(t *testing.T) {
 			}
 		})
 
-	var success, err = All([]string{"container_before_hook_failure"}, &deploy.Flags{
+	var success, err = All("project", []string{"container_before_hook_failure"}, &deploy.Flags{
 		Hooks: true,
 	})
 
@@ -208,9 +209,11 @@ func TestAllWithAfterHookFailure(t *testing.T) {
 			}
 		})
 
-	var success, err = All([]string{"container_after_hook_failure"}, &deploy.Flags{
-		Hooks: true,
-	})
+	var success, err = All("project",
+		[]string{"container_after_hook_failure"},
+		&deploy.Flags{
+			Hooks: true,
+		})
 
 	if err == nil || err.Error() != `List of errors (format is container path: error)
 container_after_hook_failure: exit status 1` {
@@ -246,7 +249,7 @@ func TestAllOnlyNewError(t *testing.T) {
 	config.Setup()
 	globalconfigmock.Setup()
 
-	_, err = All([]string{"nil"}, &deploy.Flags{})
+	_, err = All("project", []string{"nil"}, &deploy.Flags{})
 
 	switch err.(type) {
 	case *Errors:
@@ -262,7 +265,7 @@ func TestAllOnlyNewError(t *testing.T) {
 			t.Errorf("Expected container to be 'nil'")
 		}
 
-		if !os.IsNotExist(nilerr.Error) {
+		if nilerr.Error != containers.ErrContainerNotFound {
 			t.Errorf("Expected not exists error for container 'nil'")
 		}
 	default:
@@ -303,7 +306,7 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 			}
 		})
 
-	_, err = All([]string{"mycontainer", "nil", "nil2"}, &deploy.Flags{})
+	_, err = All("project", []string{"mycontainer", "nil", "nil2"}, &deploy.Flags{})
 
 	switch err.(type) {
 	case *Errors:
@@ -350,7 +353,7 @@ func TestAllValidateOrCreateFailure(t *testing.T) {
 			w.WriteHeader(403)
 		})
 
-	var _, err = All([]string{"mycontainer"}, &deploy.Flags{})
+	var _, err = All("project", []string{"mycontainer"}, &deploy.Flags{})
 
 	if err == nil || err.(*apihelper.APIFault).Code != 403 {
 		t.Errorf("Expected 403 Forbidden error, got %v instead", err)
@@ -381,7 +384,7 @@ func TestAllInstallContainerError(t *testing.T) {
 			w.WriteHeader(403)
 		})
 
-	var _, err = All([]string{"mycontainer"}, &deploy.Flags{})
+	var _, err = All("project", []string{"mycontainer"}, &deploy.Flags{})
 	var el = err.(*Errors).List
 	var af = el[0].Error.(*apihelper.APIFault)
 

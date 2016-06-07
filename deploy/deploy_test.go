@@ -15,6 +15,7 @@ import (
 
 	"github.com/launchpad-project/cli/apihelper"
 	"github.com/launchpad-project/cli/config"
+	"github.com/launchpad-project/cli/containers"
 	"github.com/launchpad-project/cli/globalconfigmock"
 	"github.com/launchpad-project/cli/servertest"
 )
@@ -49,7 +50,7 @@ func TestNewErrorContainerNotFound(t *testing.T) {
 
 	var _, err = New("foo")
 
-	if !os.IsNotExist(err) {
+	if err != containers.ErrContainerNotFound {
 		t.Errorf("Expected container to be not found, got %v instead", err)
 	}
 

@@ -1,0 +1,11 @@
+# Configuration file for WeDeploy CLI
+# https://wedeploy.io
+username          = admin
+password          = safe
+token             = safe123
+local             = false
+disable_colors    = false
+endpoint          = http://www.example.com
+notify_updates    = true
+release_channel   = stable
+last_update_check = Sat Jun  4 04:47:03 BRT 2016

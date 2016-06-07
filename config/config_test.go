@@ -1,63 +1,203 @@
 package config
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/launchpad-project/cli/tdata"
 )
 
+func TestUnset(t *testing.T) {
+	if Global != nil {
+		t.Errorf("Expected config.Global to be null")
+	}
+
+	if Context != nil {
+		t.Errorf("Expected config.Context to be null")
+	}
+}
+
 func TestSetupAndTeardown(t *testing.T) {
-	var workingDir, _ = os.Getwd()
+	os.Setenv("LAUNCHPAD_CUSTOM_HOME", abs("./mocks/home"))
+
+	if Global != nil {
+		t.Errorf("Expected config.Global to be null")
+	}
 
 	if Context != nil {
 		t.Errorf("Expected config.Context to be null")
 	}
 
-	if len(Stores) != 0 {
-		t.Errorf("Expected config.Stores to be an empty map")
-	}
-
 	Setup()
 
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/project")); err != nil {
-		t.Error(err)
+	if Global.Username != "admin" {
+		t.Errorf("Wrong username")
 	}
 
-	Setup()
-
-	if len(Stores) != 1 || Stores["project"] == nil {
-		t.Errorf("Should have global and project store")
+	if Global.Password != "safe" {
+		t.Errorf("Wrong password")
 	}
 
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/project/container")); err != nil {
-		t.Error(err)
+	if Global.Local != true {
+		t.Errorf("Wrong local value")
 	}
 
-	Setup()
-
-	if len(Stores) != 2 {
-		t.Error("Should have 2 config stores")
+	if Global.Endpoint != "http://www.example.com/" {
+		t.Errorf("Wrong endpoint")
 	}
 
-	var list = []string{
-		"project",
-		"container",
+	if Global.NotifyUpdates != true {
+		t.Errorf("Wrong NotifyUpdate value")
 	}
 
-	for _, k := range list {
-		if Stores[k] == nil {
-			t.Errorf("%v store missing", k)
-		}
+	if Global.ReleaseChannel != "stable" {
+		t.Errorf("Wrong ReleaseChannel value")
 	}
 
-	os.Chdir(workingDir)
+	if Context.Scope != "global" {
+		t.Errorf("Exected global scope")
+	}
+
+	if Context.ProjectRoot != "" {
+		t.Errorf("Expected Context.ProjectRoot to be empty")
+	}
+
+	if Context.ContainerRoot != "" {
+		t.Errorf("Expected Context.ContainerRoot to be empty")
+	}
+
+	os.Unsetenv("LAUNCHPAD_CUSTOM_HOME")
 	Teardown()
 
+	if Global != nil {
+		t.Errorf("Expected config.Global to be null")
+	}
+
 	if Context != nil {
 		t.Errorf("Expected config.Context to be null")
 	}
+}
 
-	if len(Stores) != 0 {
-		t.Errorf("Expected config.Stores to be an empty map")
+func TestSetupAndTeardownProject(t *testing.T) {
+	os.Setenv("LAUNCHPAD_CUSTOM_HOME", abs("./mocks/home"))
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/project/non-container")); err != nil {
+		t.Error(err)
 	}
+
+	Setup()
+
+	if Context.Scope != "project" {
+		t.Errorf("Expected scope to be project, got %v instead", Context.Scope)
+	}
+
+	if Context.ProjectRoot != filepath.Join(workingDir, "mocks/project") {
+		t.Errorf("Context.ProjectRoot doesn't match with expected value")
+	}
+
+	if Context.ContainerRoot != "" {
+		t.Errorf("Expected Context.ContainerRoot to be empty")
+	}
+
+	if err := os.Chdir(workingDir); err != nil {
+		panic(err)
+	}
+
+	os.Unsetenv("LAUNCHPAD_CUSTOM_HOME")
+	Teardown()
+}
+
+func TestSetupAndTeardownProjectAndContainer(t *testing.T) {
+	os.Setenv("LAUNCHPAD_CUSTOM_HOME", abs("./mocks/home"))
+	var workingDir, _ = os.Getwd()
+
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/project/container/inside")); err != nil {
+		t.Error(err)
+	}
+
+	Setup()
+
+	if Context.Scope != "container" {
+		t.Errorf("Expected scope to be container, got %v instead", Context.Scope)
+	}
+
+	if Context.ProjectRoot != filepath.Join(workingDir, "mocks/project") {
+		t.Errorf("Context.ProjectRoot doesn't match with expected value")
+	}
+
+	if Context.ContainerRoot != filepath.Join(workingDir, "mocks/project/container") {
+		t.Errorf("Expected Context.ContainerRoot to be empty")
+	}
+
+	if err := os.Chdir(workingDir); err != nil {
+		panic(err)
+	}
+
+	os.Unsetenv("LAUNCHPAD_CUSTOM_HOME")
+	Teardown()
+}
+
+func TestSave(t *testing.T) {
+	os.Setenv("LAUNCHPAD_CUSTOM_HOME", abs("./mocks/home"))
+	Setup()
+
+	var tmp, err = ioutil.TempFile(os.TempDir(), "we")
+
+	if err != nil {
+		panic(err)
+	}
+
+	// save in a different location
+	Global.Path = tmp.Name()
+
+	Global.Username = "other"
+	Global.Save()
+
+	var got = tdata.FromFile(Global.Path)
+	var want = tdata.FromFile("./mocks/we-reference.ini")
+
+	if got != want {
+		t.Errorf("Wanted created configuration to match we-reference.ini")
+	}
+
+	tmp.Close()
+}
+
+func TestSaveAfterCreation(t *testing.T) {
+	os.Setenv("LAUNCHPAD_CUSTOM_HOME", abs("./mocks/homeless"))
+	Setup()
+
+	var tmp, err = ioutil.TempFile(os.TempDir(), "we")
+
+	if err != nil {
+		panic(err)
+	}
+
+	// save in a different location
+	Global.Path = tmp.Name()
+
+	Global.Username = "other"
+	Global.Save()
+
+	var got = tdata.FromFile(Global.Path)
+	var want = tdata.FromFile("./mocks/we-reference-homeless.ini")
+
+	if got != want {
+		t.Errorf("Wanted created configuration to match we-reference-homeless.ini")
+	}
+
+	tmp.Close()
+}
+
+func abs(path string) string {
+	var abs, err = filepath.Abs(path)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return abs
 }

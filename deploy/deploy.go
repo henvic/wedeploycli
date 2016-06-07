@@ -18,11 +18,13 @@ import (
 	"github.com/launchpad-project/cli/hooks"
 	"github.com/launchpad-project/cli/pod"
 	"github.com/launchpad-project/cli/progress"
+	"github.com/launchpad-project/cli/projects"
 	"github.com/launchpad-project/cli/verbose"
 )
 
 // Deploy holds the information of a POD to be packed or deployed
 type Deploy struct {
+	Project       *projects.Project
 	Container     *containers.Container
 	ContainerPath string
 	PackageSize   uint64
@@ -53,9 +55,15 @@ func New(cpath string) (*Deploy, error) {
 		progress:      &deployProgress{progress.New(cpath)},
 	}
 
-	var c containers.Container
-	var err = containers.GetConfig(deploy.ContainerPath, &c)
-	deploy.Container = &c
+	p, err := projects.Read(filepath.Join(deploy.ContainerPath, ".."))
+	deploy.Project = p
+
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := containers.Read(deploy.ContainerPath)
+	deploy.Container = c
 
 	if err != nil {
 		return nil, err
@@ -216,12 +224,11 @@ func reportDeployMultipleError(err, errMultipart error) {
 
 func (d *Deploy) createDeployRequest(rs io.ReadSeeker) (
 	*launchpad.Launchpad, error) {
-	var projectID = config.Stores["project"].Get("id")
 	var request *launchpad.Launchpad
 	var hash, err = getPackageSHA1(rs)
 
 	if err == nil {
-		request = apihelper.URL(path.Join("push", projectID, d.Container.ID))
+		request = apihelper.URL(path.Join("push", d.Project.ID, d.Container.ID))
 		apihelper.Auth(request)
 		request.Header("Package-Size", fmt.Sprintf("%d", d.PackageSize))
 		request.Header("Package-SHA1", hash)

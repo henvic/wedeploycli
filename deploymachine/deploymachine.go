@@ -48,9 +48,7 @@ func (de Errors) Error() string {
 }
 
 // All deploys a list of containers on the given context
-func All(list []string, df *deploy.Flags) (success []string, err error) {
-	var projectID = config.Stores["project"].Get("id")
-
+func All(projectID string, list []string, df *deploy.Flags) (success []string, err error) {
 	var dm = &Machine{
 		ProjectID: projectID,
 		Flags:     df,

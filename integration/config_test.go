@@ -1,36 +1,27 @@
 package integration
 
 import (
-	"fmt"
-	"os"
-	"path/filepath"
+	"strings"
 	"testing"
 )
 
 func TestCorruptConfig(t *testing.T) {
 	var cmd = &Command{
 		Args: []string{"projects", "-v"},
-		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetRegularHome()},
-		Dir:  "mocks/home/bucket/invalid-project",
-	}
-
-	var p, err = os.Getwd()
-
-	if err != nil {
-		panic(err)
-	}
-
-	p = filepath.Join(p, "mocks/home/bucket/invalid-project/project.json")
-
-	var e = &Expect{
-		Stderr: fmt.Sprintf(`Unexpected error reading configuration file.
-Fix %v by hand or erase it.
-`, p),
-		ExitCode: 1,
+		Env:  []string{"LAUNCHPAD_CUSTOM_HOME=" + GetBrokenHome()},
 	}
 
 	cmd.Run()
-	e.Assert(t, cmd)
+
+	if cmd.ExitCode != 1 {
+		t.Errorf("Expected exit code to be 1")
+	}
+
+	if !strings.Contains(
+		cmd.Stderr.String(),
+		"Error reading configuration file: key-value delimiter not found: }") {
+		t.Errorf("Expected error configuration message not found")
+	}
 }
 
 func TestLoggedOut(t *testing.T) {
