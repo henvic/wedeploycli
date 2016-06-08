@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -37,7 +38,12 @@ we deploy -o welcome.pod`,
 }
 
 func getDeployListFromScope() []string {
-	var list, err = containers.GetListFromScope()
+	if config.Context.ContainerRoot != "" {
+		_, container := filepath.Split(config.Context.ContainerRoot)
+		return []string{container}
+	}
+
+	var list, err = containers.GetListFromDirectory(config.Context.ProjectRoot)
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)

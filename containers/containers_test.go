@@ -8,13 +8,11 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"path/filepath"
 	"reflect"
 	"testing"
 
 	"github.com/wedeploy/api-go/jsonlib"
 	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/globalconfigmock"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/tdata"
@@ -32,16 +30,8 @@ func TestMain(m *testing.M) {
 	os.Exit(ec)
 }
 
-func TestGetListFromScopeFromProject(t *testing.T) {
-	var workingDir, _ = os.Getwd()
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/app")); err != nil {
-		t.Error(err)
-	}
-
-	config.Setup()
-
-	var containers, err = GetListFromScope()
+func TestGetListFromDirectory(t *testing.T) {
+	var containers, err = GetListFromDirectory("mocks/app")
 
 	if err != nil {
 		t.Errorf("Expected %v, got %v instead", nil, err)
@@ -52,46 +42,10 @@ func TestGetListFromScopeFromProject(t *testing.T) {
 	if !reflect.DeepEqual(containers, wantContainers) {
 		t.Errorf("Want %v, got %v instead", wantContainers, containers)
 	}
-
-	os.Chdir(workingDir)
-	config.Teardown()
 }
 
-func TestGetListFromScopeFromContainer(t *testing.T) {
-	var workingDir, _ = os.Getwd()
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/app/email")); err != nil {
-		t.Error(err)
-	}
-
-	config.Setup()
-
-	var containers, err = GetListFromScope()
-
-	if err != nil {
-		t.Errorf("Expected %v, got %v instead", nil, err)
-	}
-
-	var wantContainers = []string{"email"}
-
-	if !reflect.DeepEqual(containers, wantContainers) {
-		t.Errorf("Want %v, got %v instead", wantContainers, containers)
-	}
-
-	os.Chdir(workingDir)
-	config.Teardown()
-}
-
-func TestGetListFromScopeInvalid(t *testing.T) {
-	var workingDir, _ = os.Getwd()
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/app-with-invalid-container")); err != nil {
-		t.Error(err)
-	}
-
-	config.Setup()
-
-	var containers, err = GetListFromScope()
+func TestGetListFromDirectoryInvalid(t *testing.T) {
+	var containers, err = GetListFromDirectory("mocks/app-with-invalid-container")
 
 	if containers != nil {
 		t.Errorf("Expected containers to be nil, got %v instead", containers)
@@ -100,19 +54,10 @@ func TestGetListFromScopeInvalid(t *testing.T) {
 	if err == nil || os.IsNotExist(err) {
 		t.Errorf("Expected error %v to be due to invalid config", err)
 	}
-
-	os.Chdir(workingDir)
-	config.Teardown()
 }
 
-func TestGetListFromScopeDirectoryNotExists(t *testing.T) {
-	var workingDir, _ = os.Getwd()
-
-	config.Setup()
-
-	config.Context.ProjectRoot = filepath.Join(".", "not-found", fmt.Sprintf("%d", rand.Int()))
-
-	var containers, err = GetListFromScope()
+func TestGetListFromDirectoryNotExists(t *testing.T) {
+	var containers, err = GetListFromDirectory(fmt.Sprintf("not-found-%d", rand.Int()))
 
 	if containers != nil {
 		t.Errorf("Expected containers to be nil, got %v instead", containers)
@@ -121,9 +66,6 @@ func TestGetListFromScopeDirectoryNotExists(t *testing.T) {
 	if !os.IsNotExist(err) {
 		t.Errorf("Expected error %v to be due to file not found", err)
 	}
-
-	os.Chdir(workingDir)
-	config.Teardown()
 }
 
 func TestList(t *testing.T) {

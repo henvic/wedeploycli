@@ -62,23 +62,15 @@ var (
 	outStream io.Writer = os.Stdout
 )
 
-// GetListFromScope returns a list of containers on the current context
-// actually, directories...
-func GetListFromScope() ([]string, error) {
-	var projectRoot = config.Context.ProjectRoot
-
-	if config.Context.ContainerRoot != "" {
-		_, container := filepath.Split(config.Context.ContainerRoot)
-		return []string{container}, nil
-	}
-
-	files, err := ioutil.ReadDir(projectRoot)
+// GetListFromDirectory returns a list of containers on the given diretory
+func GetListFromDirectory(root string) ([]string, error) {
+	var files, err = ioutil.ReadDir(root)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return getContainersFromScope(files)
+	return getListFromDirectory(root, files)
 }
 
 // GetStatus gets the status for a container
@@ -225,8 +217,7 @@ func getValidateAPIFaultError(errDoc apihelper.APIFault) error {
 	return errDoc
 }
 
-func getContainersFromScope(files []os.FileInfo) ([]string, error) {
-	var projectRoot = config.Context.ProjectRoot
+func getListFromDirectory(dir string, files []os.FileInfo) ([]string, error) {
 	var list []string
 
 	for _, file := range files {
@@ -234,7 +225,7 @@ func getContainersFromScope(files []os.FileInfo) ([]string, error) {
 			continue
 		}
 
-		var _, err = Read(filepath.Join(projectRoot, file.Name()))
+		var _, err = Read(filepath.Join(dir, file.Name()))
 
 		if err == nil {
 			list = append(list, file.Name())
