@@ -5,12 +5,13 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/wedeploy/cli/tdata"
 )
 
 var (
@@ -43,8 +44,9 @@ func TestRun(t *testing.T) {
 
 	h := md5.New()
 
-	data, _ := ioutil.ReadFile("./hooks.go")
-	io.WriteString(h, string(data))
+	if _, err := io.WriteString(h, tdata.FromFile("./hooks.go")); err != nil {
+		panic(err)
+	}
 
 	if !strings.Contains(bufOutStream.String(), fmt.Sprintf("%x", h.Sum(nil))) {
 		t.Errorf("Expected Run() test to contain md5 output similar to crypto.md5")
@@ -67,8 +69,9 @@ func TestRunAndExitOnFailureOnSuccess(t *testing.T) {
 
 	h := md5.New()
 
-	data, _ := ioutil.ReadFile("./hooks.go")
-	io.WriteString(h, string(data))
+	if _, err := io.WriteString(h, tdata.FromFile("./hooks.go")); err != nil {
+		panic(err)
+	}
 
 	if !strings.Contains(bufOutStream.String(), fmt.Sprintf("%x", h.Sum(nil))) {
 		t.Errorf("Expected Run() test to contain md5 output similar to crypto.md5")

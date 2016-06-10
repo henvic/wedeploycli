@@ -194,14 +194,10 @@ func getPackageSHA1(file io.ReadSeeker) (string, error) {
 }
 
 func multipartWriter(
-	mpw *multipart.Writer,
-	w io.Closer,
-	file io.ReadCloser) (err error) {
-	var part io.Writer
-	defer w.Close()
-	defer file.Close()
+	mpw *multipart.Writer, w io.Closer, file io.ReadCloser) error {
+	var part, err = mpw.CreateFormFile("pod", "container.pod")
 
-	if part, err = mpw.CreateFormFile("pod", "container.pod"); err != nil {
+	if err != nil {
 		return err
 	}
 
@@ -209,7 +205,15 @@ func multipartWriter(
 		return err
 	}
 
-	return mpw.Close()
+	if err = mpw.Close(); err != nil {
+		return err
+	}
+
+	if err = w.Close(); err != nil {
+		return err
+	}
+
+	return file.Close()
 }
 
 func reportDeployMultipleError(err, errMultipart error) {
@@ -282,11 +286,15 @@ func (d *Deploy) only() error {
 		err = d.Deploy(tmp.Name())
 	}
 
-	if tmp != nil {
-		os.Remove(tmp.Name())
-	}
+	remove(tmp.Name())
 
 	return err
+}
+
+func remove(path string) {
+	if err := os.Remove(path); err != nil {
+		verbose.Debug("Error removing temporary file:", err)
+	}
 }
 
 func (d *Deploy) runHook(df *Flags, wdir, path string) error {

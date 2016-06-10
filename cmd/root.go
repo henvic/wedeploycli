@@ -108,7 +108,10 @@ func init() {
 	RootCmd.Flags().BoolVar(
 		&version,
 		"version", false, "Print version information and quit")
-	RootCmd.Flags().MarkHidden("version")
+
+	if err := RootCmd.Flags().MarkHidden("version"); err != nil {
+		panic(err)
+	}
 
 	if config.Global.NoColor {
 		color.NoColor = true
@@ -126,8 +129,11 @@ func persistentPreRun(cmd *cobra.Command, args []string) {
 func run(cmd *cobra.Command, args []string) {
 	if version {
 		cmdversion.VersionCmd.Run(cmd, args)
-	} else {
-		cmd.Help()
+		return
+	}
+
+	if err := cmd.Help(); err != nil {
+		panic(err)
 	}
 }
 

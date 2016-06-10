@@ -24,7 +24,9 @@ func statusRun(cmd *cobra.Command, args []string) {
 	var status string
 
 	if err != nil {
-		cmd.Help()
+		if err = cmd.Help(); err != nil {
+			panic(err)
+		}
 		os.Exit(1)
 	}
 

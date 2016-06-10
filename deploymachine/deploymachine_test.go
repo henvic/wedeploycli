@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
@@ -44,9 +43,7 @@ func TestAll(t *testing.T) {
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
 
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
+	chdir("mocks/myproject")
 
 	config.Setup()
 	globalconfigmock.Setup()
@@ -80,7 +77,7 @@ func TestAll(t *testing.T) {
 
 	globalconfigmock.Teardown()
 	config.Teardown()
-	os.Chdir(workingDir)
+	chdir(workingDir)
 	servertest.Teardown()
 }
 
@@ -92,9 +89,7 @@ func TestAllWithHooks(t *testing.T) {
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
 
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
+	chdir("mocks/myproject")
 
 	config.Setup()
 	globalconfigmock.Setup()
@@ -124,7 +119,7 @@ func TestAllWithHooks(t *testing.T) {
 
 	globalconfigmock.Teardown()
 	config.Teardown()
-	os.Chdir(workingDir)
+	chdir(workingDir)
 	servertest.Teardown()
 }
 
@@ -136,9 +131,7 @@ func TestAllWithBeforeHookFailure(t *testing.T) {
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
 
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
+	chdir("mocks/myproject")
 
 	config.Setup()
 	globalconfigmock.Setup()
@@ -175,7 +168,7 @@ container_before_hook_failure: exit status 1` {
 
 	globalconfigmock.Teardown()
 	config.Teardown()
-	os.Chdir(workingDir)
+	chdir(workingDir)
 	servertest.Teardown()
 }
 
@@ -187,9 +180,7 @@ func TestAllWithAfterHookFailure(t *testing.T) {
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
 
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
+	chdir("mocks/myproject")
 
 	config.Setup()
 	globalconfigmock.Setup()
@@ -229,7 +220,7 @@ container_after_hook_failure: exit status 1` {
 
 	globalconfigmock.Teardown()
 	config.Teardown()
-	os.Chdir(workingDir)
+	chdir(workingDir)
 	servertest.Teardown()
 }
 
@@ -240,16 +231,12 @@ func TestAllOnlyNewError(t *testing.T) {
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	var err = os.Chdir(filepath.Join(workingDir, "mocks/myproject"))
-
-	if err != nil {
-		t.Error(err)
-	}
+	chdir("mocks/myproject")
 
 	config.Setup()
 	globalconfigmock.Setup()
 
-	_, err = All("project", []string{"nil"}, &deploy.Flags{})
+	var _, err = All("project", []string{"nil"}, &deploy.Flags{})
 
 	switch err.(type) {
 	case *Errors:
@@ -274,7 +261,7 @@ func TestAllOnlyNewError(t *testing.T) {
 
 	globalconfigmock.Teardown()
 	config.Teardown()
-	os.Chdir(workingDir)
+	chdir(workingDir)
 	servertest.Teardown()
 }
 
@@ -282,11 +269,7 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
 
-	var err = os.Chdir(filepath.Join(workingDir, "mocks/myproject"))
-
-	if err != nil {
-		t.Error(err)
-	}
+	chdir("mocks/myproject")
 
 	config.Setup()
 	globalconfigmock.Setup()
@@ -306,7 +289,7 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 			}
 		})
 
-	_, err = All("project", []string{"mycontainer", "nil", "nil2"}, &deploy.Flags{})
+	var _, err = All("project", []string{"mycontainer", "nil", "nil2"}, &deploy.Flags{})
 
 	switch err.(type) {
 	case *Errors:
@@ -334,16 +317,14 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 	globalconfigmock.Teardown()
 	config.Teardown()
 	servertest.Teardown()
-	os.Chdir(workingDir)
+	chdir(workingDir)
 }
 
 func TestAllValidateOrCreateFailure(t *testing.T) {
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
 
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
+	chdir("mocks/myproject")
 
 	config.Setup()
 	globalconfigmock.Setup()
@@ -361,7 +342,7 @@ func TestAllValidateOrCreateFailure(t *testing.T) {
 
 	globalconfigmock.Teardown()
 	config.Teardown()
-	os.Chdir(workingDir)
+	chdir(workingDir)
 	servertest.Teardown()
 }
 
@@ -369,9 +350,7 @@ func TestAllInstallContainerError(t *testing.T) {
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
 
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
+	chdir("mocks/myproject")
 
 	config.Setup()
 	globalconfigmock.Setup()
@@ -394,6 +373,12 @@ func TestAllInstallContainerError(t *testing.T) {
 
 	globalconfigmock.Teardown()
 	config.Teardown()
-	os.Chdir(workingDir)
+	chdir(workingDir)
 	servertest.Teardown()
+}
+
+func chdir(dir string) {
+	if ech := os.Chdir(dir); ech != nil {
+		panic(ech)
+	}
 }

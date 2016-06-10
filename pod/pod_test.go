@@ -158,7 +158,9 @@ var Reference = PackFiles{
 func TestPack(t *testing.T) {
 	// clean up package.tar.gz that might exist
 	// to detect if it is not generated
-	os.Remove("mocks/res/package.tar.gz")
+	if err := os.Remove("mocks/res/package.tar.gz"); err != nil && !os.IsNotExist(err) {
+		panic(err)
+	}
 
 	var size, err = Pack(PackParams{
 		RelDest:        "mocks/res/package.tar.gz",
@@ -189,28 +191,40 @@ func TestPack(t *testing.T) {
 	TestPackCase.CheckNotIgnored(t, found)
 	TestPackCase.CheckRefuteIgnored(t, found)
 
-	gFile.Close()
-	file.Close()
-
-	// clean up package.tar.gz to avoid false positives for other
-	// tests that misses adding a detection step
-	os.Remove("mocks/res/package.tar.gz")
-}
-
-func TestNotSelfPack(t *testing.T) {
-	d := []byte("temporary placeholder")
-	if err := ioutil.WriteFile("mocks/self/package.tar.gz", d, 0644); err != nil {
+	if err := gFile.Close(); err != nil {
 		panic(err)
 	}
 
-	var _, err = Pack(PackParams{
-		RelDest:        "mocks/self/package.tar.gz",
+	if err := file.Close(); err != nil {
+		panic(err)
+	}
+
+	// clean up package.tar.gz to avoid false positives for other
+	// tests that misses adding a detection step
+	if err := os.Remove("mocks/res/package.tar.gz"); err != nil {
+		panic(err)
+	}
+}
+
+func TestNotSelfPack(t *testing.T) {
+	var tmp, err = ioutil.TempFile(os.TempDir(), "we")
+
+	if err != nil {
+		panic(err)
+	}
+
+	if _, err = tmp.WriteString("temporary placeholder"); err != nil {
+		panic(err)
+	}
+
+	_, err = Pack(PackParams{
+		RelDest:        tmp.Name(),
 		RelSource:      "mocks/self",
 		IgnorePatterns: nil},
 		progress.New("mock"),
 	)
 
-	file, err := os.Open("mocks/self/package.tar.gz")
+	file, err := os.Open(tmp.Name())
 
 	if err != nil {
 		t.Error(err)
@@ -232,12 +246,17 @@ func TestNotSelfPack(t *testing.T) {
 		t.Errorf("package.tar.gz should not be packed")
 	}
 
-	gFile.Close()
-	file.Close()
+	if err = gFile.Close(); err != nil {
+		panic(err)
+	}
 
-	// clean up package.tar.gz to avoid false positives for other
-	// tests that misses adding a detection step
-	os.Remove("mocks/self/package.tar.gz")
+	if err = file.Close(); err != nil {
+		panic(err)
+	}
+
+	if err = os.Remove(tmp.Name()); err != nil {
+		panic(err)
+	}
 }
 
 func TestPackInvalidDestination(t *testing.T) {
@@ -276,11 +295,14 @@ func BenchmarkPack(b *testing.B) {
 pod/mocks/benchmark/install.sh`)
 	}
 
-	// clean up any old package.tar.gz that might exist
-	os.Remove("mocks/res/benchmark.tar.gz")
+	var tmp, errt = ioutil.TempFile(os.TempDir(), "we")
+
+	if errt != nil {
+		panic(errt)
+	}
 
 	var size, err = Pack(PackParams{
-		RelSource:      "mocks/res/benchmark.tar.gz",
+		RelSource:      tmp.Name(),
 		RelDest:        "mocks/benchmark",
 		IgnorePatterns: ignoredList},
 		progress.New("mock"),
@@ -300,24 +322,25 @@ pod/mocks/benchmark/install.sh`)
 		b.Errorf("Expected pack to end without errors, got %v error instead", err)
 	}
 
-	file, err := os.Open("mocks/res/benchmark.tar.gz")
-
-	if err != nil {
-		b.Error(err)
-	}
-
-	gFile, err := gzip.NewReader(file)
+	gFile, err := gzip.NewReader(tmp)
 
 	if err != nil {
 		b.Error(err)
 	}
 
 	tar.NewReader(gFile)
-	gFile.Close()
-	file.Close()
 
-	// clean up any old package.tar.gz that might exist
-	os.Remove("mocks/res/benchmark.tar.gz")
+	if err = gFile.Close(); err != nil {
+		panic(err)
+	}
+
+	if err = tmp.Close(); err != nil {
+		panic(err)
+	}
+
+	if err = os.Remove(tmp.Name()); err != nil {
+		panic(err)
+	}
 }
 
 func readPackFiles(t *testing.T, r *tar.Reader) PackFiles {

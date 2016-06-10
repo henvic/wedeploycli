@@ -50,16 +50,30 @@ func debugBufferReaderBody(body io.Reader) {
 func debugBytesReaderBody(body io.Reader) {
 	var br = body.(*bytes.Reader)
 	var b bytes.Buffer
-	br.Seek(0, 0)
-	br.WriteTo(&b)
+
+	if _, err := br.Seek(0, 0); err != nil {
+		panic(err)
+	}
+
+	if _, err := br.WriteTo(&b); err != nil {
+		panic(err)
+	}
+
 	verbose.Debug("\n" + b.String())
 }
 
 func debugStringsReaderBody(body io.Reader) {
 	var sr = body.(*strings.Reader)
 	var b bytes.Buffer
-	sr.Seek(0, 0)
-	sr.WriteTo(&b)
+
+	if _, err := sr.Seek(0, 0); err != nil {
+		panic(err)
+	}
+
+	if _, err := sr.WriteTo(&b); err != nil {
+		panic(err)
+	}
+
 	verbose.Debug("\n" + (b.String()))
 }
 
@@ -142,7 +156,9 @@ func feedbackResponseBodyAll(response *http.Response, body []byte) {
 	var out = feedbackResponseBodyReadJSON(response, body)
 
 	if out.Len() == 0 {
-		out.Write(body)
+		if _, err := out.Write(body); err != nil {
+			panic(err)
+		}
 	}
 
 	verbose.Debug(color.MagentaString(out.String()) + "\n")

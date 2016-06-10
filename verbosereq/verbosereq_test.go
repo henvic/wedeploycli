@@ -217,7 +217,10 @@ func TestRequestVerboseFeedbackBytesReader(t *testing.T) {
 	var sr = strings.NewReader("custom body")
 
 	var b bytes.Buffer
-	sr.WriteTo(&b)
+
+	if _, err := sr.WriteTo(&b); err != nil {
+		panic(err)
+	}
 
 	request.Body(bytes.NewReader(b.Bytes()))
 
@@ -414,7 +417,9 @@ func TestRequestVerboseFeedbackNullResponse(t *testing.T) {
 
 	// this returns an error, but we are not going to shortcut to avoid getting
 	// the error value here because we want to see what verbose returns
-	request.Get()
+	if err := request.Get(); err == nil {
+		t.Errorf("Expected error, got %v instead", err)
+	}
 
 	Feedback(request)
 

@@ -24,7 +24,10 @@ func TestSetupAndTeardown(t *testing.T) {
 	})
 
 	req := wedeploy.URL("http://example.com/foo")
-	req.Post()
+
+	if err := req.Post(); err != nil {
+		t.Errorf("Unexpected error %v", err)
+	}
 
 	if !completed {
 		t.Error("Request not completed")
@@ -61,7 +64,10 @@ func TestSetupAndTeardownIntegration(t *testing.T) {
 	})
 
 	req := wedeploy.URL(IntegrationServer.URL, "/foo")
-	req.Post()
+
+	if err := req.Post(); err != nil {
+		t.Errorf("Unexpected error %v", err)
+	}
 
 	if !completed {
 		t.Error("Request not completed")

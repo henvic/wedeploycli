@@ -169,6 +169,12 @@ func build() {
 	}
 }
 
+func chdir(dir string) {
+	if ech := os.Chdir(dir); ech != nil {
+		panic(ech)
+	}
+}
+
 func compile() {
 	var err error
 	binaryDir, err = filepath.Abs(filepath.Join(binaryDir, ".."))
@@ -177,7 +183,7 @@ func compile() {
 		panic(err)
 	}
 
-	os.Chdir(binaryDir)
+	chdir(binaryDir)
 	build()
 
 	binary, err = filepath.Abs(filepath.Join(binaryDir, "cli"))
@@ -206,7 +212,7 @@ func init() {
 
 	compile()
 
-	os.Chdir(workingDir)
+	chdir(workingDir)
 }
 
 func removeLoginHomeMock() {

@@ -34,7 +34,9 @@ func logsRun(cmd *cobra.Command, args []string) {
 
 	// 3rd argument might be instance ID
 	if err != nil || len(args) > 3 || levelErr != nil {
-		cmd.Help()
+		if err := cmd.Help(); err != nil {
+			panic(err)
+		}
 		os.Exit(1)
 	}
 

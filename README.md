@@ -21,7 +21,7 @@ The master branch of this repository on GitHub is protected:
 
 Keep your commits neat. Try to always rebase your changes before publishing them.
 
-[goreportcard](https://goreportcard.com/report/github.com/wedeploy/cli) can be used online or locally to detect defects and static analysis results from tools such as go vet, go lint, gocyclo, and more.
+[goreportcard](https://goreportcard.com/report/github.com/wedeploy/cli) can be used online or locally to detect defects and static analysis results from tools such as go vet, go lint, gocyclo, and more. Run [errcheck](https://github.com/kisielk/errcheck) to fix ignored error returns.
 
 Using go test and go cover are essential to make sure your code is covered with unit tests.
 

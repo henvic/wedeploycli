@@ -55,7 +55,9 @@ func TestWatch(t *testing.T) {
 
 	var c = cmd.Prepare()
 
-	c.Start()
+	if err := c.Start(); err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
 
 	wg.Add(1)
 
@@ -77,6 +79,9 @@ func TestWatch(t *testing.T) {
 		wg.Done()
 	}()
 
-	c.Wait()
+	if err := c.Wait(); err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
 	wg.Wait()
 }

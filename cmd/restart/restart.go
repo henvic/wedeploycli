@@ -22,7 +22,9 @@ func restartRun(cmd *cobra.Command, args []string) {
 	project, container, err := cmdcontext.GetProjectOrContainerID(args)
 
 	if err != nil {
-		cmd.Help()
+		if err = cmd.Help(); err != nil {
+			panic(err)
+		}
 		os.Exit(1)
 	}
 

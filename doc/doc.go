@@ -11,6 +11,11 @@ func main() {
 		Source: "Docs created automatically from the source files",
 	}
 
-	doc.GenManTree(cmd.RootCmd, header, ".")
-	doc.GenMarkdownTree(cmd.RootCmd, ".")
+	if err := doc.GenManTree(cmd.RootCmd, header, "."); err != nil {
+		panic(err)
+	}
+
+	if err := doc.GenMarkdownTree(cmd.RootCmd, "."); err != nil {
+		panic(err)
+	}
 }

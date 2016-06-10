@@ -22,11 +22,7 @@ import (
 
 func TestNew(t *testing.T) {
 	var workingDir, _ = os.Getwd()
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
-
+	chdir("mocks/myproject")
 	config.Setup()
 
 	var _, err = New("mycontainer")
@@ -36,16 +32,12 @@ func TestNew(t *testing.T) {
 	}
 
 	config.Teardown()
-	os.Chdir(workingDir)
+	chdir(workingDir)
 }
 
 func TestNewErrorContainerNotFound(t *testing.T) {
 	var workingDir, _ = os.Getwd()
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
-
+	chdir("mocks/myproject")
 	config.Setup()
 
 	var _, err = New("foo")
@@ -55,16 +47,12 @@ func TestNewErrorContainerNotFound(t *testing.T) {
 	}
 
 	config.Teardown()
-	os.Chdir(workingDir)
+	chdir(workingDir)
 }
 
 func TestPack(t *testing.T) {
 	var workingDir, _ = os.Getwd()
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
-
+	chdir("mocks/myproject")
 	config.Setup()
 
 	var err = Pack(os.DevNull, "mycontainer")
@@ -74,18 +62,13 @@ func TestPack(t *testing.T) {
 	}
 
 	config.Teardown()
-	os.Chdir(workingDir)
+	chdir(workingDir)
 }
 
 func TestDeploy(t *testing.T) {
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
-	var tmp, _ = ioutil.TempFile(os.TempDir(), "wedeploy-cli")
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
-
+	chdir("mocks/myproject")
 	config.Setup()
 	globalconfigmock.Setup()
 
@@ -142,21 +125,16 @@ func TestDeploy(t *testing.T) {
 		t.Errorf("Unexpected error: %v", err)
 	}
 
-	os.Remove(tmp.Name())
 	globalconfigmock.Teardown()
 	config.Teardown()
-	os.Chdir(workingDir)
 	servertest.Teardown()
+	chdir(workingDir)
 }
 
 func TestDeployFileNotFound(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 	var tmp, _ = ioutil.TempFile(os.TempDir(), "wedeploy-cli")
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
-
+	chdir("mocks/myproject")
 	config.Setup()
 	globalconfigmock.Setup()
 
@@ -172,21 +150,19 @@ func TestDeployFileNotFound(t *testing.T) {
 		t.Errorf("Unexpected error value: %v, expected file not found.", err)
 	}
 
-	os.Remove(tmp.Name())
+	if err = os.Remove(tmp.Name()); err != nil {
+		panic(err)
+	}
+
 	globalconfigmock.Teardown()
 	config.Teardown()
-	os.Chdir(workingDir)
+	chdir(workingDir)
 }
 
 func TestDeployFailure(t *testing.T) {
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
-	var tmp, _ = ioutil.TempFile(os.TempDir(), "wedeploy-cli")
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
-
+	chdir("mocks/myproject")
 	config.Setup()
 	globalconfigmock.Setup()
 
@@ -207,21 +183,18 @@ func TestDeployFailure(t *testing.T) {
 		t.Errorf("Expected request error code doesn't match.")
 	}
 
-	os.Remove(tmp.Name())
 	globalconfigmock.Teardown()
 	config.Teardown()
-	os.Chdir(workingDir)
+	if err := os.Chdir(workingDir); err != nil {
+		panic(err)
+	}
 	servertest.Teardown()
 }
 
 func TestDeployOnly(t *testing.T) {
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
-
+	chdir("mocks/myproject")
 	config.Setup()
 	globalconfigmock.Setup()
 
@@ -263,7 +236,9 @@ func TestDeployOnly(t *testing.T) {
 
 	globalconfigmock.Teardown()
 	config.Teardown()
-	os.Chdir(workingDir)
+	if err := os.Chdir(workingDir); err != nil {
+		panic(err)
+	}
 	servertest.Teardown()
 }
 
@@ -274,11 +249,7 @@ func TestDeployWithHooks(t *testing.T) {
 
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
-
+	chdir("mocks/myproject")
 	config.Setup()
 	globalconfigmock.Setup()
 
@@ -313,8 +284,8 @@ func TestDeployWithHooks(t *testing.T) {
 
 	globalconfigmock.Teardown()
 	config.Teardown()
-	os.Chdir(workingDir)
 	servertest.Teardown()
+	chdir(workingDir)
 }
 
 func TestDeployWithHooksFlagFalse(t *testing.T) {
@@ -324,11 +295,7 @@ func TestDeployWithHooksFlagFalse(t *testing.T) {
 
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
-
+	chdir("mocks/myproject")
 	config.Setup()
 	globalconfigmock.Setup()
 
@@ -363,8 +330,8 @@ func TestDeployWithHooksFlagFalse(t *testing.T) {
 
 	globalconfigmock.Teardown()
 	config.Teardown()
-	os.Chdir(workingDir)
 	servertest.Teardown()
+	chdir(workingDir)
 }
 
 func TestDeployWithHooksNull(t *testing.T) {
@@ -374,11 +341,7 @@ func TestDeployWithHooksNull(t *testing.T) {
 
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
-
+	chdir("mocks/myproject")
 	config.Setup()
 	globalconfigmock.Setup()
 
@@ -413,8 +376,8 @@ func TestDeployWithHooksNull(t *testing.T) {
 
 	globalconfigmock.Teardown()
 	config.Teardown()
-	os.Chdir(workingDir)
 	servertest.Teardown()
+	chdir(workingDir)
 }
 
 func TestAllWithBeforeHookFailure(t *testing.T) {
@@ -424,11 +387,7 @@ func TestAllWithBeforeHookFailure(t *testing.T) {
 
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
-
+	chdir("mocks/myproject")
 	config.Setup()
 	globalconfigmock.Setup()
 
@@ -463,8 +422,8 @@ func TestAllWithBeforeHookFailure(t *testing.T) {
 
 	globalconfigmock.Teardown()
 	config.Teardown()
-	os.Chdir(workingDir)
 	servertest.Teardown()
+	chdir(workingDir)
 }
 
 func TestAllWithAfterHookFailure(t *testing.T) {
@@ -474,11 +433,7 @@ func TestAllWithAfterHookFailure(t *testing.T) {
 
 	servertest.Setup()
 	var workingDir, _ = os.Getwd()
-
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/myproject")); err != nil {
-		t.Error(err)
-	}
-
+	chdir("mocks/myproject")
 	config.Setup()
 	globalconfigmock.Setup()
 
@@ -513,6 +468,6 @@ func TestAllWithAfterHookFailure(t *testing.T) {
 
 	globalconfigmock.Teardown()
 	config.Teardown()
-	os.Chdir(workingDir)
 	servertest.Teardown()
+	chdir(workingDir)
 }

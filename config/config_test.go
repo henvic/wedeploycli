@@ -20,7 +20,7 @@ func TestUnset(t *testing.T) {
 }
 
 func TestSetupAndTeardown(t *testing.T) {
-	os.Setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/home"))
+	setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/home"))
 
 	if Global != nil {
 		t.Errorf("Expected config.Global to be null")
@@ -68,7 +68,7 @@ func TestSetupAndTeardown(t *testing.T) {
 		t.Errorf("Expected Context.ContainerRoot to be empty")
 	}
 
-	os.Unsetenv("WEDEPLOY_CUSTOM_HOME")
+	unsetenv("WEDEPLOY_CUSTOM_HOME")
 	Teardown()
 
 	if Global != nil {
@@ -81,7 +81,7 @@ func TestSetupAndTeardown(t *testing.T) {
 }
 
 func TestSetupAndTeardownProject(t *testing.T) {
-	os.Setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/home"))
+	setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/home"))
 	var workingDir, _ = os.Getwd()
 
 	if err := os.Chdir(filepath.Join(workingDir, "mocks/project/non-container")); err != nil {
@@ -106,12 +106,12 @@ func TestSetupAndTeardownProject(t *testing.T) {
 		panic(err)
 	}
 
-	os.Unsetenv("WEDEPLOY_CUSTOM_HOME")
+	unsetenv("WEDEPLOY_CUSTOM_HOME")
 	Teardown()
 }
 
 func TestSetupAndTeardownProjectAndContainer(t *testing.T) {
-	os.Setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/home"))
+	setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/home"))
 	var workingDir, _ = os.Getwd()
 
 	if err := os.Chdir(filepath.Join(workingDir, "mocks/project/container/inside")); err != nil {
@@ -136,12 +136,12 @@ func TestSetupAndTeardownProjectAndContainer(t *testing.T) {
 		panic(err)
 	}
 
-	os.Unsetenv("WEDEPLOY_CUSTOM_HOME")
+	unsetenv("WEDEPLOY_CUSTOM_HOME")
 	Teardown()
 }
 
 func TestSave(t *testing.T) {
-	os.Setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/home"))
+	setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/home"))
 	Setup()
 
 	var tmp, err = ioutil.TempFile(os.TempDir(), "we")
@@ -163,11 +163,17 @@ func TestSave(t *testing.T) {
 		t.Errorf("Wanted created configuration to match we-reference.ini")
 	}
 
-	tmp.Close()
+	if err = tmp.Close(); err != nil {
+		panic(err)
+	}
+
+	if err = os.Remove(tmp.Name()); err != nil {
+		panic(err)
+	}
 }
 
 func TestSaveAfterCreation(t *testing.T) {
-	os.Setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/homeless"))
+	setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/homeless"))
 	Setup()
 
 	var tmp, err = ioutil.TempFile(os.TempDir(), "we")
@@ -189,7 +195,13 @@ func TestSaveAfterCreation(t *testing.T) {
 		t.Errorf("Wanted created configuration to match we-reference-homeless.ini")
 	}
 
-	tmp.Close()
+	if err = tmp.Close(); err != nil {
+		panic(err)
+	}
+
+	if err = os.Remove(tmp.Name()); err != nil {
+		panic(err)
+	}
 }
 
 func abs(path string) string {
@@ -200,4 +212,20 @@ func abs(path string) string {
 	}
 
 	return abs
+}
+
+func setenv(key, value string) {
+	var err = os.Setenv(key, value)
+
+	if err != nil {
+		panic(err)
+	}
+}
+
+func unsetenv(key string) {
+	var err = os.Unsetenv(key)
+
+	if err != nil {
+		panic(err)
+	}
 }

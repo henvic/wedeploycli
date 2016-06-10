@@ -46,7 +46,11 @@ func TestPrompt(t *testing.T) {
 	bufInStream.Reset()
 	bufErrStream.Reset()
 	bufOutStream.Reset()
-	bufInStream.WriteString("value\n")
+	var _, err = bufInStream.WriteString("value\n")
+
+	if err != nil {
+		panic(err)
+	}
 
 	var u = Prompt("question")
 
@@ -68,7 +72,7 @@ func TestPromptWithSpace(t *testing.T) {
 	bufInStream.Reset()
 	bufErrStream.Reset()
 	bufOutStream.Reset()
-	bufInStream.WriteString("my value\n")
+	_, _ = bufInStream.WriteString("my value\n")
 
 	var u = Prompt("question")
 
