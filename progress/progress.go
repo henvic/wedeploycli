@@ -77,8 +77,8 @@ func (b *Bar) Reset(msgPrepend, msgAppend string) error {
 // Set progress bar position
 func (b *Bar) Set(n int) error {
 	// hack to show => even when complete
-	if n == 100 {
-		n = 99
+	if n == Total {
+		n = Total - 1
 	}
 
 	return b.adapter.Set(n)
