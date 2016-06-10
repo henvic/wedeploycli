@@ -1,6 +1,7 @@
 package progress
 
 import (
+	"bytes"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/wedeploy/cli/tdata"
+	"github.com/wedeploy/cli/verbose"
 )
 
 func TestNew(t *testing.T) {
@@ -113,6 +115,27 @@ func TestFail(t *testing.T) {
 
 	os.Remove(tmp.Name())
 	progressList.Out = defaultOutStream
+}
+
+func TestValueOverflow(t *testing.T) {
+	var defaultVerboseEnabled = verbose.Enabled
+	var defaultVerboseErrStream = verbose.ErrStream
+	verbose.Enabled = true
+	var b = &bytes.Buffer{}
+	verbose.ErrStream = b
+
+	var bar = New("foo")
+	bar.Set(Total + 1)
+
+	var want = "Can't set progress bar value: errors: current value is greater total value\n"
+	var got = b.String()
+
+	if got != want {
+		t.Errorf("Wanted %v, got %v instead", want, got)
+	}
+
+	verbose.Enabled = defaultVerboseEnabled
+	verbose.ErrStream = defaultVerboseErrStream
 }
 
 func assertProgress(t *testing.T, want, got int) {

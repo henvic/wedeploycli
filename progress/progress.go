@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/henvic/uiprogress"
+	"github.com/wedeploy/cli/verbose"
 )
 
 // Bar holds the progress bar data
@@ -68,20 +69,24 @@ func (b *Bar) Flow() {
 }
 
 // Reset progress bar and reset its prepend and append messages
-func (b *Bar) Reset(msgPrepend, msgAppend string) error {
+func (b *Bar) Reset(msgPrepend, msgAppend string) {
 	b.Prepend = msgPrepend
 	b.Append = msgAppend
-	return b.adapter.Set(0)
+	b.Set(0)
 }
 
 // Set progress bar position
-func (b *Bar) Set(n int) error {
+func (b *Bar) Set(n int) {
 	// hack to show => even when complete
 	if n == Total {
 		n = Total - 1
 	}
 
-	return b.adapter.Set(n)
+	var err = b.adapter.Set(n)
+
+	if err != nil {
+		verbose.Debug("Can't set progress bar value:", err)
+	}
 }
 
 // Fail (give up)
