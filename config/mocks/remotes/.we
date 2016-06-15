@@ -1,0 +1,20 @@
+username        = fool
+password        = safe
+endpoint        = http://www.example.com/
+token           = 
+local           = true
+disable_colors  = false
+notify_updates  = true
+release_channel = stable
+last_update_check = 
+# commented vars remains even when empty
+next_version      = 
+
+[remotes]
+alternative = http://example.net/
+staging     = http://staging.example.net/
+beta        = http://beta.example.com/
+# commented vars remains even when empty
+remain      = http://localhost/
+dontremain  = http://localhost/
+dontremain2 = http://localhost/

@@ -12,6 +12,9 @@ import (
 	"github.com/wedeploy/cli/verbose"
 )
 
+// Remotes (list of alternative endpoints)
+type Remotes map[string]string
+
 // Config of the application
 type Config struct {
 	Username        string    `ini:"username"`
@@ -25,6 +28,7 @@ type Config struct {
 	LastUpdateCheck string    `ini:"last_update_check"`
 	NextVersion     string    `ini:"next_version"`
 	Path            string    `ini:"-"`
+	Remotes         Remotes   `ini:"-"`
 	file            *ini.File `ini:"-"`
 }
 
@@ -38,27 +42,31 @@ var (
 
 // Load the configuration
 func (c *Config) Load() {
-	c.setDefaults()
-	c.read()
-
-	if err := c.file.MapTo(c); err != nil {
-		panic(err)
+	switch c.configExists() {
+	case true:
+		c.read()
+	default:
+		verbose.Debug("Config file not found.")
+		c.file = ini.Empty()
+		c.banner()
 	}
+
+	c.load()
 }
 
 // Save the configuration
 func (c *Config) Save() {
-	var err = c.file.ReflectFrom(c)
+	var cfg = c.file
+	var err = cfg.ReflectFrom(c)
 
 	if err != nil {
 		panic(err)
 	}
 
-	if c.NextVersion == "" {
-		c.file.Section("").DeleteKey("next_version")
-	}
+	c.updateRemotes()
+	c.simplify()
 
-	err = c.file.SaveTo(c.Path)
+	err = cfg.SaveTo(c.Path)
 
 	if err != nil {
 		panic(err)
@@ -91,14 +99,15 @@ func (c *Config) configExists() bool {
 	}
 }
 
-func (c *Config) read() {
-	if !c.configExists() {
-		verbose.Debug("Config file not found.")
-		c.file = ini.Empty()
-		c.banner()
-		return
-	}
+func (c *Config) load() {
+	c.setDefaults()
 
+	if err := c.file.MapTo(c); err != nil {
+		panic(err)
+	}
+}
+
+func (c *Config) read() {
 	var err error
 	c.file, err = ini.Load(c.Path)
 
@@ -108,6 +117,52 @@ func (c *Config) read() {
 		os.Exit(1)
 	}
 
+	var section = c.file.Section("remotes")
+	c.Remotes = section.KeysHash()
+}
+
+func (c *Config) simplify() {
+	var mainSection = c.file.Section("")
+	var omitempty = []string{"next_version", "last_update_check"}
+
+	for _, k := range omitempty {
+		var key = mainSection.Key(k)
+		if key.Value() == "" && key.Comment == "" {
+			mainSection.DeleteKey(k)
+		}
+	}
+}
+
+func (c *Config) simplifyRemotes() {
+	var remotes = c.file.Section("remotes")
+
+	for _, k := range remotes.KeyStrings() {
+		key := remotes.Key(k)
+
+		if key.Value() == "" && key.Comment == "" {
+			remotes.DeleteKey(k)
+		}
+	}
+
+	if len(remotes.KeyStrings()) == 0 && remotes.Comment == "" {
+		c.file.DeleteSection("remotes")
+	}
+}
+
+func (c *Config) updateRemotes() {
+	var remotes = c.file.Section("remotes")
+
+	for _, k := range remotes.KeyStrings() {
+		if _, ok := c.Remotes[k]; !ok {
+			remotes.DeleteKey(k)
+		}
+	}
+
+	for k, v := range c.Remotes {
+		remotes.Key(k).SetValue(v)
+	}
+
+	c.simplifyRemotes()
 }
 
 func (c *Config) banner() {

@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	"github.com/wedeploy/cli/tdata"
@@ -208,6 +209,79 @@ func TestSaveAfterCreation(t *testing.T) {
 
 	unsetenv("WEDEPLOY_CUSTOM_HOME")
 	Teardown()
+}
+
+func TestRemotes(t *testing.T) {
+	setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/remotes"))
+
+	if Global != nil {
+		t.Errorf("Expected config.Global to be null")
+	}
+
+	Setup()
+
+	var wantOriginalRemotes = Remotes{
+		"alternative": "http://example.net/",
+		"staging":     "http://staging.example.net/",
+		"beta":        "http://beta.example.com/",
+		"remain":      "http://localhost/",
+		"dontremain":  "http://localhost/",
+		"dontremain2": "http://localhost/",
+	}
+
+	if !reflect.DeepEqual(wantOriginalRemotes, Global.Remotes) {
+		t.Errorf("Remotes doesn't match expected value")
+	}
+
+	var tmp, err = ioutil.TempFile(os.TempDir(), "we")
+
+	if err != nil {
+		panic(err)
+	}
+
+	Global.Username = "fool"
+	Global.Remotes["staging"] = "https://staging.example.net/"
+	Global.Remotes["beta"] = "https://beta.example.com/"
+	delete(Global.Remotes, "temporary")
+	Global.Remotes["remain"] = ""
+	Global.Remotes["dontremain"] = ""
+	delete(Global.Remotes, "dontremain2")
+
+	// save in a different location
+	Global.Path = tmp.Name()
+	Global.Save()
+
+	var got = tdata.FromFile(Global.Path)
+	ioutil.WriteFile("./mocks/we-reference-remotes.ini", []byte(got), 0644)
+
+	var want = tdata.FromFile("./mocks/we-reference-remotes.ini")
+
+	if got != want {
+		t.Errorf("Wanted created configuration to match we-reference-remotes.ini")
+	}
+
+	if err = tmp.Close(); err != nil {
+		panic(err)
+	}
+
+	if err = os.Remove(tmp.Name()); err != nil {
+		panic(err)
+	}
+
+	if Global.Username != "fool" {
+		t.Errorf("Wrong username")
+	}
+
+	if Global.Endpoint != "http://www.example.com/" {
+		t.Errorf("Wrong endpoint")
+	}
+
+	unsetenv("WEDEPLOY_CUSTOM_HOME")
+	Teardown()
+
+	if Global != nil {
+		t.Errorf("Expected config.Global to be null")
+	}
 }
 
 func abs(path string) string {
