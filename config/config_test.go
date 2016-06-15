@@ -252,7 +252,6 @@ func TestRemotes(t *testing.T) {
 	Global.Save()
 
 	var got = tdata.FromFile(Global.Path)
-	ioutil.WriteFile("./mocks/we-reference-remotes.ini", []byte(got), 0644)
 
 	var want = tdata.FromFile("./mocks/we-reference-remotes.ini")
 
