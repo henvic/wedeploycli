@@ -76,7 +76,10 @@ func TestNew(t *testing.T) {
 		t.Error("Progress output doesn't contains any of the wanted progress")
 	}
 
-	os.Remove(tmp.Name())
+	if err = os.Remove(tmp.Name()); err != nil {
+		panic(err)
+	}
+
 	progressList.Out = defaultOutStream
 }
 
@@ -113,7 +116,10 @@ func TestFail(t *testing.T) {
 		t.Error("Progress output doesn't contains any of the wanted progress")
 	}
 
-	os.Remove(tmp.Name())
+	if err = os.Remove(tmp.Name()); err != nil {
+		panic(err)
+	}
+
 	progressList.Out = defaultOutStream
 }
 
