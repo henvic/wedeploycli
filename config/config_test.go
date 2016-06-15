@@ -170,6 +170,9 @@ func TestSave(t *testing.T) {
 	if err = os.Remove(tmp.Name()); err != nil {
 		panic(err)
 	}
+
+	unsetenv("WEDEPLOY_CUSTOM_HOME")
+	Teardown()
 }
 
 func TestSaveAfterCreation(t *testing.T) {
@@ -202,6 +205,9 @@ func TestSaveAfterCreation(t *testing.T) {
 	if err = os.Remove(tmp.Name()); err != nil {
 		panic(err)
 	}
+
+	unsetenv("WEDEPLOY_CUSTOM_HOME")
+	Teardown()
 }
 
 func abs(path string) string {
