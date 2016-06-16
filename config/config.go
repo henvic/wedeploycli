@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"gopkg.in/ini.v1"
 
@@ -12,8 +13,29 @@ import (
 	"github.com/wedeploy/cli/verbose"
 )
 
+type Remote struct {
+	URL     string
+	Comment string
+}
+
 // Remotes (list of alternative endpoints)
-type Remotes map[string]string
+type Remotes map[string]Remote
+
+func (r Remotes) Set(name string, url string, comment ...string) {
+	// make sure to use # by default, instead of ;
+	if len(comment) != 0 {
+		comment = append([]string{"#"}, comment...)
+	}
+
+	r[name] = Remote{
+		URL:     url,
+		Comment: strings.Join(comment, " "),
+	}
+}
+
+func (r Remotes) Del(name string) {
+	delete(r, name)
+}
 
 // Config of the application
 type Config struct {
@@ -117,8 +139,22 @@ func (c *Config) read() {
 		os.Exit(1)
 	}
 
-	var section = c.file.Section("remotes")
-	c.Remotes = section.KeysHash()
+	c.readRemotes()
+}
+
+func (c *Config) readRemotes() {
+	var remotes = c.file.Section("remotes")
+	c.Remotes = Remotes{}
+
+	for _, k := range remotes.KeyStrings() {
+		key := remotes.Key(k)
+		comment := strings.TrimPrefix(key.Comment, "#")
+
+		c.Remotes[k] = Remote{
+			URL:     key.Value(),
+			Comment: strings.TrimSpace(comment),
+		}
+	}
 }
 
 func (c *Config) simplify() {
@@ -159,7 +195,9 @@ func (c *Config) updateRemotes() {
 	}
 
 	for k, v := range c.Remotes {
-		remotes.Key(k).SetValue(v)
+		key := remotes.Key(k)
+		key.SetValue(v.URL)
+		key.Comment = v.Comment
 	}
 
 	c.simplifyRemotes()

@@ -221,12 +221,25 @@ func TestRemotes(t *testing.T) {
 	Setup()
 
 	var wantOriginalRemotes = Remotes{
-		"alternative": "http://example.net/",
-		"staging":     "http://staging.example.net/",
-		"beta":        "http://beta.example.com/",
-		"remain":      "http://localhost/",
-		"dontremain":  "http://localhost/",
-		"dontremain2": "http://localhost/",
+		"alternative": Remote{
+			URL: "http://example.net/",
+		},
+		"staging": Remote{
+			URL: "http://staging.example.net/",
+		},
+		"beta": Remote{
+			URL: "http://beta.example.com/",
+		},
+		"remain": Remote{
+			URL:     "http://localhost/",
+			Comment: "commented vars remains even when empty",
+		},
+		"dontremain": Remote{
+			URL: "http://localhost/",
+		},
+		"dontremain2": Remote{
+			URL: "http://localhost/",
+		},
 	}
 
 	if !reflect.DeepEqual(wantOriginalRemotes, Global.Remotes) {
@@ -240,12 +253,13 @@ func TestRemotes(t *testing.T) {
 	}
 
 	Global.Username = "fool"
-	Global.Remotes["staging"] = "https://staging.example.net/"
-	Global.Remotes["beta"] = "https://beta.example.com/"
-	delete(Global.Remotes, "temporary")
-	Global.Remotes["remain"] = ""
-	Global.Remotes["dontremain"] = ""
-	delete(Global.Remotes, "dontremain2")
+	Global.Remotes.Set("staging", "https://staging.example.net/")
+	Global.Remotes.Set("beta", "https://beta.example.com/", "remote for beta testing")
+	Global.Remotes.Set("new", "http://foo/")
+	Global.Remotes.Del("temporary")
+	Global.Remotes.Set("remain", "", "commented vars remains even when empty")
+	Global.Remotes.Set("dontremain", "")
+	Global.Remotes.Del("dontremain2")
 
 	// save in a different location
 	Global.Path = tmp.Name()
