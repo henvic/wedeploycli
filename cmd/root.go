@@ -46,7 +46,11 @@ http://liferay.io`,
 	Run:              run,
 }
 
-var version bool
+var (
+	version bool
+	local   bool
+	remote  string
+)
 
 // Execute is the Entry-point for the CLI
 func Execute() {
@@ -106,6 +110,14 @@ func init() {
 		"no-color",
 		false,
 		"Disable color output")
+
+	RootCmd.Flags().BoolVar(
+		&local,
+		"local", false, "Local (for development, remote = local)")
+
+	RootCmd.Flags().StringVar(
+		&remote,
+		"remote", "", "Remote to use")
 
 	RootCmd.Flags().BoolVar(
 		&version,
