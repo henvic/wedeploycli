@@ -220,32 +220,6 @@ func TestRemotes(t *testing.T) {
 
 	Setup()
 
-	var wantOriginalRemotes = Remotes{
-		"alternative": Remote{
-			URL: "http://example.net/",
-		},
-		"staging": Remote{
-			URL: "http://staging.example.net/",
-		},
-		"beta": Remote{
-			URL: "http://beta.example.com/",
-		},
-		"remain": Remote{
-			URL:     "http://localhost/",
-			Comment: "commented vars remains even when empty",
-		},
-		"dontremain": Remote{
-			URL: "http://localhost/",
-		},
-		"dontremain2": Remote{
-			URL: "http://localhost/",
-		},
-	}
-
-	if !reflect.DeepEqual(wantOriginalRemotes, Global.Remotes) {
-		t.Errorf("Remotes doesn't match expected value")
-	}
-
 	var tmp, err = ioutil.TempFile(os.TempDir(), "we")
 
 	if err != nil {
@@ -287,6 +261,81 @@ func TestRemotes(t *testing.T) {
 
 	if Global.Endpoint != "http://www.example.com/" {
 		t.Errorf("Wrong endpoint")
+	}
+
+	unsetenv("WEDEPLOY_CUSTOM_HOME")
+	Teardown()
+
+	if Global != nil {
+		t.Errorf("Expected config.Global to be null")
+	}
+}
+
+func TestRemotesListAndGet(t *testing.T) {
+	setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/remotes"))
+
+	if Global != nil {
+		t.Errorf("Expected config.Global to be null")
+	}
+
+	Setup()
+
+	var wantOriginalRemotes = Remotes{
+		list: remotesList{
+			"alternative": RemoteConfig{
+				URL: "http://example.net/",
+			},
+			"staging": RemoteConfig{
+				URL: "http://staging.example.net/",
+			},
+			"beta": RemoteConfig{
+				URL: "http://beta.example.com/",
+			},
+			"remain": RemoteConfig{
+				URL:     "http://localhost/",
+				Comment: "commented vars remains even when empty",
+			},
+			"dontremain": RemoteConfig{
+				URL: "http://localhost/",
+			},
+			"dontremain2": RemoteConfig{
+				URL: "http://localhost/",
+			},
+		},
+	}
+
+	if !reflect.DeepEqual(wantOriginalRemotes, Global.Remotes) {
+		t.Errorf("Remotes doesn't match expected value")
+	}
+
+	var wantList = []string{
+		"alternative",
+		"beta",
+		"dontremain",
+		"dontremain2",
+		"remain",
+		"staging",
+	}
+
+	var gotList = Global.Remotes.List()
+
+	if !reflect.DeepEqual(gotList, wantList) {
+		t.Errorf("Wanted %v, got %v instead", wantList, gotList)
+	}
+
+	var wantRemain = RemoteConfig{
+		URL:     "http://localhost/",
+		Comment: "commented vars remains even when empty",
+	}
+
+	var gotRemain, gotRemainOK = Global.Remotes.Get("remain")
+
+	if gotRemain != wantRemain {
+		t.Errorf("Wanted %v, got %v instead", wantRemain, gotRemain)
+	}
+
+	if !gotRemainOK {
+		t.Errorf("Wanted gotRemainOK to be true")
 	}
 
 	unsetenv("WEDEPLOY_CUSTOM_HOME")

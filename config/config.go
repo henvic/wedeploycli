@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"gopkg.in/ini.v1"
@@ -13,28 +14,48 @@ import (
 	"github.com/wedeploy/cli/verbose"
 )
 
-type Remote struct {
+type RemoteConfig struct {
 	URL     string
 	Comment string
 }
 
 // Remotes (list of alternative endpoints)
-type Remotes map[string]Remote
+type Remotes struct {
+	list remotesList
+}
 
-func (r Remotes) Set(name string, url string, comment ...string) {
+type remotesList map[string]RemoteConfig
+
+func (r *Remotes) List() []string {
+	var keys = make([]string, 0, len(r.list))
+
+	for k := range r.list {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+	return keys
+}
+
+func (r *Remotes) Get(name string) (RemoteConfig, bool) {
+	remote, ok := r.list[name]
+	return remote, ok
+}
+
+func (r *Remotes) Set(name string, url string, comment ...string) {
 	// make sure to use # by default, instead of ;
 	if len(comment) != 0 {
 		comment = append([]string{"#"}, comment...)
 	}
 
-	r[name] = Remote{
+	r.list[name] = RemoteConfig{
 		URL:     url,
 		Comment: strings.Join(comment, " "),
 	}
 }
 
-func (r Remotes) Del(name string) {
-	delete(r, name)
+func (r *Remotes) Del(name string) {
+	delete(r.list, name)
 }
 
 // Config of the application
@@ -60,6 +81,12 @@ var (
 
 	// Context stores the environmental context
 	Context *context.Context
+
+	// Remote global flag
+	Remote = false
+
+	// // Local global flag
+	Local = false
 )
 
 // Load the configuration
@@ -144,13 +171,15 @@ func (c *Config) read() {
 
 func (c *Config) readRemotes() {
 	var remotes = c.file.Section("remotes")
-	c.Remotes = Remotes{}
+	c.Remotes = Remotes{
+		list: remotesList{},
+	}
 
 	for _, k := range remotes.KeyStrings() {
 		key := remotes.Key(k)
 		comment := strings.TrimPrefix(key.Comment, "#")
 
-		c.Remotes[k] = Remote{
+		c.Remotes.list[k] = RemoteConfig{
 			URL:     key.Value(),
 			Comment: strings.TrimSpace(comment),
 		}
@@ -189,12 +218,12 @@ func (c *Config) updateRemotes() {
 	var remotes = c.file.Section("remotes")
 
 	for _, k := range remotes.KeyStrings() {
-		if _, ok := c.Remotes[k]; !ok {
+		if _, ok := c.Remotes.list[k]; !ok {
 			remotes.DeleteKey(k)
 		}
 	}
 
-	for k, v := range c.Remotes {
+	for k, v := range c.Remotes.list {
 		key := remotes.Key(k)
 		key.SetValue(v.URL)
 		key.Comment = v.Comment
