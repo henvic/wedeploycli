@@ -13,6 +13,7 @@ import (
 	cmddeploy "github.com/wedeploy/cli/cmd/deploy"
 	cmdlogs "github.com/wedeploy/cli/cmd/logs"
 	cmdprojects "github.com/wedeploy/cli/cmd/projects"
+	cmdremote "github.com/wedeploy/cli/cmd/remote"
 	cmdrestart "github.com/wedeploy/cli/cmd/restart"
 	"github.com/wedeploy/cli/cmd/run"
 	cmdupdate "github.com/wedeploy/cli/cmd/update"
@@ -85,6 +86,7 @@ var commands = []*cobra.Command{
 	cmdrestart.RestartCmd,
 	cmdrun.RunCmd,
 	cmddeploy.DeployCmd,
+	cmdremote.RemoteCmd,
 	cmdupdate.UpdateCmd,
 	cmdversion.VersionCmd,
 }
