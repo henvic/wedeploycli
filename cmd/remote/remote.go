@@ -3,7 +3,6 @@ package cmdremote
 import (
 	"fmt"
 	"os"
-	"sort"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/config"
@@ -57,18 +56,12 @@ func remoteRun(cmd *cobra.Command, args []string) {
 	}
 
 	var remotes = config.Global.Remotes
-	var keys = make([]string, 0, len(remotes))
 
-	for k := range remotes {
-		keys = append(keys, k)
-	}
-
-	sort.Strings(keys)
-
-	for _, k := range keys {
+	for _, k := range remotes.List() {
 		switch verbose.Enabled {
 		case true:
-			fmt.Printf("%s\t%s\n", k, remotes[k].URL)
+			var key, _ = remotes.Get(k)
+			fmt.Printf("%s\t%s\n", k, key.URL)
 		default:
 			fmt.Println(k)
 		}
@@ -85,7 +78,7 @@ func addRun(cmd *cobra.Command, args []string) {
 	var remotes = global.Remotes
 	var name = args[0]
 
-	if _, ok := remotes[name]; ok {
+	if _, ok := remotes.Get(name); ok {
 		println("fatal: remote " + name + " already exists.")
 		os.Exit(1)
 	}
@@ -105,17 +98,19 @@ func renameRun(cmd *cobra.Command, args []string) {
 	var old = args[0]
 	var name = args[1]
 
-	if _, ok := remotes[old]; !ok {
+	var oldRemote, ok = remotes.Get(old)
+
+	if !ok {
 		println("fatal: remote " + old + " doesn't exists.")
 		os.Exit(1)
 	}
 
-	if _, ok := remotes[name]; ok {
+	if _, ok := remotes.Get(name); ok {
 		println("fatal: remote " + name + " already exists.")
 		os.Exit(1)
 	}
 
-	remotes.Set(name, remotes[old].URL, remotes[old].Comment)
+	remotes.Set(name, oldRemote.URL, oldRemote.Comment)
 	remotes.Del(old)
 	global.Save()
 }
@@ -130,7 +125,7 @@ func removeRun(cmd *cobra.Command, args []string) {
 	var remotes = global.Remotes
 	var name = args[0]
 
-	if _, ok := remotes[name]; !ok {
+	if _, ok := remotes.Get(name); !ok {
 		println("fatal: remote " + name + " doesn't exists.")
 		os.Exit(1)
 	}
@@ -147,7 +142,14 @@ func getURLRun(cmd *cobra.Command, args []string) {
 
 	var remotes = config.Global.Remotes
 	var name = args[0]
-	fmt.Println(remotes[name].URL)
+	var remote, ok = remotes.Get(name)
+
+	if !ok {
+		println("fatal: remote " + name + " doesn't exists.")
+		os.Exit(1)
+	}
+
+	fmt.Println(remote.URL)
 }
 
 func setURLRun(cmd *cobra.Command, args []string) {
@@ -161,7 +163,7 @@ func setURLRun(cmd *cobra.Command, args []string) {
 	var name = args[0]
 	var uri = args[1]
 
-	if _, ok := remotes[name]; !ok {
+	if _, ok := remotes.Get(name); !ok {
 		println("fatal: remote " + name + " doesn't exists.")
 		os.Exit(1)
 	}
