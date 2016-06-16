@@ -31,7 +31,7 @@ const (
 var ErrHostNotFound = errors.New("You need to be connected to a network.")
 
 // WeDeployImage is the docker image for the WeDeploy infrastructure
-var WeDeployImage = "wedeploy/dev:" + defaults.WeDeployImageTag
+var WeDeployImage = "wedeploy/local:" + defaults.WeDeployImageTag
 
 // Flags modifiers
 type Flags struct {
@@ -44,11 +44,9 @@ var portsArgs = []string{
 	"-p", "53:53/tcp",
 	"-p", "53:53/udp",
 	"-p", "80:80",
-	"-p", "9300:9300",
-	"-p", "5701:5701",
 	"-p", "8001:8001",
-	"-p", "8080:8080",
-	"-p", "5005:5005",
+	"-p", "8500:8500",
+	"-p", "9200:9200",
 }
 
 // GetWeDeployHost gets the WeDeploy infrastructure host
@@ -164,13 +162,9 @@ func getRunCommandEnv() []string {
 
 	args = append(args, portsArgs...)
 	args = append(args, []string{
-		"--cap-add=NET_ADMIN",
+		"--privileged",
 		"-e",
-		"LP_DEV_DOMAIN=liferay.local",
-		"-e",
-		"LP_DEV_IP_ADDRESS=" + address,
-		"-e",
-		"LP_DEV_DOCKER_HOST=tcp://" + address + ":2375",
+		"WEDEPLOY_HOST_IP=" + address,
 		"--detach",
 		WeDeployImage,
 	}...)
