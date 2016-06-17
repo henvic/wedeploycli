@@ -12,7 +12,6 @@ import (
 
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/hooks"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
@@ -107,15 +106,15 @@ func List(projectID string) {
 	fmt.Fprintln(outStream, "total", len(cs))
 }
 
-// InstallFromDefinition container to project
-func InstallFromDefinition(projectID, containerPath string, container *Container) error {
+// Link container to project
+func Link(projectID, containerPath string, container *Container) error {
 	verbose.Debug("Installing container from definition")
 
-	var req = apihelper.URL("/containers")
+	var req = apihelper.URL("/deploy")
 	apihelper.Auth(req)
 
 	req.Param("projectId", projectID)
-	maybeSetLocalContainerPath(containerPath, req)
+	req.Param("source", containerPath)
 
 	var err = apihelper.SetBody(req, &container)
 
@@ -126,11 +125,15 @@ func InstallFromDefinition(projectID, containerPath string, container *Container
 	return apihelper.Validate(req, req.Put())
 }
 
-func maybeSetLocalContainerPath(containerPath string,
-	req *wedeploy.WeDeploy) {
-	if config.Global.Local {
-		req.Param("source", containerPath)
-	}
+// Unlink container
+func Unlink(projectID, containerID string) error {
+	var req = apihelper.URL("/deploy")
+	apihelper.Auth(req)
+
+	req.Param("projectId", projectID)
+	req.Param("containerId", containerID)
+
+	return apihelper.Validate(req, req.Delete())
 }
 
 // GetRegistry gets a list of container images

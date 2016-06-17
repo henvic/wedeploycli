@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"reflect"
 	"testing"
@@ -88,13 +89,13 @@ func TestList(t *testing.T) {
 	globalconfigmock.Teardown()
 }
 
-func TestInstallFromDefinition(t *testing.T) {
+func TestLink(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 	bufOutStream.Reset()
 
 	servertest.Mux.HandleFunc(
-		"/containers",
+		"/deploy",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "PUT" {
 				t.Errorf("Expected install method to be POST")
@@ -125,7 +126,7 @@ func TestInstallFromDefinition(t *testing.T) {
 		Type: "nodejs",
 	}
 
-	var err = InstallFromDefinition("sound", "", c)
+	var err = Link("sound", "", c)
 
 	if err != nil {
 		t.Errorf("Unexpected error on Install: %v", err)
@@ -215,14 +216,51 @@ func TestRestart(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/restart/container",
 		func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.RawQuery != "projectId=foo&containerId=bar" {
-				t.Error("Wrong query parameters for restart method")
+			var p, err = url.ParseQuery(r.URL.RawQuery)
+
+			if err != nil {
+				panic(err)
+			}
+
+			if p.Get("projectId") != "foo" || p.Get("containerId") != "bar" {
+				t.Errorf("Wrong query parameters, got %v", r.URL.RawQuery)
 			}
 
 			fmt.Fprintf(w, `"on"`)
 		})
 
 	Restart("foo", "bar")
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
+func TestUnlink(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/deploy", func(w http.ResponseWriter, r *http.Request) {
+		var wantMethod = "DELETE"
+		if r.Method != wantMethod {
+			t.Errorf("Wanted method %v, got %v instead", wantMethod, r.Method)
+		}
+
+		var p, err = url.ParseQuery(r.URL.RawQuery)
+
+		if err != nil {
+			panic(err)
+		}
+
+		if p.Get("projectId") != "foo" || p.Get("containerId") != "bar" {
+			t.Errorf("Wrong query parameters, got %v", r.URL.RawQuery)
+		}
+	})
+
+	var err = Unlink("foo", "bar")
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
 
 	servertest.Teardown()
 	globalconfigmock.Teardown()
