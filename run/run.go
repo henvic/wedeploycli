@@ -13,9 +13,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gosuri/uilive"
-	"github.com/wedeploy/cli/apihelper"
+	"github.com/henvic/uilive"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -69,13 +69,6 @@ func GetWeDeployHost() (string, error) {
 	return "", ErrHostNotFound
 }
 
-// Reset WeDeploy infrastructure
-func Reset() error {
-	var req = apihelper.URL("/reset")
-	apihelper.Auth(req)
-	return apihelper.Validate(req, req.Post())
-}
-
 // Run runs the WeDeploy infrastructure
 func Run(flags Flags) {
 	if !existsDependency("docker") {
@@ -93,7 +86,7 @@ func Run(flags Flags) {
 
 		wg.Add(1)
 		go func() {
-			resetWhenReady()
+			waitReadyState()
 			wg.Done()
 		}()
 		wg.Wait()
@@ -150,7 +143,10 @@ func getWeDeployHost() string {
 	var address, err = GetWeDeployHost()
 
 	if err != nil {
-		panic(err)
+		println("Could not find a suitable host.")
+		println("To use we run you need a suitable network interface on.")
+		println(err.Error())
+		os.Exit(1)
 	}
 
 	return address
@@ -246,15 +242,15 @@ func pull() {
 	}
 }
 
-func resetWhenReady() {
+func waitReadyState() {
 	var tries = 1
 	var livew = uilive.New()
-	verbose.Debug("Trying to reset WeDeploy containers in 10 seconds")
+	verbose.Debug("Waiting 10 seconds for ready state")
 	livew.Start()
 	var tdone = warmup(livew)
 	time.Sleep(10 * time.Second)
 	for tries <= 20 {
-		var err = Reset()
+		var _, err = projects.List()
 
 		if err == nil {
 			close(tdone)
@@ -264,7 +260,7 @@ func resetWhenReady() {
 			return
 		}
 
-		verbose.Debug(fmt.Sprintf("Reset try #%v: %v", tries, err))
+		verbose.Debug(fmt.Sprintf("Trying to read projects tries #%v: %v", tries, err))
 		tries++
 		time.Sleep(4 * time.Second)
 	}
@@ -273,7 +269,7 @@ func resetWhenReady() {
 	time.Sleep(2 * livew.RefreshInterval)
 	fmt.Fprintf(livew, "WeDeploy is up.\n")
 	livew.Stop()
-	println("WeDeploy is online, but failed to reset environment.")
+	println("WeDeploy is online, but failed to read projects to verify everything is fine.")
 }
 
 func start(flags Flags) string {
@@ -314,15 +310,6 @@ func startCmd(args ...string) string {
 }
 
 func stop(dockerContainer string) {
-	var err = Reset()
-
-	if err != nil {
-		println("Failure running reset environment procedure",
-			"for WeDeploy before shutdown.")
-		println(err.Error())
-		println("Ignoring reset failure and proceeding with shutdown.")
-	}
-
 	var stop = exec.Command("docker", "stop", dockerContainer)
 
 	if err := stop.Run(); err != nil {
