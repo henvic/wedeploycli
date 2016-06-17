@@ -78,7 +78,7 @@ func Run(flags Flags) {
 
 	var dockerContainer = getAlreadyRunning()
 
-	if len(dockerContainer) != 0 {
+	if len(dockerContainer) != 0 && !flags.DryRun {
 		fmt.Println("WeDeploy is already running.")
 	} else if !flags.ViewMode {
 		dockerContainer = start(flags)
