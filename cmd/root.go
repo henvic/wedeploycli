@@ -11,11 +11,13 @@ import (
 	cmddeploy "github.com/wedeploy/cli/cmd/deploy"
 	"github.com/wedeploy/cli/cmd/containers"
 	"github.com/wedeploy/cli/cmd/createctx"
+	"github.com/wedeploy/cli/cmd/link"
 	"github.com/wedeploy/cli/cmd/logs"
 	"github.com/wedeploy/cli/cmd/projects"
 	"github.com/wedeploy/cli/cmd/remote"
 	"github.com/wedeploy/cli/cmd/restart"
 	"github.com/wedeploy/cli/cmd/run"
+	"github.com/wedeploy/cli/cmd/unlink"
 	"github.com/wedeploy/cli/cmd/update"
 	"github.com/wedeploy/cli/cmd/version"
 	"github.com/wedeploy/cli/config"
@@ -90,6 +92,8 @@ var commands = []*cobra.Command{
 	cmdrestart.RestartCmd,
 	cmdrun.RunCmd,
 	cmddeploy.DeployCmd,
+	cmdlink.LinkCmd,
+	cmdunlink.UnlinkCmd,
 	cmdremote.RemoteCmd,
 	cmdupdate.UpdateCmd,
 	cmdversion.VersionCmd,
