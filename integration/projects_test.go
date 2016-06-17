@@ -13,7 +13,7 @@ func TestProjects(t *testing.T) {
 
 	servertest.IntegrationMux.HandleFunc(
 		"/projects",
-		tdata.ServerJSONFileHandler("../projects/mocks/projects_response.json"))
+		tdata.ServerJSONFileHandler("mocks/projects_response.json"))
 
 	var cmd = &Command{
 		Args: []string{"projects"},
@@ -21,7 +21,7 @@ func TestProjects(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stdout:   tdata.FromFile("../projects/mocks/want_projects"),
+		Stdout:   tdata.FromFile("mocks/want_projects"),
 		ExitCode: 0,
 	}
 
