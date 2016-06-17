@@ -162,6 +162,8 @@ func getRunCommandEnv() []string {
 		"--privileged",
 		"-e",
 		"WEDEPLOY_HOST_IP=" + address,
+		"-v",
+		"/:/wedeploy/host",
 		"--detach",
 		WeDeployImage,
 	}...)
