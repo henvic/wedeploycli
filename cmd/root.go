@@ -113,11 +113,11 @@ func init() {
 		false,
 		"Disable color output")
 
-	RootCmd.Flags().BoolVar(
+	RootCmd.PersistentFlags().BoolVar(
 		&local,
 		"local", false, "Local (for development, remote = local)")
 
-	RootCmd.Flags().StringVar(
+	RootCmd.PersistentFlags().StringVar(
 		&remote,
 		"remote", "", "Remote to use")
 
