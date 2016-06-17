@@ -1,8 +1,0 @@
-{
-    "id": "container-before-hook-failure",
-    "name": "Container that fails at before_hook",
-    "hooks": {
-    	"before_deploy": "false",
-        "after_deploy": "true"
-    }
-}
