@@ -10,7 +10,6 @@ import (
 
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 )
@@ -50,8 +49,6 @@ func CreateFromDefinition(filename string) error {
 
 	var req = apihelper.URL("/projects")
 	apihelper.Auth(req)
-
-	maybeSetLocalProjectRoot(req)
 	req.Body(file)
 
 	return apihelper.Validate(req, req.Post())
@@ -173,10 +170,4 @@ func getValidateAPIFaultError(errDoc apihelper.APIFault) error {
 	}
 
 	return errDoc
-}
-
-func maybeSetLocalProjectRoot(req *wedeploy.WeDeploy) {
-	if config.Global.Local {
-		req.Param("source", config.Context.ProjectRoot)
-	}
 }
