@@ -84,9 +84,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestFail(t *testing.T) {
-	if _, travis := os.LookupEnv("TRAVIS"); travis {
-		t.Skip("Not testing on Travis due to weird issue. See issue #31.")
-	}
+	t.Skip("Test fails like a Schrodinger's cat. See issue #31.")
 
 	// there is currently a hack that makes setting 100 => 99, see below
 	var defaultOutStream = progressList.Out
