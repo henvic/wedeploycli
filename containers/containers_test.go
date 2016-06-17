@@ -98,7 +98,7 @@ func TestLink(t *testing.T) {
 		"/deploy",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "PUT" {
-				t.Errorf("Expected install method to be POST")
+				t.Errorf("Expected install method to be PUT")
 			}
 
 			var body, err = ioutil.ReadAll(r.Body)
