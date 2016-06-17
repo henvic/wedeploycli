@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"reflect"
 	"testing"
 
 	"github.com/wedeploy/api-go/jsonlib"
@@ -76,23 +77,32 @@ func TestGetStatus(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
-	defer servertest.Teardown()
 	servertest.Setup()
 	globalconfigmock.Setup()
-	bufOutStream.Reset()
-
-	var want = tdata.FromFile("mocks/want_projects")
 
 	servertest.Mux.HandleFunc(
 		"/projects",
 		tdata.ServerJSONFileHandler("mocks/projects_response.json"))
 
-	List()
+	var list, err = List()
 
-	if bufOutStream.String() != want {
-		t.Errorf("Wanted %v, got %v instead", want, bufOutStream.String())
+	var want = []Project{
+		Project{
+			ID:    "images",
+			Name:  "Image Server",
+			State: "on",
+		},
 	}
 
+	if !reflect.DeepEqual(want, list) {
+		t.Errorf("Wanted %v, got %v instead", want, list)
+	}
+
+	if err != nil {
+		t.Errorf("Wanted error to be nil, got %v instead", err)
+	}
+
+	servertest.Teardown()
 	globalconfigmock.Teardown()
 }
 

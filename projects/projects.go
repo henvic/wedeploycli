@@ -3,7 +3,6 @@ package projects
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -66,10 +65,9 @@ func GetStatus(id string) string {
 }
 
 // List projects
-func List() {
-	var projects []Project
-	apihelper.AuthGetOrExit("/projects", &projects)
-	printProjects(projects)
+func List() (list []Project, err error) {
+	err = apihelper.AuthGet("/projects", &list)
+	return list, err
 }
 
 // Read a project directory properties (defined by a project.json on it)
@@ -171,17 +169,4 @@ func maybeSetLocalProjectRoot(req *wedeploy.WeDeploy) {
 	if config.Global.Local {
 		req.Param("source", config.Context.ProjectRoot)
 	}
-}
-
-func printProject(project Project) {
-	fmt.Fprintln(outStream,
-		project.ID+"\t"+project.ID+".liferay.io ("+project.Name+") "+project.State)
-}
-
-func printProjects(projects []Project) {
-	for _, project := range projects {
-		printProject(project)
-	}
-
-	fmt.Fprintln(outStream, "total", len(projects))
 }

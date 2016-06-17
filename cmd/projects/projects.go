@@ -1,6 +1,9 @@
 package cmdprojects
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/projects"
 )
@@ -13,5 +16,28 @@ var ProjectsCmd = &cobra.Command{
 }
 
 func projectsRun(cmd *cobra.Command, args []string) {
-	projects.List()
+	var list, err = projects.List()
+
+	if err != nil {
+		println(err.Error())
+		os.Exit(1)
+	}
+
+	printProjects(list)
+}
+
+func printProject(project projects.Project) {
+	fmt.Fprintf(os.Stdout, "%s\t%s.liferay.io (%s) %s\n",
+		project.ID,
+		project.ID,
+		project.Name,
+		project.State)
+}
+
+func printProjects(projects []projects.Project) {
+	for _, project := range projects {
+		printProject(project)
+	}
+
+	fmt.Fprintln(os.Stdout, "total", len(projects))
 }
