@@ -161,6 +161,31 @@ func TestRestart(t *testing.T) {
 	globalconfigmock.Teardown()
 }
 
+func TestUnlink(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/deploy", func(w http.ResponseWriter, r *http.Request) {
+		var wantMethod = "DELETE"
+		if r.Method != wantMethod {
+			t.Errorf("Wanted method %v, got %v instead", wantMethod, r.Method)
+		}
+
+		if r.URL.RawQuery != "projectId=foo" {
+			t.Error("Wrong query parameters")
+		}
+	})
+
+	var err = Unlink("foo")
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
 func TestValidate(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()

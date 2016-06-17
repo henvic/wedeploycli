@@ -105,6 +105,16 @@ func Restart(id string) {
 	apihelper.ValidateOrExit(req, req.Post())
 }
 
+// Unlink project
+func Unlink(projectID string) error {
+	var req = apihelper.URL("/deploy")
+	apihelper.Auth(req)
+
+	req.Param("projectId", projectID)
+
+	return apihelper.Validate(req, req.Delete())
+}
+
 // Validate project
 func Validate(projectID string) (err error) {
 	var req = apihelper.URL("/validators/project/id")
