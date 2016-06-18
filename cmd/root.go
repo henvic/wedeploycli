@@ -16,6 +16,7 @@ import (
 	"github.com/wedeploy/cli/cmd/remote"
 	"github.com/wedeploy/cli/cmd/restart"
 	"github.com/wedeploy/cli/cmd/run"
+	"github.com/wedeploy/cli/cmd/stop"
 	"github.com/wedeploy/cli/cmd/unlink"
 	"github.com/wedeploy/cli/cmd/update"
 	"github.com/wedeploy/cli/cmd/version"
@@ -40,6 +41,7 @@ var ListNoRemoteFlags = map[string]bool{
 	"link":    true,
 	"unlink":  true,
 	"run":     true,
+	"stop":    true,
 	"remote":  true,
 	"update":  true,
 	"version": true,
@@ -50,6 +52,7 @@ var LocalOnlyCommands = map[string]bool{
 	"link":   true,
 	"unlink": true,
 	"run":    true,
+	"stop":   true,
 }
 
 // RootCmd is the main command for the CLI
@@ -107,6 +110,7 @@ var commands = []*cobra.Command{
 	cmdcontainers.ContainersCmd,
 	cmdrestart.RestartCmd,
 	cmdrun.RunCmd,
+	cmdstop.StopCmd,
 	cmdlink.LinkCmd,
 	cmdunlink.UnlinkCmd,
 	cmdremote.RemoteCmd,

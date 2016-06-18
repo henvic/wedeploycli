@@ -84,16 +84,21 @@ func GetWeDeployHost() (string, error) {
 
 // Run runs the WeDeploy infrastructure
 func Run(flags Flags) {
-	if !existsDependency(bin) {
-		println("Docker is not installed. Download it from http://docker.com/")
-		os.Exit(1)
-	}
+	checkDockerExists()
 
 	var dm = &DockerMachine{
 		Flags: flags,
 	}
 
 	dm.Run()
+}
+
+// Stop stops the WeDeploy infrastructure
+func Stop() {
+	checkDockerExists()
+
+	var dm = &DockerMachine{}
+	dm.Stop()
 }
 
 // Run executes the WeDeploy infraestruture
@@ -126,6 +131,18 @@ func (dm *DockerMachine) Run() {
 	dm.started <- true
 	go dm.waitReadyState()
 	<-dm.end
+}
+
+// Stop stops the machine
+func (dm *DockerMachine) Stop() {
+	dm.testAlreadyRunning()
+
+	if dm.Container == "" {
+		println("we run is not running.")
+		os.Exit(1)
+	}
+
+	stop(dm.Container)
 }
 
 func (dm *DockerMachine) waitEnd() {
@@ -202,13 +219,7 @@ func (dm *DockerMachine) start() {
 }
 
 func (dm *DockerMachine) stop() {
-	var stop = exec.Command(bin, "stop", dm.Container)
-
-	if err := stop.Run(); err != nil {
-		println("docker stop error:", err.Error())
-		os.Exit(1)
-	}
-
+	stop(dm.Container)
 	dm.end <- true
 }
 
@@ -308,6 +319,13 @@ func (dm *DockerMachine) testAlreadyRunning() {
 	verbose.Debug("Docker container ID:", dm.Container)
 }
 
+func checkDockerExists() {
+	if !existsDependency(bin) {
+		println("Docker is not installed. Download it from http://docker.com/")
+		os.Exit(1)
+	}
+}
+
 func getWeDeployHost() string {
 	var address, err = GetWeDeployHost()
 
@@ -394,6 +412,15 @@ func startCmd(args ...string) string {
 
 	var dockerContainer = strings.TrimSpace(dockerContainerBuf.String())
 	return dockerContainer
+}
+
+func stop(container string) {
+	var stop = exec.Command(bin, "stop", container)
+
+	if err := stop.Run(); err != nil {
+		println("docker stop error:", err.Error())
+		os.Exit(1)
+	}
 }
 
 func existsDependency(cmd string) bool {
