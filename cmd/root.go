@@ -173,8 +173,31 @@ func init() {
 	}
 }
 
+func setLocal() {
+	config.Global.Endpoint = "http://localhost:8080/"
+	config.Global.Token = "1"
+}
+
+func setRemote() {
+	var r, ok = config.Global.Remotes.Get(remote)
+
+	if !ok {
+		fmt.Fprintf(os.Stderr, "Remove %v is not configured.\n", remote)
+	}
+
+	config.Global.Endpoint = r.URL
+}
+
 func persistentPreRun(cmd *cobra.Command, args []string) {
+	cmdSetLocalFlag()
 	verifyCmdReqAuth(cmd.CommandPath())
+
+	switch {
+	case local:
+		setLocal()
+	case remote != "":
+		setRemote()
+	}
 }
 
 func run(cmd *cobra.Command, args []string) {
