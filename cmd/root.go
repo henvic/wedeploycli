@@ -35,6 +35,14 @@ var WhitelistCmdsNoAuthentication = map[string]bool{
 	"version": true,
 }
 
+// ListNoRemoteFlags hides the globals non used --remote and --local flags
+var ListNoRemoteFlags = map[string]bool{
+	"run":     true,
+	"remote":  true,
+	"update":  true,
+	"version": true,
+}
+
 // RootCmd is the main command for the CLI
 var RootCmd = &cobra.Command{
 	Use:   "we",
@@ -103,6 +111,28 @@ func hideVersionFlag() {
 	}
 }
 
+func hideUnusedGlobalRemoteFlags() {
+	var args = os.Args
+
+	if len(args) < 2 {
+		return
+	}
+
+	_, h := ListNoRemoteFlags[args[1]]
+
+	if !h {
+		return
+	}
+
+	if err := RootCmd.PersistentFlags().MarkHidden("local"); err != nil {
+		panic(err)
+	}
+
+	if err := RootCmd.PersistentFlags().MarkHidden("remote"); err != nil {
+		panic(err)
+	}
+}
+
 func init() {
 	config.Setup()
 
@@ -132,6 +162,7 @@ func init() {
 		"version", false, "Print version information and quit")
 
 	hideVersionFlag()
+	hideUnusedGlobalRemoteFlags()
 
 	if config.Global.NoColor {
 		color.NoColor = true
