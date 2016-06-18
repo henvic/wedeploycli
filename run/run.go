@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"os/signal"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
 
@@ -33,11 +32,24 @@ var ErrHostNotFound = errors.New("You need to be connected to a network.")
 // WeDeployImage is the docker image for the WeDeploy infrastructure
 var WeDeployImage = "wedeploy/local:" + defaults.WeDeployImageTag
 
+var bin = "docker"
+
 // Flags modifiers
 type Flags struct {
 	Detach   bool
 	DryRun   bool
 	ViewMode bool
+}
+
+// DockerMachine for the run command
+type DockerMachine struct {
+	Container string
+	Flags     Flags
+	upTime    time.Time
+	livew     *uilive.Writer
+	tickerd   chan bool
+	end       chan bool
+	started   chan bool
 }
 
 var portsArgs = []string{
@@ -72,51 +84,208 @@ func GetWeDeployHost() (string, error) {
 
 // Run runs the WeDeploy infrastructure
 func Run(flags Flags) {
-	if !existsDependency("docker") {
+	if !existsDependency(bin) {
 		println("Docker is not installed. Download it from http://docker.com/")
 		os.Exit(1)
 	}
 
-	var dockerContainer = getAlreadyRunning()
+	var dm = &DockerMachine{
+		Flags: flags,
+	}
 
-	if len(dockerContainer) != 0 && !flags.DryRun {
-		fmt.Println("WeDeploy is already running.")
-	} else if !flags.ViewMode {
-		dockerContainer = start(flags)
-		var wg sync.WaitGroup
+	dm.Run()
+}
 
-		wg.Add(1)
-		go func() {
-			waitReadyState()
-			wg.Done()
-		}()
-		wg.Wait()
-	} else {
+// Run executes the WeDeploy infraestruture
+func (dm *DockerMachine) Run() {
+	dm.prepare()
+
+	if dm.Flags.Detach {
+		dm.end <- true
+	}
+
+	if len(dm.Container) == 0 && dm.Flags.ViewMode {
 		println("View mode is not available.")
 		println("WeDeploy is shutdown.")
 		os.Exit(1)
 	}
 
-	verbose.Debug("Docker container ID:", dockerContainer)
+	var already = len(dm.Container) != 0 && !dm.Flags.DryRun
 
-	if !flags.Detach && !flags.ViewMode {
-		stopListener(dockerContainer)
+	if already {
+		fmt.Println("WeDeploy is already running.")
 	}
 
-	fmt.Print("You can now test your apps locally.")
+	dm.maybeStopListener()
 
-	if !flags.ViewMode && !flags.Detach {
-		fmt.Print(" Press Ctrl+C to shut it down when you are done.")
+	if !already {
+		dm.start()
 	}
 
-	fmt.Println("")
+	dm.maybeWaitEnd()
+	dm.started <- true
+	go dm.waitReadyState()
+	<-dm.end
+}
 
-	if !flags.Detach {
-		listen(dockerContainer)
+func (dm *DockerMachine) waitEnd() {
+	var ps, err = waitEnd(dm.Container)
+
+	switch {
+	case err != nil:
+		fmt.Fprintf(os.Stderr, "Wait call error: %v", err)
+		os.Exit(1)
+	case ps.Success():
+		fmt.Println("WeDeploy is shutdown.")
+		os.Exit(0)
+	default:
+		println("WeDeploy wait failure.")
+		os.Exit(1)
 	}
 }
 
-func getAlreadyRunning() string {
+func (dm *DockerMachine) maybeWaitEnd() {
+	if !dm.Flags.Detach {
+		go dm.waitEnd()
+	}
+}
+
+func (dm *DockerMachine) waitReadyState() {
+	var tries = 1
+	dm.livew.Start()
+	dm.checkConnection()
+	for tries <= 100 {
+		var _, err = projects.List()
+
+		if err == nil {
+			dm.tickerd <- true
+			time.Sleep(2 * dm.livew.RefreshInterval)
+			fmt.Fprintf(dm.livew, "WeDeploy is ready!\n")
+			dm.livew.Stop()
+			dm.ready()
+			return
+		}
+
+		verbose.Debug(fmt.Sprintf("Trying to read projects tries #%v: %v", tries, err))
+		tries++
+		time.Sleep(1 * time.Second)
+	}
+
+	dm.tickerd <- true
+
+	time.Sleep(2 * dm.livew.RefreshInterval)
+	fmt.Fprintf(dm.livew, "WeDeploy is up.\n")
+	dm.livew.Stop()
+	println("Failed to verify is WeDeploy is working correctly.")
+}
+
+func (dm *DockerMachine) start() {
+	var args = getRunCommandEnv()
+	var running = "docker " + strings.Join(args, " ")
+
+	if dm.Flags.DryRun && !verbose.Enabled {
+		println(running)
+	} else {
+		verbose.Debug(running)
+	}
+
+	if dm.Flags.DryRun {
+		os.Exit(0)
+	}
+
+	if !hasCurrentWeDeployImage() {
+		pull()
+	}
+
+	dm.Container = startCmd(args...)
+	verbose.Debug("Docker container ID:", dm.Container)
+}
+
+func (dm *DockerMachine) stop() {
+	var stop = exec.Command(bin, "stop", dm.Container)
+
+	if err := stop.Run(); err != nil {
+		println("docker stop error:", err.Error())
+		os.Exit(1)
+	}
+
+	dm.end <- true
+}
+
+func (dm *DockerMachine) maybeStopListener() {
+	if !dm.Flags.Detach && !dm.Flags.ViewMode {
+		dm.stopListener()
+	}
+}
+
+func (dm *DockerMachine) stopListener() {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go dm.stopEvent(sigs)
+}
+
+func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
+	<-sigs
+	verbose.Debug("WeDeploy stop event called. Waiting started signal.")
+	<-dm.started
+	verbose.Debug("Started end signal received.")
+
+	dm.tickerd <- true
+	fmt.Println("\nStopping WeDeploy.")
+	dm.stop()
+}
+
+func (dm *DockerMachine) checkConnection() {
+	var ticker = time.NewTicker(time.Second)
+	go dm.checkConnectionCounter(ticker)
+}
+
+func (dm *DockerMachine) checkConnectionCounter(ticker *time.Ticker) {
+	for {
+		select {
+		case t := <-ticker.C:
+			var p = WarmupOn
+			if t.Second()%2 == 0 {
+				p = WarmupOff
+			}
+
+			var dots = strings.Repeat(".", t.Second()%3+1)
+
+			fmt.Fprintf(dm.livew,
+				"%c connecting%s %ds\n", p, dots,
+				int(-dm.upTime.Sub(t).Seconds()))
+		case <-dm.tickerd:
+			ticker.Stop()
+			ticker = nil
+			return
+		}
+	}
+}
+
+func (dm *DockerMachine) prepare() {
+	dm.upTime = time.Now()
+	dm.testAlreadyRunning()
+	dm.livew = uilive.New()
+	dm.tickerd = make(chan bool, 1)
+	dm.started = make(chan bool, 1)
+	dm.end = make(chan bool, 1)
+}
+
+func (dm *DockerMachine) ready() {
+	fmt.Print("You can now test your apps locally.")
+
+	if !dm.Flags.ViewMode && !dm.Flags.Detach {
+		fmt.Print(" Press Ctrl+C to shut it down when you are done.")
+	}
+
+	if !dm.Flags.ViewMode && dm.Flags.Detach {
+		fmt.Print("\nRunning on background. \"we stop\" stops the infrastructure.")
+	}
+
+	fmt.Println("")
+}
+
+func (dm *DockerMachine) testAlreadyRunning() {
 	var args = []string{
 		"ps",
 		"--filter",
@@ -125,19 +294,18 @@ func getAlreadyRunning() string {
 		"{{.ID}}",
 	}
 
-	var docker = exec.Command("docker", args...)
-
-	var dockerContainerBuf bytes.Buffer
+	var docker = exec.Command(bin, args...)
+	var buf bytes.Buffer
 	docker.Stderr = os.Stderr
-	docker.Stdout = &dockerContainerBuf
+	docker.Stdout = &buf
 
 	if err := docker.Run(); err != nil {
 		println("docker ps error:", err.Error())
 		os.Exit(1)
 	}
 
-	var dockerContainer = strings.TrimSpace(dockerContainerBuf.String())
-	return dockerContainer
+	dm.Container = strings.TrimSpace(buf.String())
+	verbose.Debug("Docker container ID:", dm.Container)
 }
 
 func getWeDeployHost() string {
@@ -179,7 +347,7 @@ func hasCurrentWeDeployImage() bool {
 		WeDeployImage,
 	}
 
-	var docker = exec.Command("docker", args...)
+	var docker = exec.Command(bin, args...)
 	docker.Stderr = os.Stderr
 
 	if err := docker.Run(); err != nil {
@@ -191,7 +359,7 @@ func hasCurrentWeDeployImage() bool {
 }
 
 func getDockerPath() string {
-	var path, err = exec.LookPath("docker")
+	var path, err = exec.LookPath(bin)
 
 	if err != nil {
 		panic(err)
@@ -200,42 +368,9 @@ func getDockerPath() string {
 	return path
 }
 
-func dockerWait(dockerContainer string) *os.Process {
-	var procWait, err = os.StartProcess(getDockerPath(),
-		[]string{"docker", "wait", dockerContainer},
-		&os.ProcAttr{
-			Sys: &syscall.SysProcAttr{
-				Setpgid: true,
-			},
-			Files: []*os.File{nil, nil, nil},
-		})
-
-	if err != nil {
-		println("WeDeploy wait error:", err.Error())
-		os.Exit(1)
-	}
-
-	return procWait
-}
-
-func listen(dockerContainer string) {
-	var ps, err = dockerWait(dockerContainer).Wait()
-
-	if err != nil {
-		println("WeDeploy wait.Wait error:", err.Error())
-		os.Exit(1)
-	}
-
-	if ps.Success() {
-		fmt.Println("WeDeploy is shutdown.")
-	} else {
-		println("WeDeploy wait failure.")
-	}
-}
-
 func pull() {
 	fmt.Println("Pulling WeDeploy infrastructure docker image. Hold on.")
-	var docker = exec.Command("docker", "pull", WeDeployImage)
+	var docker = exec.Command(bin, "pull", WeDeployImage)
 	docker.Stderr = os.Stderr
 	docker.Stdout = os.Stdout
 
@@ -245,60 +380,9 @@ func pull() {
 	}
 }
 
-func waitReadyState() {
-	var tries = 1
-	var livew = uilive.New()
-	verbose.Debug("Waiting 10 seconds for ready state")
-	livew.Start()
-	var tdone = warmup(livew)
-	time.Sleep(10 * time.Second)
-	for tries <= 20 {
-		var _, err = projects.List()
-
-		if err == nil {
-			close(tdone)
-			time.Sleep(2 * livew.RefreshInterval)
-			fmt.Fprintf(livew, "WeDeploy is ready!\n")
-			livew.Stop()
-			return
-		}
-
-		verbose.Debug(fmt.Sprintf("Trying to read projects tries #%v: %v", tries, err))
-		tries++
-		time.Sleep(4 * time.Second)
-	}
-
-	close(tdone)
-	time.Sleep(2 * livew.RefreshInterval)
-	fmt.Fprintf(livew, "WeDeploy is up.\n")
-	livew.Stop()
-	println("WeDeploy is online, but failed to read projects to verify everything is fine.")
-}
-
-func start(flags Flags) string {
-	var args = getRunCommandEnv()
-	var running = "docker " + strings.Join(args, " ")
-
-	if flags.DryRun && !verbose.Enabled {
-		println(running)
-	} else {
-		verbose.Debug(running)
-	}
-
-	if flags.DryRun {
-		os.Exit(0)
-	}
-
-	if !hasCurrentWeDeployImage() {
-		pull()
-	}
-
-	return startCmd(args...)
-}
-
 func startCmd(args ...string) string {
 	fmt.Println("Starting WeDeploy")
-	var docker = exec.Command("docker", args...)
+	var docker = exec.Command(bin, args...)
 	var dockerContainerBuf bytes.Buffer
 	docker.Stderr = os.Stderr
 	docker.Stdout = &dockerContainerBuf
@@ -312,57 +396,24 @@ func startCmd(args ...string) string {
 	return dockerContainer
 }
 
-func stop(dockerContainer string) {
-	var stop = exec.Command("docker", "stop", dockerContainer)
-
-	if err := stop.Run(); err != nil {
-		println("docker stop error:", err.Error())
-		os.Exit(1)
-	}
-}
-
-func stopListener(dockerContainer string) {
-	sigs := make(chan os.Signal, 1)
-
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		<-sigs
-		fmt.Println("\nStopping WeDeploy.")
-		stop(dockerContainer)
-	}()
-}
-
 func existsDependency(cmd string) bool {
 	_, err := exec.LookPath(cmd)
 	return err == nil
 }
 
-func warmup(writer *uilive.Writer) chan bool {
-	var ticker = time.NewTicker(time.Second)
-	var tdone = make(chan bool, 1)
+func waitEnd(container string) (*os.ProcessState, error) {
+	var procWait, err = os.StartProcess(getDockerPath(),
+		[]string{bin, "wait", container},
+		&os.ProcAttr{
+			Sys: &syscall.SysProcAttr{
+				Setpgid: true,
+			},
+			Files: []*os.File{nil, nil, nil},
+		})
 
-	go warmupCounter(writer, ticker, tdone)
-
-	return tdone
-}
-
-func warmupCounter(w *uilive.Writer, ticker *time.Ticker, tdone chan bool) {
-	var now = time.Now()
-
-	for {
-		select {
-		case t := <-ticker.C:
-			var p = WarmupOn
-			if t.Second()%2 == 0 {
-				p = WarmupOff
-			}
-
-			fmt.Fprintf(w, "%c warming up %ds\n", p, int(-now.Sub(t).Seconds()))
-		case <-tdone:
-			ticker.Stop()
-			ticker = nil
-			return
-		}
+	if err != nil {
+		return nil, err
 	}
+
+	return procWait.Wait()
 }
