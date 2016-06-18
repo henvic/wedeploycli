@@ -97,6 +97,12 @@ var commands = []*cobra.Command{
 	cmdversion.VersionCmd,
 }
 
+func hideVersionFlag() {
+	if err := RootCmd.Flags().MarkHidden("version"); err != nil {
+		panic(err)
+	}
+}
+
 func init() {
 	config.Setup()
 
@@ -125,9 +131,7 @@ func init() {
 		&version,
 		"version", false, "Print version information and quit")
 
-	if err := RootCmd.Flags().MarkHidden("version"); err != nil {
-		panic(err)
-	}
+	hideVersionFlag()
 
 	if config.Global.NoColor {
 		color.NoColor = true
