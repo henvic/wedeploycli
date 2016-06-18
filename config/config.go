@@ -14,6 +14,7 @@ import (
 	"github.com/wedeploy/cli/verbose"
 )
 
+// RemoteConfig for a remote
 type RemoteConfig struct {
 	URL     string
 	Comment string
@@ -26,6 +27,7 @@ type Remotes struct {
 
 type remotesList map[string]RemoteConfig
 
+// List remotes
 func (r *Remotes) List() []string {
 	var keys = make([]string, 0, len(r.list))
 
@@ -37,11 +39,13 @@ func (r *Remotes) List() []string {
 	return keys
 }
 
+// Get a given remote by name
 func (r *Remotes) Get(name string) (RemoteConfig, bool) {
 	remote, ok := r.list[name]
 	return remote, ok
 }
 
+// Set a remote
 func (r *Remotes) Set(name string, url string, comment ...string) {
 	// make sure to use # by default, instead of ;
 	if len(comment) != 0 {
@@ -54,6 +58,7 @@ func (r *Remotes) Set(name string, url string, comment ...string) {
 	}
 }
 
+// Del deletes a remote by name
 func (r *Remotes) Del(name string) {
 	delete(r.list, name)
 }
@@ -85,7 +90,7 @@ var (
 	// Remote global flag
 	Remote = false
 
-	// // Local global flag
+	// Local global flag
 	Local = false
 )
 
