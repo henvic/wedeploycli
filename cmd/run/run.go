@@ -7,7 +7,7 @@ import (
 	"github.com/wedeploy/cli/run"
 )
 
-// RunCmd runs the WeDeploy structure for development locally
+// RunCmd runs the WeDeploy infrastructure for development locally
 var RunCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run WeDeploy infrastructure for development locally",
