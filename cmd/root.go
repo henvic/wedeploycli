@@ -37,10 +37,19 @@ var WhitelistCmdsNoAuthentication = map[string]bool{
 
 // ListNoRemoteFlags hides the globals non used --remote and --local flags
 var ListNoRemoteFlags = map[string]bool{
+	"link":    true,
+	"unlink":  true,
 	"run":     true,
 	"remote":  true,
 	"update":  true,
 	"version": true,
+}
+
+// LocalOnlyCommands sets the --local flag automatically for given commands
+var LocalOnlyCommands = map[string]bool{
+	"link":   true,
+	"unlink": true,
+	"run":    true,
 }
 
 // RootCmd is the main command for the CLI
@@ -225,6 +234,20 @@ func isCmdWhitelistNoAuth(commandPath string) bool {
 	}
 
 	return false
+}
+
+func cmdSetLocalFlag() {
+	var args = os.Args
+
+	if len(args) < 2 {
+		return
+	}
+
+	_, h := LocalOnlyCommands[args[1]]
+
+	if h {
+		setLocal()
+	}
 }
 
 func verifyCmdReqAuth(commandPath string) {
