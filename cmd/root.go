@@ -139,7 +139,7 @@ func init() {
 }
 
 func persistentPreRun(cmd *cobra.Command, args []string) {
-	verifyAuth(cmd.CommandPath())
+	verifyCmdReqAuth(cmd.CommandPath())
 }
 
 func run(cmd *cobra.Command, args []string) {
@@ -169,7 +169,7 @@ func isCmdWhitelistNoAuth(commandPath string) bool {
 	return false
 }
 
-func verifyAuth(commandPath string) {
+func verifyCmdReqAuth(commandPath string) {
 	if isCmdWhitelistNoAuth(commandPath) {
 		return
 	}
