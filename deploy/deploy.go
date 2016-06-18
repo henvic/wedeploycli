@@ -96,7 +96,6 @@ type deploySubmission struct {
 
 func (ds *deploySubmission) Writer() {
 	ds.emc <- multipartWriter(ds.mpw, ds.pw, ds.rc)
-	close(ds.emc)
 }
 
 func (ds *deploySubmission) Setup(rc io.ReadCloser) *io.PipeReader {
