@@ -176,7 +176,9 @@ func verifyAuth(commandPath string) {
 
 	var g = config.Global
 
-	if g.Endpoint != "" && g.Username != "" && g.Password != "" {
+	var hasAuth = (g.Token != "") || (g.Username != "" && g.Password != "")
+
+	if g.Endpoint != "" && hasAuth {
 		return
 	}
 
