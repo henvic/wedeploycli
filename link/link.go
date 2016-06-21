@@ -78,7 +78,7 @@ func All(projectPath string, list []string) (success []string, err error) {
 		return success, err
 	}
 
-	var ml = &Machine{
+	var m = &Machine{
 		Project:     project,
 		ProjectPath: projectPath,
 	}
@@ -87,16 +87,16 @@ func All(projectPath string, list []string) (success []string, err error) {
 		filepath.Join(projectPath, "/project.json"))
 
 	if created {
-		ml.Success = append(ml.Success, "New project "+project.ID+" created")
+		m.Success = append(m.Success, "New project "+project.ID+" created")
 	}
 
 	if err != nil {
 		return success, err
 	}
 
-	err = ml.run(list)
+	err = m.run(list)
 
-	success = ml.Success
+	success = m.Success
 
 	return success, err
 }
