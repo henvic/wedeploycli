@@ -239,20 +239,10 @@ func TestUnlink(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
 
-	servertest.Mux.HandleFunc("/deploy", func(w http.ResponseWriter, r *http.Request) {
+	servertest.Mux.HandleFunc("/deploy/foo/bar", func(w http.ResponseWriter, r *http.Request) {
 		var wantMethod = "DELETE"
 		if r.Method != wantMethod {
 			t.Errorf("Wanted method %v, got %v instead", wantMethod, r.Method)
-		}
-
-		var p, err = url.ParseQuery(r.URL.RawQuery)
-
-		if err != nil {
-			panic(err)
-		}
-
-		if p.Get("projectId") != "foo" || p.Get("containerId") != "bar" {
-			t.Errorf("Wrong query parameters, got %v", r.URL.RawQuery)
 		}
 	})
 

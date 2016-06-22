@@ -127,11 +127,8 @@ func Link(projectID, containerPath string, container *Container) error {
 
 // Unlink container
 func Unlink(projectID, containerID string) error {
-	var req = apihelper.URL("/deploy")
+	var req = apihelper.URL("/deploy", projectID, containerID)
 	apihelper.Auth(req)
-
-	req.Param("projectId", projectID)
-	req.Param("containerId", containerID)
 
 	return apihelper.Validate(req, req.Delete())
 }

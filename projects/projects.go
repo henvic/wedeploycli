@@ -122,10 +122,8 @@ func SetAuth(id, filename string) error {
 
 // Unlink project
 func Unlink(projectID string) error {
-	var req = apihelper.URL("/deploy")
+	var req = apihelper.URL("/deploy", projectID)
 	apihelper.Auth(req)
-
-	req.Param("projectId", projectID)
 
 	return apihelper.Validate(req, req.Delete())
 }
