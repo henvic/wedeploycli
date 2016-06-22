@@ -36,8 +36,8 @@ var (
 	outStream io.Writer = os.Stdout
 )
 
-// CreateFromDefinition creates a project on WeDeploy using a JSON definition
-func CreateFromDefinition(filename string) error {
+// Create a project on WeDeploy
+func Create(filename string) error {
 	var file, err = os.Open(filename)
 
 	if err != nil {
@@ -134,7 +134,7 @@ func Validate(projectID string) (err error) {
 
 // ValidateOrCreate project
 func ValidateOrCreate(filename string) (created bool, err error) {
-	err = CreateFromDefinition(filename)
+	err = Create(filename)
 
 	switch err.(type) {
 	case nil:

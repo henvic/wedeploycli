@@ -29,7 +29,7 @@ func TestMain(m *testing.M) {
 	os.Exit(ec)
 }
 
-func TestCreateFromDefinition(t *testing.T) {
+func TestCreate(t *testing.T) {
 	defer servertest.Teardown()
 	servertest.Setup()
 	globalconfigmock.Setup()
@@ -41,7 +41,7 @@ func TestCreateFromDefinition(t *testing.T) {
 			}
 		})
 
-	err := CreateFromDefinition("mocks/little/project.json")
+	err := Create("mocks/little/project.json")
 
 	if err != nil {
 		t.Errorf("Wanted err to be nil, got %v instead", err)
@@ -50,8 +50,8 @@ func TestCreateFromDefinition(t *testing.T) {
 	globalconfigmock.Teardown()
 }
 
-func TestCreateFromDefinitionFailureNotFound(t *testing.T) {
-	var err = CreateFromDefinition(fmt.Sprintf("foo-%d.json", rand.Int()))
+func TestCreateFailureNotFound(t *testing.T) {
+	var err = Create(fmt.Sprintf("foo-%d.json", rand.Int()))
 
 	if !os.IsNotExist(err) {
 		t.Errorf("Wanted err to be due to file not found, got %v instead", err)
