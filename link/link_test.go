@@ -99,6 +99,35 @@ func TestAll(t *testing.T) {
 	servertest.Teardown()
 }
 
+func TestAllAuth(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc("/projects",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/deploy",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	servertest.Mux.HandleFunc("/projects/project/auth",
+		func(w http.ResponseWriter, r *http.Request) {})
+
+	var success, err = All("mocks/project-with-auth", []string{"mycontainer"})
+
+	if err != nil {
+		t.Errorf("Unexpected error %v on deploy", err)
+	}
+
+	var wantFeedback = tdata.FromFile("mocks/link_feedback")
+
+	if !strings.Contains(wantFeedback, strings.Join(success, "\n")) {
+		t.Errorf("Wanted feedback to contain %v, got %v instead", wantFeedback, success)
+	}
+
+	globalconfigmock.Teardown()
+	servertest.Teardown()
+}
+
 func TestAllOnlyNewError(t *testing.T) {
 	servertest.Setup()
 

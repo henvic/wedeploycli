@@ -2,6 +2,7 @@ package link
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/verbose"
 )
 
 // Machine structure
@@ -83,22 +85,41 @@ func All(projectPath string, list []string) (success []string, err error) {
 		ProjectPath: projectPath,
 	}
 
-	created, err := projects.ValidateOrCreate(
-		filepath.Join(projectPath, "/project.json"))
-
-	if created {
-		m.Success = append(m.Success, "New project "+project.ID+" created")
-	}
+	err = m.createProject()
 
 	if err != nil {
-		return success, err
+		return m.Success, err
 	}
 
 	err = m.run(list)
+	return m.Success, err
+}
 
-	success = m.Success
+func (m *Machine) createProject() error {
+	created, err := projects.ValidateOrCreate(
+		filepath.Join(m.ProjectPath, "project.json"))
 
-	return success, err
+	if created {
+		m.Success = append(m.Success, "New project "+m.Project.ID+" created")
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return m.condAuthProject()
+}
+
+func (m *Machine) condAuthProject() error {
+	var authFile = filepath.Join(m.ProjectPath, "auth.json")
+	var err = projects.SetAuth(m.Project.ID, authFile)
+
+	if os.IsNotExist(err) {
+		verbose.Debug("Jumped uploading auth.json for project: does not exist")
+		return nil
+	}
+
+	return err
 }
 
 func (m *Machine) run(list []string) (err error) {
