@@ -187,7 +187,11 @@ func init() {
 }
 
 func setLocal() {
-	config.Global.Endpoint = "http://localhost:8080/"
+	if os.Getenv("WEDEPLOY_OVERRIDE_LOCAL_ENDPOINT") == "" {
+		verbose.Debug("Overriding --local endpoint (explicit or not)")
+		config.Global.Endpoint = "http://localhost:8080/"
+	}
+
 	config.Global.Token = "1"
 }
 
