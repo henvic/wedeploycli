@@ -18,9 +18,6 @@ func TestLink(t *testing.T) {
 	servertest.IntegrationMux.HandleFunc("/deploy",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.IntegrationMux.HandleFunc("/restart/project",
-		func(w http.ResponseWriter, r *http.Request) {})
-
 	var cmd = &Command{
 		Args: []string{"link"},
 		Env: []string{

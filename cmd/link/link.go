@@ -10,8 +10,6 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/link"
-	"github.com/wedeploy/cli/projects"
-	"github.com/wedeploy/cli/verbose"
 )
 
 // LinkCmd links the given project or container locally
@@ -56,13 +54,13 @@ func linkContainersFeedback(success []string, err error) {
 }
 
 func linkRun(cmd *cobra.Command, args []string) {
-	var projectID, _ = getProjectOrContainerID(args)
+	// calling it for side-effects
+	getProjectOrContainerID(args)
+
 	var success, err = link.All(config.Context.ProjectRoot,
 		getContainersFromScope())
 
 	linkContainersFeedback(success, err)
-	verbose.Debug("Restarting project")
-	projects.Restart(projectID)
 }
 
 func getProjectOrContainerID(args []string) (string, string) {
