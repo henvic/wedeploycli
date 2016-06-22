@@ -56,6 +56,8 @@ var portsArgs = []string{
 	"-p", "53:53/tcp",
 	"-p", "53:53/udp",
 	"-p", "80:80",
+	"-p", "5001:5001",
+	"-p", "5005:5005",
 	"-p", "8001:8001",
 	"-p", "8080:8080",
 	"-p", "8500:8500",
@@ -348,8 +350,6 @@ func getRunCommandEnv() []string {
 		"--privileged",
 		"-e",
 		"WEDEPLOY_HOST_IP=" + address,
-		"-v",
-		"/:/wedeploy/host",
 		"--detach",
 		WeDeployImage,
 	}...)
