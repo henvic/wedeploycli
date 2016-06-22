@@ -196,6 +196,7 @@ func setRemote() {
 
 	if !ok {
 		fmt.Fprintf(os.Stderr, "Remote %v is not configured.\n", remote)
+		os.Exit(1)
 	}
 
 	config.Global.Endpoint = r.URL
