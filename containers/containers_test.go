@@ -95,7 +95,7 @@ func TestLink(t *testing.T) {
 	bufOutStream.Reset()
 
 	servertest.Mux.HandleFunc(
-		"/deploy",
+		"/deploy/sound",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != "PUT" {
 				t.Errorf("Expected install method to be PUT")
