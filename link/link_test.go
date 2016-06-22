@@ -80,7 +80,7 @@ func TestAll(t *testing.T) {
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/deploy/project",
+	servertest.Mux.HandleFunc("/deploy",
 		func(w http.ResponseWriter, r *http.Request) {})
 
 	var success, err = All("mocks/myproject", []string{"mycontainer"})
@@ -106,7 +106,7 @@ func TestAllAuth(t *testing.T) {
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/deploy/project",
+	servertest.Mux.HandleFunc("/deploy",
 		func(w http.ResponseWriter, r *http.Request) {})
 
 	servertest.Mux.HandleFunc("/projects/project/auth",
@@ -170,7 +170,7 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/deploy/project",
+	servertest.Mux.HandleFunc("/deploy",
 		func(w http.ResponseWriter, r *http.Request) {})
 
 	var _, err = All("mocks/myproject", []string{"mycontainer", "nil", "nil2"})
@@ -228,7 +228,7 @@ func TestAllInstallContainerError(t *testing.T) {
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/deploy/project",
+	servertest.Mux.HandleFunc("/deploy",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(403)
 		})

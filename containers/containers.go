@@ -110,9 +110,10 @@ func List(projectID string) {
 func Link(projectID, containerPath string, container *Container) error {
 	verbose.Debug("Installing container from definition")
 
-	var req = apihelper.URL("/deploy", projectID)
+	var req = apihelper.URL("/deploy")
 	apihelper.Auth(req)
 
+	req.Param("projectId", projectID)
 	req.Param("source", containerPath)
 
 	var err = apihelper.SetBody(req, &container)

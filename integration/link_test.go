@@ -15,7 +15,7 @@ func TestLink(t *testing.T) {
 	servertest.IntegrationMux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.IntegrationMux.HandleFunc("/deploy/app",
+	servertest.IntegrationMux.HandleFunc("/deploy",
 		func(w http.ResponseWriter, r *http.Request) {})
 
 	var cmd = &Command{
