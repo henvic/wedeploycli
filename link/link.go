@@ -169,7 +169,7 @@ func (m *Machine) link(l *Link) error {
 }
 
 func (m *Machine) successFeedback(containerID string) {
-	var host = "liferay.local"
+	var host = "wedeploy.local"
 
 	m.SuccessMutex.Lock()
 	m.Success = append(m.Success, fmt.Sprintf(
