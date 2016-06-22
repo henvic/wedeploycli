@@ -195,7 +195,7 @@ func setRemote() {
 	var r, ok = config.Global.Remotes.Get(remote)
 
 	if !ok {
-		fmt.Fprintf(os.Stderr, "Remove %v is not configured.\n", remote)
+		fmt.Fprintf(os.Stderr, "Remote %v is not configured.\n", remote)
 	}
 
 	config.Global.Endpoint = r.URL
