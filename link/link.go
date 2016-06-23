@@ -146,12 +146,7 @@ func (m *Machine) start(dir string) {
 	var err = m.mountAndLink(dir)
 
 	if err != nil {
-		m.ErrorsMutex.Lock()
-		m.Errors.List = append(m.Errors.List, ContainerError{
-			ContainerPath: dir,
-			Error:         err,
-		})
-		m.ErrorsMutex.Unlock()
+		m.logError(dir, err)
 	}
 
 	m.queue.Done()
@@ -168,13 +163,28 @@ func (m *Machine) link(l *Link) error {
 	return err
 }
 
+func (m *Machine) logError(dir string, err error) {
+	m.ErrorsMutex.Lock()
+	m.Errors.List = append(m.Errors.List, ContainerError{
+		ContainerPath: dir,
+		Error:         err,
+	})
+	m.ErrorsMutex.Unlock()
+}
+
+func (m *Machine) logSuccess(msg string) {
+	m.SuccessMutex.Lock()
+	m.Success = append(m.Success, msg)
+	m.SuccessMutex.Unlock()
+}
+
 func (m *Machine) successFeedback(containerID string) {
 	var host = "wedeploy.local"
 
-	m.SuccessMutex.Lock()
-	m.Success = append(m.Success, fmt.Sprintf(
-		"Ready! %v.%v.%v", containerID, m.Project.ID, host))
-	m.SuccessMutex.Unlock()
+	m.logSuccess(fmt.Sprintf("Ready! %v.%v.%v",
+		containerID,
+		m.Project.ID,
+		host))
 }
 
 func (m *Machine) mountAndLink(dir string) error {
