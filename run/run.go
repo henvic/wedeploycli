@@ -195,7 +195,7 @@ func (dm *DockerMachine) waitReadyState() {
 	time.Sleep(2 * dm.livew.RefreshInterval)
 	fmt.Fprintf(dm.livew, "WeDeploy is up.\n")
 	dm.livew.Stop()
-	println("Failed to verify is WeDeploy is working correctly.")
+	println("Failed to verify if WeDeploy is working correctly.")
 }
 
 func (dm *DockerMachine) start() {
