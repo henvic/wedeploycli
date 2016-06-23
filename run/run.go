@@ -265,7 +265,7 @@ func (dm *DockerMachine) checkConnectionCounter(ticker *time.Ticker) {
 			var dots = strings.Repeat(".", t.Second()%3+1)
 
 			fmt.Fprintf(dm.livew,
-				"%c connecting%s %ds\n", p, dots,
+				"%c Starting WeDeploy%s %ds\n", p, dots,
 				int(-dm.upTime.Sub(t).Seconds()))
 		case <-dm.tickerd:
 			ticker.Stop()
@@ -399,7 +399,7 @@ func pull() {
 }
 
 func startCmd(args ...string) string {
-	fmt.Println("Starting WeDeploy")
+	verbose.Debug("Starting WeDeploy")
 	var docker = exec.Command(bin, args...)
 	var dockerContainerBuf bytes.Buffer
 	docker.Stderr = os.Stderr
