@@ -38,16 +38,8 @@ func getContainersFromScope() []string {
 	return list
 }
 
-func linkContainersFeedback(success []string, err error) {
-	for _, s := range success {
-		fmt.Println(s)
-	}
-
-	if len(success) != 0 && err != nil {
-		fmt.Println("")
-	}
-
-	if err != nil {
+func linkContainersFeedback(success []string, err *link.Errors) {
+	if len(err.List) != 0 {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -56,11 +48,23 @@ func linkContainersFeedback(success []string, err error) {
 func linkRun(cmd *cobra.Command, args []string) {
 	// calling it for side-effects
 	getProjectOrContainerID(args)
+	var list = getContainersFromScope()
 
-	var success, err = link.All(config.Context.ProjectRoot,
-		getContainersFromScope())
+	var m = &link.Machine{
+		FErrStream: os.Stderr,
+		FOutStream: os.Stdout,
+	}
 
-	linkContainersFeedback(success, err)
+	var err = m.Setup(config.Context.ProjectRoot)
+
+	if err != nil {
+		println(err.Error())
+		os.Exit(1)
+	}
+
+	m.Run(list)
+
+	linkContainersFeedback(m.Success, m.Errors)
 }
 
 func getProjectOrContainerID(args []string) (string, string) {

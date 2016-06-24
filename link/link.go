@@ -2,6 +2,7 @@ package link
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -19,6 +20,8 @@ type Machine struct {
 	ProjectPath  string
 	Success      []string
 	Errors       *Errors
+	FErrStream   io.Writer
+	FOutStream   io.Writer
 	SuccessMutex sync.Mutex
 	ErrorsMutex  sync.Mutex
 	dirMutex     sync.Mutex
@@ -72,27 +75,18 @@ func (le Errors) Error() string {
 		strings.Join(msgs, "\n"))
 }
 
-// All links a containers from a list
-func All(projectPath string, list []string) (success []string, err error) {
+// Setup prepares a project / container for linking
+func (m *Machine) Setup(projectPath string) error {
 	project, err := projects.Read(projectPath)
 
 	if err != nil {
-		return success, err
+		return err
 	}
 
-	var m = &Machine{
-		Project:     project,
-		ProjectPath: projectPath,
-	}
+	m.Project = project
+	m.ProjectPath = projectPath
 
-	err = m.createProject()
-
-	if err != nil {
-		return m.Success, err
-	}
-
-	err = m.run(list)
-	return m.Success, err
+	return m.createProject()
 }
 
 func (m *Machine) createProject() error {
@@ -100,7 +94,7 @@ func (m *Machine) createProject() error {
 		filepath.Join(m.ProjectPath, "project.json"))
 
 	if created {
-		m.Success = append(m.Success, "New project "+m.Project.ID+" created")
+		m.logSuccess("New project " + m.Project.ID + " created")
 	}
 
 	if err != nil {
@@ -122,7 +116,8 @@ func (m *Machine) condAuthProject() error {
 	return err
 }
 
-func (m *Machine) run(list []string) (err error) {
+// Run links the containers of the list input
+func (m *Machine) Run(list []string) {
 	m.Errors = &Errors{
 		List: []ContainerError{},
 	}
@@ -134,12 +129,6 @@ func (m *Machine) run(list []string) (err error) {
 	}
 
 	m.queue.Wait()
-
-	if len(m.Errors.List) != 0 {
-		err = m.Errors
-	}
-
-	return err
 }
 
 func (m *Machine) start(dir string) {
@@ -169,12 +158,22 @@ func (m *Machine) logError(dir string, err error) {
 		ContainerPath: dir,
 		Error:         err,
 	})
+
+	if m.FErrStream != nil {
+		fmt.Fprintf(m.FErrStream, "%v/ dir error: %v\n", dir, err)
+	}
+
 	m.ErrorsMutex.Unlock()
 }
 
 func (m *Machine) logSuccess(msg string) {
 	m.SuccessMutex.Lock()
 	m.Success = append(m.Success, msg)
+
+	if m.FOutStream != nil {
+		fmt.Fprintf(m.FOutStream, "%v\n", msg)
+	}
+
 	m.SuccessMutex.Unlock()
 }
 

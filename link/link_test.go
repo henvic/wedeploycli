@@ -30,7 +30,8 @@ func TestNew(t *testing.T) {
 }
 
 func TestNewErrorProjectNotFound(t *testing.T) {
-	var _, err = All("mocks/foo", []string{})
+	var m Machine
+	var err = m.Setup("mocks/foo")
 
 	if err != projects.ErrProjectNotFound {
 		t.Errorf("Expected project to be not found, got %v instead", err)
@@ -83,12 +84,16 @@ func TestAll(t *testing.T) {
 	servertest.Mux.HandleFunc("/deploy",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	var success, err = All("mocks/myproject", []string{"mycontainer"})
+	var m Machine
+	var err = m.Setup("mocks/myproject")
 
 	if err != nil {
-		t.Errorf("Unexpected error %v on deploy", err)
+		t.Errorf("Unexpected error %v on linking", err)
 	}
 
+	m.Run([]string{"mycontainer"})
+
+	var success = m.Success
 	var wantFeedback = tdata.FromFile("mocks/link_feedback")
 
 	if !strings.Contains(wantFeedback, strings.Join(success, "\n")) {
@@ -112,11 +117,15 @@ func TestAllAuth(t *testing.T) {
 	servertest.Mux.HandleFunc("/projects/project/auth",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	var success, err = All("mocks/project-with-auth", []string{"mycontainer"})
+	var m Machine
+	var err = m.Setup("mocks/project-with-auth")
 
 	if err != nil {
-		t.Errorf("Unexpected error %v on deploy", err)
+		t.Errorf("Unexpected error %v on linking", err)
 	}
+
+	m.Run([]string{"mycontainer"})
+	var success = m.Success
 
 	var wantFeedback = tdata.FromFile("mocks/link_feedback")
 
@@ -136,27 +145,29 @@ func TestAllOnlyNewError(t *testing.T) {
 
 	globalconfigmock.Setup()
 
-	var _, err = All("mocks/myproject", []string{"nil"})
+	var m Machine
+	var err = m.Setup("mocks/myproject")
 
-	switch err.(type) {
-	case *Errors:
-		var list = err.(*Errors).List
+	if err != nil {
+		panic(err)
+	}
 
-		if len(list) != 1 {
-			t.Errorf("Expected 1 element on the list.")
-		}
+	m.Run([]string{"nil"})
 
-		var nilerr = list[0]
+	var list = m.Errors.List
 
-		if nilerr.ContainerPath != "nil" {
-			t.Errorf("Expected container to be 'nil'")
-		}
+	if len(list) != 1 {
+		t.Errorf("Expected 1 element on the list.")
+	}
 
-		if nilerr.Error != containers.ErrContainerNotFound {
-			t.Errorf("Expected not exists error for container 'nil'")
-		}
-	default:
-		t.Errorf("Error is not of expected type: %v", err)
+	var nilerr = list[0]
+
+	if nilerr.ContainerPath != "nil" {
+		t.Errorf("Expected container to be 'nil'")
+	}
+
+	if nilerr.Error != containers.ErrContainerNotFound {
+		t.Errorf("Expected not exists error for container 'nil'")
 	}
 
 	globalconfigmock.Teardown()
@@ -173,29 +184,31 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 	servertest.Mux.HandleFunc("/deploy",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	var _, err = All("mocks/myproject", []string{"mycontainer", "nil", "nil2"})
+	var m Machine
+	var err = m.Setup("mocks/myproject")
 
-	switch err.(type) {
-	case *Errors:
-		var list = err.(*Errors).List
+	if err != nil {
+		panic(err)
+	}
 
-		if len(list) != 2 {
-			t.Errorf("Expected error list of %v to have 2 items", err)
+	m.Run([]string{"mycontainer", "nil", "nil2"})
+
+	var list = m.Errors.List
+
+	if len(list) != 2 {
+		t.Errorf("Expected error list of %v to have 2 items", err)
+	}
+
+	var find = map[string]bool{
+		"nil":  true,
+		"nil2": true,
+	}
+
+	for _, e := range list {
+		if !find[e.ContainerPath] {
+			t.Errorf("Unexpected %v on the error list %v",
+				e.ContainerPath, list)
 		}
-
-		var find = map[string]bool{
-			"nil":  true,
-			"nil2": true,
-		}
-
-		for _, e := range list {
-			if !find[e.ContainerPath] {
-				t.Errorf("Unexpected %v on the error list %v",
-					e.ContainerPath, list)
-			}
-		}
-	default:
-		t.Errorf("Error is not of expected type: %v", err)
 	}
 
 	globalconfigmock.Teardown()
@@ -211,7 +224,8 @@ func TestAllValidateOrCreateFailure(t *testing.T) {
 			w.WriteHeader(403)
 		})
 
-	var _, err = All("mocks/myproject", []string{"mycontainer"})
+	var m Machine
+	var err = m.Setup("mocks/myproject")
 
 	if err == nil || err.(*apihelper.APIFault).Code != 403 {
 		t.Errorf("Expected 403 Forbidden error, got %v instead", err)
@@ -233,12 +247,20 @@ func TestAllInstallContainerError(t *testing.T) {
 			w.WriteHeader(403)
 		})
 
-	var _, err = All("mocks/myproject", []string{"mycontainer"})
-	var el = err.(*Errors).List
+	var m Machine
+	var err = m.Setup("mocks/myproject")
+
+	if err != nil {
+		panic(err)
+	}
+
+	m.Run([]string{"mycontainer"})
+
+	var el = m.Errors.List
 	var af = el[0].Error.(*apihelper.APIFault)
 
-	if err == nil || af.Code != 403 {
-		t.Errorf("Expected 403 Forbidden error, got %v instead", err)
+	if m.Errors == nil || af.Code != 403 {
+		t.Errorf("Expected 403 Forbidden error, got %v instead", m.Errors)
 	}
 
 	globalconfigmock.Teardown()
