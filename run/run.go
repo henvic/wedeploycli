@@ -55,6 +55,8 @@ type DockerMachine struct {
 var portsArgs = []string{
 	"-p", "53:53/tcp",
 	"-p", "53:53/udp",
+	"-p", "24224:24224/tcp",
+	"-p", "24224:24224/udp",
 	"-p", "80:80",
 	"-p", "5001:5001",
 	"-p", "5005:5005",
