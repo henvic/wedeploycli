@@ -26,8 +26,8 @@ var (
 	// ErrInvalidID indicates an invalid resource ID (such as empty string)
 	ErrInvalidID = errors.New("Value for resource ID is invalid")
 
-	// ErrResourceExists indicates that two resouce can not share the same location
-	ErrResourceExists = errors.New("A resouce already exists on the root of this location")
+	// ErrResourceExists indicates that two resource can not share the same location
+	ErrResourceExists = errors.New("A resource already exists on the root of this location")
 )
 
 // New creates a resource
