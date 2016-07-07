@@ -1,6 +1,12 @@
 # WeDeploy CLI tool [![Build Status](http://img.shields.io/travis/wedeploy/cli/master.svg?style=flat)](https://travis-ci.org/wedeploy/cli) [![Coverage Status](https://coveralls.io/repos/wedeploy/cli/badge.svg)](https://coveralls.io/r/wedeploy/cli) [![codebeat badge](https://codebeat.co/badges/bd6acb49-ccdf-4045-a877-05da0198261a)](https://codebeat.co/projects/github-com-wedeploy-cli) [![Go Report Card](https://goreportcard.com/badge/github.com/wedeploy/cli)](https://goreportcard.com/report/github.com/wedeploy/cli) [![GoDoc](https://godoc.org/github.com/wedeploy/cli?status.svg)](https://godoc.org/github.com/wedeploy/cli)
 
-Install this tool from our [stable release channel](https://dl.equinox.io/wedeploy/we/stable) instead of following the procedures here, unless you are making changes to this tool. To update this tool, just run `we update`.
+Install this tool with
+
+`curl https://github.com/wedeploy/cli/blob/master/release.sh | bash`
+
+or download from our [stable release channel](https://dl.equinox.io/wedeploy/cli/stable).
+
+To update this tool, just run `we update`.
 
 ## Dependencies
 The following external soft dependencies are necessary to correctly run some commands:
