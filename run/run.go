@@ -349,6 +349,8 @@ func getRunCommandEnv() []string {
 
 	args = append(args, portsArgs...)
 	args = append(args, []string{
+		"-v",
+		"/var/run/docker.sock:/var/run/docker-host.sock",
 		"--privileged",
 		"-e",
 		"WEDEPLOY_HOST_IP=" + address,
