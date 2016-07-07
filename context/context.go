@@ -17,8 +17,12 @@ var (
 	// ErrContainerInProjectRoot happens when a project.json and container.json is found at the same directory level
 	ErrContainerInProjectRoot = errors.New("Container and project definition files at the same directory level")
 
-	sysRoot = "/"
+	sysRoot string
 )
+
+func init() {
+	setupOSRoot()
+}
 
 // Get returns a Context object with the current scope
 func Get() (*Context, error) {
@@ -58,7 +62,7 @@ func checkContainerNotInProjectRoot(projectRoot string) error {
 
 func walkToRootDirectory(dir, delimiter, file string) (string, error) {
 	// sysRoot = / = upper-bound / The Power of Ten rule 2
-	for dir != sysRoot && dir != delimiter {
+	for !isRootDelimiter(dir) && dir != delimiter {
 		stat, err := os.Stat(filepath.Join(dir, file))
 
 		if stat == nil {
