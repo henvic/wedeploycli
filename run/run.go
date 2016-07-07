@@ -43,13 +43,14 @@ type Flags struct {
 
 // DockerMachine for the run command
 type DockerMachine struct {
-	Container string
-	Flags     Flags
-	upTime    time.Time
-	livew     *uilive.Writer
-	tickerd   chan bool
-	end       chan bool
-	started   chan bool
+	Container   string
+	Flags       Flags
+	upTime      time.Time
+	waitProcess *os.Process
+	livew       *uilive.Writer
+	tickerd     chan bool
+	end         chan bool
+	started     chan bool
 }
 
 var portsArgs = []string{
@@ -147,10 +148,25 @@ func (dm *DockerMachine) Stop() {
 	}
 
 	stop(dm.Container)
+
+	if dm.waitProcess != nil {
+		fmt.Println("sending sigterm signal")
+		dm.waitProcess.Signal(syscall.SIGTERM)
+	}
 }
 
 func (dm *DockerMachine) waitEnd() {
-	var ps, err = waitEnd(dm.Container)
+	var p, err = runWait(dm.Container)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Running wait error: %v", err)
+	}
+
+	verbose.Debug("docker wait process pid:", p.Pid)
+	dm.waitProcess = p
+
+	var ps *os.ProcessState
+	ps, err = p.Wait()
 
 	switch {
 	case err != nil:
@@ -421,7 +437,16 @@ func startCmd(args ...string) string {
 func stop(container string) {
 	var stop = exec.Command(bin, "stop", container)
 
-	if err := stop.Run(); err != nil {
+	stopFeedback(stop.Run())
+}
+
+func stopFeedback(err error) {
+	switch err.(type) {
+	case nil:
+	case *exec.ExitError:
+		println("warning: still stopping WeDeploy on background\n")
+		os.Exit(1)
+	default:
 		println("docker stop error:", err.Error())
 		os.Exit(1)
 	}
@@ -430,21 +455,4 @@ func stop(container string) {
 func existsDependency(cmd string) bool {
 	_, err := exec.LookPath(cmd)
 	return err == nil
-}
-
-func waitEnd(container string) (*os.ProcessState, error) {
-	var procWait, err = os.StartProcess(getDockerPath(),
-		[]string{bin, "wait", container},
-		&os.ProcAttr{
-			Sys: &syscall.SysProcAttr{
-				Setpgid: true,
-			},
-			Files: []*os.File{nil, nil, nil},
-		})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return procWait.Wait()
 }
