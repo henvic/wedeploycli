@@ -39,7 +39,7 @@ RELEASE_CHANNEL=${RELEASE_CHANNEL:-"stable"}
 
 read -p "New version: " NEW_RELEASE_VERSION;
 # normalize by removing leading v (i.e., v0.0.1)
-NEW_RELEASE_VERSION=`echo $NEW_RELEASE_VERSION | sed 's/^v//'
+NEW_RELEASE_VERSION=`echo $NEW_RELEASE_VERSION | sed 's/^v//'`
 
 check_tags_free=`git tag --list "v$NEW_RELEASE_VERSION" | wc -l`
 if [ "$check_tags_free" -gt 0 ]; then
