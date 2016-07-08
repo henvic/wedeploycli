@@ -86,12 +86,6 @@ var (
 
 	// Context stores the environmental context
 	Context *context.Context
-
-	// Remote global flag
-	Remote = false
-
-	// Local global flag
-	Local = false
 )
 
 // Load the configuration
