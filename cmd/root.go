@@ -260,7 +260,7 @@ func cmdSetLocalFlag() {
 }
 
 func verifyCmdReqAuth(commandPath string) {
-	if isCmdWhitelistNoAuth(commandPath) {
+	if local || isCmdWhitelistNoAuth(commandPath) {
 		return
 	}
 
