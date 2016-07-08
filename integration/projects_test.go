@@ -16,7 +16,7 @@ func TestProjects(t *testing.T) {
 		tdata.ServerJSONFileHandler("mocks/projects_response.json"))
 
 	var cmd = &Command{
-		Args: []string{"projects"},
+		Args: []string{"projects", "--local=false"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 

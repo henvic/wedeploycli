@@ -24,7 +24,7 @@ func TestRestartProject(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"restart", "foo"},
+		Args: []string{"restart", "foo", "--local=false"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
@@ -57,7 +57,7 @@ func TestRestartContainer(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"restart", "foo", "bar"},
+		Args: []string{"restart", "foo", "bar", "--local=false"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 

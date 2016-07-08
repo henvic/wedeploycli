@@ -16,7 +16,7 @@ func TestContainers(t *testing.T) {
 		tdata.ServerJSONFileHandler("../containers/mocks/containers_response.json"))
 
 	var cmd = &Command{
-		Args: []string{"containers", "images"},
+		Args: []string{"containers", "images", "--local=false"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
@@ -38,7 +38,7 @@ func TestContainersFromProjectDirectory(t *testing.T) {
 		tdata.ServerJSONFileHandler("../containers/mocks/containers_response.json"))
 
 	var cmd = &Command{
-		Args: []string{"containers"},
+		Args: []string{"containers", "--local=false"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/home/bucket/images",
 	}
@@ -57,7 +57,7 @@ func TestContainersWithouProjectContext(t *testing.T) {
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"containers"},
+		Args: []string{"containers", "--local=false"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/home/bucket/",
 	}

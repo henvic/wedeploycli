@@ -164,7 +164,7 @@ func init() {
 
 	RootCmd.PersistentFlags().BoolVar(
 		&local,
-		"local", false, "Local (for development, remote = local)")
+		"local", true, "Local (for development, remote = local)")
 
 	RootCmd.PersistentFlags().StringVar(
 		&remote,
