@@ -27,7 +27,7 @@ function setup() {
 
 echo "CAUTION: Use at your own risk."
 echo "This build is NOT stable and NOT intended for public use."
-echo "Always download official releases from www.wedeploy.com or software updates"
+echo "Always download official releases from wedeploy.com or software updates"
 read -t 3 -p "" || true
 
 if [ ! -w $DESTDIR ] ; then setup ; fi
