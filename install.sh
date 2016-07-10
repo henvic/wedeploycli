@@ -32,7 +32,7 @@ function run() {
 }
 
 function info() {
-  wepath=`which we`
+  wepath=(which we)
   if [[ $wepath != "$DESTDIR/we" ]]; then
     echo "Installed, but not on your \$PATH"
     echo "Run with .$DESTDIR/we"
