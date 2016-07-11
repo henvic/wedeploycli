@@ -37,7 +37,8 @@ func Prompt(param string) string {
 		fmt.Printf(param + ": ")
 		value, err := gopass.GetPasswdMasked()
 
-		if err != nil {
+		// if user cancels with ^c, the ErrInterrupted error is returned
+		if err != nil && err != gopass.ErrInterrupted {
 			panic(err)
 		}
 
