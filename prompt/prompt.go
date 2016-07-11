@@ -35,7 +35,7 @@ func isSecretKey(key string) bool {
 func Prompt(param string) string {
 	if isSecretKey(param) {
 		fmt.Printf(param + ": ")
-		value, err := gopass.GetPasswdMasked()
+		value, err := gopass.GetPasswd()
 
 		// if user cancels with ^c, the ErrInterrupted error is returned
 		if err != nil && err != gopass.ErrInterrupted {
