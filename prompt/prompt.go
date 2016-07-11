@@ -35,7 +35,7 @@ func isSecretKey(key string) bool {
 func Prompt(param string) string {
 	if isSecretKey(param) {
 		fmt.Printf(param + ": ")
-		value, err := gopass.GetPasswd()
+		value, err := gopass.GetPasswdMasked()
 
 		if err != nil {
 			panic(err)
