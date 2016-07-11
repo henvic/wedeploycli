@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/bgentry/speakeasy"
+	"github.com/howeyc/gopass"
 )
 
 var secretKeys = []string{
@@ -34,13 +34,14 @@ func isSecretKey(key string) bool {
 // If the key is on a secret keys list it suppresses the feedback.
 func Prompt(param string) string {
 	if isSecretKey(param) {
-		value, err := speakeasy.Ask(param + ": ")
+		fmt.Printf(param + ": ")
+		value, err := gopass.GetPasswd()
 
 		if err != nil {
 			panic(err)
 		}
 
-		return value
+		return string(value)
 	}
 
 	reader := bufio.NewReader(inStream)
