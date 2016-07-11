@@ -1,7 +1,6 @@
 package update
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -18,10 +17,6 @@ var cacheNonAvailabilityDays = 4
 
 // AppID is Equinox's app ID for this tool
 var AppID = "app_g12mjgk2k9D"
-
-// ErrMasterVersion triggered when trying to update a development version
-var ErrMasterVersion = errors.New(
-	"You must update a development version manually with git")
 
 // PublicKey is the public key for the certificate used with Equinox
 var PublicKey = []byte(`
@@ -110,11 +105,6 @@ func Notify() {
 
 // Update this tool
 func Update(channel string) {
-	if defaults.Version == "master" {
-		fmt.Fprintln(os.Stderr, ErrMasterVersion)
-		os.Exit(1)
-	}
-
 	fmt.Println("Trying to update using the", channel, "distribution channel")
 	fmt.Println("Current installed version is " + defaults.Version)
 
