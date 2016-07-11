@@ -119,10 +119,14 @@ func Update(channel string) {
 	fmt.Println("Current installed version is " + defaults.Version)
 
 	var resp, err = check(channel)
-	handleUpdateCheckError(err)
-	updateApply(channel, resp)
 
-	fmt.Println("Updated to new version:", resp.ReleaseVersion)
+	switch err {
+	case nil:
+		updateApply(channel, resp)
+		fmt.Println("Updated to new version:", resp.ReleaseVersion)
+	default:
+		handleUpdateCheckError(err)
+	}
 }
 
 func check(channel string) (*equinox.Response, error) {
@@ -144,7 +148,6 @@ func getCurrentTime() string {
 
 func handleUpdateCheckError(err error) {
 	switch err {
-	case nil:
 	case equinox.NotAvailableErr:
 		var g = config.Global
 		g.NextVersion = ""
