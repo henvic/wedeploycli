@@ -33,10 +33,10 @@ read -t 3 -p "" || true
 if [ ! -w $DESTDIR ] ; then setup ; fi
 
 function run() {
-  # echo Downloading from $URL
-  # curl -L -O $URL -f --progress-bar
-  # unzip -p $FILE.zip cli/cli > $DESTDIR/we
-  # chmod +x $DESTDIR/we
+  echo Downloading from $URL
+  curl -L -O $URL -f --progress-bar
+  unzip -p $FILE.zip cli/cli > $DESTDIR/we
+  chmod +x $DESTDIR/we
   info
 }
 
