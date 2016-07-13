@@ -178,7 +178,7 @@ func (m *Machine) logSuccess(msg string) {
 }
 
 func (m *Machine) successFeedback(containerID string) {
-	var host = "wedeploy.local"
+	var host = "wedeploy.me"
 
 	m.logSuccess(fmt.Sprintf("Ready! %v.%v.%v",
 		containerID,
