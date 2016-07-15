@@ -69,6 +69,8 @@ var tcpPorts = tcpPortsStruct{
 func (t tcpPortsStruct) getAvailability() (all bool, notAvailable []int) {
 	all = true
 	for _, k := range t {
+		// there is a small chance of a port being in use by a process, but not
+		// responding. We ignore this risk here for simplicity.
 		var con, err = net.Dial("tcp", fmt.Sprintf(":%v", k))
 
 		if con != nil {
