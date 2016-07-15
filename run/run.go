@@ -53,16 +53,48 @@ type DockerMachine struct {
 	started     chan bool
 }
 
-var portsArgs = []string{
-	"-p", "24224:24224/tcp",
-	"-p", "24224:24224/udp",
-	"-p", "80:80",
-	"-p", "5001:5001",
-	"-p", "5005:5005",
-	"-p", "8001:8001",
-	"-p", "8080:8080",
-	"-p", "8500:8500",
-	"-p", "9200:9200",
+type tcpPortsStruct []int
+
+var tcpPorts = tcpPortsStruct{
+	24224,
+	80,
+	5001,
+	5005,
+	8001,
+	8080,
+	8500,
+	9200,
+}
+
+func (t tcpPortsStruct) areAvailable() bool {
+	for _, k := range t {
+		var con, err = net.Dial("tcp", fmt.Sprintf(":%v", k))
+
+		if con != nil {
+			_ = con.Close()
+			return false
+		}
+
+		switch err.(type) {
+		case *net.OpError:
+			// ignore error as we want the port to be free
+			// this is not 100% bullet-proof, but good enough for our needs
+			continue
+		default:
+			verbose.Debug("Unexpected error", err)
+		}
+	}
+
+	return true
+}
+
+func (t tcpPortsStruct) expose() []string {
+	var ports []string
+	for _, k := range t {
+		ports = append(ports, "-p", fmt.Sprintf("%v:%v", k, k))
+	}
+
+	return ports
 }
 
 // GetWeDeployHost gets the WeDeploy infrastructure host
@@ -153,6 +185,19 @@ func (dm *DockerMachine) Stop() {
 	}
 }
 
+func (dm *DockerMachine) checkPortsAreAvailable() {
+	if !tcpPorts.areAvailable() {
+		println("Can't start. The following network ports must be available:")
+
+		for port := range tcpPorts {
+			print(port)
+		}
+
+		println("")
+		os.Exit(1)
+	}
+}
+
 func (dm *DockerMachine) waitEnd() {
 	var p, err = runWait(dm.Container)
 
@@ -227,6 +272,8 @@ func (dm *DockerMachine) start() {
 	if dm.Flags.DryRun {
 		os.Exit(0)
 	}
+
+	dm.checkPortsAreAvailable()
 
 	if !hasCurrentWeDeployImage() {
 		pull()
@@ -361,7 +408,10 @@ func getRunCommandEnv() []string {
 	var address = getWeDeployHost()
 	var args = []string{"run"}
 
-	args = append(args, portsArgs...)
+	// fluentd might use either TCP or UDP, hence this special case
+	args = append(args, "-p", "24224:24224/udp")
+
+	args = append(args, tcpPorts.expose()...)
 	args = append(args, []string{
 		"-v",
 		"/var/run/docker.sock:/var/run/docker-host.sock",
