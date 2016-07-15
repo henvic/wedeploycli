@@ -1,8 +1,0 @@
-{
-    "id": "container",
-    "name": "container",
-    "hooks": {
-    	"before_deploy": "false",
-        "after_deploy": "false"
-    }
-}
