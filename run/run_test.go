@@ -50,8 +50,14 @@ func TestTCPPortsAvailableNone(t *testing.T) {
 	var originalTCPPorts = tcpPorts
 	tcpPorts = tcpPortsStruct{}
 
-	if !tcpPorts.areAvailable() {
+	var all, notAvailable = tcpPorts.getAvailability()
+
+	if !all {
 		t.Errorf("Availability should be true if no ports are required")
+	}
+
+	if len(notAvailable) != 0 {
+		t.Errorf("Expected notAvailable to have length 0, got %v instead", notAvailable)
 	}
 
 	tcpPorts = originalTCPPorts
@@ -74,8 +80,16 @@ func TestTCPPortsAvailableNotFree(t *testing.T) {
 	var originalTCPPorts = tcpPorts
 	tcpPorts = tcpPortsStruct{port}
 
-	if tcpPorts.areAvailable() {
+	var all, notAvailable = tcpPorts.getAvailability()
+
+	if all {
 		t.Errorf("Availability should be false because port %v is in use", port)
+	}
+
+	var expectedNotavailable = []int{port}
+
+	if !reflect.DeepEqual(notAvailable, expectedNotavailable) {
+		t.Errorf("Not available arrays should be equal")
 	}
 
 	l.Close()
@@ -101,8 +115,14 @@ func TestTCPPortsAvailableFree(t *testing.T) {
 	var originalTCPPorts = tcpPorts
 	tcpPorts = tcpPortsStruct{port}
 
-	if !tcpPorts.areAvailable() {
+	var all, notAvailable = tcpPorts.getAvailability()
+
+	if !all {
 		t.Errorf("Availability should be true because port %v is freed", port)
+	}
+
+	if len(notAvailable) != 0 {
+		t.Errorf("There should be no non-available TCP ports, got %v instead", notAvailable)
 	}
 
 	tcpPorts = originalTCPPorts

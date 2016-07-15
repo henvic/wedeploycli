@@ -66,13 +66,16 @@ var tcpPorts = tcpPortsStruct{
 	9200,
 }
 
-func (t tcpPortsStruct) areAvailable() bool {
+func (t tcpPortsStruct) getAvailability() (all bool, notAvailable []int) {
+	all = true
 	for _, k := range t {
 		var con, err = net.Dial("tcp", fmt.Sprintf(":%v", k))
 
 		if con != nil {
 			_ = con.Close()
-			return false
+			all = false
+			notAvailable = append(notAvailable, k)
+			continue
 		}
 
 		switch err.(type) {
@@ -81,11 +84,11 @@ func (t tcpPortsStruct) areAvailable() bool {
 			// this is not 100% bullet-proof, but good enough for our needs
 			continue
 		default:
-			verbose.Debug("Unexpected error", err)
+			verbose.Debug("Ignoring unexpected error", err)
 		}
 	}
 
-	return true
+	return all, notAvailable
 }
 
 func (t tcpPortsStruct) expose() []string {
@@ -186,16 +189,19 @@ func (dm *DockerMachine) Stop() {
 }
 
 func (dm *DockerMachine) checkPortsAreAvailable() {
-	if !tcpPorts.areAvailable() {
-		println("Can't start. The following network ports must be available:")
+	var all, notAvailable = tcpPorts.getAvailability()
 
-		for port := range tcpPorts {
-			print(port)
-		}
-
-		println("")
-		os.Exit(1)
+	if all {
+		return
 	}
+
+	println("Can't start. The following network ports must be available:")
+
+	for _, port := range notAvailable {
+		println(port)
+	}
+
+	os.Exit(1)
 }
 
 func (dm *DockerMachine) waitEnd() {
