@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"runtime"
+	"strings"
 )
 
 // FromFile gets a string data from a file
@@ -14,7 +16,13 @@ func FromFile(filename string) string {
 		panic(err)
 	}
 
-	return string(b)
+	var value = string(b)
+
+	if runtime.GOOS == "windows" {
+		value = strings.Replace(value, "\r\n", "\n", -1)
+	}
+
+	return value
 }
 
 // ServerHandler serves string content
