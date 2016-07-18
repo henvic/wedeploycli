@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/wedeploy/cli/verbose"
 )
 
 // Hooks (after / deploy / main action)
@@ -75,5 +77,6 @@ func (h *Hooks) runBuild() error {
 
 // Run a process synchronously inheriting stderr and stdout
 func Run(command string) error {
+	verbose.Debug("> " + command)
 	return run(command)
 }
