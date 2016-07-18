@@ -18,13 +18,46 @@ type Hooks struct {
 	AfterDeploy  string `json:"after_deploy"`
 }
 
+// Build is 'build' hook
+const Build = "build"
+
 var (
-	// ErrMissingHook is used when the main hook action is missing
+	// ErrMissingHook is used when the hook is missing
 	ErrMissingHook = errors.New("Missing hook.")
 
 	outStream io.Writer = os.Stdout
 	errStream io.Writer = os.Stderr
 )
+
+// Run invokes the hooks for the given hook type
+func (h *Hooks) Run(hookType string) error {
+	switch hookType {
+	case "build":
+		return h.runBuild()
+	default:
+		return ErrMissingHook
+	}
+}
+
+func (h *Hooks) runBuild() error {
+	if h.Build == "" && (h.BeforeBuild != "" || h.AfterBuild != "") {
+		fmt.Fprintf(errStream, "Error: no build hook main action\n")
+	}
+
+	if h.BeforeBuild != "" {
+		RunAndExitOnFailure(h.BeforeBuild)
+	}
+
+	if h.Build != "" {
+		RunAndExitOnFailure(h.Build)
+	}
+
+	if h.AfterBuild != "" {
+		RunAndExitOnFailure(h.AfterBuild)
+	}
+
+	return nil
+}
 
 // Run a process synchronously inheriting stderr and stdout
 func Run(command string) error {

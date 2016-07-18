@@ -14,6 +14,41 @@ import (
 	"github.com/wedeploy/cli/tdata"
 )
 
+type HooksProvider struct {
+	Type       string
+	Hook       *Hooks
+	WantOutput string
+	WantErr    string
+	WantError  error
+}
+
+var HooksCases = []HooksProvider{
+	HooksProvider{
+		Type: "build",
+		Hook: &Hooks{
+			BeforeBuild: "echo before build",
+			Build:       "echo during build",
+			AfterBuild:  "echo after build",
+		},
+		WantOutput: "before build\nduring build\nafter build\n",
+		WantError:  nil,
+	},
+	HooksProvider{
+		Type: Build,
+		Hook: &Hooks{
+			BeforeBuild: "echo a",
+			AfterBuild:  "echo b",
+		},
+		WantOutput: "a\nb\n",
+		WantErr:    "Error: no build hook main action\n",
+		WantError:  nil,
+	},
+	HooksProvider{
+		Type:      "not implemented",
+		WantError: ErrMissingHook,
+	},
+}
+
 var (
 	bufErrStream bytes.Buffer
 	bufOutStream bytes.Buffer
@@ -28,6 +63,32 @@ func TestMain(m *testing.M) {
 	errStream = defaultErrStream
 	outStream = defaultOutStream
 	os.Exit(ec)
+}
+
+func TestRunHooks(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Not testing hooks.Build() on Windows")
+	}
+
+	for _, c := range HooksCases {
+		bufErrStream.Reset()
+		bufOutStream.Reset()
+
+		if err := c.Hook.Run(c.Type); err != c.WantError {
+			t.Errorf("Expected %v, got %v instead", c.WantError, err)
+		}
+
+		var gotOutStream = bufOutStream.String()
+		var gotErrStream = bufErrStream.String()
+
+		if gotErrStream != c.WantErr {
+			t.Errorf("Expected %v, got %v instead", c.WantErr, gotErrStream)
+		}
+
+		if gotOutStream != c.WantOutput {
+			t.Errorf("Expected %v, got %v instead", c.WantOutput, gotOutStream)
+		}
+	}
 }
 
 func TestRun(t *testing.T) {
