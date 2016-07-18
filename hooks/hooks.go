@@ -11,12 +11,12 @@ import (
 
 // Hooks (after / deploy / main action)
 type Hooks struct {
-	BeforeBuild  string `json:"before_build" mapstructure:"before_build"`
+	BeforeBuild  string `json:"before_build"`
 	Build        string `json:"build"`
-	AfterBuild   string `json:"after_build" mapstructure:"after_build"`
-	BeforeDeploy string `json:"before_deploy" mapstructure:"before_deploy"`
+	AfterBuild   string `json:"after_build"`
+	BeforeDeploy string `json:"before_deploy"`
 	Deploy       string `json:"deploy"`
-	AfterDeploy  string `json:"after_deploy" mapstructure:"after_deploy"`
+	AfterDeploy  string `json:"after_deploy"`
 }
 
 var (
