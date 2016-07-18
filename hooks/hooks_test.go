@@ -3,10 +3,11 @@ package hooks
 import (
 	"bytes"
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
+	"reflect"
 	"runtime"
 	"strings"
 	"testing"
@@ -15,11 +16,12 @@ import (
 )
 
 type HooksProvider struct {
-	Type       string
-	Hook       *Hooks
-	WantOutput string
-	WantErr    string
-	WantError  error
+	Type        string
+	Hook        *Hooks
+	WantOutput  string
+	WantErr     string
+	WantErrType bool
+	WantError   error
 }
 
 var HooksCases = []HooksProvider{
@@ -47,6 +49,17 @@ var HooksCases = []HooksProvider{
 		Type:      "not implemented",
 		WantError: ErrMissingHook,
 	},
+	HooksProvider{
+		Type: Build,
+		Hook: &Hooks{
+			Build: "test",
+		},
+		WantError: HookError{
+			Command: "test",
+			Err:     errors.New("exit status 1"),
+		},
+		WantErrType: true,
+	},
 }
 
 var (
@@ -65,6 +78,20 @@ func TestMain(m *testing.M) {
 	os.Exit(ec)
 }
 
+func TestHookError(t *testing.T) {
+	var he = HookError{
+		Command: "foo",
+		Err:     errors.New("bar"),
+	}
+
+	var want = "Command foo failure: bar"
+	var got = he.Error()
+
+	if want != got {
+		t.Errorf("Wanted hook error %v, got %v instead", want, got)
+	}
+}
+
 func TestRunHooks(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("Not testing hooks.Build() on Windows")
@@ -74,8 +101,24 @@ func TestRunHooks(t *testing.T) {
 		bufErrStream.Reset()
 		bufOutStream.Reset()
 
-		if err := c.Hook.Run(c.Type); err != c.WantError {
-			t.Errorf("Expected %v, got %v instead", c.WantError, err)
+		err := c.Hook.Run(c.Type)
+
+		// get the error message + err type or the actual error
+		switch c.WantErrType {
+		case true:
+			if reflect.TypeOf(c.WantError) != reflect.TypeOf(err) {
+				t.Errorf("Different error type, expected %v, got %v instead",
+					reflect.TypeOf(c.WantError),
+					reflect.TypeOf(err))
+			}
+
+			if (err != nil || c.WantError != nil) && err.Error() != c.WantError.Error() {
+				t.Errorf("Expected %v, got %v instead", c.WantError, err)
+			}
+		default:
+			if err != c.WantError {
+				t.Errorf("Expected %v, got %v instead", c.WantError, err)
+			}
 		}
 
 		var gotOutStream = bufOutStream.String()
@@ -115,60 +158,5 @@ func TestRun(t *testing.T) {
 
 	if bufErrStream.Len() != 0 {
 		t.Errorf("Unexpected err output")
-	}
-}
-
-func TestRunAndExitOnFailureOnSuccess(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("Not testing hooks.Run() on Windows")
-	}
-
-	bufErrStream.Reset()
-	bufOutStream.Reset()
-
-	RunAndExitOnFailure("openssl md5 hooks.go")
-
-	h := md5.New()
-
-	if _, err := io.WriteString(h, tdata.FromFile("./hooks.go")); err != nil {
-		panic(err)
-	}
-
-	if !strings.Contains(bufOutStream.String(), fmt.Sprintf("%x", h.Sum(nil))) {
-		t.Errorf("Expected Run() test to contain md5 output similar to crypto.md5")
-	}
-
-	if bufErrStream.Len() != 0 {
-		t.Errorf("Unexpected err output")
-	}
-}
-
-func TestRunAndExitOnFailureFailure(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("Not testing hooks.Run() on Windows")
-	}
-
-	bufErrStream.Reset()
-	bufOutStream.Reset()
-
-	if os.Getenv("PING_CRASHER") == "1" {
-		outStream = os.Stdout
-		errStream = os.Stderr
-		RunAndExitOnFailure("ping")
-		return
-	}
-
-	cmd := exec.Command(os.Args[0], "-test.run=TestRunAndExitOnFailureFailure")
-	cmd.Stderr = errStream
-	cmd.Stdout = outStream
-	cmd.Env = append(os.Environ(), "PING_CRASHER=1")
-	err := cmd.Run()
-
-	if err.Error() != "exit status 1" {
-		t.Errorf("Expected exit status 1 for ping process, got %v instead", err)
-	}
-
-	if bufErrStream.Len() == 0 {
-		t.Error("Expected ping output to be piped to stderr")
 	}
 }

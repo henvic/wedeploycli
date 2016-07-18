@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 )
 
 // Hooks (after / deploy / main action)
@@ -16,6 +15,16 @@ type Hooks struct {
 	BeforeDeploy string `json:"before_deploy"`
 	Deploy       string `json:"deploy"`
 	AfterDeploy  string `json:"after_deploy"`
+}
+
+// HookError struct
+type HookError struct {
+	Command string
+	Err     error
+}
+
+func (he HookError) Error() string {
+	return fmt.Sprintf("Command %v failure: %v", he.Command, he.Err.Error())
 }
 
 // Build is 'build' hook
@@ -44,16 +53,21 @@ func (h *Hooks) runBuild() error {
 		fmt.Fprintf(errStream, "Error: no build hook main action\n")
 	}
 
-	if h.BeforeBuild != "" {
-		RunAndExitOnFailure(h.BeforeBuild)
+	var steps = []string{
+		h.BeforeBuild,
+		h.Build,
+		h.AfterBuild,
 	}
 
-	if h.Build != "" {
-		RunAndExitOnFailure(h.Build)
-	}
+	for _, eachStep := range steps {
+		var err = Run(eachStep)
 
-	if h.AfterBuild != "" {
-		RunAndExitOnFailure(h.AfterBuild)
+		if err != nil {
+			return HookError{
+				Command: eachStep,
+				Err:     err,
+			}
+		}
 	}
 
 	return nil
@@ -62,21 +76,4 @@ func (h *Hooks) runBuild() error {
 // Run a process synchronously inheriting stderr and stdout
 func Run(command string) error {
 	return run(command)
-}
-
-// RunAndExitOnFailure inheriting stderr and stdout, but kill itself on error
-func RunAndExitOnFailure(command string) {
-	err := Run(command)
-
-	// edge case not shown on coverage, tested on TestRunAndExitOnFailureFailure
-	if err != nil {
-		switch err.(type) {
-		case *exec.ExitError:
-			fmt.Fprintf(errStream, "%v\n", err.(*exec.ExitError))
-		default:
-			fmt.Fprintf(errStream, "%v\n", err)
-		}
-
-		os.Exit(1)
-	}
 }
