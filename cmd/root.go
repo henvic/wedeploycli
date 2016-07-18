@@ -62,7 +62,7 @@ var RootCmd = &cobra.Command{
 	Long: `WeDeploy Command Line Interface
 Version ` + defaults.Version + `
 Copyright 2016 Liferay, Inc.
-http://liferay.io`,
+http://wedeploy.com`,
 	PersistentPreRun: persistentPreRun,
 	Run:              run,
 }
