@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"strings"
 )
 
 // Hooks (after / deploy / main action)
@@ -29,17 +28,7 @@ var (
 
 // Run a process synchronously inheriting stderr and stdout
 func Run(command string) error {
-	var parts = strings.SplitN(command, " ", 2)
-	var arguments = []string{}
-
-	if len(parts) == 2 {
-		arguments = strings.Split(parts[1], " ")
-	}
-
-	process := exec.Command(parts[0], arguments...)
-	process.Stderr = errStream
-	process.Stdout = outStream
-	return process.Run()
+	return run(command)
 }
 
 // RunAndExitOnFailure inheriting stderr and stdout, but kill itself on error
