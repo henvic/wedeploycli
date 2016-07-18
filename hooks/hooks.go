@@ -62,6 +62,10 @@ func (h *Hooks) runBuild() error {
 	}
 
 	for _, eachStep := range steps {
+		if eachStep == "" {
+			continue
+		}
+
 		var err = Run(eachStep)
 
 		if err != nil {
