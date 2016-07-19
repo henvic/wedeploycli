@@ -434,7 +434,7 @@ func getRunCommandEnv() []string {
 }
 
 func hasCurrentWeDeployImage() bool {
-	if WeDeployImage == "latest" {
+	if defaults.WeDeployImageTag == "latest" {
 		verbose.Debug("Shortcutting WeDeploy docker image as outdated (because its tag is \"latest\").")
 		return false
 	}
