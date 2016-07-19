@@ -2,6 +2,11 @@
 
 package context
 
+import (
+	"os"
+	"path/filepath"
+)
+
 // isDriveLetter returns true if path is Windows drive letter (like "c:").
 // (from Go's filepath)
 func isDriveLetter(path string) bool {
@@ -9,9 +14,20 @@ func isDriveLetter(path string) bool {
 }
 
 func setupOSRoot() {
-	// not necessary to set sysRoot
-	// unless we want to delimit it
-	// and we don't need to delimit to C:\
+	// we need to delimit to <drive>:\
+	var cwd, err = os.Getwd()
+
+	if err != nil {
+		panic(err)
+	}
+
+	var drive = cwd
+
+	for !isDriveLetter(drive) {
+		drive = filepath.Join(drive, "..")
+	}
+
+	sysRoot = drive
 }
 
 func isRootDelimiter(dir string) bool {
