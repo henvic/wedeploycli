@@ -15,7 +15,7 @@ func run(command string) error {
 	}
 
 	verbose.Debug("Warning: bash not available, running hook on Windows native cmd")
-	runCmd(command)
+	return runCmd(command)
 }
 
 func runBash(command string) error {
