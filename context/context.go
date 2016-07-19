@@ -67,7 +67,6 @@ func walkToRootDirectory(dir, delimiter, file string) (string, error) {
 
 		if stat == nil {
 			dir = filepath.Join(dir, "..")
-			dir, _ = filepath.Abs(dir)
 			continue
 		}
 
