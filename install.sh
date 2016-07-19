@@ -14,14 +14,20 @@ URL=https://bin.equinox.io/c/${VERSION_PKG}/$FILE.zip
 # default DESTDIR
 DESTDIR=/usr/local/bin
 
-function setup() {
+function setupAlternateDir() {
+  if [ ! -t 1 ] ; then
+    echo "Can't install in $DESTDIR (default)."
+    echo "Run this script from terminal to install it somewhere else."
+    exit 1
+  fi
+
   echo "No permission to install in $DESTDIR"
   echo "Cancel to run again as root / sudoer or install it somewhere else"
-  read -p "Install in [current dir]: " DESTDIR;
+  read -p "Install in [current dir]: " DESTDIR < /dev/tty;
   DESTDIR=${DESTDIR:-`pwd`}
 }
 
-if [ ! -w $DESTDIR ] ; then setup ; fi
+if [ ! -w $DESTDIR ] ; then setupAlternateDir ; fi
 
 function run() {
   echo Downloading from $URL
