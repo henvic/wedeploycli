@@ -91,13 +91,3 @@ func getRootDirectory(delimiter, file string) (dir string, err error) {
 
 	return walkToRootDirectory(dir, delimiter, file)
 }
-
-func setSysRoot(dir string) {
-	var err error
-
-	sysRoot, err = filepath.Abs(dir)
-
-	if err != nil {
-		panic(err)
-	}
-}

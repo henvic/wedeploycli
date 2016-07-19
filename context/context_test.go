@@ -221,3 +221,13 @@ func chdir(dir string) {
 		panic(ech)
 	}
 }
+
+func setSysRoot(dir string) {
+	var err error
+
+	sysRoot, err = filepath.Abs(dir)
+
+	if err != nil {
+		panic(err)
+	}
+}
