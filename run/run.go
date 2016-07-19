@@ -441,11 +441,20 @@ func hasCurrentWeDeployImage() bool {
 		WeDeployImage,
 	}
 
+	var bufErrStream bytes.Buffer
 	var docker = exec.Command(bin, args...)
-	docker.Stderr = os.Stderr
+	docker.Stderr = &bufErrStream
 
-	if err := docker.Run(); err != nil {
-		verbose.Debug("docker inspect error:", err.Error())
+	err := docker.Run()
+
+	if strings.Index(bufErrStream.String(), "Error: No such image") != -1 {
+		return false
+	}
+
+	print(bufErrStream.String())
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "docker inspect error: %v\n", err)
 		return false
 	}
 
