@@ -31,7 +31,7 @@ func getContainersFromScope() []string {
 	var list, err = containers.GetListFromDirectory(config.Context.ProjectRoot)
 
 	if err != nil {
-		fmt.Fprintln("Error retrieving containers list from directory.")
+		fmt.Fprintln(os.Stderr, "Error retrieving containers list from directory.")
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
