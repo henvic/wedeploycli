@@ -5,7 +5,7 @@ package context
 // isDriveLetter returns true if path is Windows drive letter (like "c:").
 // (from Go's filepath)
 func isDriveLetter(path string) bool {
-	return len(path) == 2 && path[1] == ':'
+	return len(path) == 3 && path[1] == ':' && path[2] == '\\'
 }
 
 func setupOSRoot() {
