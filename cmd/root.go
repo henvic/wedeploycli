@@ -8,6 +8,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/auth"
+	"github.com/wedeploy/cli/cmd/build"
 	"github.com/wedeploy/cli/cmd/containers"
 	"github.com/wedeploy/cli/cmd/createctx"
 	"github.com/wedeploy/cli/cmd/link"
@@ -109,6 +110,7 @@ var commands = []*cobra.Command{
 	cmdprojects.ProjectsCmd,
 	cmdcontainers.ContainersCmd,
 	cmdrestart.RestartCmd,
+	cmdbuild.BuildCmd,
 	cmdrun.RunCmd,
 	cmdstop.StopCmd,
 	cmdlink.LinkCmd,
