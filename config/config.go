@@ -241,6 +241,7 @@ func setupContext() {
 	Context, err = context.Get()
 
 	if err != nil {
+		println("Fatal context setup failure.")
 		println(err.Error())
 		os.Exit(-1)
 	}
