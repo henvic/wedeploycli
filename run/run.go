@@ -389,7 +389,10 @@ func (dm *DockerMachine) testAlreadyRunning() {
 	}
 
 	dm.Container = strings.TrimSpace(buf.String())
-	verbose.Debug("Docker container ID:", dm.Container)
+
+	if !dm.Flags.DryRun {
+		verbose.Debug("Docker container ID:", dm.Container)
+	}
 }
 
 func checkDockerExists() {
