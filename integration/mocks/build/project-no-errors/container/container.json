@@ -1,0 +1,11 @@
+{
+    "id": "container",
+    "hooks": {
+        "before_build": "echo before",
+        "build": "echo during",
+        "after_build": "echo after",
+        "before_deploy": "",
+        "deploy": "",
+        "after_deploy": ""
+    }
+}

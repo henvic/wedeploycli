@@ -1,0 +1,11 @@
+{
+    "id": "container",
+    "hooks": {
+        "before_build": "",
+        "build": "",
+        "after_build": "",
+        "before_deploy": "",
+        "deploy": "",
+        "after_deploy": ""
+    }
+}

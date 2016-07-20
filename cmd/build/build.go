@@ -38,29 +38,29 @@ func getContainersFromScope() []string {
 
 func buildRun(cmd *cobra.Command, args []string) {
 	// calling it for side-effects
-	getProjectOrContainerID(args)
+	checkProjectOrContainer(args)
+
+	if config.Context.Scope == "global" {
+		var err = buildContainer(".")
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%v\n", err)
+			os.Exit(1)
+		}
+
+		return
+	}
+
 	var list = getContainersFromScope()
 
 	var hasError = false
 
 	for _, c := range list {
-		var container, err = containers.Read(
-			filepath.Join(config.Context.ProjectRoot, c))
+		var err = buildContainer(filepath.Join(config.Context.ProjectRoot, c))
 
 		if err != nil {
-			println(err.Error())
+			fmt.Fprintf(os.Stderr, "%v\n", err)
 			hasError = true
-		}
-
-		if container.Hooks == nil || (container.Hooks.BeforeBuild == "" &&
-			container.Hooks.Build == "" &&
-			container.Hooks.AfterBuild == "") {
-			verbose.Debug("container " + container.ID + " has no build hooks")
-			continue
-		}
-
-		if err = container.Hooks.Run(hooks.Build); err != nil {
-			println(err.Error())
 		}
 	}
 
@@ -69,13 +69,34 @@ func buildRun(cmd *cobra.Command, args []string) {
 	}
 }
 
-func getProjectOrContainerID(args []string) (string, string) {
-	var project, container, err = cmdcontext.GetProjectOrContainerID(args)
+func buildContainer(path string) error {
+	var container, err = containers.Read(path)
 
 	if err != nil {
-		println("fatal: not a project")
+		return err
+	}
+
+	if container.Hooks == nil || (container.Hooks.BeforeBuild == "" &&
+		container.Hooks.Build == "" &&
+		container.Hooks.AfterBuild == "") {
+		verbose.Debug("container " + container.ID + " has no build hooks")
+		return nil
+	}
+
+	return container.Hooks.Run(hooks.Build)
+}
+
+func checkProjectOrContainer(args []string) {
+	var _, _, err = cmdcontext.GetProjectOrContainerID(args)
+	var _, errc = containers.Read(".")
+
+	if err != nil && os.IsNotExist(errc) {
+		println("fatal: not a project or container")
 		os.Exit(1)
 	}
 
-	return project, container
+	if err != nil && errc != nil {
+		fmt.Fprintf(os.Stderr, "container.json error: %v\n", errc)
+		os.Exit(1)
+	}
 }

@@ -1,0 +1,7 @@
+> echo before
+> true
+> echo after
+> echo before
+> echo during
+> echo after
+container container has no build hooks
