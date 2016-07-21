@@ -21,8 +21,7 @@ func TestLink(t *testing.T) {
 	var cmd = &Command{
 		Args: []string{"link"},
 		Env: []string{
-			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome(),
-			"WEDEPLOY_OVERRIDE_LOCAL_ENDPOINT=true"},
+			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
 	}
 

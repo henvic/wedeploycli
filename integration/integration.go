@@ -5,9 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"syscall"
 	"testing"
 
@@ -235,8 +238,31 @@ func setupLoginHome() {
 
 	mock.Load()
 	mock.Endpoint = servertest.IntegrationServer.URL
+	mock.LocalPort = getIntegrationServerPort()
 	mock.Username = "foo"
 	mock.Password = "bar"
 	mock.Local = false
 	mock.Save()
+}
+
+func getIntegrationServerPort() int {
+	var u, err = url.Parse(servertest.IntegrationServer.URL)
+
+	if err != nil {
+		panic(err)
+	}
+
+	_, port, err := net.SplitHostPort(u.Host)
+
+	if err != nil {
+		panic(err)
+	}
+
+	num, err := strconv.Atoi(port)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return num
 }

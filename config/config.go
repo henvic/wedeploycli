@@ -69,6 +69,7 @@ type Config struct {
 	Password        string    `ini:"password"`
 	Token           string    `ini:"token"`
 	Local           bool      `ini:"local"`
+	LocalPort       int       `ini:"local_port"`
 	NoColor         bool      `ini:"disable_colors"`
 	Endpoint        string    `ini:"endpoint"`
 	NotifyUpdates   bool      `ini:"notify_updates"`
@@ -129,6 +130,7 @@ func Setup() {
 
 func (c *Config) setDefaults() {
 	c.Local = true
+	c.LocalPort = 8080
 	c.Endpoint = defaults.Endpoint
 	c.NotifyUpdates = true
 	c.ReleaseChannel = "stable"
