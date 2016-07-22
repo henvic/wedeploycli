@@ -487,8 +487,17 @@ func pull() {
 	docker.Stderr = os.Stderr
 	docker.Stdout = os.Stdout
 
-	if err := docker.Run(); err != nil {
-		println("docker pull error:", err.Error())
+	pullFeedback(docker.Run())
+}
+
+func pullFeedback(err error) {
+	if err == nil {
+		return
+	}
+
+	println("docker pull error:", err.Error())
+
+	if defaults.WeDeployImageTag != dockerLatestImageTag {
 		os.Exit(1)
 	}
 }
