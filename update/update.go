@@ -85,7 +85,7 @@ func notifierCheck() error {
 	case equinox.NotAvailableErr:
 		g.NextVersion = ""
 		g.Save()
-		err = nil
+		return nil
 	}
 
 	return err
