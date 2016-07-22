@@ -19,6 +19,12 @@ URL=https://gobuilder.me/get/github.com/wedeploy/cli/$FILE.zip
 DESTDIR=/usr/local/bin
 
 function setupAlternateDir() {
+  if [ ! -t 1 ] ; then
+    echo "Can't install in $DESTDIR (default)."
+    echo "Run this script from terminal to install it somewhere else."
+    exit 1
+  fi
+
   echo "No permission to install in $DESTDIR"
   echo "Cancel to run again as root / sudoer or install it somewhere else"
   read -p "Install in [current dir]: " DESTDIR < /dev/tty;
@@ -28,7 +34,10 @@ function setupAlternateDir() {
 echo "CAUTION: Use at your own risk."
 echo "This build is NOT stable and NOT intended for public use."
 echo "Always download official releases from wedeploy.com or software updates"
-read -t 3 -p "" < /dev/tty || true
+
+if [ -t 1 ] ; then
+  read -t 3 -p "" < /dev/tty || true
+fi
 
 if [ ! -w $DESTDIR ] ; then setupAlternateDir ; fi
 
