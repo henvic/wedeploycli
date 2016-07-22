@@ -18,6 +18,7 @@ var (
 	detach   bool
 	dryRun   bool
 	viewMode bool
+	noUpdate bool
 )
 
 func runRun(cmd *cobra.Command, args []string) {
@@ -30,6 +31,7 @@ func runRun(cmd *cobra.Command, args []string) {
 		Detach:   detach,
 		DryRun:   dryRun,
 		ViewMode: viewMode,
+		NoUpdate: noUpdate,
 	})
 }
 
@@ -42,4 +44,7 @@ func init() {
 
 	RunCmd.Flags().BoolVar(&viewMode, "view-mode", false,
 		"View only mode (no controls)")
+
+	RunCmd.Flags().BoolVar(&noUpdate, "no-update", false,
+		"Don't try to update the docker image")
 }

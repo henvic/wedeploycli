@@ -41,6 +41,7 @@ type Flags struct {
 	Detach   bool
 	DryRun   bool
 	ViewMode bool
+	NoUpdate bool
 }
 
 // DockerMachine for the run command
@@ -285,7 +286,7 @@ func (dm *DockerMachine) start() {
 
 	dm.checkPortsAreAvailable()
 
-	if !hasCurrentWeDeployImage() {
+	if !dm.Flags.NoUpdate || !hasCurrentWeDeployImage() {
 		pull()
 	}
 
