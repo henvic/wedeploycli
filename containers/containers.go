@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
@@ -114,7 +115,7 @@ func Link(projectID, containerPath string, container *Container) error {
 	apihelper.Auth(req)
 
 	req.Param("projectId", projectID)
-	req.Param("source", containerPath)
+	req.Param("source", normalizePath(containerPath))
 
 	var err = apihelper.SetBody(req, &container)
 
@@ -238,4 +239,16 @@ func getListFromDirectory(dir string, files []os.FileInfo) ([]string, error) {
 	}
 
 	return list, nil
+}
+
+// normalizePathToUnix is a filter for normalizing Windows paths to Unix-style
+func normalizePathToUnix(s string) string {
+	var ps = strings.SplitN(s, ":\\", 2)
+
+	if len(ps) == 1 {
+		return s
+	}
+
+	return "/" + strings.Replace(
+		filepath.Join(ps[0], ps[1]), "\\", "/", -1)
 }

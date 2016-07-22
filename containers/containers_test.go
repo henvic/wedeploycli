@@ -359,3 +359,26 @@ func TestValidateInvalidError(t *testing.T) {
 	servertest.Teardown()
 	globalconfigmock.Teardown()
 }
+
+type TestNormalizePathToUnixProvider struct {
+	in   string
+	want string
+}
+
+var TestNormalizePathToUnixCases = []TestNormalizePathToUnixProvider{
+	TestNormalizePathToUnixProvider{`C:\`, `/C`},
+	TestNormalizePathToUnixProvider{`C:\foobar`, `/C/foobar`},
+	TestNormalizePathToUnixProvider{`/`, `/`},
+	TestNormalizePathToUnixProvider{`/home`, `/home`},
+	TestNormalizePathToUnixProvider{`/home/user`, `/home/user`},
+	TestNormalizePathToUnixProvider{`/Users/user`, `/Users/user`},
+	TestNormalizePathToUnixProvider{`Z:\foo\bar`, `/Z/foo/bar`},
+}
+
+func TestNormalizePathToUnix(t *testing.T) {
+	for _, c := range TestNormalizePathToUnixCases {
+		if got := normalizePathToUnix(c.in); got != c.want {
+			t.Errorf("Expected %v, got %v instead", c.want, got)
+		}
+	}
+}
