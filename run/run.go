@@ -286,7 +286,7 @@ func (dm *DockerMachine) start() {
 
 	dm.checkPortsAreAvailable()
 
-	if !dm.Flags.NoUpdate || !hasCurrentWeDeployImage() {
+	if !dm.Flags.NoUpdate && !hasCurrentWeDeployImage() {
 		pull()
 	}
 
