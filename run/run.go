@@ -34,6 +34,8 @@ var WeDeployImage = "wedeploy/local:" + defaults.WeDeployImageTag
 
 var bin = "docker"
 
+var dockerLatestImageTag = "latest"
+
 // Flags modifiers
 type Flags struct {
 	Detach   bool
@@ -437,7 +439,7 @@ func getRunCommandEnv() []string {
 }
 
 func hasCurrentWeDeployImage() bool {
-	if defaults.WeDeployImageTag == "latest" {
+	if defaults.WeDeployImageTag == dockerLatestImageTag {
 		verbose.Debug("Shortcutting WeDeploy docker image as outdated (because its tag is \"latest\").")
 		return false
 	}
