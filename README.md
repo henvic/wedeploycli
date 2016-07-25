@@ -18,6 +18,8 @@ The availability of dependencies are tested just before its immediate use. If a 
 ## Contributing
 You can get the latest CLI source code with `go get -u github.com/wedeploy/cli`
 
+**Important:** To use the locked dependencies you should install [glide](https://github.com/Masterminds/glide) and then run `glide install` first. `go list ./...` lists vendor/ dependencies, so you can use `glide nv` to list the subpackages without the vendors. This is necessary for a few cases, such as testing all code: `go test ./...` becomes `go test $(glide novendor)`.
+
 In lieu of a formal style guide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Integration tests should be written as well.
 
 The master branch of this repository on GitHub is protected:

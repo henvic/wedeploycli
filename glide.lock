@@ -1,0 +1,67 @@
+hash: 4bb58d26663ef56962d4d91312127aea8b879a9494060f70b53072c6a7c7755c
+updated: 2016-07-22T14:48:26.637978738-07:00
+imports:
+- name: github.com/cpuguy83/go-md2man
+  version: 2724a9c9051aa62e9cca11304e7dd518e9e41599
+  subpackages:
+  - md2man
+- name: github.com/equinox-io/equinox
+  version: 6f97d0d3970881d3e53dd6f547a41109eb055e54
+  subpackages:
+  - internal/go-update
+  - internal/osext
+  - proto
+  - internal/go-update/internal/binarydist
+  - internal/go-update/internal/osext
+- name: github.com/fatih/color
+  version: 87d4004f2ab62d0d255e0a38f1680aa534549fe3
+- name: github.com/henvic/uilive
+  version: 5fa69abff5263544d2b7fd68e21ab36a3a381a1b
+- name: github.com/henvic/uiprogress
+  version: 21f1264f3252c54fc48fc025720e73b84edd5f27
+  subpackages:
+  - util/strutil
+- name: github.com/howeyc/gopass
+  version: 66487b23f2880ba32e185121d2cd51a338ea069a
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/kylelemons/godebug
+  version: eadb3ce320cbab8393bea5ca17bebac3f78a021b
+  subpackages:
+  - diff
+  - pretty
+- name: github.com/mattn/go-colorable
+  version: 9056b7a9f2d1f2d96498d6d146acd1f9d5ed3d59
+- name: github.com/mattn/go-isatty
+  version: 56b76bdf51f7708750eac80fa38b952bb9f32639
+- name: github.com/russross/blackfriday
+  version: 93622da34e54fb6529bfb7c57e710f37a8d9cbd8
+- name: github.com/shurcooL/sanitized_anchor_name
+  version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
+- name: github.com/spf13/cobra
+  version: f62e98d28ab7ad31d707ba837a966378465c7b57
+  subpackages:
+  - doc
+- name: github.com/spf13/pflag
+  version: 1560c1005499d61b80f865c04d39ca7505bf7f0b
+- name: github.com/wedeploy/api-go
+  version: 98f9fe9488368af653b90022fa88d6ee3098c6d4
+  subpackages:
+  - jsonlib
+  - query
+  - urilib
+  - aggregation
+  - filter
+  - qrange
+  - geo
+- name: golang.org/x/crypto
+  version: 911fafb28f4ee7c7bd483539a6c96190bbbccc3f
+  subpackages:
+  - ssh/terminal
+- name: golang.org/x/sys
+  version: a646d33e2ee3172a661fc09bca23bb4889a41bc8
+  subpackages:
+  - unix
+- name: gopkg.in/ini.v1
+  version: cf53f9204df4fbdd7ec4164b57fa6184ba168292
+testImports: []

@@ -1,0 +1,18 @@
+package: github.com/wedeploy/cli
+import:
+- package: github.com/equinox-io/equinox
+- package: github.com/fatih/color
+  version: v1.0.0
+- package: github.com/henvic/uilive
+- package: github.com/henvic/uiprogress
+- package: github.com/howeyc/gopass
+- package: github.com/kylelemons/godebug
+  subpackages:
+  - diff
+- package: github.com/spf13/cobra
+  subpackages:
+  - doc
+- package: github.com/wedeploy/api-go
+  version: v1.0.0-alpha.5
+- package: gopkg.in/ini.v1
+  version: v1.18.0
