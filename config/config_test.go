@@ -289,7 +289,8 @@ func TestRemotesListAndGet(t *testing.T) {
 				URL: "http://staging.example.net/",
 			},
 			"beta": RemoteConfig{
-				URL: "http://beta.example.com/",
+				URL:        "http://beta.example.com/",
+				URLComment: "my beta comment",
 			},
 			"remain": RemoteConfig{
 				URL:     "http://localhost/",

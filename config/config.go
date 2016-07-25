@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -16,8 +17,9 @@ import (
 
 // RemoteConfig for a remote
 type RemoteConfig struct {
-	URL     string
-	Comment string
+	URL        string
+	URLComment string
+	Comment    string
 }
 
 // Remotes (list of alternative endpoints)
@@ -115,7 +117,7 @@ func (c *Config) Save() {
 	c.updateRemotes()
 	c.simplify()
 
-	err = cfg.SaveTo(c.Path)
+	err = cfg.SaveToIndent(c.Path, "    ")
 
 	if err != nil {
 		panic(err)
@@ -170,19 +172,62 @@ func (c *Config) read() {
 	c.readRemotes()
 }
 
+func parseRemoteSectionName(parsable string) (parsed string, is bool) {
+	var r, err = regexp.Compile(`remote \"(.*)\"`)
+
+	if err != nil {
+		panic(err)
+	}
+
+	var matches = r.FindStringSubmatch(parsable)
+
+	if len(matches) == 2 {
+		parsed = matches[1]
+		is = true
+	}
+
+	return parsed, is
+}
+
+func (c *Config) listRemotes() []string {
+	var list = []string{}
+
+	for _, k := range c.file.SectionStrings() {
+		var key, is = parseRemoteSectionName(k)
+
+		if !is {
+			continue
+		}
+
+		list = append(list, key)
+	}
+
+	return list
+}
+
+func (c *Config) getRemote(key string) *ini.Section {
+	return c.file.Section(`remote "` + key + `"`)
+}
+
+func (c *Config) deleteRemote(key string) {
+	c.file.DeleteSection(`remote "` + key + `"`)
+}
+
 func (c *Config) readRemotes() {
-	var remotes = c.file.Section("remotes")
 	c.Remotes = Remotes{
 		list: remotesList{},
 	}
 
-	for _, k := range remotes.KeyStrings() {
-		key := remotes.Key(k)
-		comment := strings.TrimPrefix(key.Comment, "#")
+	for _, k := range c.listRemotes() {
+		s := c.getRemote(k)
+		u := s.Key("url")
+		URLComment := strings.TrimPrefix(u.Comment, "#")
+		comment := strings.TrimPrefix(s.Comment, "#")
 
 		c.Remotes.list[k] = RemoteConfig{
-			URL:     key.Value(),
-			Comment: strings.TrimSpace(comment),
+			URL:        u.String(),
+			URLComment: strings.TrimSpace(URLComment),
+			Comment:    strings.TrimSpace(comment),
 		}
 	}
 }
@@ -200,34 +245,34 @@ func (c *Config) simplify() {
 }
 
 func (c *Config) simplifyRemotes() {
-	var remotes = c.file.Section("remotes")
 
-	for _, k := range remotes.KeyStrings() {
-		key := remotes.Key(k)
+	for _, k := range c.listRemotes() {
+		s := c.getRemote(k)
+		u := s.Key("url")
 
-		if key.Value() == "" && key.Comment == "" {
-			remotes.DeleteKey(k)
+		if u.Value() == "" && u.Comment == "" {
+			s.DeleteKey("url")
 		}
-	}
 
-	if len(remotes.KeyStrings()) == 0 && remotes.Comment == "" {
-		c.file.DeleteSection("remotes")
+		if len(s.Keys()) == 0 && s.Comment == "" {
+			c.deleteRemote(k)
+		}
 	}
 }
 
 func (c *Config) updateRemotes() {
-	var remotes = c.file.Section("remotes")
-
-	for _, k := range remotes.KeyStrings() {
+	for _, k := range c.listRemotes() {
 		if _, ok := c.Remotes.list[k]; !ok {
-			remotes.DeleteKey(k)
+			c.deleteRemote(k)
 		}
 	}
 
 	for k, v := range c.Remotes.list {
-		key := remotes.Key(k)
+		s := c.getRemote(k)
+		key := s.Key("url")
 		key.SetValue(v.URL)
-		key.Comment = v.Comment
+		key.Comment = v.URLComment
+		s.Comment = v.Comment
 	}
 
 	c.simplifyRemotes()

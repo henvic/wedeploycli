@@ -10,11 +10,17 @@ last_update_check =
 # commented vars remains even when empty
 next_version      = 
 
-[remotes]
-alternative = http://example.net/
-staging     = http://staging.example.net/
-beta        = http://beta.example.com/
+[remote "alternative"]
+    url = http://example.net/
+[remote "staging"]
+    url = http://staging.example.net/
+[remote "beta"]
+    # my beta comment
+    url = http://beta.example.com/
 # commented vars remains even when empty
-remain      = http://localhost/
-dontremain  = http://localhost/
-dontremain2 = http://localhost/
+[remote "remain"]
+    url = http://localhost/
+[remote "dontremain"]
+    url = http://localhost/
+[remote "dontremain2"]
+    url = http://localhost/
