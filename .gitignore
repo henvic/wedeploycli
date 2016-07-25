@@ -38,6 +38,8 @@ _testmain.go
 *.test
 *.prof
 
+.cover
+
 coverage.html
 coverage.out
 
