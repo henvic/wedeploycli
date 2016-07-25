@@ -393,7 +393,7 @@ func (dm *DockerMachine) testAlreadyRunning() {
 
 	dm.Container = strings.TrimSpace(buf.String())
 
-	if !dm.Flags.DryRun {
+	if !dm.Flags.DryRun && dm.Container != "" {
 		verbose.Debug("Docker container ID:", dm.Container)
 	}
 }
