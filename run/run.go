@@ -498,7 +498,9 @@ func pullFeedback(err error) {
 
 	println("docker pull error:", err.Error())
 
+	// we ignore it for, say, "latest"
 	if defaults.WeDeployImageTag != dockerLatestImageTag {
+		println("Can't continue running with an outdated image.")
 		os.Exit(1)
 	}
 }
