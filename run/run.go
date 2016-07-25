@@ -42,11 +42,13 @@ type Flags struct {
 	DryRun   bool
 	ViewMode bool
 	NoUpdate bool
+	Restart  bool
 }
 
 // DockerMachine for the run command
 type DockerMachine struct {
 	Container   string
+	Image       string
 	Flags       Flags
 	upTime      time.Time
 	waitProcess *os.Process
@@ -176,9 +178,19 @@ func (dm *DockerMachine) Run() {
 	<-dm.end
 }
 
+func (dm *DockerMachine) RestartStop() {
+	dm.loadDockerInfo()
+
+	if dm.Container == "" {
+		println("Ignoring restart flag (we run is not running).")
+	}
+
+	restartStop(dm.Container)
+}
+
 // Stop stops the machine
 func (dm *DockerMachine) Stop() {
-	dm.testAlreadyRunning()
+	dm.loadDockerInfo()
 
 	if dm.Container == "" {
 		println("we run is not running.")
@@ -286,12 +298,21 @@ func (dm *DockerMachine) start() {
 
 	dm.checkPortsAreAvailable()
 
-	if !dm.Flags.NoUpdate && !hasCurrentWeDeployImage() {
+	if !dm.Flags.NoUpdate && !dm.hasCurrentWeDeployImage() {
 		pull()
 	}
 
 	dm.Container = startCmd(args...)
 	verbose.Debug("Docker container ID:", dm.Container)
+}
+
+func (dm *DockerMachine) hasCurrentWeDeployImage() bool {
+	if defaults.WeDeployImageTag == dockerLatestImageTag {
+		verbose.Debug("Shortcutting WeDeploy docker image as outdated (because its tag is \"latest\").")
+		return false
+	}
+
+	return dm.Image == WeDeployImage
 }
 
 func (dm *DockerMachine) stop() {
@@ -350,6 +371,10 @@ func (dm *DockerMachine) checkConnectionCounter(ticker *time.Ticker) {
 }
 
 func (dm *DockerMachine) prepare() {
+	if dm.Flags.Restart {
+		dm.RestartStop()
+	}
+
 	dm.upTime = time.Now()
 	dm.testAlreadyRunning()
 	dm.livew = uilive.New()
@@ -372,13 +397,13 @@ func (dm *DockerMachine) ready() {
 	fmt.Println("")
 }
 
-func (dm *DockerMachine) testAlreadyRunning() {
+func (dm *DockerMachine) loadDockerInfo() {
 	var args = []string{
 		"ps",
 		"--filter",
 		"ancestor=" + WeDeployImage,
 		"--format",
-		"{{.ID}}",
+		"{{.ID}} {{.Image}}",
 	}
 
 	var docker = exec.Command(bin, args...)
@@ -391,7 +416,55 @@ func (dm *DockerMachine) testAlreadyRunning() {
 		os.Exit(1)
 	}
 
-	dm.Container = strings.TrimSpace(buf.String())
+	var ps = buf.String()
+
+	var parts = strings.SplitAfterN(ps, " ", 2)
+
+	switch len(parts) {
+	case 0:
+		dm.checkImage()
+	case 2:
+		dm.Container = strings.TrimSpace(parts[0])
+		dm.Image = strings.TrimSpace(parts[1])
+	default:
+		verbose.Debug("Running docker not found on docker ps")
+	}
+}
+
+func (dm *DockerMachine) checkImage() {
+	var args = []string{
+		"images",
+		"--format",
+		"{{.Repository}}:{{.Tag}}",
+		WeDeployImage,
+	}
+
+	var docker = exec.Command(bin, args...)
+	var buf bytes.Buffer
+	docker.Stderr = os.Stderr
+	docker.Stdout = &buf
+
+	if err := docker.Run(); err != nil {
+		println("docker images error:", err.Error())
+		os.Exit(1)
+	}
+
+	dm.Image = strings.TrimSpace(buf.String())
+
+	if dm.Image == "" {
+		verbose.Debug("Docker image for the infrastructure not found.")
+	}
+}
+
+func (dm *DockerMachine) testAlreadyRunning() {
+	dm.loadDockerInfo()
+
+	// if the infrastructure is already running, test version
+	if dm.Container != "" && WeDeployImage != dm.Image {
+		fmt.Fprintf(os.Stderr, "docker image %v found instead of required %v\n", dm.Image, WeDeployImage)
+		println("Run again with the --restart flag to force updating.")
+		os.Exit(1)
+	}
 
 	if !dm.Flags.DryRun && dm.Container != "" {
 		verbose.Debug("Docker container ID:", dm.Container)
@@ -437,39 +510,6 @@ func getRunCommandEnv() []string {
 	}...)
 
 	return args
-}
-
-func hasCurrentWeDeployImage() bool {
-	if defaults.WeDeployImageTag == dockerLatestImageTag {
-		verbose.Debug("Shortcutting WeDeploy docker image as outdated (because its tag is \"latest\").")
-		return false
-	}
-
-	var args = []string{
-		"inspect",
-		"--type",
-		"image",
-		WeDeployImage,
-	}
-
-	var bufErrStream bytes.Buffer
-	var docker = exec.Command(bin, args...)
-	docker.Stderr = &bufErrStream
-
-	err := docker.Run()
-
-	if strings.Index(bufErrStream.String(), "Error: No such image") != -1 {
-		return false
-	}
-
-	print(bufErrStream.String())
-
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "docker inspect error: %v\n", err)
-		return false
-	}
-
-	return true
 }
 
 func getDockerPath() string {
@@ -519,6 +559,23 @@ func startCmd(args ...string) string {
 
 	var dockerContainer = strings.TrimSpace(dockerContainerBuf.String())
 	return dockerContainer
+}
+
+func restartStop(container string) {
+	var stop = exec.Command(bin, "stop", container)
+
+	restartStopFeedback(stop.Run())
+}
+
+func restartStopFeedback(err error) {
+	switch err.(type) {
+	case nil:
+	case *exec.ExitError:
+		println("warning: still stopping WeDeploy on background\n")
+	default:
+		println("docker restart stop error:", err.Error())
+		os.Exit(1)
+	}
 }
 
 func stop(container string) {
