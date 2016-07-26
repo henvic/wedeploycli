@@ -9,6 +9,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/run"
 )
 
 const lucFormat = "Mon Jan _2 15:04:05 MST 2006"
@@ -176,6 +177,8 @@ func notify() {
 }
 
 func updateApply(channel string, resp *equinox.Response) {
+	run.StopOutdatedImage("")
+
 	var err = resp.Apply()
 
 	if err != nil {

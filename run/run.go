@@ -12,9 +12,12 @@ import (
 	"syscall"
 	"time"
 
+	"golang.org/x/crypto/ssh/terminal"
+
 	"github.com/henvic/uilive"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/prompt"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -42,7 +45,6 @@ type Flags struct {
 	DryRun   bool
 	ViewMode bool
 	NoUpdate bool
-	Restart  bool
 }
 
 // DockerMachine for the run command
@@ -146,6 +148,47 @@ func Stop() {
 	dm.Stop()
 }
 
+// StopOutdatedImage stops the WeDeploy infrastructure if outdated
+func StopOutdatedImage(nextImage string) {
+	// don't try to stop if docker isn't installed yet
+	if !existsDependency(bin) {
+		return
+	}
+
+	var dm = &DockerMachine{}
+
+	dm.LoadDockerInfo()
+
+	if dm.Container == "" {
+		return
+	}
+
+	if nextImage == WeDeployImage && nextImage != dockerLatestImageTag {
+		verbose.Debug("Continuing update without stopping: same infrastructure version detected.")
+		return
+	}
+
+	println("New WeDeloy infrastructure image available.")
+	println("The infrastructure must be stopped before updating the CLI tool.")
+
+	if !terminal.IsTerminal(int(os.Stdin.Fd())) {
+		println("No terminal (/dev/tty) detected for asking to stop the infrastructure. Exiting.")
+		os.Exit(1)
+	}
+
+	if nextImage == dockerLatestImageTag {
+		println("Notice: Updating to latest always requires WeDeploy infrastructure to be turned off.")
+	}
+
+	var q = prompt.Prompt("Stop WeDeploy to allow update [yes]")
+
+	if q != "" && q != "y" && q != "yes" {
+		os.Exit(1)
+	}
+
+	dm.Stop()
+}
+
 // Run executes the WeDeploy infraestruture
 func (dm *DockerMachine) Run() {
 	dm.prepare()
@@ -178,19 +221,9 @@ func (dm *DockerMachine) Run() {
 	<-dm.end
 }
 
-func (dm *DockerMachine) RestartStop() {
-	dm.loadDockerInfo()
-
-	if dm.Container == "" {
-		println("Ignoring restart flag (we run is not running).")
-	}
-
-	restartStop(dm.Container)
-}
-
 // Stop stops the machine
 func (dm *DockerMachine) Stop() {
-	dm.loadDockerInfo()
+	dm.LoadDockerInfo()
 
 	if dm.Container == "" {
 		println("we run is not running.")
@@ -371,10 +404,6 @@ func (dm *DockerMachine) checkConnectionCounter(ticker *time.Ticker) {
 }
 
 func (dm *DockerMachine) prepare() {
-	if dm.Flags.Restart {
-		dm.RestartStop()
-	}
-
 	dm.upTime = time.Now()
 	dm.testAlreadyRunning()
 	dm.livew = uilive.New()
@@ -397,7 +426,7 @@ func (dm *DockerMachine) ready() {
 	fmt.Println("")
 }
 
-func (dm *DockerMachine) loadDockerInfo() {
+func (dm *DockerMachine) LoadDockerInfo() {
 	var args = []string{
 		"ps",
 		"--filter",
@@ -457,12 +486,12 @@ func (dm *DockerMachine) checkImage() {
 }
 
 func (dm *DockerMachine) testAlreadyRunning() {
-	dm.loadDockerInfo()
+	dm.LoadDockerInfo()
 
 	// if the infrastructure is already running, test version
 	if dm.Container != "" && WeDeployImage != dm.Image {
 		fmt.Fprintf(os.Stderr, "docker image %v found instead of required %v\n", dm.Image, WeDeployImage)
-		println("Run again with the --restart flag to force updating.")
+		println("Stop the infrastructure on docker before running this command again.")
 		os.Exit(1)
 	}
 
@@ -559,23 +588,6 @@ func startCmd(args ...string) string {
 
 	var dockerContainer = strings.TrimSpace(dockerContainerBuf.String())
 	return dockerContainer
-}
-
-func restartStop(container string) {
-	var stop = exec.Command(bin, "stop", container)
-
-	restartStopFeedback(stop.Run())
-}
-
-func restartStopFeedback(err error) {
-	switch err.(type) {
-	case nil:
-	case *exec.ExitError:
-		println("warning: still stopping WeDeploy on background\n")
-	default:
-		println("docker restart stop error:", err.Error())
-		os.Exit(1)
-	}
 }
 
 func stop(container string) {

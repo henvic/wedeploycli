@@ -19,7 +19,6 @@ var (
 	dryRun   bool
 	viewMode bool
 	noUpdate bool
-	restart  bool
 )
 
 func runRun(cmd *cobra.Command, args []string) {
@@ -33,7 +32,6 @@ func runRun(cmd *cobra.Command, args []string) {
 		DryRun:   dryRun,
 		ViewMode: viewMode,
 		NoUpdate: noUpdate,
-		Restart:  restart,
 	})
 }
 
@@ -49,7 +47,4 @@ func init() {
 
 	RunCmd.Flags().BoolVar(&noUpdate, "no-update", false,
 		"Don't try to update the docker image")
-
-	RunCmd.Flags().BoolVar(&restart, "restart", false,
-		"Restart the infrastructure")
 }
