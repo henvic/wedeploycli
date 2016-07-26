@@ -8,7 +8,7 @@ IFS=$'\n\t'
 config=${1-}
 
 if [ -z $config ] || [ $config == "help" ] || [ $config == "--help" ]; then
-	echo "WeDeploy CLI Tool publishing script:
+  echo "WeDeploy CLI Tool publishing script:
 
 1) check if all changes are commited
 2) run tests on a local drone.io instance
@@ -18,12 +18,12 @@ if [ -z $config ] || [ $config == "help" ] || [ $config == "--help" ]; then
 Check Semantic Versioning rules on semver.org
 
 Use ./release.sh <equinox config>"
-	exit 1
+  exit 1
 fi
 
 if [ `git status --short | wc -l` -gt 0 ]; then
-	>&2 echo "Your changes are not commited."
-	exit 1
+  >&2 echo "Your changes are not commited."
+  exit 1
 fi
 
 echo "Release announcements should start with v<version>.
@@ -43,8 +43,8 @@ NEW_RELEASE_VERSION=`echo $NEW_RELEASE_VERSION | sed 's/^v//'`
 
 check_tags_free=`git tag --list "v$NEW_RELEASE_VERSION" | wc -l`
 if [ "$check_tags_free" -gt 0 ]; then
-	>&2 echo "git tag v$NEW_RELEASE_VERSION already exists"
-	exit 1
+  >&2 echo "git tag v$NEW_RELEASE_VERSION already exists"
+  exit 1
 fi
 
 git tag -s "v$NEW_RELEASE_VERSION"
