@@ -47,7 +47,13 @@ func Prompt(param string) string {
 
 	reader := bufio.NewReader(inStream)
 	fmt.Fprintf(outStream, param+": ")
-	var value, _ = reader.ReadString('\n')
+
+	var value, err = reader.ReadString('\n')
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Can't read prompt input for %v.\n", param)
+		panic(err)
+	}
 
 	value = strings.TrimSpace(value)
 
