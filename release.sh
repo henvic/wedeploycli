@@ -50,9 +50,10 @@ function checkWorkingDir() {
 }
 
 function checkPublishedTag() {
+  echo "Verifying if tag v$NEW_RELEASE_VERSION is already published on origin remote."
   check_published_tag=`git ls-remote origin refs/tags/v$NEW_RELEASE_VERSION | wc -l`
   if [ "$check_published_tag" -gt 0 ]; then
-    >&2 echo "git tag v$NEW_RELEASE_VERSION already published."
+    >&2 echo "git tag v$NEW_RELEASE_VERSION already published. Not forcing update."
     exit 1
   fi
   echo
@@ -70,20 +71,21 @@ function checkUnusedTag() {
 }
 
 function runTests() {
+  echo "Running tests (may take a while)."
   test -z "$(golint ./... | grep -v "^vendor" | tee /dev/stderr)"
   go vet $(go list ./... | grep -v /vendor/)
   go test $(go list ./... | grep -v /vendor/)
 }
 
 function runTestsOnDrone() {
-  echo "Running tests isolated on drone"
+  echo "Running tests isolated on drone (docker based CI) locally."
   drone exec && ec=$? || ec=$?
 
   if [ $ec -eq 0 ] ; then
     return
   fi
 
-  read -p "Tests failed: Release anyway? [no]: " CONT < /dev/tty
+  read -p "Tests on drone failed: Release anyway? [no]: " CONT < /dev/tty
   checkCONT
 }
 
@@ -94,6 +96,8 @@ function setEditor() {
 }
 
 function tag() {
+  echo "Waiting for a ChangeLog / release summary."
+
   if [ $OVERWRITE_TAG == true ] ; then
     echo "Overwriting unpublished tag v$NEW_RELEASE_VERSION."
     git tag -s "v$NEW_RELEASE_VERSION" --force
