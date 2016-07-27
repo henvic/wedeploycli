@@ -600,7 +600,7 @@ func stopFeedback(err error) {
 	switch err.(type) {
 	case nil:
 	case *exec.ExitError:
-		println("warning: still stopping WeDeploy on background\n")
+		println("warning: still stopping WeDeploy on background")
 		os.Exit(1)
 	default:
 		println("docker stop error:", err.Error())
