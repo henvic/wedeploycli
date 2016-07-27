@@ -21,6 +21,7 @@ cli_*_arm
 _obj
 _test
 test_assets
+vendor
 
 # Architecture specific extensions/prefixes
 *.[568vq]
