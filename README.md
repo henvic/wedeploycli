@@ -33,8 +33,10 @@ Keep your commits neat. Try to always rebase your changes before publishing them
 
 Using go test and go cover are essential to make sure your code is covered with unit tests.
 
-Some aliases you might find useful for development / testing:
+Some commands and aliases you might find useful for development / testing:
 
 * Generating test coverage for the current directory: `alias gotest='go test -coverprofile=coverage.out && go tool cover -html coverage.out -o coverage.html'`
 * Running code without building: `alias i="go run $HOME/projects/gocode/src/github.com/wedeploy/cli/main.go $1"` (i: development code, we: production binary)
 * Opening coverage report: `alias goreport="open coverage.html"`
+* `alias golintt='test -z "$(golint ./... | grep -v "^vendor" | tee /dev/stderr)"'`
+* `alias govet='go vet $(go list ./... | grep -v /vendor/)'`
