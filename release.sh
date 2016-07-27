@@ -125,8 +125,6 @@ function publish() {
   tag
   git checkout "v$NEW_RELEASE_VERSION"
 
-  echo "release done"
-
   equinox release \
   --version=$NEW_RELEASE_VERSION \
   --channel=$RELEASE_CHANNEL \
