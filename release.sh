@@ -101,10 +101,9 @@ function tag() {
   fi
 
   # if tag doesn't exists we want to create a release message
-  LAST_TAG="$(git describe HEAD --tags 2> /dev/null)" || true
-
   if [ $LAST_TAG == "" ] ; then
     >&2 echo "Can't find previous release tag."
+    LAST_TAG="HEAD"
   fi
 
   setEditor
@@ -114,7 +113,7 @@ function tag() {
     echo "Release v$NEW_RELEASE_VERSION"
     echo ""
     echo "Changes:"
-    git log v1.0.0-alpha.5..HEAD --pretty="format:%h %s" --abbrev=10 || true
+    git log $LAST_TAG..HEAD --pretty="format:%h %s" --abbrev=10 || true
     echo ""
   ) > .git/TAG_EDITMSG
 
@@ -141,6 +140,8 @@ function publish() {
 }
 
 CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
+LAST_TAG="$(git describe HEAD --tags --abbrev=0 2> /dev/null)" || true
+
 testHuman
 checkBranch
 checkWorkingDir
@@ -149,6 +150,10 @@ runTests
 echo All tests and checks necessary for released passed.
 echo
 echo Release announcements should use semantic versioning.
+
+if [ $LAST_TAG != "" ] ; then
+  echo Last version seems to be $LAST_TAG
+fi
 
 read -p "Release channel [stable]: " RELEASE_CHANNEL < /dev/tty;
 RELEASE_CHANNEL=${RELEASE_CHANNEL:-"stable"}
