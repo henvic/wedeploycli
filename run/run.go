@@ -426,6 +426,7 @@ func (dm *DockerMachine) ready() {
 	fmt.Println("")
 }
 
+// LoadDockerInfo loads the docker info on the DockerMachine object
 func (dm *DockerMachine) LoadDockerInfo() {
 	var args = []string{
 		"ps",
