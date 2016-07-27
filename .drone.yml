@@ -2,7 +2,7 @@ build:
   image: golang:1.6
   commands:
     - go version
-    - go get -v github.com/Masterminds/glide
+    - go get github.com/Masterminds/glide
     - cd $GOPATH/src/github.com/Masterminds/glide && git checkout v0.11.1 && go install && cd -
     - glide install
     - go test -v $(glide novendor)
