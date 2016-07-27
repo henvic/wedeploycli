@@ -5,4 +5,4 @@ build:
     - go get github.com/Masterminds/glide
     - cd $GOPATH/src/github.com/Masterminds/glide && git checkout v0.11.1 && go install && cd -
     - glide install
-    - go test -v $(glide novendor)
+    - go test -v $(go list ./... | grep -v /vendor/)

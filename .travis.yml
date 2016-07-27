@@ -9,6 +9,6 @@ install:
   - cd $GOPATH/src/github.com/Masterminds/glide && git checkout v0.11.1 && go install && cd -
   - glide install
 script:
-  - go test -v $(glide novendor)
+  - go test -v $(go list ./... | grep -v /vendor/)
 after_success:
   - sh `pwd`/scripts/coverage --coveralls
