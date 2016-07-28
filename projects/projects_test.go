@@ -59,24 +59,6 @@ func TestCreateFailureNotFound(t *testing.T) {
 	}
 }
 
-func TestGetStatus(t *testing.T) {
-	servertest.Setup()
-	globalconfigmock.Setup()
-
-	servertest.Mux.HandleFunc(
-		"/projects/foo/state", tdata.ServerJSONHandler(`"on"`))
-
-	var want = "on"
-	var got = GetStatus("foo")
-
-	if got != want {
-		t.Errorf("Wanted %v, got %v instead", want, got)
-	}
-
-	servertest.Teardown()
-	globalconfigmock.Teardown()
-}
-
 func TestList(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
@@ -89,9 +71,9 @@ func TestList(t *testing.T) {
 
 	var want = []Project{
 		Project{
-			ID:    "images",
-			Name:  "Image Server",
-			State: "on",
+			ID:     "images",
+			Name:   "Image Server",
+			Health: "on",
 		},
 	}
 

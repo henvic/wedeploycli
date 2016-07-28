@@ -1,7 +1,7 @@
 [
   {
     "name": "Image Server",
-    "state": "on",
+    "health": "on",
     "id": "images"
   }
 ]

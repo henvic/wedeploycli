@@ -23,15 +23,13 @@ type Containers map[string]*Container
 
 // Container structure
 type Container struct {
-	ID           string            `json:"id"`
-	Name         string            `json:"name"`
-	Port         int               `json:"port,omitempty"`
-	State        string            `json:"state,omitempty"`
-	Type         string            `json:"type,omitempty"`
-	Hooks        *hooks.Hooks      `json:"hooks,omitempty"`
-	DeployIgnore []string          `json:"deploy_ignore,omitempty"`
-	Env          map[string]string `json:"env,omitempty"`
-	Instances    int               `json:"instances,omitempty"`
+	ID        string            `json:"id"`
+	Name      string            `json:"name"`
+	Health    string            `json:"health,omitempty"`
+	Type      string            `json:"type,omitempty"`
+	Hooks     *hooks.Hooks      `json:"hooks,omitempty"`
+	Env       map[string]string `json:"env,omitempty"`
+	Instances int               `json:"instances,omitempty"`
 }
 
 // Register for the container structure
@@ -71,15 +69,6 @@ func GetListFromDirectory(root string) ([]string, error) {
 	}
 
 	return getListFromDirectory(root, files)
-}
-
-// GetStatus gets the status for a container
-func GetStatus(projectID, containerID string) string {
-	var status string
-	apihelper.AuthGetOrExit(
-		"/projects/"+projectID+"/containers/"+containerID+"/state",
-		&status)
-	return status
 }
 
 // List of containers of a given project

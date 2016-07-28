@@ -5,7 +5,7 @@
     "instances": 7,
     "name": "Cloud Search",
     "id": "search7606",
-    "state": "on",
+    "health": "on",
     "maxInstances": 5
   },
   "nodejs5143": {
@@ -14,7 +14,7 @@
     "instances": 5,
     "name": "Node.js",
     "id": "nodejs5143",
-    "state": "on",
+    "health": "on",
     "maxInstances": 5
   }
 }

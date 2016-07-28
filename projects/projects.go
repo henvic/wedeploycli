@@ -16,11 +16,11 @@ import (
 
 // Project structure
 type Project struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Domain      string `json:"domain,omitempty"`
-	State       string `json:"state,omitempty"`
-	Description string `json:"description,omitempty"`
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	CustomDomain string `json:"custom_domain,omitempty"`
+	Health       string `json:"health,omitempty"`
+	Description  string `json:"description,omitempty"`
 }
 
 var (
@@ -52,13 +52,6 @@ func Create(filename string) error {
 	req.Body(file)
 
 	return apihelper.Validate(req, req.Post())
-}
-
-// GetStatus gets the status for the project
-func GetStatus(id string) string {
-	var status string
-	apihelper.AuthGetOrExit("/projects/"+id+"/state", &status)
-	return status
 }
 
 // List projects

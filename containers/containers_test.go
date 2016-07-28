@@ -136,24 +136,6 @@ func TestLink(t *testing.T) {
 	globalconfigmock.Teardown()
 }
 
-func TestGetStatus(t *testing.T) {
-	servertest.Setup()
-	globalconfigmock.Setup()
-
-	servertest.Mux.HandleFunc("/projects/foo/containers/bar/state",
-		tdata.ServerJSONHandler(`"on"`))
-
-	var want = "on"
-	var got = GetStatus("foo", "bar")
-
-	if got != want {
-		t.Errorf("Wanted %v, got %v instead", want, got)
-	}
-
-	servertest.Teardown()
-	globalconfigmock.Teardown()
-}
-
 func TestRegistry(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
