@@ -12,6 +12,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/kylelemons/godebug/pretty"
 	"github.com/wedeploy/api-go/jsonlib"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/globalconfigmock"
@@ -72,17 +73,36 @@ func TestGetListFromDirectoryNotExists(t *testing.T) {
 func TestList(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
-	bufOutStream.Reset()
 
-	var want = tdata.FromFile("mocks/want_containers")
+	var want = Containers{
+		"search7606": &Container{
+			ID:        "search7606",
+			Name:      "Cloud Search",
+			Health:    "on",
+			Type:      "cloudsearch",
+			Instances: 7,
+		},
+		"nodejs5143": &Container{
+			ID:        "nodejs5143",
+			Name:      "Node.js",
+			Health:    "on",
+			Type:      "nodejs",
+			Instances: 5,
+		},
+	}
 
 	servertest.Mux.HandleFunc("/projects/images/containers",
 		tdata.ServerJSONFileHandler("mocks/containers_response.json"))
 
-	List("images")
+	var got, err = List("images")
 
-	if bufOutStream.String() != want {
-		t.Errorf("Wanted %v, got %v instead", want, bufOutStream.String())
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("List doesn't match with wanted structure.")
+		t.Errorf(pretty.Compare(want, got))
 	}
 
 	servertest.Teardown()

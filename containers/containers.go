@@ -3,12 +3,10 @@ package containers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/wedeploy/api-go"
@@ -71,29 +69,11 @@ func GetListFromDirectory(root string) ([]string, error) {
 	return getListFromDirectory(root, files)
 }
 
-// List of containers of a given project
-func List(projectID string) {
+// List containers of a given project
+func List(projectID string) (Containers, error) {
 	var cs Containers
-	apihelper.AuthGetOrExit("/projects/"+projectID+"/containers", &cs)
-	var keys = make([]string, 0, len(cs))
-	for k := range cs {
-		keys = append(keys, k)
-	}
-
-	sort.Strings(keys)
-
-	for _, k := range keys {
-		container := cs[k]
-		fmt.Fprintf(outStream,
-			"%s\t%s.%s.liferay.io (%s) %s\n",
-			container.ID,
-			container.ID,
-			projectID,
-			container.Name,
-			container.State)
-	}
-
-	fmt.Fprintln(outStream, "total", len(cs))
+	var err = apihelper.AuthGet("/projects/"+projectID+"/containers", &cs)
+	return cs, err
 }
 
 // Link container to project
