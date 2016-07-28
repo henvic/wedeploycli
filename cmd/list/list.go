@@ -15,7 +15,7 @@ import (
 // ListCmd is used for getting a list of projects and containers
 var ListCmd = &cobra.Command{
 	Use:   "list or list [project] to filter by project",
-	Short: "Container running on WeDeploy",
+	Short: "List projects and containers running on WeDeploy",
 	Run:   listRun,
 }
 
