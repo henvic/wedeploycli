@@ -7,21 +7,25 @@ import (
 	"github.com/wedeploy/cli/tdata"
 )
 
-func TestProjects(t *testing.T) {
+func TestList(t *testing.T) {
 	defer Teardown()
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc(
 		"/projects",
-		tdata.ServerJSONFileHandler("mocks/projects_response.json"))
+		tdata.ServerJSONFileHandler("./mocks/list/projects_response.json"))
+
+	servertest.IntegrationMux.HandleFunc(
+		"/projects/wechat/containers",
+		tdata.ServerJSONFileHandler("./mocks/list/containers_response.json"))
 
 	var cmd = &Command{
-		Args: []string{"projects", "--local=false"},
+		Args: []string{"list", "--local=false", "--no-color"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
 	var e = &Expect{
-		Stdout:   tdata.FromFile("mocks/want_projects"),
+		Stdout:   tdata.FromFile("mocks/list/want"),
 		ExitCode: 0,
 	}
 

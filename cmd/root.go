@@ -8,11 +8,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/auth"
 	"github.com/wedeploy/cli/cmd/build"
-	"github.com/wedeploy/cli/cmd/containers"
 	"github.com/wedeploy/cli/cmd/createctx"
 	"github.com/wedeploy/cli/cmd/link"
+	"github.com/wedeploy/cli/cmd/list"
 	"github.com/wedeploy/cli/cmd/logs"
-	"github.com/wedeploy/cli/cmd/projects"
 	"github.com/wedeploy/cli/cmd/remote"
 	"github.com/wedeploy/cli/cmd/restart"
 	"github.com/wedeploy/cli/cmd/run"
@@ -107,8 +106,7 @@ var commands = []*cobra.Command{
 	cmdauth.LogoutCmd,
 	cmdcreate.CreateCmd,
 	cmdlogs.LogsCmd,
-	cmdprojects.ProjectsCmd,
-	cmdcontainers.ContainersCmd,
+	cmdlist.ListCmd,
 	cmdrestart.RestartCmd,
 	cmdbuild.BuildCmd,
 	cmdrun.RunCmd,
