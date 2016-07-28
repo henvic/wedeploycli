@@ -54,6 +54,12 @@ func Create(filename string) error {
 	return apihelper.Validate(req, req.Post())
 }
 
+// Get project by ID
+func Get(id string) (project Project, err error) {
+	err = apihelper.AuthGet("/projects/"+id, &project)
+	return project, err
+}
+
 // List projects
 func List() (list []Project, err error) {
 	err = apihelper.AuthGet("/projects", &list)

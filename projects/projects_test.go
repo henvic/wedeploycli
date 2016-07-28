@@ -59,6 +59,34 @@ func TestCreateFailureNotFound(t *testing.T) {
 	}
 }
 
+func TestGet(t *testing.T) {
+	servertest.Setup()
+	globalconfigmock.Setup()
+
+	servertest.Mux.HandleFunc(
+		"/projects/images",
+		tdata.ServerJSONFileHandler("mocks/project_get_response.json"))
+
+	var list, err = Get("images")
+
+	var want = Project{
+		ID:     "images",
+		Name:   "Image Server",
+		Health: "on",
+	}
+
+	if !reflect.DeepEqual(want, list) {
+		t.Errorf("Wanted %v, got %v instead", want, list)
+	}
+
+	if err != nil {
+		t.Errorf("Wanted error to be nil, got %v instead", err)
+	}
+
+	servertest.Teardown()
+	globalconfigmock.Teardown()
+}
+
 func TestList(t *testing.T) {
 	servertest.Setup()
 	globalconfigmock.Setup()
