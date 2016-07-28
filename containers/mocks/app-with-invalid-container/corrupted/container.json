@@ -16,6 +16,5 @@ INVALID
         "before_deploy": "",
         "deploy": "",
         "after_deploy": ""
-    },
-    "deploy_ignore": ["xoo", "foo"]
+    }
 }
