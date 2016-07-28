@@ -2,7 +2,7 @@
     "id": "app-with-invalid-container",
     "name": "my app with invalid container",
     "description": "App example project",
-    "domain": "app.liferay.io",
+    "custom_domain": "app.liferay.io",
     "environment": {
         "TOKEN": "1234567890"
     },

@@ -1,5 +1,5 @@
 {
     "id": "project",
     "name": "myname",
-    "domain": ""
+    "custom_domain": ""
 }

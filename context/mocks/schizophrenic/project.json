@@ -1,7 +1,7 @@
 {
     "name": "app",
     "description": "App example project",
-    "domain": "app.liferay.io",
+    "custom_domain": "app.liferay.io",
     "environment": {
         "TOKEN": "1234567890"
     },
