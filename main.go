@@ -13,8 +13,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/fatih/color"
 	"github.com/wedeploy/cli/cmd"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
 )
 
@@ -39,7 +39,7 @@ func panickingListener(panicking *bool) {
 		runtime.GOARCH,
 		runtime.Version())
 
-	fmt.Fprintln(os.Stderr, color.RedString(errorTemplate,
+	fmt.Fprintln(os.Stderr, color.Format(color.FgRed, errorTemplate,
 		version,
 		time.Now().Format(timeFormat), systemInfo()))
 }

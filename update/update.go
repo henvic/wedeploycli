@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/equinox-io/equinox"
-	"github.com/fatih/color"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/run"
@@ -172,8 +172,8 @@ func notify() {
 		cmd += " --channel " + channel
 	}
 
-	println(color.RedString(
-		`WARNING: WeDeploy CLI tool is outdated. Run "` + cmd + `".`))
+	println(color.Format(color.FgRed,
+		`WARNING: WeDeploy CLI tool is outdated. Run "`+cmd+`".`))
 }
 
 func updateApply(channel string, resp *equinox.Response) {

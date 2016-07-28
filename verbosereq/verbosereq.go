@@ -11,8 +11,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/wedeploy/api-go"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -40,7 +40,7 @@ func DebugRequestBody(body io.Reader) {
 func debugFileReaderBody(body io.Reader) {
 	var fr = body.(*os.File)
 	verbose.Debug(
-		color.MagentaString("Sending file as request body:\n%v", fr.Name()))
+		color.Format(color.FgMagenta, "Sending file as request body:\n%v", fr.Name()))
 }
 
 func debugBufferReaderBody(body io.Reader) {
@@ -78,7 +78,8 @@ func debugStringsReaderBody(body io.Reader) {
 }
 
 func debugUnknownTypeBody(body io.Reader) {
-	verbose.Debug("\n" + color.RedString(
+	verbose.Debug("\n" + color.Format(
+		color.FgRed,
 		"(request body: "+reflect.TypeOf(body).String()+")"),
 	)
 }
@@ -90,7 +91,7 @@ func Feedback(request *wedeploy.WeDeploy) {
 	}
 
 	if request.Request == nil {
-		verbose.Debug(">", color.RedString("(wait)"), request.URL)
+		verbose.Debug(">", color.Format(color.FgRed, "(wait)"), request.URL)
 		return
 	}
 
@@ -99,9 +100,9 @@ func Feedback(request *wedeploy.WeDeploy) {
 
 func requestVerboseFeedback(request *wedeploy.WeDeploy) {
 	verbose.Debug(">",
-		color.BlueString(request.Request.Method),
-		color.YellowString(request.URL),
-		color.BlueString(request.Request.Proto))
+		color.Format(color.FgBlue, request.Request.Method),
+		color.Format(color.FgYellow, request.URL),
+		color.Format(color.FgBlue, request.Request.Proto))
 
 	verbosePrintHeaders(request.Headers)
 	DebugRequestBody(request.RequestBody)
@@ -112,13 +113,13 @@ func requestVerboseFeedback(request *wedeploy.WeDeploy) {
 
 func feedbackResponse(response *http.Response) {
 	if response == nil {
-		verbose.Debug(color.RedString("(null response)"))
+		verbose.Debug(color.Format(color.FgRed, "(null response)"))
 		return
 	}
 
 	verbose.Debug("<",
-		color.BlueString(response.Proto),
-		color.RedString(response.Status))
+		color.Format(color.FgBlue, response.Proto),
+		color.Format(color.FgRed, response.Status))
 
 	verbosePrintHeaders(response.Header)
 	verbose.Debug("")
@@ -161,15 +162,15 @@ func feedbackResponseBodyAll(response *http.Response, body []byte) {
 		}
 	}
 
-	verbose.Debug(color.MagentaString(out.String()) + "\n")
+	verbose.Debug(color.Format(color.FgMagenta, out.String()) + "\n")
 }
 
 func verbosePrintHeaders(headers http.Header) {
 	for h, r := range headers {
 		if len(r) == 1 {
-			verbose.Debug(color.BlueString(h)+color.RedString(":"), color.YellowString(r[0]))
+			verbose.Debug(color.Format(color.FgBlue, h)+color.Format(color.FgRed, ":"), color.Format(color.FgYellow, r[0]))
 		} else {
-			verbose.Debug(color.BlueString(h)+color.RedString(":"), r)
+			verbose.Debug(color.Format(color.FgBlue, h)+color.Format(color.FgRed, ":"), r)
 		}
 	}
 }

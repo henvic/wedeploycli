@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fatih/color"
 	"github.com/wedeploy/api-go"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/globalconfigmock"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/stringlib"

@@ -13,9 +13,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fatih/color"
 	"github.com/kylelemons/godebug/pretty"
 	"github.com/wedeploy/api-go"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/globalconfigmock"
 	"github.com/wedeploy/cli/servertest"

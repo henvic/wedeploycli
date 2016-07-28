@@ -5,7 +5,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/auth"
 	"github.com/wedeploy/cli/cmd/build"
@@ -21,6 +20,7 @@ import (
 	"github.com/wedeploy/cli/cmd/unlink"
 	"github.com/wedeploy/cli/cmd/update"
 	"github.com/wedeploy/cli/cmd/version"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/update"
