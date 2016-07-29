@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/cmd/auth"
 	"github.com/wedeploy/cli/cmd/build"
 	"github.com/wedeploy/cli/cmd/createctx"
@@ -179,8 +180,8 @@ func init() {
 }
 
 func setLocal() {
-	config.Global.Token = "1"
-	config.Global.Endpoint = fmt.Sprintf("http://localhost:%d/", config.Global.LocalPort)
+	config.Context.Token = apihelper.DefaultToken
+	config.Context.Endpoint = fmt.Sprintf("http://localhost:%d/", config.Global.LocalPort)
 }
 
 func setRemote() {
@@ -191,7 +192,8 @@ func setRemote() {
 		os.Exit(1)
 	}
 
-	config.Global.Endpoint = normalizeRemote(r.URL)
+	config.Context.Endpoint = normalizeRemote(r.URL)
+	config.Context.Remote = remote
 }
 
 func normalizeRemote(address string) string {

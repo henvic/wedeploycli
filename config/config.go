@@ -126,8 +126,8 @@ func (c *Config) Save() {
 
 // Setup the environment
 func Setup() {
-	setupContext()
 	setupGlobal()
+	setupContext()
 }
 
 func (c *Config) setDefaults() {
@@ -304,8 +304,8 @@ func setupGlobal() {
 
 // Teardown resets the configuration environment
 func Teardown() {
-	teardownContext()
 	teardownGlobal()
+	teardownContext()
 }
 
 func teardownContext() {

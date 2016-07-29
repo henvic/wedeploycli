@@ -11,6 +11,9 @@ type Context struct {
 	Scope         string
 	ProjectRoot   string
 	ContainerRoot string
+	Remote        string
+	Endpoint      string
+	Token         string
 }
 
 var (
