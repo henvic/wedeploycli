@@ -20,7 +20,7 @@ func TestList(t *testing.T) {
 		tdata.ServerJSONFileHandler("./mocks/list/containers_response.json"))
 
 	var cmd = &Command{
-		Args: []string{"list", "--local=false", "--no-color"},
+		Args: []string{"list", "--no-color"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 

@@ -26,7 +26,7 @@ func TestCorruptConfig(t *testing.T) {
 
 func TestLoggedOut(t *testing.T) {
 	var cmd = &Command{
-		Args: []string{"list", "-v", "--local=false"},
+		Args: []string{"list", "-v", "--remote", "foo"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLogoutHome()},
 	}
 

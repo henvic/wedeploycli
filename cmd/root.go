@@ -36,7 +36,7 @@ var WhitelistCmdsNoAuthentication = map[string]bool{
 	"version": true,
 }
 
-// ListNoRemoteFlags hides the globals non used --remote and --local flags
+// ListNoRemoteFlags hides the globals non used --remote
 var ListNoRemoteFlags = map[string]bool{
 	"link":    true,
 	"unlink":  true,
@@ -47,7 +47,7 @@ var ListNoRemoteFlags = map[string]bool{
 	"version": true,
 }
 
-// LocalOnlyCommands sets the --local flag automatically for given commands
+// LocalOnlyCommands for local-only commands
 var LocalOnlyCommands = map[string]bool{
 	"link":   true,
 	"unlink": true,
@@ -69,7 +69,6 @@ http://wedeploy.com`,
 
 var (
 	version bool
-	local   bool
 	remote  string
 )
 
@@ -137,10 +136,6 @@ func hideUnusedGlobalRemoteFlags() {
 		return
 	}
 
-	if err := RootCmd.PersistentFlags().MarkHidden("local"); err != nil {
-		panic(err)
-	}
-
 	if err := RootCmd.PersistentFlags().MarkHidden("remote"); err != nil {
 		panic(err)
 	}
@@ -161,10 +156,6 @@ func init() {
 		"no-color",
 		false,
 		"Disable color output")
-
-	RootCmd.PersistentFlags().BoolVar(
-		&local,
-		"local", true, "Local (for development, remote = local)")
 
 	RootCmd.PersistentFlags().StringVar(
 		&remote,
@@ -206,10 +197,9 @@ func persistentPreRun(cmd *cobra.Command, args []string) {
 	cmdSetLocalFlag()
 	verifyCmdReqAuth(cmd.CommandPath())
 
-	switch {
-	case local:
+	if remote == "" {
 		setLocal()
-	case remote != "":
+	} else {
 		setRemote()
 	}
 }
@@ -256,7 +246,7 @@ func cmdSetLocalFlag() {
 }
 
 func verifyCmdReqAuth(commandPath string) {
-	if local || isCmdWhitelistNoAuth(commandPath) {
+	if remote == "" || isCmdWhitelistNoAuth(commandPath) {
 		return
 	}
 
