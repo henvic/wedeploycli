@@ -60,15 +60,13 @@ func (l *list) printProjects() {
 }
 
 func (l *list) printProject(p projects.Project) {
-	l.printf("project ")
-
 	if p.CustomDomain != "" {
 		l.printf("%v (%v)", p.CustomDomain, getProjectDomain(p.ID))
 	} else {
 		l.printf("%v", getProjectDomain(p.ID))
 	}
 
-	l.printf(" %v\n", getFormattedHealth(p.Health))
+	l.printf("\t\t" + getFormattedHealth(p.Health) + "\n")
 	l.printContainers(p.ID)
 }
 
@@ -83,25 +81,44 @@ func (l *list) printContainers(projectID string) {
 
 	for _, k := range keys {
 		c := cs[k]
-		l.printf("- %v\t", getContainerDomain(projectID, c.ID))
-		l.printf("%v ", getFormattedHealth(c.Health))
+		l.printf(color.Format(
+			color.FgBlack,
+			getHealthForegroundColor(c.Health), "●")+" %v\t",
+			getContainerDomain(projectID, c.ID))
 		l.printf("%v instance", c.Instances)
 
 		if c.Instances > 1 {
 			l.printf("s")
 		}
 
-		l.printf(" [%v]\n", c.Type)
-
+		l.printf(" [%v]", c.Type)
+		l.printf(" [%v]\n", c.Health)
 	}
 }
 
-func getFormattedHealth(s string) string {
+func getHealthForegroundColor(s string) color.Attribute {
+	var foregroundMap = map[string]color.Attribute{
+		"up":      color.FgHiGreen,
+		"warn":    color.FgHiYellow,
+		"down":    color.FgHiBlack,
+		"unknown": color.FgWhite,
+	}
+
+	var bg, bgok = foregroundMap[s]
+
+	if !bgok {
+		bg = color.FgBlue
+	}
+
+	return bg
+}
+
+func getHealthBackgroundColor(s string) color.Attribute {
 	var backgroundMap = map[string]color.Attribute{
 		"up":      color.BgHiGreen,
 		"warn":    color.BgHiYellow,
 		"down":    color.BgHiBlack,
-		"unknown": color.BgHiMagenta,
+		"unknown": color.BgWhite,
 	}
 
 	var bg, bgok = backgroundMap[s]
@@ -110,6 +127,10 @@ func getFormattedHealth(s string) string {
 		bg = color.BgHiBlue
 	}
 
+	return bg
+}
+
+func getFormattedHealth(s string) string {
 	padding := (12 - len(s)) / 2
 
 	if padding < 2 {
@@ -117,7 +138,7 @@ func getFormattedHealth(s string) string {
 	}
 
 	p := strings.Join(make([]string, padding), " ")
-	return color.Format(color.FgBlack, bg, strings.ToUpper(p+s+p))
+	return color.Format(color.FgBlack, getHealthBackgroundColor(s), strings.ToUpper(p+s+p))
 }
 
 func getProjectDomain(projectID string) string {
