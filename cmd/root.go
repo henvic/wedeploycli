@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 
@@ -190,7 +191,18 @@ func setRemote() {
 		os.Exit(1)
 	}
 
-	config.Global.Endpoint = r.URL
+	config.Global.Endpoint = normalizeRemote(r.URL)
+}
+
+func normalizeRemote(address string) string {
+	var u, err = url.Parse(address)
+
+	if err == nil && u.Scheme == "" {
+		u.Scheme = "https"
+		return u.String()
+	}
+
+	return address
 }
 
 func persistentPreRun(cmd *cobra.Command, args []string) {
