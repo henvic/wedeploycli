@@ -1,4 +1,4 @@
-project wechat.wedeploy.me     UP
-- data.wechat.wedeploy.me	    UP     1 instance [wedeploy/engine]
-- static.wechat.wedeploy.me	    UP     1 instance [wedeploy/hosting]
+wechat.wedeploy.me		    UP
+● data.wechat.wedeploy.me	1 instance	[wedeploy/engine]	[up]
+● static.wechat.wedeploy.me	1 instance	[wedeploy/hosting]	[up]
 total 2

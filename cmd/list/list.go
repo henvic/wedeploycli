@@ -31,9 +31,8 @@ func (l *list) printf(format string, a ...interface{}) {
 }
 
 func (l *list) flush() {
-	fmt.Println(l.preprint)
+	fmt.Print(l.preprint)
 	l.preprint = ""
-
 }
 
 func (l *list) mapContainers() {
@@ -91,8 +90,8 @@ func (l *list) printContainers(projectID string) {
 			l.printf("s")
 		}
 
-		l.printf(" [%v]", c.Type)
-		l.printf(" [%v]\n", c.Health)
+		l.printf("\t[%v]", c.Type)
+		l.printf("\t[%v]\n", c.Health)
 	}
 }
 
