@@ -245,7 +245,6 @@ func (c *Config) simplify() {
 }
 
 func (c *Config) simplifyRemotes() {
-
 	for _, k := range c.listRemotes() {
 		s := c.getRemote(k)
 		u := s.Key("url")
