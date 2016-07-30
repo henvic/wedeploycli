@@ -13,6 +13,8 @@ type Context struct {
 	ContainerRoot string
 	Remote        string
 	Endpoint      string
+	Username      string
+	Password      string
 	Token         string
 }
 

@@ -38,6 +38,7 @@ func TestMain(m *testing.M) {
 	errStream = &bufErrStream
 
 	configmock.Setup()
+	configmock.SetupRemoteContext()
 
 	ec := m.Run()
 	configmock.Teardown()
@@ -48,6 +49,8 @@ func TestMain(m *testing.M) {
 }
 
 func TestAuth(t *testing.T) {
+	defaultContextToken := config.Context.Token
+	config.Context.Token = ""
 	r := wedeploy.URL("http://localhost/")
 
 	Auth(r)
@@ -58,6 +61,25 @@ func TestAuth(t *testing.T) {
 	if want != got {
 		t.Errorf("Wrong auth header. Expected %s, got %s instead", want, got)
 	}
+
+	config.Context.Token = defaultContextToken
+}
+
+func TestAuthLocal(t *testing.T) {
+	configmock.SetupLocalContext()
+	config.Context.Token = ""
+	r := wedeploy.URL("http://localhost/")
+
+	Auth(r)
+
+	var want = "Bearer 1" // admin:safe in base64
+	var got = r.Headers.Get("Authorization")
+
+	if want != got {
+		t.Errorf("Wrong auth header. Expected %s, got %s instead", want, got)
+	}
+
+	configmock.SetupRemoteContext()
 }
 
 func TestAuthGet(t *testing.T) {
@@ -199,7 +221,7 @@ func TestAuthGetOrExitError(t *testing.T) {
 func TestAuthTokenBearer(t *testing.T) {
 	r := wedeploy.URL("http://localhost/")
 
-	config.Global.Token = "mytoken"
+	config.Context.Token = "mytoken"
 
 	Auth(r)
 

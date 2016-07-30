@@ -194,6 +194,7 @@ func setRemote() {
 
 	config.Context.Endpoint = normalizeRemote(r.URL)
 	config.Context.Remote = remote
+	config.Context.Token = config.Global.Token
 }
 
 func normalizeRemote(address string) string {

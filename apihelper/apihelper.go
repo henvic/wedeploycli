@@ -26,6 +26,9 @@ type APIFault struct {
 	Errors  APIFaultErrors `json:"errors"`
 }
 
+// DefaultToken for the API server
+var DefaultToken = "1"
+
 var errJSONDecodeFailure = errors.New("Can't decode JSON, fallback to body content")
 
 func (a APIFault) Error() string {
@@ -116,12 +119,13 @@ var (
 
 // Auth a WeDeploy request with the global authentication data
 func Auth(request *wedeploy.WeDeploy) {
-	var token = config.Global.Token
-
-	if token == "" {
-		request.Auth(config.Global.Username, config.Global.Password)
-	} else {
-		request.Auth(config.Global.Token)
+	switch {
+	case config.Context.Remote == "":
+		request.Auth(DefaultToken)
+	case config.Context.Token == "":
+		request.Auth(config.Context.Username, config.Context.Password)
+	default:
+		request.Auth(config.Context.Token)
 	}
 }
 
@@ -219,7 +223,7 @@ func SetBody(request *wedeploy.WeDeploy, data interface{}) error {
 
 // URL creates a WeDeploy URL instance
 func URL(paths ...string) *wedeploy.WeDeploy {
-	return wedeploy.URL(config.Global.Endpoint, paths...)
+	return wedeploy.URL(config.Context.Endpoint, paths...)
 }
 
 // Validate validates a request and sends an error on error
