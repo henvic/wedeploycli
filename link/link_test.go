@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/configmock"
 	"github.com/wedeploy/cli/containers"
-	"github.com/wedeploy/cli/globalconfigmock"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/tdata"
@@ -76,7 +76,7 @@ func TestErrors(t *testing.T) {
 
 func TestAll(t *testing.T) {
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
@@ -100,13 +100,13 @@ func TestAll(t *testing.T) {
 		t.Errorf("Wanted feedback to contain %v, got %v instead", wantFeedback, success)
 	}
 
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 	servertest.Teardown()
 }
 
 func TestAllAuth(t *testing.T) {
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
@@ -133,7 +133,7 @@ func TestAllAuth(t *testing.T) {
 		t.Errorf("Wanted feedback to contain %v, got %v instead", wantFeedback, success)
 	}
 
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 	servertest.Teardown()
 }
 
@@ -143,7 +143,7 @@ func TestAllOnlyNewError(t *testing.T) {
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	var m Machine
 	var err = m.Setup("mocks/myproject")
@@ -170,13 +170,13 @@ func TestAllOnlyNewError(t *testing.T) {
 		t.Errorf("Expected not exists error for container 'nil'")
 	}
 
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 	servertest.Teardown()
 }
 
 func TestAllMultipleWithOnlyNewError(t *testing.T) {
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
@@ -211,13 +211,13 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 		}
 	}
 
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 	servertest.Teardown()
 }
 
 func TestAllValidateOrCreateFailure(t *testing.T) {
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -231,13 +231,13 @@ func TestAllValidateOrCreateFailure(t *testing.T) {
 		t.Errorf("Expected 403 Forbidden error, got %v instead", err)
 	}
 
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 	servertest.Teardown()
 }
 
 func TestAllInstallContainerError(t *testing.T) {
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {})
@@ -263,6 +263,6 @@ func TestAllInstallContainerError(t *testing.T) {
 		t.Errorf("Expected 403 Forbidden error, got %v instead", m.Errors)
 	}
 
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 	servertest.Teardown()
 }

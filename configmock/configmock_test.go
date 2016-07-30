@@ -1,4 +1,4 @@
-package globalconfigmock
+package configmock
 
 import (
 	"testing"
@@ -6,7 +6,7 @@ import (
 	"github.com/wedeploy/cli/config"
 )
 
-func TestGlobalConfigMock(t *testing.T) {
+func Testconfigmock(t *testing.T) {
 	Setup()
 
 	if config.Global == nil {

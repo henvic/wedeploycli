@@ -12,7 +12,7 @@ import (
 
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/globalconfigmock"
+	"github.com/wedeploy/cli/configmock"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/stringlib"
 	"github.com/wedeploy/cli/tdata"
@@ -31,9 +31,9 @@ func TestMain(m *testing.M) {
 	color.NoColor = true
 	verbose.Enabled = true
 	verbose.ErrStream = &bufErrStream
-	globalconfigmock.Setup()
+	configmock.Setup()
 	ec := m.Run()
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 	verbose.Enabled = defaultVerboseEnabled
 	verbose.ErrStream = defaultVerboseErrStream
 	color.NoColor = defaultNoColor

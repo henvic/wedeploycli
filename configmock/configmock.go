@@ -1,4 +1,4 @@
-package globalconfigmock
+package configmock
 
 import (
 	"os"

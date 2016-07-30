@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/wedeploy/api-go/jsonlib"
-	"github.com/wedeploy/cli/globalconfigmock"
+	"github.com/wedeploy/cli/configmock"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/stringlib"
 	"github.com/wedeploy/cli/tdata"
@@ -56,7 +56,7 @@ func TestGetLevel(t *testing.T) {
 
 func TestGetList(t *testing.T) {
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
 		tdata.ServerJSONFileHandler("mocks/logs_response.json"))
@@ -71,7 +71,7 @@ func TestGetList(t *testing.T) {
 
 	jsonlib.AssertJSONMarshal(t, tdata.FromFile("mocks/logs_response_ref.json"), list)
 
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 	servertest.Teardown()
 }
 
@@ -80,7 +80,7 @@ func TestList(t *testing.T) {
 	outStream = &bufOutStream
 	bufOutStream.Reset()
 
-	globalconfigmock.Setup()
+	configmock.Setup()
 	servertest.Setup()
 
 	servertest.Mux.HandleFunc("/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
@@ -101,7 +101,7 @@ func TestList(t *testing.T) {
 
 	outStream = defaultOutStream
 
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 	servertest.Teardown()
 }
 
@@ -110,7 +110,7 @@ func TestWatch(t *testing.T) {
 	outStream = &bufOutStream
 	bufOutStream.Reset()
 
-	globalconfigmock.Setup()
+	configmock.Setup()
 	servertest.Setup()
 
 	var missing = true
@@ -162,7 +162,7 @@ func TestWatch(t *testing.T) {
 	// some time before cleaning up services on other goroutines...
 	time.Sleep(10 * time.Millisecond)
 	outStream = defaultOutStream
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 	servertest.Teardown()
 }
 
@@ -171,7 +171,7 @@ func TestWatcherStart(t *testing.T) {
 	outStream = &bufOutStream
 	bufOutStream.Reset()
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	var fileNum = 0
 
@@ -218,5 +218,5 @@ func TestWatcherStart(t *testing.T) {
 	time.Sleep(10 * time.Millisecond)
 	outStream = defaultOutStream
 	servertest.Teardown()
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 }

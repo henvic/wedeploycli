@@ -17,7 +17,7 @@ import (
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/globalconfigmock"
+	"github.com/wedeploy/cli/configmock"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/stringlib"
 	"github.com/wedeploy/cli/tdata"
@@ -37,10 +37,10 @@ func TestMain(m *testing.M) {
 	var defaultErrStream = errStream
 	errStream = &bufErrStream
 
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	ec := m.Run()
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 
 	errStream = defaultErrStream
 

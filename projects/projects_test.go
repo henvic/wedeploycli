@@ -13,7 +13,7 @@ import (
 
 	"github.com/wedeploy/api-go/jsonlib"
 	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/globalconfigmock"
+	"github.com/wedeploy/cli/configmock"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/tdata"
 )
@@ -33,7 +33,7 @@ func TestMain(m *testing.M) {
 func TestCreate(t *testing.T) {
 	defer servertest.Teardown()
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +48,7 @@ func TestCreate(t *testing.T) {
 		t.Errorf("Wanted err to be nil, got %v instead", err)
 	}
 
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 }
 
 func TestCreateFailureNotFound(t *testing.T) {
@@ -61,7 +61,7 @@ func TestCreateFailureNotFound(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	servertest.Mux.HandleFunc(
 		"/projects/images",
@@ -84,12 +84,12 @@ func TestGet(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 }
 
 func TestList(t *testing.T) {
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	servertest.Mux.HandleFunc(
 		"/projects",
@@ -114,7 +114,7 @@ func TestList(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 }
 
 func TestRead(t *testing.T) {
@@ -156,7 +156,7 @@ func TestReadCorrupted(t *testing.T) {
 func TestRestart(t *testing.T) {
 	defer servertest.Teardown()
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 	bufOutStream.Reset()
 
 	servertest.Mux.HandleFunc("/restart/project", func(w http.ResponseWriter, r *http.Request) {
@@ -169,13 +169,13 @@ func TestRestart(t *testing.T) {
 
 	Restart("foo")
 
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 }
 
 func TestSetAuth(t *testing.T) {
 	defer servertest.Teardown()
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects/little/auth",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -206,7 +206,7 @@ func TestSetAuth(t *testing.T) {
 		t.Errorf("Wanted err to be nil, got %v instead", err)
 	}
 
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 }
 
 func TestSetAuthFailureNotFound(t *testing.T) {
@@ -219,7 +219,7 @@ func TestSetAuthFailureNotFound(t *testing.T) {
 
 func TestUnlink(t *testing.T) {
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/deploy/foo", func(w http.ResponseWriter, r *http.Request) {
 		var wantMethod = "DELETE"
@@ -235,12 +235,12 @@ func TestUnlink(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 }
 
 func TestValidate(t *testing.T) {
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/validators/project/id", func(w http.ResponseWriter, r *http.Request) {
 		if r.FormValue("value") != "foo" {
@@ -253,12 +253,12 @@ func TestValidate(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 }
 
 func TestValidateAlreadyExists(t *testing.T) {
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -272,12 +272,12 @@ func TestValidateAlreadyExists(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 }
 
 func TestValidateInvalidID(t *testing.T) {
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -291,12 +291,12 @@ func TestValidateInvalidID(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 }
 
 func TestValidateError(t *testing.T) {
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -314,12 +314,12 @@ func TestValidateError(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 }
 
 func TestValidateInvalidError(t *testing.T) {
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/validators/project/id",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -333,12 +333,12 @@ func TestValidateInvalidError(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 }
 
 func TestValidateOrCreateAlreadyExists(t *testing.T) {
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -352,12 +352,12 @@ func TestValidateOrCreateAlreadyExists(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 }
 
 func TestValidateOrCreateNotExists(t *testing.T) {
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 	bufOutStream.Reset()
 
 	servertest.Mux.HandleFunc("/projects",
@@ -374,12 +374,12 @@ func TestValidateOrCreateNotExists(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 }
 
 func TestValidateOrCreateInvalidError(t *testing.T) {
 	servertest.Setup()
-	globalconfigmock.Setup()
+	configmock.Setup()
 
 	var _, err = ValidateOrCreate("mocks/little/project.json")
 
@@ -388,5 +388,5 @@ func TestValidateOrCreateInvalidError(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	globalconfigmock.Teardown()
+	configmock.Teardown()
 }
