@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"net/url"
 	"os"
 	"strings"
 
@@ -198,11 +197,10 @@ func setRemote() {
 }
 
 func normalizeRemote(address string) string {
-	var u, err = url.Parse(address)
-
-	if err == nil && u.Scheme == "" {
-		u.Scheme = "https"
-		return u.String()
+	if address != "" &&
+		!strings.HasPrefix(address, "http://") &&
+		!strings.HasPrefix(address, "https://") {
+		return "http://" + address
 	}
 
 	return address
