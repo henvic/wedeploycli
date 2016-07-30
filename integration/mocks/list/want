@@ -1,4 +1,3 @@
-wechat.wedeploy.me		    UP
-● data.wechat.wedeploy.me	1 instance	[wedeploy/engine]	[up]
-● static.wechat.wedeploy.me	1 instance	[wedeploy/hosting]	[up]
-total 2
+Project Big Sinoussi wechat.wedeploy.me                                     UP
+● Fervent             data.wechat.wedeploy.me                   wedeploy/engine     up
+● Romantic            static.wechat.wedeploy.me                 wedeploy/hosting    up
