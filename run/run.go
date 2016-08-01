@@ -54,11 +54,12 @@ type DockerMachine struct {
 	Flags     Flags
 	upTime    time.Time
 	// waitProcess is the "docker wait" PID
-	waitProcess *os.Process
-	livew       *uilive.Writer
-	tickerd     chan bool
-	end         chan bool
-	started     chan bool
+	waitProcess    *os.Process
+	livew          *uilive.Writer
+	tickerd        chan bool
+	end            chan bool
+	started        chan bool
+	selfStopSignal bool
 }
 
 type tcpPortsStruct []int
@@ -187,7 +188,7 @@ func StopOutdatedImage(nextImage string) {
 		os.Exit(1)
 	}
 
-	dm.Stop()
+	cleanupEnvironment()
 }
 
 // Run executes the WeDeploy infraestruture
@@ -208,6 +209,8 @@ func (dm *DockerMachine) Run() {
 
 	if already {
 		fmt.Println("WeDeploy is already running.")
+	} else {
+		cleanupEnvironment()
 	}
 
 	dm.maybeStopListener()
@@ -227,11 +230,10 @@ func (dm *DockerMachine) Stop() {
 	dm.LoadDockerInfo()
 
 	if dm.Container == "" {
-		println("we run is not running.")
-		os.Exit(1)
+		verbose.Debug("No infrastructure container detected.")
 	}
 
-	stop(dm.Container)
+	cleanupEnvironment()
 
 	// Windows doesn't implement grouping for processes
 	// so it is important to send a SIGTERM signal
@@ -271,13 +273,14 @@ func (dm *DockerMachine) waitEnd() {
 
 	switch {
 	case err != nil:
-		fmt.Fprintf(os.Stderr, "Wait call error: %v", err)
+		fmt.Fprintf(os.Stderr, "WeDeploy exit listener error: %v. Containers might still be running.\n", err)
 		os.Exit(1)
 	case ps.Success():
-		fmt.Println("WeDeploy is shutdown.")
-		os.Exit(0)
+		if !dm.selfStopSignal {
+			dm.waitCleanup()
+		}
 	default:
-		println("WeDeploy wait failure.")
+		println("WeDeploy exit listener failure.")
 		os.Exit(1)
 	}
 }
@@ -317,6 +320,11 @@ func (dm *DockerMachine) waitReadyState() {
 	println("Failed to verify if WeDeploy is working correctly.")
 }
 
+func (dm *DockerMachine) waitCleanup() {
+	fmt.Println("WeDeploy is shutdown.")
+	dm.end <- true
+}
+
 func (dm *DockerMachine) start() {
 	var args = getRunCommandEnv()
 	var running = "docker " + strings.Join(args, " ")
@@ -350,11 +358,6 @@ func (dm *DockerMachine) hasCurrentWeDeployImage() bool {
 	return dm.Image == WeDeployImage
 }
 
-func (dm *DockerMachine) stop() {
-	stop(dm.Container)
-	dm.end <- true
-}
-
 func (dm *DockerMachine) maybeStopListener() {
 	if !dm.Flags.Detach && !dm.Flags.ViewMode {
 		dm.stopListener()
@@ -374,8 +377,10 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 	verbose.Debug("Started end signal received.")
 
 	dm.tickerd <- true
+	dm.selfStopSignal = true
 	fmt.Println("\nStopping WeDeploy.")
-	dm.stop()
+	cleanupEnvironment()
+	dm.waitCleanup()
 }
 
 func (dm *DockerMachine) checkConnection() {
@@ -593,22 +598,86 @@ func startCmd(args ...string) string {
 	return dockerContainer
 }
 
-func stop(container string) {
-	var stop = exec.Command(bin, "stop", container)
-
-	stopFeedback(stop.Run())
+func cleanupEnvironment() {
+	verbose.Debug("Cleaning up processes and containers.")
+	stopContainers()
+	rmContainers()
+	verbose.Debug("End of environment clean up.")
 }
 
-func stopFeedback(err error) {
+func stopContainers() {
+	verbose.Debug("Trying to stop WeDeploy containers and infrastructure containers.")
+	var ids = getDockerContainers(true)
+
+	if len(ids) == 0 {
+		return
+	}
+
+	var params = []string{"stop"}
+	params = append(params, ids...)
+	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
+	var stop = exec.Command(bin, params...)
+	stop.Stderr = os.Stderr
+
+	var err = stop.Run()
+
 	switch err.(type) {
 	case nil:
 	case *exec.ExitError:
-		println("warning: still stopping WeDeploy on background")
+		fmt.Fprintf(os.Stderr, "warning: still stopping WeDeploy on background: %v\n", err)
 		os.Exit(1)
 	default:
-		println("docker stop error:", err.Error())
+		fmt.Fprintf(os.Stderr, "docker stop error: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+func rmContainers() {
+	var ids = getDockerContainers(false)
+
+	if len(ids) == 0 {
+		return
+	}
+
+	var params = []string{"rm"}
+	params = append(params, ids...)
+	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
+	var rm = exec.Command(bin, params...)
+	rm.Stderr = os.Stderr
+
+	if err := rm.Run(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error trying to remove containers: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func getDockerContainers(onlyRunning bool) []string {
+	var ids = getContainersByLabel("com.wedeploy.container.type", onlyRunning)
+	ids = append(ids, getContainersByLabel("com.wedeploy.project.infra", onlyRunning)...)
+	return ids
+}
+
+func getContainersByLabel(label string, onlyRunning bool) []string {
+	var params = []string{
+		"ps", "--filter", "label=" + label, "--quiet",
+	}
+
+	if !onlyRunning {
+		params = append(params, "--all")
+	}
+
+	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
+	var list = exec.Command(bin, params...)
+	var buf bytes.Buffer
+	list.Stderr = os.Stderr
+	list.Stdout = &buf
+
+	if err := list.Run(); err != nil {
+		fmt.Fprintf(os.Stderr, "Can't get containers list: %v\n", err)
+		os.Exit(1)
+	}
+
+	return strings.Fields(buf.String())
 }
 
 func existsDependency(cmd string) bool {
