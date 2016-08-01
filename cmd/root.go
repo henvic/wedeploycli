@@ -25,6 +25,7 @@ import (
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/update"
 	"github.com/wedeploy/cli/verbose"
+	"github.com/wedeploy/cli/verbosereq"
 )
 
 // WhitelistCmdsNoAuthentication for cmds that doesn't require authentication
@@ -124,6 +125,12 @@ func hideVersionFlag() {
 	}
 }
 
+func hideNoVerboseRequestsFlag() {
+	if err := RootCmd.PersistentFlags().MarkHidden("no-verbose-requests"); err != nil {
+		panic(err)
+	}
+}
+
 func hideUnusedGlobalRemoteFlags() {
 	var args = os.Args
 
@@ -153,6 +160,12 @@ func init() {
 		"Verbose output")
 
 	RootCmd.PersistentFlags().BoolVar(
+		&verbosereq.Disabled,
+		"no-verbose-requests",
+		false,
+		"Hide verbose output for requests")
+
+	RootCmd.PersistentFlags().BoolVar(
 		&color.NoColor,
 		"no-color",
 		false,
@@ -167,6 +180,7 @@ func init() {
 		"version", false, "Print version information and quit")
 
 	hideVersionFlag()
+	hideNoVerboseRequestsFlag()
 	hideUnusedGlobalRemoteFlags()
 
 	if config.Global.NoColor {

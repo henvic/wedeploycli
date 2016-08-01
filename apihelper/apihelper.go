@@ -1,5 +1,10 @@
 package apihelper
 
+// apihelper SHOULD NOT call any verbose.METHOD directly
+// instead, it SHOULD use the verbosereq package
+// there is a hidden global debugging flag --no-verbose-requests
+// to hide verbose messages related to requests
+
 import (
 	"bytes"
 	"encoding/json"

@@ -16,8 +16,11 @@ import (
 	"github.com/wedeploy/cli/verbose"
 )
 
-// DebugRequestBody prints verbose messages when debugging is enabled
-func DebugRequestBody(body io.Reader) {
+// Disabled flag
+var Disabled = false
+
+// debugRequestBody prints verbose messages when debugging is enabled
+func debugRequestBody(body io.Reader) {
 	if body != nil {
 		verbose.Debug("")
 	}
@@ -86,7 +89,7 @@ func debugUnknownTypeBody(body io.Reader) {
 
 // Feedback prints to the verbose err stream info about request
 func Feedback(request *wedeploy.WeDeploy) {
-	if !verbose.Enabled {
+	if Disabled || !verbose.Enabled {
 		return
 	}
 
@@ -105,7 +108,7 @@ func requestVerboseFeedback(request *wedeploy.WeDeploy) {
 		color.Format(color.FgBlue, request.Request.Proto))
 
 	verbosePrintHeaders(request.Headers)
-	DebugRequestBody(request.RequestBody)
+	debugRequestBody(request.RequestBody)
 
 	verbose.Debug("\n")
 	feedbackResponse(request.Response)

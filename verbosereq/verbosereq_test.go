@@ -42,7 +42,7 @@ func TestMain(m *testing.M) {
 
 func TestDebugRequestBody(t *testing.T) {
 	bufErrStream.Reset()
-	DebugRequestBody(nil)
+	debugRequestBody(nil)
 
 	if bufErrStream.Len() != 0 {
 		t.Errorf("Wanted debug to be empty")
