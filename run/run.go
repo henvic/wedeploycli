@@ -49,10 +49,11 @@ type Flags struct {
 
 // DockerMachine for the run command
 type DockerMachine struct {
-	Container   string
-	Image       string
-	Flags       Flags
-	upTime      time.Time
+	Container string
+	Image     string
+	Flags     Flags
+	upTime    time.Time
+	// waitProcess is the "docker wait" PID
 	waitProcess *os.Process
 	livew       *uilive.Writer
 	tickerd     chan bool
@@ -232,8 +233,9 @@ func (dm *DockerMachine) Stop() {
 
 	stop(dm.Container)
 
+	// Windows doesn't implement grouping for processes
+	// so it is important to send a SIGTERM signal
 	if dm.waitProcess != nil {
-		fmt.Println("sending sigterm signal")
 		dm.waitProcess.Signal(syscall.SIGTERM)
 	}
 }
