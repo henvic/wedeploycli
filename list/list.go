@@ -3,10 +3,14 @@ package list
 import (
 	"fmt"
 	"os"
+	"os/signal"
 	"regexp"
 	"sort"
 	"strings"
+	"syscall"
+	"time"
 
+	"github.com/henvic/uilive"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/projects"
@@ -32,6 +36,12 @@ func (l *List) printf(format string, a ...interface{}) {
 func (l *List) flush() {
 	fmt.Print(l.preprint)
 	l.preprint = ""
+}
+
+func (l *List) flushString() string {
+	var t = l.preprint
+	l.preprint = ""
+	return t
 }
 
 func (l *List) mapContainers() {
@@ -129,6 +139,60 @@ func (l *List) printInstances(instances int) {
 
 	l.printf(" ")
 	l.conditionalPad(s, 14)
+}
+
+// Watcher structure
+type Watcher struct {
+	List            *List
+	PoolingInterval time.Duration
+	ticker          *time.Ticker
+	livew           *uilive.Writer
+}
+
+// Watch logs
+func Watch(watcher *Watcher) {
+	sigs := make(chan os.Signal, 1)
+	done := make(chan bool, 1)
+
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	watcher.livew = uilive.New()
+	watcher.Start()
+
+	go func() {
+		<-sigs
+		fmt.Fprintln(os.Stdout, "")
+		watcher.Stop()
+		done <- true
+	}()
+
+	<-done
+}
+
+// Start for Watcher
+func (w *Watcher) Start() {
+	w.ticker = time.NewTicker(w.PoolingInterval)
+	w.livew.Start()
+
+	go func() {
+		w.pool()
+		for range w.ticker.C {
+			w.pool()
+		}
+	}()
+}
+
+// Stop for Watcher
+func (w *Watcher) Stop() {
+	w.ticker.Stop()
+	w.livew.Stop()
+	os.Exit(0)
+}
+
+func (w *Watcher) pool() {
+	w.List.mapContainers()
+	w.List.printProjects()
+	fmt.Fprintf(w.livew, "%v", w.List.flushString())
 }
 
 func getType(t string) string {

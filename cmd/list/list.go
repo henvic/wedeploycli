@@ -3,6 +3,7 @@ package cmdlist
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/wedeploy/cli/list"
 
@@ -17,7 +18,10 @@ var ListCmd = &cobra.Command{
 	Run:   listRun,
 }
 
-var detailed bool
+var (
+	detailed bool
+	watch    bool
+)
 
 func listRun(cmd *cobra.Command, args []string) {
 	var l = &list.List{
@@ -52,6 +56,18 @@ func listRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	switch watch {
+	case true:
+		var w = &list.Watcher{
+			List:            l,
+			PoolingInterval: time.Second,
+		}
+
+		list.Watch(w)
+	default:
+		l.Print()
+	}
+
 	l.Print()
 }
 
@@ -59,4 +75,8 @@ func init() {
 	ListCmd.Flags().BoolVarP(
 		&detailed,
 		"detailed", "d", false, "Show more containers details.")
+
+	ListCmd.Flags().BoolVar(
+		&watch,
+		"watch", false, "Watch for changes.")
 }
