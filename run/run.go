@@ -293,6 +293,7 @@ func (dm *DockerMachine) maybeWaitEnd() {
 
 func (dm *DockerMachine) waitReadyState() {
 	var tries = 1
+	dm.upTime = time.Now()
 	dm.livew.Start()
 	dm.checkConnection()
 	for tries <= 100 {
@@ -411,7 +412,6 @@ func (dm *DockerMachine) checkConnectionCounter(ticker *time.Ticker) {
 }
 
 func (dm *DockerMachine) prepare() {
-	dm.upTime = time.Now()
 	dm.testAlreadyRunning()
 	dm.livew = uilive.New()
 	dm.tickerd = make(chan bool, 1)
