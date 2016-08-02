@@ -111,7 +111,7 @@ func (l *List) conditionalPad(word string, maxWord int) {
 }
 
 func (l *List) printContainer(projectID string, c *containers.Container) {
-	l.printf(color.Format(color.FgBlack, getHealthForegroundColor(c.Health), "● "))
+	l.printf(color.Format(getHealthForegroundColor(c.Health), "● "))
 	l.printf("%v ", c.Name)
 	l.conditionalPad(c.Name, 20)
 	containerDomain := getContainerDomain(projectID, c.ID)
