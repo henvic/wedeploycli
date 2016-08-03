@@ -36,7 +36,7 @@ type Watcher struct {
 	Filter          *Filter
 	Paths           []string
 	PoolingInterval time.Duration
-	ticker          *time.Ticker
+	end             bool
 }
 
 // SeverityToLevel map
@@ -109,19 +109,22 @@ func Watch(watcher *Watcher) {
 
 // Start for Watcher
 func (w *Watcher) Start() {
-	w.ticker = time.NewTicker(w.PoolingInterval)
-
 	go func() {
-		w.pool()
-		for range w.ticker.C {
+	w:
+		if !w.end {
 			w.pool()
+			time.Sleep(w.PoolingInterval)
+		}
+
+		if !w.end {
+			goto w
 		}
 	}()
 }
 
 // Stop for Watcher
 func (w *Watcher) Stop() {
-	w.ticker.Stop()
+	w.end = true
 }
 
 func printList(list []Logs) {
