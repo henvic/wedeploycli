@@ -2,6 +2,7 @@ package list
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"regexp"
@@ -16,55 +17,130 @@ import (
 	"github.com/wedeploy/cli/projects"
 )
 
+type Filter struct {
+	Project    string
+	Containers []string
+}
+
 type List struct {
-	Detailed             bool
-	Projects             []projects.Project
-	containersProjectMap map[string]containers.Containers
-	preprint             string
+	Detailed  bool
+	Filter    Filter
+	projects  []projects.Project
+	outStream io.Writer
+	watch     bool
+	retry     int
+	preprint  string
+}
+
+func New(filter Filter) *List {
+	var l = &List{
+		Filter:    filter,
+		outStream: os.Stdout,
+	}
+
+	return l
+}
+
+func NewWatcher(list *List) *Watcher {
+	return &Watcher{
+		List:            list,
+		PoolingInterval: time.Second,
+	}
 }
 
 func (l *List) Print() {
-	l.mapContainers()
+	var err = l.fetch()
+	l.clear()
+
+	if err != nil {
+		l.handleRequestError(err)
+		fmt.Fprintf(l.outStream, "%v", l.preprint)
+		return
+	}
+
+	l.retry = 0
 	l.printProjects()
-	l.flush()
+
+	if len(l.projects) == 0 {
+		l.handleNoProjectFound()
+	}
+
+	fmt.Fprintf(l.outStream, "%v", l.preprint)
+}
+
+func (l *List) handleNoProjectFound() {
+	var p = "No project or container found.\n"
+
+	if l.watch {
+		l.preprint = p
+	} else {
+		println(p)
+	}
+}
+
+func (l *List) clear() {
+	l.preprint = ""
 }
 
 func (l *List) printf(format string, a ...interface{}) {
 	l.preprint += fmt.Sprintf(format, a...)
 }
 
-func (l *List) flush() {
-	fmt.Print(l.preprint)
-	l.preprint = ""
+func (l *List) fetch() error {
+	l.resetObjects()
+
+	if l.Filter.Project == "" {
+		return l.fetchAllProjects()
+	}
+
+	return l.fetchOneProject()
 }
 
-func (l *List) flushString() string {
-	var t = l.preprint
-	l.preprint = ""
-	return t
-}
-
-func (l *List) mapContainers() {
-	l.containersProjectMap = map[string]containers.Containers{}
-
-	for _, p := range l.Projects {
-		var cs, err = containers.List(p.ID)
-
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error retrieving containers for %v.\n", p.ID)
-			fmt.Fprintf(os.Stderr, "%v\n", err)
-			os.Exit(1)
-		}
-
-		l.containersProjectMap[p.ID] = cs
+func (l *List) handleRequestError(err error) {
+	l.retry++
+	var s = color.Format(color.FgHiRed, "Error fetching list:\n%v #%d\n", err, l.retry)
+	if l.watch {
+		l.printf(s)
+	} else {
+		println(s)
+		os.Exit(1)
 	}
 }
 
+func (l *List) resetObjects() {
+	l.projects = []projects.Project{}
+}
+
+func (l *List) fetchAllProjects() error {
+	var ps, err = projects.List()
+
+	if err != nil {
+		return err
+	}
+
+	for _, p := range ps {
+		l.projects = append(l.projects, p)
+	}
+
+	return err
+}
+
+func (l *List) fetchOneProject() error {
+	var p, err = projects.Get(l.Filter.Project)
+
+	if err != nil {
+		return err
+	}
+
+	l.projects = append(l.projects, p)
+	return err
+}
+
 func (l *List) printProjects() {
-	for i, p := range l.Projects {
+	for i, p := range l.projects {
 		l.printProject(p)
 
-		if i != len(l.Projects)-1 {
+		if i != len(l.projects)-1 {
 			l.printf("\n")
 		}
 	}
@@ -87,13 +163,16 @@ func (l *List) printProject(p projects.Project) {
 	l.printf(" ")
 	l.conditionalPad(word, 72)
 	l.printf(getFormattedHealth(p.Health) + "\n")
-	l.printContainers(p.ID)
+	l.printContainers(p.ID, p.Containers)
 }
 
-func (l *List) printContainers(projectID string) {
-	var cs = l.containersProjectMap[projectID]
+func (l *List) printContainers(projectID string, cs containers.Containers) {
 	var keys = make([]string, 0)
 	for k := range cs {
+		if len(l.Filter.Containers) != 0 && !inArray(k, l.Filter.Containers) {
+			continue
+		}
+
 		keys = append(keys, k)
 	}
 
@@ -145,7 +224,6 @@ func (l *List) printInstances(instances int) {
 type Watcher struct {
 	List            *List
 	PoolingInterval time.Duration
-	ticker          *time.Ticker
 	livew           *uilive.Writer
 }
 
@@ -156,7 +234,7 @@ func Watch(watcher *Watcher) {
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	watcher.livew = uilive.New()
+	watcher.List.watch = true
 	watcher.Start()
 
 	go func() {
@@ -171,28 +249,22 @@ func Watch(watcher *Watcher) {
 
 // Start for Watcher
 func (w *Watcher) Start() {
-	w.ticker = time.NewTicker(w.PoolingInterval)
+	w.livew = uilive.New()
+	w.List.outStream = w.livew
 	w.livew.Start()
 
 	go func() {
-		w.pool()
-		for range w.ticker.C {
-			w.pool()
-		}
+	p:
+		w.List.Print()
+		time.Sleep(w.PoolingInterval)
+		goto p
 	}()
 }
 
 // Stop for Watcher
 func (w *Watcher) Stop() {
-	w.ticker.Stop()
 	w.livew.Stop()
 	os.Exit(0)
-}
-
-func (w *Watcher) pool() {
-	w.List.mapContainers()
-	w.List.printProjects()
-	fmt.Fprintf(w.livew, "%v", w.List.flushString())
 }
 
 func getType(t string) string {
@@ -215,7 +287,7 @@ func getHealthForegroundColor(s string) color.Attribute {
 	var foregroundMap = map[string]color.Attribute{
 		"up":      color.FgHiGreen,
 		"warn":    color.FgHiYellow,
-		"down":    color.FgHiBlack,
+		"down":    color.FgHiRed,
 		"unknown": color.FgWhite,
 	}
 
@@ -232,7 +304,7 @@ func getHealthBackgroundColor(s string) color.Attribute {
 	var backgroundMap = map[string]color.Attribute{
 		"up":      color.BgHiGreen,
 		"warn":    color.BgHiYellow,
-		"down":    color.BgHiBlack,
+		"down":    color.FgHiRed,
 		"unknown": color.BgWhite,
 	}
 
@@ -266,4 +338,14 @@ func getProjectDomain(projectID string) string {
 
 func getContainerDomain(projectID, containerID string) string {
 	return fmt.Sprintf("%v.%v.wedeploy.me", color.Format(color.Bold, "%v", containerID), projectID)
+}
+
+func inArray(key string, haystack []string) bool {
+	for _, k := range haystack {
+		if key == k {
+			return true
+		}
+	}
+
+	return false
 }

@@ -1,14 +1,9 @@
 package cmdlist
 
 import (
-	"fmt"
-	"os"
-	"time"
-
 	"github.com/wedeploy/cli/list"
 
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/projects"
 )
 
 // ListCmd is used for getting a list of projects and containers
@@ -24,51 +19,27 @@ var (
 )
 
 func listRun(cmd *cobra.Command, args []string) {
-	var l = &list.List{
-		Projects: []projects.Project{},
-	}
-
-	l.Detailed = detailed
+	var filter = list.Filter{}
 
 	switch len(args) {
 	case 0:
-		var ps, err = projects.List()
-
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "%v\n", err)
-			os.Exit(1)
-		}
-
-		for _, project := range ps {
-			l.Projects = append(l.Projects, project)
-		}
 	case 1:
-		var p, err = projects.Get(args[0])
-
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "%v\n", err)
-			os.Exit(1)
-		}
-
-		l.Projects = append(l.Projects, p)
+		filter.Project = args[0]
 	default:
-		println("This command takes 0 or 1 argument.")
-		os.Exit(1)
+		filter.Project = args[0]
+		filter.Containers = args[1:]
 	}
+
+	var l = list.New(filter)
+
+	l.Detailed = detailed
 
 	switch watch {
 	case true:
-		var w = &list.Watcher{
-			List:            l,
-			PoolingInterval: time.Second,
-		}
-
-		list.Watch(w)
+		list.Watch(list.NewWatcher(l))
 	default:
 		l.Print()
 	}
-
-	l.Print()
 }
 
 func init() {
