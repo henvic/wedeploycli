@@ -10,17 +10,19 @@ import (
 
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 )
 
 // Project structure
 type Project struct {
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	CustomDomain string `json:"custom_domain,omitempty"`
-	Health       string `json:"health,omitempty"`
-	Description  string `json:"description,omitempty"`
+	ID           string                `json:"id"`
+	Name         string                `json:"name"`
+	CustomDomain string                `json:"custom_domain,omitempty"`
+	Health       string                `json:"health,omitempty"`
+	Description  string                `json:"description,omitempty"`
+	Containers   containers.Containers `json:"containers,omitempty"`
 }
 
 var (
