@@ -1,6 +1,7 @@
 package cmdrestart
 
 import (
+	"fmt"
 	"os"
 	"sync"
 
@@ -74,6 +75,20 @@ func (r *restart) isDone() bool {
 	return c.Health == "up"
 }
 
+func (r *restart) checkProjectOrContainerExists() {
+	var err error
+	if r.container == "" {
+		_, err = projects.Get(r.project)
+	} else {
+		_, err = containers.Get(r.project, r.container)
+	}
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
+	}
+}
+
 func restartRun(cmd *cobra.Command, args []string) {
 	project, container, err := cmdcontext.GetProjectOrContainerID(args)
 
@@ -88,6 +103,8 @@ func restartRun(cmd *cobra.Command, args []string) {
 		project:   project,
 		container: container,
 	}
+
+	r.checkProjectOrContainerExists()
 
 	if quiet {
 		r.do()

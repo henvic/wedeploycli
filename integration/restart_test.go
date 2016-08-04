@@ -5,12 +5,16 @@ import (
 	"testing"
 
 	"github.com/wedeploy/cli/servertest"
+	"github.com/wedeploy/cli/tdata"
 )
 
 func TestRestartProjectQuiet(t *testing.T) {
 	var handled bool
 	defer Teardown()
 	Setup()
+
+	servertest.IntegrationMux.HandleFunc("/projects/foo",
+		tdata.ServerJSONFileHandler("mocks/restart/project_foo_response.json"))
 
 	servertest.IntegrationMux.HandleFunc("/restart/project",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -44,6 +48,9 @@ func TestRestartContainerQuiet(t *testing.T) {
 	var handled bool
 	defer Teardown()
 	Setup()
+
+	servertest.IntegrationMux.HandleFunc("/projects/foo/containers/bar",
+		tdata.ServerJSONFileHandler("mocks/restart/container_foo_bar_response.json"))
 
 	servertest.IntegrationMux.HandleFunc("/restart/container",
 		func(w http.ResponseWriter, r *http.Request) {
