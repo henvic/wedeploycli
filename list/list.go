@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/henvic/uilive"
+	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/projects"
@@ -25,13 +26,14 @@ type Filter struct {
 
 // List containers object
 type List struct {
-	Detailed  bool
-	Filter    Filter
-	Projects  []projects.Project
-	outStream io.Writer
-	watch     bool
-	retry     int
-	preprint  string
+	Detailed       bool
+	Filter         Filter
+	Projects       []projects.Project
+	StyledNotFound bool
+	outStream      io.Writer
+	watch          bool
+	retry          int
+	preprint       string
 }
 
 // New creates a list using the values of a passed Filter
@@ -102,8 +104,21 @@ func (l *List) fetch() error {
 }
 
 func (l *List) handleRequestError(err error) {
-	l.retry++
+	var ae, ok = err.(*apihelper.APIFault)
+
+	if l.StyledNotFound && ok && ae.Code == 404 {
+		l.handleNoProjectFound()
+
+		if !l.watch {
+			os.Exit(1)
+		}
+
+		return
+	}
+
 	var s = color.Format(color.FgHiRed, "Error fetching list:\n%v #%d\n", err, l.retry)
+
+	l.retry++
 	if l.watch {
 		l.printf(s)
 	} else {
