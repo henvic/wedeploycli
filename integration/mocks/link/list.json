@@ -1,0 +1,41 @@
+{
+	"color": "ff536b",
+	"auth": {
+		"loginAuthenticationUrl": null,
+		"loginRedirectPageUrl": null,
+		"loginPageUrl": null,
+		"logoutAuthenticationUrl": null,
+		"containerAuthenticationProvider": null,
+		"logoutRedirectPageUrl": null
+	},
+	"health": "up",
+	"source": null,
+	"homeContainer": "static",
+	"ownerId": null,
+	"customDomain": "wechat.liferay.io",
+	"users": [null],
+	"maxContainers": 10,
+	"invitations": {},
+	"name": "Hopeful Banach",
+	"containers": {
+		"container": {
+			"template": null,
+			"image": null,
+			"configuration": {},
+			"instances": 1,
+			"health": "up",
+			"source": "\/Users\/henvic\/mocks\/demo-wechat\/static",
+			"env": {
+				"LAUNCHPAD_WEB_PATH": "\/"
+			},
+			"type": "wedeploy\/engine",
+			"port": null,
+			"name": "Gloomy",
+			"id": "container",
+			"maxInstances": 5,
+			"projectId": "wechat"
+		}
+	},
+	"id": "wechat",
+	"masterToken": "e3c7ca6b-ef15-450d-a114-eb922ffe090a"
+}

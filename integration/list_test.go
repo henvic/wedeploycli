@@ -15,10 +15,6 @@ func TestList(t *testing.T) {
 		"/projects",
 		tdata.ServerJSONFileHandler("./mocks/list/projects_response.json"))
 
-	servertest.IntegrationMux.HandleFunc(
-		"/projects/wechat/containers",
-		tdata.ServerJSONFileHandler("./mocks/list/containers_response.json"))
-
 	var cmd = &Command{
 		Args: []string{"list", "--no-color"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
