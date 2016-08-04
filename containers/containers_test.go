@@ -70,6 +70,36 @@ func TestGetListFromDirectoryNotExists(t *testing.T) {
 	}
 }
 
+func TestGet(t *testing.T) {
+	servertest.Setup()
+	configmock.Setup()
+
+	var want = Container{
+		ID:        "search7606",
+		Name:      "Cloud Search",
+		Health:    "on",
+		Type:      "cloudsearch",
+		Instances: 7,
+	}
+
+	servertest.Mux.HandleFunc("/projects/images/containers/search7606",
+		tdata.ServerJSONFileHandler("mocks/container_response.json"))
+
+	var got, err = Get("images", "search7606")
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("Get doesn't match with wanted structure.")
+		t.Errorf(pretty.Compare(want, got))
+	}
+
+	servertest.Teardown()
+	configmock.Teardown()
+}
+
 func TestList(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()

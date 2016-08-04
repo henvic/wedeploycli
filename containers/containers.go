@@ -76,6 +76,13 @@ func List(projectID string) (Containers, error) {
 	return cs, err
 }
 
+// Get container
+func Get(projectID, containerID string) (Container, error) {
+	var c Container
+	var err = apihelper.AuthGet("/projects/"+projectID+"/containers/"+containerID, &c)
+	return c, err
+}
+
 // Link container to project
 func Link(projectID, containerPath string, container *Container) error {
 	verbose.Debug("Installing container from definition")
