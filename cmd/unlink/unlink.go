@@ -1,11 +1,14 @@
 package cmdunlink
 
 import (
+	"fmt"
 	"os"
+	"sync"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdcontext"
 	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
 )
 
@@ -20,21 +23,121 @@ we unlink <project> <container>
 we unlink <container>`,
 }
 
-func unlinkRun(cmd *cobra.Command, args []string) {
-	var project, container, err = cmdcontext.GetProjectOrContainerID(args)
+var quiet bool
 
-	switch {
-	case err != nil:
-		println("fatal: not a project")
-		os.Exit(1)
-	case container == "":
-		err = projects.Unlink(project)
+func init() {
+	UnlinkCmd.Flags().BoolVarP(
+		&quiet,
+		"quiet",
+		"q",
+		false,
+		"Unlink without watching status.")
+}
+
+type unlink struct {
+	project   string
+	container string
+	list      *list.List
+	end       bool
+	err       error
+}
+
+func (u *unlink) do() {
+	switch u.container {
+	case "":
+		u.err = projects.Unlink(u.project)
 	default:
-		err = containers.Unlink(project, container)
+		u.err = containers.Unlink(u.project, u.container)
+	}
+
+	u.end = true
+}
+
+func (u *unlink) isDone() bool {
+	if !u.end {
+		return false
+	}
+
+	if len(u.list.Projects) == 0 {
+		return true
+	}
+
+	if u.container != "" && u.list.Projects[0].Containers[u.container] == nil {
+		return true
+	}
+
+	return false
+}
+
+func (u *unlink) watch() {
+	var filter = list.Filter{}
+
+	filter.Project = u.project
+
+	if u.container != "" {
+		filter.Containers = []string{u.container}
+	}
+
+	u.list = list.New(filter)
+
+	u.list.StyledNotFound = true
+
+	var watcher = list.NewWatcher(u.list)
+	watcher.StopCondition = u.isDone
+	watcher.Start()
+}
+
+func (u *unlink) checkProjectOrContainerExists() {
+	var err error
+	if u.container == "" {
+		_, err = projects.Get(u.project)
+	} else {
+		_, err = containers.Get(u.project, u.container)
 	}
 
 	if err != nil {
-		println(err.Error())
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
+	}
+}
+
+func unlinkRun(cmd *cobra.Command, args []string) {
+	var project, container, err = cmdcontext.GetProjectOrContainerID(args)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "fatal: %v", err)
+		os.Exit(1)
+	}
+
+	var u = &unlink{
+		project:   project,
+		container: container,
+	}
+
+	u.checkProjectOrContainerExists()
+
+	if quiet {
+		u.do()
+		return
+	}
+
+	var queue sync.WaitGroup
+
+	queue.Add(2)
+
+	go func() {
+		u.do()
+		queue.Done()
+	}()
+
+	go func() {
+		u.watch()
+		queue.Done()
+	}()
+
+	queue.Wait()
+
+	if u.err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 	}
 }
