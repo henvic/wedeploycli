@@ -18,8 +18,11 @@ func TestLink(t *testing.T) {
 	servertest.IntegrationMux.HandleFunc("/deploy",
 		func(w http.ResponseWriter, r *http.Request) {})
 
+	servertest.IntegrationMux.HandleFunc("/projects/app",
+		tdata.ServerJSONFileHandler("mocks/link/list.json"))
+
 	var cmd = &Command{
-		Args: []string{"link"},
+		Args: []string{"link", "--no-color"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
@@ -27,7 +30,7 @@ func TestLink(t *testing.T) {
 
 	var e = &Expect{
 		ExitCode: 0,
-		Stdout:   tdata.FromFile("mocks/link"),
+		Stdout:   tdata.FromFile("mocks/link/link"),
 	}
 
 	cmd.Run()
