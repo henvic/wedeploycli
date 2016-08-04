@@ -152,7 +152,7 @@ func (l *List) printProjects() {
 }
 
 func (l *List) printProject(p projects.Project) {
-	word := fmt.Sprintf("Project " + color.Format(color.Bold, "%v ", p.Name))
+	word := fmt.Sprintf("Project %v ", p.Name)
 
 	switch {
 	case p.CustomDomain == "":
