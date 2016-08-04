@@ -79,7 +79,7 @@ func (l *List) handleNoProjectFound() {
 	if l.watch {
 		l.preprint = p
 	} else {
-		println(p)
+		print(p)
 	}
 }
 
