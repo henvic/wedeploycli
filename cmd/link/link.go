@@ -23,6 +23,17 @@ we link <project>
 we link <container>`,
 }
 
+var quiet bool
+
+func init() {
+	LinkCmd.Flags().BoolVarP(
+		&quiet,
+		"quiet",
+		"q",
+		false,
+		"Link without watching status.")
+}
+
 func getContainersDirectoriesFromScope() []string {
 	if config.Context.ContainerRoot != "" {
 		_, container := filepath.Split(config.Context.ContainerRoot)
@@ -61,6 +72,11 @@ func linkRun(cmd *cobra.Command, args []string) {
 	if err != nil {
 		println(err.Error())
 		os.Exit(1)
+	}
+
+	if quiet {
+		m.Run()
+		return
 	}
 
 	var queue sync.WaitGroup
