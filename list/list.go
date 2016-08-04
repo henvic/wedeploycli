@@ -17,21 +17,24 @@ import (
 	"github.com/wedeploy/cli/projects"
 )
 
+// Filter parameters for the list command
 type Filter struct {
 	Project    string
 	Containers []string
 }
 
+// List containers object
 type List struct {
 	Detailed  bool
 	Filter    Filter
-	projects  []projects.Project
+	Projects  []projects.Project
 	outStream io.Writer
 	watch     bool
 	retry     int
 	preprint  string
 }
 
+// New creates a list using the values of a passed Filter
 func New(filter Filter) *List {
 	var l = &List{
 		Filter:    filter,
@@ -41,13 +44,15 @@ func New(filter Filter) *List {
 	return l
 }
 
+// NewWatcher creates a list watcher for a given List
 func NewWatcher(list *List) *Watcher {
 	return &Watcher{
 		List:            list,
-		PoolingInterval: time.Second,
+		PoolingInterval: 200 * time.Millisecond,
 	}
 }
 
+// Print containers
 func (l *List) Print() {
 	var err = l.fetch()
 	l.clear()
@@ -61,7 +66,7 @@ func (l *List) Print() {
 	l.retry = 0
 	l.printProjects()
 
-	if len(l.projects) == 0 {
+	if len(l.Projects) == 0 {
 		l.handleNoProjectFound()
 	}
 
@@ -108,7 +113,7 @@ func (l *List) handleRequestError(err error) {
 }
 
 func (l *List) resetObjects() {
-	l.projects = []projects.Project{}
+	l.Projects = []projects.Project{}
 }
 
 func (l *List) fetchAllProjects() error {
@@ -119,7 +124,7 @@ func (l *List) fetchAllProjects() error {
 	}
 
 	for _, p := range ps {
-		l.projects = append(l.projects, p)
+		l.Projects = append(l.Projects, p)
 	}
 
 	return err
@@ -132,15 +137,15 @@ func (l *List) fetchOneProject() error {
 		return err
 	}
 
-	l.projects = append(l.projects, p)
+	l.Projects = append(l.Projects, p)
 	return err
 }
 
 func (l *List) printProjects() {
-	for i, p := range l.projects {
+	for i, p := range l.Projects {
 		l.printProject(p)
 
-		if i != len(l.projects)-1 {
+		if i != len(l.Projects)-1 {
 			l.printf("\n")
 		}
 	}
@@ -224,47 +229,62 @@ func (l *List) printInstances(instances int) {
 type Watcher struct {
 	List            *List
 	PoolingInterval time.Duration
+	StopCondition   (func() bool)
 	livew           *uilive.Writer
+	end             bool
 }
 
 // Watch logs
 func Watch(watcher *Watcher) {
+	watcher.Start()
+
+	// <-done
+}
+
+// Start for Watcher
+func (w *Watcher) Start() {
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	watcher.List.watch = true
-	watcher.Start()
+	w.List.watch = true
 
-	go func() {
-		<-sigs
-		fmt.Fprintln(os.Stdout, "")
-		watcher.Stop()
-		done <- true
-	}()
-
-	<-done
-}
-
-// Start for Watcher
-func (w *Watcher) Start() {
 	w.livew = uilive.New()
 	w.List.outStream = w.livew
 	w.livew.Start()
 
 	go func() {
 	p:
-		w.List.Print()
-		time.Sleep(w.PoolingInterval)
-		goto p
+		if !w.end {
+			w.List.Print()
+			if w.StopCondition != nil && w.StopCondition() {
+				w.end = true
+				done <- true
+				return
+			}
+			time.Sleep(w.PoolingInterval)
+		}
+
+		if !w.end {
+			goto p
+		}
 	}()
+
+	go func() {
+		<-sigs
+		fmt.Fprintln(os.Stdout, "")
+		w.Stop()
+		done <- true
+	}()
+
+	<-done
 }
 
 // Stop for Watcher
 func (w *Watcher) Stop() {
+	w.end = true
 	w.livew.Stop()
-	os.Exit(0)
 }
 
 func getType(t string) string {

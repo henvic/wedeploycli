@@ -17,5 +17,39 @@
 	"maxContainers": 10,
 	"invitations": {},
 	"name": "Big Sinoussi",
-	"id": "wechat"
+	"id": "wechat",
+	"containers": {
+		"data": {
+			"template": null,
+			"image": null,
+			"configuration": {},
+			"instances": 1,
+			"health": "up",
+			"source": "/foo/bar",
+			"env": {
+				"WEDEPLOY_API_PATH": "/"
+			},
+			"type": "wedeploy/engine",
+			"port": null,
+			"name": "Fervent",
+			"id": "data",
+			"maxInstances": 5,
+			"projectId": "wechat"
+		},
+		"static": {
+			"template": null,
+			"image": null,
+			"configuration": {},
+			"instances": 1,
+			"health": "up",
+			"source": "/foo/bar2",
+			"env": null,
+			"type": "wedeploy\/hosting",
+			"port": null,
+			"name": "Romantic",
+			"id": "static",
+			"maxInstances": 5,
+			"projectId": "wechat"
+		}
+	}
 }]
