@@ -25,6 +25,7 @@ type Machine struct {
 	ErrorsMutex sync.Mutex
 	dirMutex    sync.Mutex
 	queue       sync.WaitGroup
+	Watcher     *list.Watcher
 	list        *list.List
 }
 
@@ -120,13 +121,9 @@ func (m *Machine) Watch() {
 		Containers: cs,
 	})
 
-	var watcher = list.NewWatcher(m.list)
-	watcher.StopCondition = m.linkedContainersNotAllUp
-	list.Watch(watcher)
-}
-
-func (m *Machine) linkedContainersNotAllUp() bool {
-	return !m.linkedContainersUp()
+	m.Watcher = list.NewWatcher(m.list)
+	m.Watcher.StopCondition = m.linkedContainersUp
+	m.Watcher.Start()
 }
 
 func (m *Machine) linkedContainersUp() bool {

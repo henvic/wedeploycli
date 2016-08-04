@@ -65,7 +65,8 @@ func linkRun(cmd *cobra.Command, args []string) {
 
 	var queue sync.WaitGroup
 
-	queue.Add(1)
+	queue.Add(2)
+
 	go func() {
 		m.Run()
 		queue.Done()
@@ -73,9 +74,7 @@ func linkRun(cmd *cobra.Command, args []string) {
 
 	go func() {
 		m.Watch()
-		linkErrorsFeedback(m.Errors)
-		// need to exit due to syscall.SIGINT, syscall.SIGTERM listener...
-		os.Exit(0)
+		queue.Done()
 	}()
 
 	queue.Wait()
