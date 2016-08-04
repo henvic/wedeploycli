@@ -25,6 +25,15 @@ func FromFile(filename string) string {
 	return value
 }
 
+// ToFile is a helper function to create a file from a given content
+func ToFile(filename string, content string) {
+	var err = ioutil.WriteFile(filename, []byte(content), 0644)
+
+	if err != nil {
+		panic(err)
+	}
+}
+
 // ServerHandler serves string content
 func ServerHandler(content string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {

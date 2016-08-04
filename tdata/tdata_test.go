@@ -2,6 +2,7 @@ package tdata
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
@@ -51,6 +52,45 @@ func TestFromFileNotFound(t *testing.T) {
 	}()
 
 	FromFile(filename)
+}
+
+func TestToFile(t *testing.T) {
+	var tmp, err = ioutil.TempFile(os.TempDir(), "we")
+
+	if err != nil {
+		panic(err)
+	}
+
+	// IMPORTANT: If testing a string with "\n" Windows tests are going to fail.
+	ToFile(tmp.Name(), "foo")
+
+	var want = "foo"
+	var got = FromFile(tmp.Name())
+
+	if want != got {
+		t.Errorf("Wanted file contents doesn't match what was written.")
+	}
+
+	if err = tmp.Close(); err != nil {
+		panic(err)
+	}
+
+	if err = os.Remove(tmp.Name()); err != nil {
+		panic(err)
+	}
+}
+
+func TestToFilePanic(t *testing.T) {
+	defer func() {
+		r := recover()
+
+		if !os.IsNotExist(r.(error)) {
+			t.Errorf("Expected not to be able to open empty string filename file, got %v instead", r)
+		}
+	}()
+
+	// IMPORTANT: If testing a string with "\n" Windows tests are going to fail.
+	ToFile("", "foo")
 }
 
 func TestServerHandler(t *testing.T) {
