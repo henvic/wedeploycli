@@ -231,20 +231,13 @@ type Watcher struct {
 	PoolingInterval time.Duration
 	StopCondition   (func() bool)
 	livew           *uilive.Writer
-	end             bool
-}
-
-// Watch logs
-func Watch(watcher *Watcher) {
-	watcher.Start()
-
-	// <-done
+	End             chan bool
 }
 
 // Start for Watcher
 func (w *Watcher) Start() {
 	sigs := make(chan os.Signal, 1)
-	done := make(chan bool, 1)
+	w.End = make(chan bool, 1)
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
@@ -256,34 +249,28 @@ func (w *Watcher) Start() {
 
 	go func() {
 	p:
-		if !w.end {
-			w.List.Print()
-			if w.StopCondition != nil && w.StopCondition() {
-				w.end = true
-				done <- true
-				return
-			}
-			time.Sleep(w.PoolingInterval)
+		w.List.Print()
+		if w.StopCondition != nil && w.StopCondition() {
+			w.End <- true
+			return
 		}
 
-		if !w.end {
-			goto p
-		}
+		time.Sleep(w.PoolingInterval)
+		goto p
 	}()
 
 	go func() {
 		<-sigs
 		fmt.Fprintln(os.Stdout, "")
 		w.Stop()
-		done <- true
 	}()
 
-	<-done
+	<-w.End
 }
 
 // Stop for Watcher
 func (w *Watcher) Stop() {
-	w.end = true
+	w.End <- true
 	w.livew.Stop()
 }
 
