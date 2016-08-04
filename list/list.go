@@ -312,7 +312,7 @@ func getHealthBackgroundColor(s string) color.Attribute {
 	var backgroundMap = map[string]color.Attribute{
 		"up":      color.BgHiGreen,
 		"warn":    color.BgHiYellow,
-		"down":    color.FgHiRed,
+		"down":    color.BgHiRed,
 		"unknown": color.BgWhite,
 	}
 
