@@ -251,7 +251,8 @@ func (w *Watcher) Start() {
 	p:
 		w.List.Print()
 		if w.StopCondition != nil && w.StopCondition() {
-			w.End <- true
+			// w.End <- true
+			w.Stop()
 			return
 		}
 

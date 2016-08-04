@@ -36,7 +36,8 @@ func listRun(cmd *cobra.Command, args []string) {
 
 	switch watch {
 	case true:
-		list.Watch(list.NewWatcher(l))
+		var w = list.NewWatcher(l)
+		w.Start()
 	default:
 		l.Print()
 	}
