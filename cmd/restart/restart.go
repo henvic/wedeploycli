@@ -9,6 +9,7 @@ import (
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/verbose"
 )
 
 // RestartCmd is used for getting restart
@@ -50,7 +51,27 @@ func (r *restart) do() {
 }
 
 func (r *restart) isDone() bool {
-	return r.end
+	if !r.end {
+		return false
+	}
+
+	if len(r.list.Projects) == 0 {
+		verbose.Debug("Unexpected behavior: no projects found.")
+		return false
+	}
+
+	if r.container == "" && (r.list.Projects[0]).Health == "up" {
+		return true
+	}
+
+	c, ok := r.list.Projects[0].Containers[r.container]
+
+	if !ok {
+		verbose.Debug("Unexpected behavior: no container found.")
+		return false
+	}
+
+	return c.Health == "up"
 }
 
 func restartRun(cmd *cobra.Command, args []string) {
