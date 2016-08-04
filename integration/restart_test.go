@@ -7,7 +7,7 @@ import (
 	"github.com/wedeploy/cli/servertest"
 )
 
-func TestRestartProject(t *testing.T) {
+func TestRestartProjectQuiet(t *testing.T) {
 	var handled bool
 	defer Teardown()
 	Setup()
@@ -24,7 +24,7 @@ func TestRestartProject(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"restart", "foo"},
+		Args: []string{"restart", "foo", "--quiet"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
@@ -40,7 +40,7 @@ func TestRestartProject(t *testing.T) {
 	}
 }
 
-func TestRestartContainer(t *testing.T) {
+func TestRestartContainerQuiet(t *testing.T) {
 	var handled bool
 	defer Teardown()
 	Setup()
@@ -57,7 +57,7 @@ func TestRestartContainer(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"restart", "foo", "bar"},
+		Args: []string{"restart", "foo", "bar", "-q"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
