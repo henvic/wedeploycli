@@ -10,22 +10,22 @@ import (
 	"sync"
 
 	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/verbose"
 )
 
 // Machine structure
 type Machine struct {
-	Project      *projects.Project
-	ProjectPath  string
-	Success      []string
-	Errors       *Errors
-	FErrStream   io.Writer
-	FOutStream   io.Writer
-	SuccessMutex sync.Mutex
-	ErrorsMutex  sync.Mutex
-	dirMutex     sync.Mutex
-	queue        sync.WaitGroup
+	Project     *projects.Project
+	Links       []*Link
+	ProjectPath string
+	Errors      *Errors
+	FErrStream  io.Writer
+	ErrorsMutex sync.Mutex
+	dirMutex    sync.Mutex
+	queue       sync.WaitGroup
+	list        *list.List
 }
 
 // Link holds the information of container to be linked
@@ -46,6 +46,8 @@ type Errors struct {
 	List []ContainerError
 }
 
+var outStream io.Writer = os.Stdout
+
 // New Container link
 func New(project *projects.Project, dir string) (*Link, error) {
 	var l = &Link{
@@ -60,6 +62,8 @@ func New(project *projects.Project, dir string) (*Link, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	verbose.Debug("Container ID " + c.ID + " for directory " + dir)
 
 	return l, err
 }
@@ -76,7 +80,11 @@ func (le Errors) Error() string {
 }
 
 // Setup prepares a project / container for linking
-func (m *Machine) Setup(projectPath string) error {
+func (m *Machine) Setup(projectPath string, list []string) error {
+	m.Errors = &Errors{
+		List: []ContainerError{},
+	}
+
 	project, err := projects.Read(projectPath)
 
 	if err != nil {
@@ -86,7 +94,57 @@ func (m *Machine) Setup(projectPath string) error {
 	m.Project = project
 	m.ProjectPath = projectPath
 
-	return m.createProject()
+	err = m.createProject()
+
+	if err != nil {
+		return err
+	}
+
+	for _, dir := range list {
+		m.mount(dir)
+	}
+
+	return err
+}
+
+// Watch changes due to linking
+func (m *Machine) Watch() {
+	var cs []string
+
+	for _, l := range m.Links {
+		cs = append(cs, l.Container.ID)
+	}
+
+	m.list = list.New(list.Filter{
+		Project:    m.Project.ID,
+		Containers: cs,
+	})
+
+	var watcher = list.NewWatcher(m.list)
+	watcher.StopCondition = m.linkedContainersNotAllUp
+	list.Watch(watcher)
+}
+
+func (m *Machine) linkedContainersNotAllUp() bool {
+	return !m.linkedContainersUp()
+}
+
+func (m *Machine) linkedContainersUp() bool {
+	if len(m.list.Projects) == 0 {
+		return false
+	}
+
+	var projectWatched = m.list.Projects[0]
+
+	for _, link := range m.Links {
+		c, ok := projectWatched.Containers[link.Container.ID]
+
+		if !ok || c.Health != "up" {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (m *Machine) createProject() error {
@@ -94,7 +152,7 @@ func (m *Machine) createProject() error {
 		filepath.Join(m.ProjectPath, "project.json"))
 
 	if created {
-		m.logSuccess("New project " + m.Project.ID + " created")
+		fmt.Fprintf(outStream, "New project %v created.\n", m.Project.ID)
 	}
 
 	if err != nil {
@@ -109,7 +167,7 @@ func (m *Machine) condAuthProject() error {
 	var err = projects.SetAuth(m.Project.ID, authFile)
 
 	if os.IsNotExist(err) {
-		verbose.Debug("Jumped uploading auth.json for project: does not exist")
+		verbose.Debug("Jumped uploading auth.json for project: does not exist.")
 		return nil
 	}
 
@@ -117,25 +175,23 @@ func (m *Machine) condAuthProject() error {
 }
 
 // Run links the containers of the list input
-func (m *Machine) Run(list []string) {
-	m.Errors = &Errors{
-		List: []ContainerError{},
-	}
-
-	m.queue.Add(len(list))
-
-	for _, dir := range list {
-		go m.start(dir)
-	}
-
+func (m *Machine) Run() {
+	m.queue.Add(len(m.Links))
+	m.linkAll()
 	m.queue.Wait()
 }
 
-func (m *Machine) start(dir string) {
-	var err = m.mountAndLink(dir)
+func (m *Machine) linkAll() {
+	for _, cl := range m.Links {
+		go m.doLink(cl)
+	}
+}
+
+func (m *Machine) doLink(cl *Link) {
+	var err = m.link(cl)
 
 	if err != nil {
-		m.logError(dir, err)
+		m.logError(cl.ContainerPath, err)
 	}
 
 	m.queue.Done()
@@ -166,38 +222,17 @@ func (m *Machine) logError(dir string, err error) {
 	m.ErrorsMutex.Unlock()
 }
 
-func (m *Machine) logSuccess(msg string) {
-	m.SuccessMutex.Lock()
-	m.Success = append(m.Success, msg)
+func (m *Machine) mountAll() {
 
-	if m.FOutStream != nil {
-		fmt.Fprintf(m.FOutStream, "%v\n", msg)
-	}
-
-	m.SuccessMutex.Unlock()
 }
 
-func (m *Machine) successFeedback(containerID string) {
-	var host = "wedeploy.me"
-
-	m.logSuccess(fmt.Sprintf("Ready! %v.%v.%v",
-		containerID,
-		m.Project.ID,
-		host))
-}
-
-func (m *Machine) mountAndLink(dir string) error {
+func (m *Machine) mount(dir string) {
 	var l, err = New(m.Project, filepath.Join(m.ProjectPath, dir))
 
 	if err != nil {
-		return err
+		m.logError(dir, err)
+		return
 	}
 
-	err = m.link(l)
-
-	if err == nil {
-		m.successFeedback(l.Container.ID)
-	}
-
-	return err
+	m.Links = append(m.Links, l)
 }

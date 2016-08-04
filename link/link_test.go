@@ -1,10 +1,10 @@
 package link
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/wedeploy/cli/apihelper"
@@ -31,7 +31,7 @@ func TestNew(t *testing.T) {
 
 func TestNewErrorProjectNotFound(t *testing.T) {
 	var m Machine
-	var err = m.Setup("mocks/foo")
+	var err = m.Setup("mocks/foo", []string{})
 
 	if err != projects.ErrProjectNotFound {
 		t.Errorf("Expected project to be not found, got %v instead", err)
@@ -75,6 +75,9 @@ func TestErrors(t *testing.T) {
 }
 
 func TestAll(t *testing.T) {
+	var defaultOutStream = outStream
+	var b = &bytes.Buffer{}
+	outStream = b
 	servertest.Setup()
 	configmock.Setup()
 
@@ -85,26 +88,27 @@ func TestAll(t *testing.T) {
 		func(w http.ResponseWriter, r *http.Request) {})
 
 	var m Machine
-	var err = m.Setup("mocks/myproject")
+	var err = m.Setup("mocks/myproject", []string{"mycontainer"})
 
 	if err != nil {
 		t.Errorf("Unexpected error %v on linking", err)
 	}
 
-	m.Run([]string{"mycontainer"})
+	m.Run()
 
-	var success = m.Success
-	var wantFeedback = tdata.FromFile("mocks/link_feedback")
-
-	if !strings.Contains(wantFeedback, strings.Join(success, "\n")) {
-		t.Errorf("Wanted feedback to contain %v, got %v instead", wantFeedback, success)
+	if b.String() != "New project project created.\n" {
+		t.Errorf("Wanted new project message not found.")
 	}
 
 	configmock.Teardown()
 	servertest.Teardown()
+	outStream = defaultOutStream
 }
 
 func TestAllAuth(t *testing.T) {
+	var defaultOutStream = outStream
+	var b = &bytes.Buffer{}
+	outStream = b
 	servertest.Setup()
 	configmock.Setup()
 
@@ -118,26 +122,27 @@ func TestAllAuth(t *testing.T) {
 		func(w http.ResponseWriter, r *http.Request) {})
 
 	var m Machine
-	var err = m.Setup("mocks/project-with-auth")
+	var err = m.Setup("mocks/project-with-auth", []string{"mycontainer"})
 
 	if err != nil {
 		t.Errorf("Unexpected error %v on linking", err)
 	}
 
-	m.Run([]string{"mycontainer"})
-	var success = m.Success
+	m.Run()
 
-	var wantFeedback = tdata.FromFile("mocks/link_feedback")
-
-	if !strings.Contains(wantFeedback, strings.Join(success, "\n")) {
-		t.Errorf("Wanted feedback to contain %v, got %v instead", wantFeedback, success)
+	if b.String() != "New project project created.\n" {
+		t.Errorf("Wanted new project message not found.")
 	}
 
 	configmock.Teardown()
 	servertest.Teardown()
+	outStream = defaultOutStream
 }
 
 func TestAllOnlyNewError(t *testing.T) {
+	var defaultOutStream = outStream
+	var b = &bytes.Buffer{}
+	outStream = b
 	servertest.Setup()
 
 	servertest.Mux.HandleFunc("/projects",
@@ -146,13 +151,13 @@ func TestAllOnlyNewError(t *testing.T) {
 	configmock.Setup()
 
 	var m Machine
-	var err = m.Setup("mocks/myproject")
+	var err = m.Setup("mocks/myproject", []string{"nil"})
 
 	if err != nil {
 		panic(err)
 	}
 
-	m.Run([]string{"nil"})
+	m.Run()
 
 	var list = m.Errors.List
 
@@ -170,11 +175,19 @@ func TestAllOnlyNewError(t *testing.T) {
 		t.Errorf("Expected not exists error for container 'nil'")
 	}
 
+	if b.String() != "New project project created.\n" {
+		t.Errorf("Wanted new project message not found.")
+	}
+
 	configmock.Teardown()
 	servertest.Teardown()
+	outStream = defaultOutStream
 }
 
 func TestAllMultipleWithOnlyNewError(t *testing.T) {
+	var defaultOutStream = outStream
+	var b = &bytes.Buffer{}
+	outStream = b
 	servertest.Setup()
 	configmock.Setup()
 
@@ -185,13 +198,15 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 		func(w http.ResponseWriter, r *http.Request) {})
 
 	var m Machine
-	var err = m.Setup("mocks/myproject")
+	var err = m.Setup(
+		"mocks/myproject",
+		[]string{"mycontainer", "nil", "nil2"})
 
 	if err != nil {
 		panic(err)
 	}
 
-	m.Run([]string{"mycontainer", "nil", "nil2"})
+	m.Run()
 
 	var list = m.Errors.List
 
@@ -213,6 +228,7 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 
 	configmock.Teardown()
 	servertest.Teardown()
+	outStream = defaultOutStream
 }
 
 func TestAllValidateOrCreateFailure(t *testing.T) {
@@ -225,7 +241,7 @@ func TestAllValidateOrCreateFailure(t *testing.T) {
 		})
 
 	var m Machine
-	var err = m.Setup("mocks/myproject")
+	var err = m.Setup("mocks/myproject", []string{})
 
 	if err == nil || err.(*apihelper.APIFault).Code != 403 {
 		t.Errorf("Expected 403 Forbidden error, got %v instead", err)
@@ -236,6 +252,9 @@ func TestAllValidateOrCreateFailure(t *testing.T) {
 }
 
 func TestAllInstallContainerError(t *testing.T) {
+	var defaultOutStream = outStream
+	var b = &bytes.Buffer{}
+	outStream = b
 	servertest.Setup()
 	configmock.Setup()
 
@@ -248,13 +267,13 @@ func TestAllInstallContainerError(t *testing.T) {
 		})
 
 	var m Machine
-	var err = m.Setup("mocks/myproject")
+	var err = m.Setup("mocks/myproject", []string{"mycontainer"})
 
 	if err != nil {
 		panic(err)
 	}
 
-	m.Run([]string{"mycontainer"})
+	m.Run()
 
 	var el = m.Errors.List
 	var af = el[0].Error.(*apihelper.APIFault)
@@ -265,4 +284,5 @@ func TestAllInstallContainerError(t *testing.T) {
 
 	configmock.Teardown()
 	servertest.Teardown()
+	outStream = defaultOutStream
 }

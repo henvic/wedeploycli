@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdcontext"
@@ -22,7 +23,7 @@ we link <project>
 we link <container>`,
 }
 
-func getContainersFromScope() []string {
+func getContainersDirectoriesFromScope() []string {
 	if config.Context.ContainerRoot != "" {
 		_, container := filepath.Split(config.Context.ContainerRoot)
 		return []string{container}
@@ -39,7 +40,7 @@ func getContainersFromScope() []string {
 	return list
 }
 
-func linkContainersFeedback(success []string, err *link.Errors) {
+func linkErrorsFeedback(err *link.Errors) {
 	if len(err.List) != 0 {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -49,23 +50,36 @@ func linkContainersFeedback(success []string, err *link.Errors) {
 func linkRun(cmd *cobra.Command, args []string) {
 	// calling it for side-effects
 	getProjectOrContainerID(args)
-	var list = getContainersFromScope()
+	var csDirs = getContainersDirectoriesFromScope()
 
 	var m = &link.Machine{
 		FErrStream: os.Stderr,
-		FOutStream: os.Stdout,
 	}
 
-	var err = m.Setup(config.Context.ProjectRoot)
+	var err = m.Setup(config.Context.ProjectRoot, csDirs)
 
 	if err != nil {
 		println(err.Error())
 		os.Exit(1)
 	}
 
-	m.Run(list)
+	var queue sync.WaitGroup
 
-	linkContainersFeedback(m.Success, m.Errors)
+	queue.Add(1)
+	go func() {
+		m.Run()
+		queue.Done()
+	}()
+
+	go func() {
+		m.Watch()
+		linkErrorsFeedback(m.Errors)
+		// need to exit due to syscall.SIGINT, syscall.SIGTERM listener...
+		os.Exit(0)
+	}()
+
+	queue.Wait()
+	linkErrorsFeedback(m.Errors)
 }
 
 func getProjectOrContainerID(args []string) (string, string) {
