@@ -238,7 +238,9 @@ func (dm *DockerMachine) Stop() {
 	// Windows doesn't implement grouping for processes
 	// so it is important to send a SIGTERM signal
 	if dm.waitProcess != nil {
-		dm.waitProcess.Signal(syscall.SIGTERM)
+		if err := dm.waitProcess.Signal(syscall.SIGTERM); err != nil {
+			panic(err)
+		}
 	}
 }
 

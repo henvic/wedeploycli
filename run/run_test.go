@@ -92,7 +92,10 @@ func TestTCPPortsAvailableNotFree(t *testing.T) {
 		t.Errorf("Not available arrays should be equal")
 	}
 
-	l.Close()
+	if err := l.Close(); err != nil {
+		panic(err)
+	}
+
 	tcpPorts = originalTCPPorts
 }
 
@@ -110,7 +113,9 @@ func TestTCPPortsAvailableFree(t *testing.T) {
 		panic(ea)
 	}
 
-	l.Close()
+	if err := l.Close(); err != nil {
+		panic(err)
+	}
 
 	var originalTCPPorts = tcpPorts
 	tcpPorts = tcpPortsStruct{port}
