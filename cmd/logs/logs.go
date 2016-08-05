@@ -29,7 +29,7 @@ we logs portal email email5932`,
 func logsRun(cmd *cobra.Command, args []string) {
 	c := cmdcontext.SplitArguments(args, 0, 2)
 
-	project, container, err := cmdcontext.GetProjectAndContainerID(c)
+	project, container, err := cmdcontext.GetProjectOrContainerID(c)
 	level, levelErr := logs.GetLevel(severityArg)
 
 	// 3rd argument might be instance ID
@@ -40,8 +40,7 @@ func logsRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	args[0] = project
-	args[1] = container
+	var logPath = []string{project, container}
 
 	filter := &logs.Filter{
 		Level: level,

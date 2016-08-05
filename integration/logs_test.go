@@ -15,15 +15,14 @@ func TestLogs(t *testing.T) {
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc(
-		"/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+		"/logs/foo/nodejs5143",
 		tdata.ServerJSONFileHandler("../logs/mocks/logs_response.json"))
 
 	var cmd = &Command{
 		Args: []string{
 			"logs",
 			"foo",
-			"nodejs5143",
-			"foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj"},
+			"nodejs5143"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/",
 	}
@@ -42,7 +41,7 @@ func TestWatch(t *testing.T) {
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc(
-		"/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+		"/logs/foo/nodejs5143",
 		tdata.ServerJSONHandler("[]"))
 
 	var cmd = &Command{
@@ -50,7 +49,6 @@ func TestWatch(t *testing.T) {
 			"logs",
 			"foo",
 			"nodejs5143",
-			"foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
 			"-f"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/",
