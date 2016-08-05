@@ -72,6 +72,7 @@ function checkUnusedTag() {
 
 function runTests() {
   echo "Running tests (may take a while)."
+  errcheck $(go list ./... | grep -v /vendor/)
   test -z "$(golint ./... | grep -v "^vendor" | tee /dev/stderr)"
   go vet $(go list ./... | grep -v /vendor/)
   go test $(go list ./... | grep -v /vendor/)
