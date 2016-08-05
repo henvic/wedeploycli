@@ -16,3 +16,4 @@ import:
   version: v1.0.0-alpha.5
 - package: gopkg.in/ini.v1
   version: v1.18.0
+- package: github.com/hashicorp/errwrap
