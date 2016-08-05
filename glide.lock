@@ -30,8 +30,6 @@ imports:
   subpackages:
   - diff
   - pretty
-- name: github.com/mattn/go-colorable
-  version: 9056b7a9f2d1f2d96498d6d146acd1f9d5ed3d59
 - name: github.com/mattn/go-isatty
   version: 56b76bdf51f7708750eac80fa38b952bb9f32639
 - name: github.com/russross/blackfriday
