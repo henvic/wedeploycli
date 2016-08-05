@@ -1,6 +1,5 @@
 {
     "id": "email",
-    "name": "",
     "hooks": {
         "before_build": "",
         "build": "",
