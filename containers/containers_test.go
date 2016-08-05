@@ -192,13 +192,17 @@ func TestRegistry(t *testing.T) {
 	bufOutStream.Reset()
 
 	servertest.Mux.HandleFunc(
-		"/registry",
+		"/registry.json",
 		tdata.ServerJSONFileHandler("mocks/registry.json"))
 
-	var registry = GetRegistry()
+	var registry, err = GetRegistry()
 
 	if len(registry) != 7 {
 		t.Errorf("Expected registry to have 7 images")
+	}
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
 	}
 
 	servertest.Teardown()

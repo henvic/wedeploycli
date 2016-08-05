@@ -11,6 +11,7 @@ import (
 
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/hooks"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
@@ -105,9 +106,18 @@ func Unlink(projectID, containerID string) error {
 }
 
 // GetRegistry gets a list of container images
-func GetRegistry() (registry []Register) {
-	apihelper.AuthGetOrExit("/registry", &registry)
-	return registry
+func GetRegistry() (registry []Register, err error) {
+	var request = wedeploy.URL(defaults.Hub, "/registry.json")
+
+	err = apihelper.Validate(request, request.Get())
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = apihelper.DecodeJSON(request, &registry)
+
+	return registry, err
 }
 
 // Read a container directory properties (defined by a container.json on it)
