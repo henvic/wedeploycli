@@ -1,5 +1,5 @@
-hash: 4bb58d26663ef56962d4d91312127aea8b879a9494060f70b53072c6a7c7755c
-updated: 2016-07-22T14:48:26.637978738-07:00
+hash: 896d8f76a0697400ce9a23e8e1ac9ffd23669126775a211c991532fd79c6c454
+updated: 2016-08-05T10:17:03.256588487-07:00
 imports:
 - name: github.com/cpuguy83/go-md2man
   version: 2724a9c9051aa62e9cca11304e7dd518e9e41599
@@ -34,6 +34,8 @@ imports:
   - pretty
 - name: github.com/mattn/go-isatty
   version: 56b76bdf51f7708750eac80fa38b952bb9f32639
+- name: github.com/mitchellh/go-wordwrap
+  version: ad45545899c7b13c020ea92b2072220eefad42b8
 - name: github.com/russross/blackfriday
   version: 93622da34e54fb6529bfb7c57e710f37a8d9cbd8
 - name: github.com/shurcooL/sanitized_anchor_name
