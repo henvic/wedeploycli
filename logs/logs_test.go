@@ -220,3 +220,41 @@ func TestWatcherStart(t *testing.T) {
 	servertest.Teardown()
 	configmock.Teardown()
 }
+
+func TestGetUnixTimestamp(t *testing.T) {
+	var want int64 = 1470422556
+	var got, err = GetUnixTimestamp("1470422556")
+
+	if err != nil {
+		t.Errorf("Wanted error to be nil, got %v instead", err)
+	}
+
+	if want != got {
+		t.Errorf("Expected numeric Unix timestamp return same numeric value")
+	}
+}
+
+func TestGetUnixTimestampSame(t *testing.T) {
+	var current = time.Now().Unix()
+	var got, err = GetUnixTimestamp("60m60s")
+	var diff int64 = 3660
+
+	if err != nil {
+		t.Errorf("Wanted error to be nil, got %v instead", err)
+	}
+
+	// give some room for error, since it runs time.Now() again
+	var delay = got - current + diff
+
+	if delay < 0 || delay > 2 {
+		t.Errorf("Wanted GetUnixTimestamp %v returned value not between expected boundaries", delay)
+	}
+}
+
+func TestGetUnixTimestampParseError(t *testing.T) {
+	var _, err = GetUnixTimestamp("dog")
+
+	if err == nil {
+		t.Errorf("Wanted parsing error, got %v instead", err)
+	}
+}

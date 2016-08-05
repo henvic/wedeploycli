@@ -161,3 +161,21 @@ func (w *Watcher) incSinceArgument(list []Logs) {
 	w.Filter.Since = fmt.Sprintf("%v", next)
 	verbose.Debug("Next --since parameter value = " + w.Filter.Since)
 }
+
+// GetUnixTimestamp gets the Unix timestamp in seconds from a friendly string.
+// Be aware that the dashboard is using ms, not s.
+func GetUnixTimestamp(since string) (int64, error) {
+	if num, err := strconv.ParseInt(since, 10, 0); err == nil {
+		return num, err
+	}
+
+	var now = time.Now()
+
+	var pds, err = time.ParseDuration(since)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return now.Add(-pds).Unix(), err
+}
