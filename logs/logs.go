@@ -171,6 +171,8 @@ func GetUnixTimestamp(since string) (int64, error) {
 
 	var now = time.Now()
 
+	since = strings.Replace(since, "min", "m", -1)
+
 	var pds, err = time.ParseDuration(since)
 
 	if err != nil {

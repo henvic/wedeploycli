@@ -251,6 +251,23 @@ func TestGetUnixTimestampSame(t *testing.T) {
 	}
 }
 
+func TestGetUnixTimestampSameMin(t *testing.T) {
+	var current = time.Now().Unix()
+	var got, err = GetUnixTimestamp("1h30min30s")
+	var diff int64 = 5430
+
+	if err != nil {
+		t.Errorf("Wanted error to be nil, got %v instead", err)
+	}
+
+	// give some room for error, since it runs time.Now() again
+	var delay = got - current + diff
+
+	if delay < 0 || delay > 2 {
+		t.Errorf("Wanted GetUnixTimestamp %v returned value not between expected boundaries", delay)
+	}
+}
+
 func TestGetUnixTimestampParseError(t *testing.T) {
 	var _, err = GetUnixTimestamp("dog")
 
