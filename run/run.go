@@ -441,6 +441,7 @@ func (dm *DockerMachine) LoadDockerInfo() {
 		"ancestor=" + WeDeployImage,
 		"--format",
 		"{{.ID}} {{.Image}}",
+		"--no-trunc",
 	}
 
 	var docker = exec.Command(bin, args...)
@@ -473,6 +474,7 @@ func (dm *DockerMachine) checkImage() {
 		"images",
 		"--format",
 		"{{.Repository}}:{{.Tag}}",
+		"--no-trunc",
 		WeDeployImage,
 	}
 
@@ -659,7 +661,7 @@ func getDockerContainers(onlyRunning bool) []string {
 
 func getContainersByLabel(label string, onlyRunning bool) []string {
 	var params = []string{
-		"ps", "--filter", "label=" + label, "--quiet",
+		"ps", "--filter", "label=" + label, "--quiet", "--no-trunc",
 	}
 
 	if !onlyRunning {
