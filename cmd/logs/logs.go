@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdcontext"
 	"github.com/wedeploy/cli/logs"
@@ -12,7 +13,7 @@ import (
 
 var (
 	severityArg string
-	sinceArg    int64
+	sinceArg    string
 	followArg   bool
 )
 
@@ -44,23 +45,40 @@ func logsRun(cmd *cobra.Command, args []string) {
 
 	filter := &logs.Filter{
 		Level: level,
-		Since: fmt.Sprintf("%v", sinceArg),
+		Since: getSince(),
 	}
 
 	switch followArg {
 	case true:
 		logs.Watch(&logs.Watcher{
 			Filter:          filter,
-			Paths:           args,
+			Paths:           logPath,
 			PoolingInterval: time.Second,
 		})
 	default:
-		logs.List(filter, args...)
+		logs.List(filter, logPath...)
 	}
+}
+
+func getSince() string {
+	if sinceArg == "" {
+		return ""
+	}
+
+	var since, sinceErr = logs.GetUnixTimestamp(sinceArg)
+
+	if sinceErr != nil {
+		sinceErr = errwrap.Wrapf("Can't parse since argument: {{err}}.", sinceErr)
+		fmt.Fprintf(os.Stderr, "%v\n", sinceErr)
+		os.Exit(1)
+	}
+
+	// use microseconds instead of seconds (dashboard takes ms as a param)
+	return fmt.Sprintf("%v000", since)
 }
 
 func init() {
 	LogsCmd.Flags().StringVar(&severityArg, "level", "0", `Severity (critical, error, warning, info (default), debug)`)
-	LogsCmd.Flags().Int64Var(&sinceArg, "since", 0, "Show logs since timestamp")
+	LogsCmd.Flags().StringVar(&sinceArg, "since", "", "Show since moment (i.e., 20min, 3h, UNIX timestamp)")
 	LogsCmd.Flags().BoolVarP(&followArg, "follow", "f", false, "Follow log output")
 }
