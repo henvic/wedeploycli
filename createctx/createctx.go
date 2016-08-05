@@ -10,6 +10,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/errwrap"
+	"github.com/mitchellh/go-wordwrap"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/projects"
@@ -77,15 +80,26 @@ func NewContainer() error {
 		return ErrResourceExists
 	}
 
-	var registry = containers.GetRegistry()
+	registry, err := containers.GetRegistry()
 
-	fmt.Println("Please choose an option to create a container")
-
-	for pos, r := range registry {
-		fmt.Fprintf(os.Stdout, "%d) %s\n", pos+1, r.ContainerDefault.Name)
+	if err != nil {
+		return errwrap.Wrapf("Can't get the registry: {{err}}", err)
 	}
 
-	var option = prompt.Prompt(fmt.Sprintf("\nSelect from 1..%d", len(registry)))
+	for pos, r := range registry {
+		ne := fmt.Sprintf("%d) %v", pos+1, r.Name)
+
+		p := 80 - len(ne) - len(r.Type) + 1
+
+		if p < 1 {
+			p = 1
+		}
+
+		fmt.Fprintf(os.Stdout, "%v%v%v\n", ne, pad(p), r.Type)
+		fmt.Fprintf(os.Stdout, "%v\n\n", color.Format(color.FgHiBlack, wordwrap.WrapString(r.Description, 80)))
+	}
+
+	var option = prompt.Prompt(fmt.Sprintf("\nSelect container type from 1..%d", len(registry)))
 
 	var index int
 
@@ -94,31 +108,24 @@ func NewContainer() error {
 	index--
 
 	if err != nil || index < 0 || index > len(registry) {
-		return errors.New("Invalid option")
+		return errors.New("Invalid option.")
 	}
 
 	var reg = registry[index]
 
-	if reg.ContainerDefault.Env != nil {
-		c.Env = map[string]string{}
-		for k, v := range reg.ContainerDefault.Env {
-			c.Env[k] = v
-		}
-	}
-
-	c.ID = prompt.Prompt("ID [default: " + reg.ContainerDefault.ID + "]")
+	c.ID = prompt.Prompt("Id [default: " + reg.ID + "]")
 
 	if c.ID == "" {
-		c.ID = reg.ContainerDefault.ID
+		c.ID = reg.ID
 	}
 
-	c.Name = prompt.Prompt("Name [default: " + reg.ContainerDefault.Name + "]")
+	c.Name = prompt.Prompt("Name [default: " + reg.Name + "]")
 
 	if c.Name == "" {
-		c.Name = reg.ContainerDefault.Name
+		c.Name = reg.Name
 	}
 
-	c.Type = reg.ContainerDefault.Type
+	c.Type = reg.Type
 
 	bin, err = json.MarshalIndent(c, "", "    ")
 
@@ -150,7 +157,7 @@ func NewProject() error {
 
 	var p = &projects.Project{}
 
-	fmt.Println("Creating project")
+	fmt.Println("Creating project:")
 	p.ID = prompt.Prompt("ID")
 
 	if p.ID == "" {
@@ -158,6 +165,7 @@ func NewProject() error {
 	}
 
 	p.Name = prompt.Prompt("Name")
+	p.CustomDomain = prompt.Prompt("Custom domain")
 
 	bin, err = json.MarshalIndent(p, "", "    ")
 
@@ -171,4 +179,8 @@ func NewProject() error {
 		0644)
 
 	return err
+}
+
+func pad(space int) string {
+	return strings.Join(make([]string, space), " ")
 }
