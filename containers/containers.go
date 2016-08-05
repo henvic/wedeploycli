@@ -32,17 +32,11 @@ type Container struct {
 
 // Register for the container structure
 type Register struct {
-	Category         string            `json:"category"`
-	ContainerDefault RegisterContainer `json:"containerDefault"`
-	Description      string            `json:"description"`
-}
-
-// RegisterContainer structure for container on register
-type RegisterContainer struct {
-	ID   string            `json:"id"`
-	Name string            `json:"name"`
-	Type string            `json:"type"`
-	Env  map[string]string `json:"env"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Category    string `json:"category"`
+	Description string `json:"description"`
 }
 
 var (
