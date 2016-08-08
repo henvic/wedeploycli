@@ -1,5 +1,5 @@
-hash: 896d8f76a0697400ce9a23e8e1ac9ffd23669126775a211c991532fd79c6c454
-updated: 2016-08-05T10:17:03.256588487-07:00
+hash: 60188287996601d9a93a15edb0e6205b6ab1334f3c7027b1ea6a838709a93fe1
+updated: 2016-08-08T09:19:29.706605202-07:00
 imports:
 - name: github.com/cpuguy83/go-md2man
   version: 2724a9c9051aa62e9cca11304e7dd518e9e41599
@@ -13,16 +13,10 @@ imports:
   - proto
   - internal/go-update/internal/binarydist
   - internal/go-update/internal/osext
-- name: github.com/fatih/color
-  version: 87d4004f2ab62d0d255e0a38f1680aa534549fe3
 - name: github.com/hashicorp/errwrap
   version: 7554cd9344cec97297fa6649b055a8c98c2a1e55
 - name: github.com/henvic/uilive
   version: 5fa69abff5263544d2b7fd68e21ab36a3a381a1b
-- name: github.com/henvic/uiprogress
-  version: 21f1264f3252c54fc48fc025720e73b84edd5f27
-  subpackages:
-  - util/strutil
 - name: github.com/howeyc/gopass
   version: 66487b23f2880ba32e185121d2cd51a338ea069a
 - name: github.com/inconshreveable/mousetrap
@@ -31,7 +25,6 @@ imports:
   version: eadb3ce320cbab8393bea5ca17bebac3f78a021b
   subpackages:
   - diff
-  - pretty
 - name: github.com/mattn/go-isatty
   version: 56b76bdf51f7708750eac80fa38b952bb9f32639
 - name: github.com/mitchellh/go-wordwrap
@@ -49,7 +42,6 @@ imports:
 - name: github.com/wedeploy/api-go
   version: 98f9fe9488368af653b90022fa88d6ee3098c6d4
   subpackages:
-  - jsonlib
   - query
   - urilib
   - aggregation
