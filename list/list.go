@@ -260,14 +260,13 @@ func (w *Watcher) Start() {
 
 	w.livew = uilive.New()
 	w.List.outStream = w.livew
-	w.livew.Start()
 
 	go func() {
 	p:
 		w.List.Print()
+		w.livew.Flush()
 		if w.StopCondition != nil && w.StopCondition() {
 			// w.End <- true
-			w.Stop()
 			return
 		}
 
@@ -278,7 +277,6 @@ func (w *Watcher) Start() {
 	go func() {
 		<-sigs
 		fmt.Fprintln(os.Stdout, "")
-		w.Stop()
 	}()
 
 	<-w.End
@@ -287,7 +285,6 @@ func (w *Watcher) Start() {
 // Stop for Watcher
 func (w *Watcher) Stop() {
 	w.End <- true
-	w.livew.Stop()
 }
 
 func getType(t string) string {

@@ -296,16 +296,13 @@ func (dm *DockerMachine) maybeWaitEnd() {
 func (dm *DockerMachine) waitReadyState() {
 	var tries = 1
 	dm.upTime = time.Now()
-	dm.livew.Start()
 	dm.checkConnection()
 	for tries <= 100 {
 		var _, err = projects.List()
 
 		if err == nil {
 			dm.tickerd <- true
-			time.Sleep(2 * dm.livew.RefreshInterval)
 			fmt.Fprintf(dm.livew, "WeDeploy is ready!\n")
-			dm.livew.Stop()
 			dm.ready()
 			return
 		}
@@ -317,9 +314,7 @@ func (dm *DockerMachine) waitReadyState() {
 
 	dm.tickerd <- true
 
-	time.Sleep(2 * dm.livew.RefreshInterval)
 	fmt.Fprintf(dm.livew, "WeDeploy is up.\n")
-	dm.livew.Stop()
 	println("Failed to verify if WeDeploy is working correctly.")
 }
 
@@ -405,6 +400,7 @@ func (dm *DockerMachine) checkConnectionCounter(ticker *time.Ticker) {
 			fmt.Fprintf(dm.livew,
 				"%c Starting WeDeploy%s %ds\n", p, dots,
 				int(-dm.upTime.Sub(t).Seconds()))
+			dm.livew.Flush()
 		case <-dm.tickerd:
 			ticker.Stop()
 			ticker = nil
