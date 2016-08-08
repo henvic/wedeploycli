@@ -277,6 +277,7 @@ func (w *Watcher) Start() {
 	go func() {
 		<-sigs
 		fmt.Fprintln(os.Stdout, "")
+		w.End <- true
 	}()
 
 	<-w.End
