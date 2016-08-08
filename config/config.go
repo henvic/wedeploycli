@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 
@@ -136,6 +137,13 @@ func (c *Config) setDefaults() {
 	c.Endpoint = defaults.Endpoint
 	c.NotifyUpdates = true
 	c.ReleaseChannel = "stable"
+
+	// By design Windows users should see no color unless they enable it
+	// Issue #51.
+	// https://github.com/wedeploy/cli/issues/51
+	if runtime.GOOS == "windows" {
+		c.NoColor = true
+	}
 }
 
 func (c *Config) configExists() bool {
