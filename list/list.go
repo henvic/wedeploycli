@@ -266,7 +266,7 @@ func (w *Watcher) Start() {
 		w.List.Print()
 		w.livew.Flush()
 		if w.StopCondition != nil && w.StopCondition() {
-			// w.End <- true
+			w.End <- true
 			return
 		}
 
