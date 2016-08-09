@@ -261,18 +261,7 @@ func (w *Watcher) Start() {
 	w.livew = uilive.New()
 	w.List.outStream = w.livew
 
-	go func() {
-	p:
-		w.List.Print()
-		w.livew.Flush()
-		if w.StopCondition != nil && w.StopCondition() {
-			w.End <- true
-			return
-		}
-
-		time.Sleep(w.PoolingInterval)
-		goto p
-	}()
+	go w.watch()
 
 	go func() {
 		<-sigs
@@ -281,6 +270,23 @@ func (w *Watcher) Start() {
 	}()
 
 	<-w.End
+}
+
+func (w *Watcher) watch() {
+p:
+	w.List.Print()
+
+	if err := w.livew.Flush(); err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+	}
+
+	if w.StopCondition != nil && w.StopCondition() {
+		w.End <- true
+		return
+	}
+
+	time.Sleep(w.PoolingInterval)
+	goto p
 }
 
 // Stop for Watcher
