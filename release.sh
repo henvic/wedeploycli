@@ -17,7 +17,8 @@ if [ -z $config ] || [ $config == "help" ] || [ $config == "--help" ]; then
 
 Check Semantic Versioning rules on semver.org
 
-Use ./release.sh <equinox config>"
+Use ./release.sh <equinox config> to release
+Use ./release.sh --pre-release to run release tests only"
   exit 1
 fi
 
@@ -43,9 +44,16 @@ function checkBranch() {
 
 function checkWorkingDir() {
   if [ `git status --short | wc -l` -gt 0 ]; then
-    read -p "You have uncommited changes. Continue? [no]: " CONT < /dev/tty;
-    checkCONT
-    echo "By continuing you assume the risk of generating releases tags with wrong content."
+    echo "You have uncommited changes."
+    git status --short
+
+    if [ $config != "--pre-release" ]; then
+      echo -e "\x1B[101m\x1B[1mBy continuing you might generate a release tag with incorrect content.\x1B[0m"
+      read -p "Continue? [no]: " CONT < /dev/tty;
+      checkCONT
+    else
+      echo -e "\x1B[101m\x1B[1mPlease commit your changes before generating a new release tag.\x1B[0m"
+    fi
   fi
 }
 
@@ -142,30 +150,49 @@ function publish() {
   git checkout $CURRENT_BRANCH
 }
 
-CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
-LAST_TAG="$(git describe HEAD --tags --abbrev=0 2> /dev/null)" || true
+function prerelease() {
+  testHuman
 
-testHuman
-checkBranch
-checkWorkingDir
-runTests
+  if [ $config != "--pre-release" ]; then
+    checkBranch
+  fi
 
-echo All tests and checks necessary for released passed.
-echo
-echo Release announcements should use semantic versioning.
+  checkWorkingDir
+  runTests
+  echo All tests and checks necessary for release passed.
+}
 
-if [ $LAST_TAG != "" ] ; then
-  echo Last version seems to be $LAST_TAG
-fi
+function release() {
+  echo Release announcements should use semantic versioning.
 
-read -p "Release channel [stable]: " RELEASE_CHANNEL < /dev/tty;
-RELEASE_CHANNEL=${RELEASE_CHANNEL:-"stable"}
+  if [ $LAST_TAG != "" ] ; then
+    echo Last version seems to be $LAST_TAG
+  fi
 
-read -p "New version: " NEW_RELEASE_VERSION < /dev/tty;
-# normalize by removing leading v (i.e., v0.0.1)
-NEW_RELEASE_VERSION=`echo $NEW_RELEASE_VERSION | sed 's/^v//'`
+  read -p "Release channel [stable]: " RELEASE_CHANNEL < /dev/tty;
+  RELEASE_CHANNEL=${RELEASE_CHANNEL:-"stable"}
 
-runTestsOnDrone
-checkPublishedTag
-checkUnusedTag
-publish
+  read -p "New version: " NEW_RELEASE_VERSION < /dev/tty;
+  # normalize by removing leading v (i.e., v0.0.1)
+  NEW_RELEASE_VERSION=`echo $NEW_RELEASE_VERSION | sed 's/^v//'`
+
+  runTestsOnDrone
+  checkPublishedTag
+  checkUnusedTag
+  publish
+}
+
+function run() {
+  CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
+  LAST_TAG="$(git describe HEAD --tags --abbrev=0 2> /dev/null)" || true
+
+  if [ $config == "--pre-release" ]; then
+    prerelease
+  else
+    prerelease
+    echo
+    release
+  fi
+}
+
+run
