@@ -207,6 +207,8 @@ func setRemote() {
 
 	config.Context.Remote = remote
 	config.Context.Endpoint = normalizeRemote(r.URL)
+	config.Context.Username = config.Global.Username
+	config.Context.Password = config.Global.Password
 	config.Context.Token = config.Global.Token
 }
 
