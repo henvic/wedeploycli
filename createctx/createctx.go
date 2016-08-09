@@ -37,22 +37,40 @@ var (
 )
 
 // New creates a resource
-func New(id string) error {
+func New(id, directory string) error {
+	if directory == "" {
+		directory = id
+	}
+
+	// On Windows probably something like C:\ and D:\ can't be related
+	// so don't check for err here
+	var rel, _ = filepath.Rel(directory, config.Context.ProjectRoot)
+
+	if rel == "." && config.Context.Scope == "container" {
+		return getErrContainerAlreadyExists(config.Context.ContainerRoot)
+	}
+
+	if rel == "." && config.Context.Scope == "project" {
+		return getErrProjectAlreadyExists(config.Context.ProjectRoot)
+	}
+
 	switch config.Context.Scope {
 	case "project":
-		return NewContainer(id)
+		return newContainer(id, directory)
 	case "global":
-		return NewProject(id)
+		return newProject(id, directory)
 	default:
 		return getErrContainerAlreadyExists(config.Context.ContainerRoot)
 	}
 }
 
-// NewContainer creates a container resource
-func NewContainer(id string) error {
-	var rel string
-	var bin []byte
+type containerCreator struct {
+	Container *containers.Container
+	Register  containers.Register
+	Directory string
+}
 
+func newContainer(id, directory string) error {
 	if config.Context.Scope == "container" {
 		return getErrContainerAlreadyExists(config.Context.ContainerRoot)
 	}
@@ -61,12 +79,19 @@ func NewContainer(id string) error {
 		return getErrProjectAlreadyExists(config.Context.ProjectRoot)
 	}
 
-	var c = &containers.Container{
-		ID: id,
-	}
+	return (&containerCreator{
+		Directory: directory,
+		Container: &containers.Container{
+			ID: id,
+		},
+	}).run()
+}
 
-	if c.ID != "" {
-		if err := tryContainerID(c.ID); err != nil {
+func (cc *containerCreator) run() error {
+	var rel string
+
+	if cc.Directory != "" {
+		if err := tryContainerDirectory(cc.Directory); err != nil {
 			return err
 		}
 	}
@@ -87,6 +112,18 @@ func NewContainer(id string) error {
 		return ErrContainerPath
 	}
 
+	if err = cc.getContainersRegister(); err != nil {
+		return err
+	}
+
+	if err = cc.chooseContainerOptions(); err != nil {
+		return err
+	}
+
+	return cc.saveContainer()
+}
+
+func (cc *containerCreator) getContainersRegister() error {
 	registry, err := containers.GetRegistry()
 
 	if err != nil {
@@ -107,10 +144,7 @@ func NewContainer(id string) error {
 	}
 
 	var option = prompt.Prompt(fmt.Sprintf("\nSelect container type from 1..%d", len(registry)))
-
-	var index int
-
-	index, err = strconv.Atoi(option)
+	index, err := strconv.Atoi(option)
 
 	index--
 
@@ -118,53 +152,64 @@ func NewContainer(id string) error {
 		return errors.New("Invalid option.")
 	}
 
-	var reg = registry[index]
+	cc.Register = registry[index]
+	return err
+}
 
-	if c.ID == "" {
-		c.ID = prompt.Prompt("Id [default: " + reg.ID + "]")
+func (cc *containerCreator) chooseContainerOptions() error {
+	if cc.Container.ID == "" {
+		cc.Container.ID = prompt.Prompt("Id [default: " + cc.Register.ID + "]")
 	}
 
-	if c.ID == "" {
-		c.ID = reg.ID
+	if cc.Container.ID == "" {
+		cc.Container.ID = cc.Register.ID
 	}
 
-	if err := tryContainerID(c.ID); err != nil {
-		return err
+	if cc.Directory == "" {
+		cc.Directory = cc.Container.ID
 	}
 
-	c.Name = prompt.Prompt("Name [default: " + reg.Name + "]")
-
-	if c.Name == "" {
-		c.Name = reg.Name
-	}
-
-	c.Type = reg.Type
-
-	bin, err = json.MarshalIndent(c, "", "    ")
+	var err = tryContainerDirectory(cc.Directory)
 
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(config.Context.ProjectRoot, c.ID, "container.json"), bin, 0644)
+	cc.Container.Name = prompt.Prompt("Name [default: " + cc.Register.Name + "]")
+
+	if cc.Container.Name == "" {
+		cc.Container.Name = cc.Register.Name
+	}
+
+	cc.Container.Type = cc.Register.Type
+
+	return err
+}
+
+func (cc *containerCreator) saveContainer() error {
+	var bin, err = json.MarshalIndent(cc.Container, "", "    ")
+
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(filepath.Join(cc.Directory, "container.json"),
+		bin, 0644)
 
 	if err == nil {
-		abs, ea := filepath.Abs(filepath.Join(config.Context.ProjectRoot, c.ID))
+		abs, ea := filepath.Abs(filepath.Join(cc.Directory))
 
 		if ea != nil {
 			panic(ea)
 		}
 
-		fmt.Println("Project created at " + abs)
+		fmt.Println("Container created at " + abs)
 	}
 
 	return err
 }
 
-// NewProject creates a project resource
-func NewProject(id string) error {
-	var bin []byte
-
+func newProject(id, directory string) error {
 	if config.Context.Scope != "global" {
 		return ErrProjectPath
 	}
@@ -178,23 +223,35 @@ func NewProject(id string) error {
 		p.ID = prompt.Prompt("ID")
 	}
 
-	if err := tryProjectID(p.ID); err != nil {
+	if p.ID == "" {
+		return ErrInvalidID
+	}
+
+	if directory == "" {
+		directory = p.ID
+	}
+
+	if err := tryProjectDirectory(directory); err != nil {
 		return err
 	}
 
 	p.Name = prompt.Prompt("Name")
 	p.CustomDomain = prompt.Prompt("Custom domain")
 
-	bin, err := json.MarshalIndent(p, "", "    ")
+	return saveProject(p, directory)
+}
+
+func saveProject(p *projects.Project, directory string) error {
+	var bin, err = json.MarshalIndent(p, "", "    ")
 
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(p.ID, "project.json"), bin, 0644)
+	err = ioutil.WriteFile(filepath.Join(directory, "project.json"), bin, 0644)
 
 	if err == nil {
-		abs, ea := filepath.Abs(p.ID)
+		abs, ea := filepath.Abs(directory)
 
 		if ea != nil {
 			panic(ea)
@@ -206,20 +263,16 @@ func NewProject(id string) error {
 	return err
 }
 
-func tryProjectID(ID string) error {
-	if ID == "" {
-		return ErrInvalidID
-	}
-
-	var err = os.MkdirAll(ID, 0775)
+func tryProjectDirectory(directory string) error {
+	var err = os.MkdirAll(directory, 0775)
 
 	if err != nil {
 		return errwrap.Wrapf("Can't create project directory: {{err}}", err)
 	}
 
-	_, err = os.Stat(filepath.Join(ID, "project.json"))
+	_, err = os.Stat(filepath.Join(directory, "project.json"))
 
-	abs, eabs := filepath.Abs(filepath.Join(config.Context.ProjectRoot, ID))
+	abs, eabs := filepath.Abs(directory)
 
 	if eabs != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", eabs)
@@ -235,20 +288,16 @@ func tryProjectID(ID string) error {
 	}
 }
 
-func tryContainerID(ID string) error {
-	if ID == "" {
-		return ErrInvalidID
-	}
-
-	var err = os.MkdirAll(filepath.Join(config.Context.ProjectRoot, ID), 0775)
+func tryContainerDirectory(directory string) error {
+	var err = os.MkdirAll(directory, 0775)
 
 	if err != nil {
 		return errwrap.Wrapf("Can't create container directory: {{err}}", err)
 	}
 
-	_, err = os.Stat(filepath.Join(config.Context.ProjectRoot, ID, "container.json"))
+	_, err = os.Stat(filepath.Join(directory, "container.json"))
 
-	abs, eabs := filepath.Abs(filepath.Join(config.Context.ProjectRoot, ID))
+	abs, eabs := filepath.Abs(directory)
 
 	if eabs != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", eabs)
