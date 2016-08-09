@@ -30,10 +30,10 @@ var (
 	ErrInvalidID = errors.New("Value for ID is invalid")
 
 	// ErrProjectAlreadyExists indicates that a project already exists
-	ErrProjectAlreadyExists = errors.New("Invalid path for new configuration: project already exists.")
+	ErrProjectAlreadyExists = errors.New("Invalid path for new configuration: project already exists")
 
 	// ErrContainerAlreadyExists indicates that a container already exists
-	ErrContainerAlreadyExists = errors.New("Invalid path for new configuration: container already exists.")
+	ErrContainerAlreadyExists = errors.New("Invalid path for new configuration: container already exists")
 )
 
 // New creates a resource
@@ -44,7 +44,7 @@ func New(id string) error {
 	case "global":
 		return NewProject(id)
 	default:
-		return ErrContainerAlreadyExists
+		return getErrContainerAlreadyExists(config.Context.ContainerRoot)
 	}
 }
 
@@ -54,11 +54,21 @@ func NewContainer(id string) error {
 	var bin []byte
 
 	if config.Context.Scope == "container" {
-		return ErrContainerAlreadyExists
+		return getErrContainerAlreadyExists(config.Context.ContainerRoot)
 	}
 
 	if config.Context.Scope != "project" {
-		return ErrProjectAlreadyExists
+		return getErrProjectAlreadyExists(config.Context.ProjectRoot)
+	}
+
+	var c = &containers.Container{
+		ID: id,
+	}
+
+	if c.ID != "" {
+		if err := tryContainerID(c.ID); err != nil {
+			return err
+		}
 	}
 
 	projectRoot := config.Context.ProjectRoot
@@ -76,8 +86,6 @@ func NewContainer(id string) error {
 	if strings.ContainsRune(rel, os.PathSeparator) {
 		return ErrContainerPath
 	}
-
-	var c = &containers.Container{}
 
 	registry, err := containers.GetRegistry()
 
@@ -111,8 +119,6 @@ func NewContainer(id string) error {
 	}
 
 	var reg = registry[index]
-
-	c.ID = id
 
 	if c.ID == "" {
 		c.ID = prompt.Prompt("Id [default: " + reg.ID + "]")
@@ -213,9 +219,15 @@ func tryProjectID(ID string) error {
 
 	_, err = os.Stat(filepath.Join(ID, "project.json"))
 
+	abs, eabs := filepath.Abs(filepath.Join(config.Context.ProjectRoot, ID))
+
+	if eabs != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", eabs)
+	}
+
 	switch {
 	case err == nil:
-		return ErrProjectAlreadyExists
+		return getErrProjectAlreadyExists(abs)
 	case os.IsNotExist(err):
 		return nil
 	default:
@@ -236,9 +248,15 @@ func tryContainerID(ID string) error {
 
 	_, err = os.Stat(filepath.Join(config.Context.ProjectRoot, ID, "container.json"))
 
+	abs, eabs := filepath.Abs(filepath.Join(config.Context.ProjectRoot, ID))
+
+	if eabs != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", eabs)
+	}
+
 	switch {
 	case err == nil:
-		return ErrContainerAlreadyExists
+		return getErrContainerAlreadyExists(abs)
 	case os.IsNotExist(err):
 		return nil
 	default:
@@ -248,4 +266,12 @@ func tryContainerID(ID string) error {
 
 func pad(space int) string {
 	return strings.Join(make([]string, space), " ")
+}
+
+func getErrProjectAlreadyExists(directory string) error {
+	return errwrap.Wrapf("{{err}} in "+directory, ErrProjectAlreadyExists)
+}
+
+func getErrContainerAlreadyExists(directory string) error {
+	return errwrap.Wrapf("{{err}} in "+directory, ErrContainerAlreadyExists)
 }
