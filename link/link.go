@@ -219,10 +219,6 @@ func (m *Machine) logError(dir string, err error) {
 	m.ErrorsMutex.Unlock()
 }
 
-func (m *Machine) mountAll() {
-
-}
-
 func (m *Machine) mount(dir string) {
 	var l, err = New(m.Project, filepath.Join(m.ProjectPath, dir))
 
