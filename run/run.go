@@ -400,7 +400,10 @@ func (dm *DockerMachine) checkConnectionCounter(ticker *time.Ticker) {
 			fmt.Fprintf(dm.livew,
 				"%c Starting WeDeploy%s %ds\n", p, dots,
 				int(-dm.upTime.Sub(t).Seconds()))
-			dm.livew.Flush()
+
+			if err := dm.livew.Flush(); err != nil {
+				fmt.Fprintf(os.Stderr, "%v\n", err)
+			}
 		case <-dm.tickerd:
 			ticker.Stop()
 			ticker = nil
