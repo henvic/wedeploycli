@@ -46,9 +46,9 @@ func listRun(cmd *cobra.Command, args []string) {
 func init() {
 	ListCmd.Flags().BoolVarP(
 		&detailed,
-		"detailed", "d", false, "Show more containers details.")
+		"detailed", "d", false, "Show more containers details")
 
 	ListCmd.Flags().BoolVar(
 		&watch,
-		"watch", false, "Watch for changes.")
+		"watch", false, "Watch for changes")
 }
