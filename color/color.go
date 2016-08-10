@@ -95,6 +95,8 @@ func Format(s ...interface{}) string {
 
 	for _, v := range s {
 		switch v.(type) {
+		case []Attribute:
+			params = append(params, v.([]Attribute)...)
 		case Attribute:
 			params = append(params, v.(Attribute))
 		default:

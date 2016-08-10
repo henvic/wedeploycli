@@ -16,6 +16,22 @@ func TestFormat(t *testing.T) {
 	NoColor = defaultNoColor
 }
 
+func TestFormatArray(t *testing.T) {
+	var defaultNoColor = NoColor
+	NoColor = false
+
+	var format = []Attribute{BgHiGreen, FgHiMagenta}
+
+	want := "\x1b[102;95mHello World\x1b[0m"
+	got := Format(format, "Hello World")
+
+	if got != want {
+		t.Errorf("Expecting %s, got '%s'\n", want, got)
+	}
+
+	NoColor = defaultNoColor
+}
+
 func TestEmpty(t *testing.T) {
 	var defaultNoColor = NoColor
 	NoColor = false
