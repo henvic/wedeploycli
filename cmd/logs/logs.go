@@ -14,7 +14,7 @@ import (
 var (
 	severityArg string
 	sinceArg    string
-	followArg   bool
+	watchArg    bool
 )
 
 // LogsCmd is used for getting logs about a given scope
@@ -48,7 +48,7 @@ func logsRun(cmd *cobra.Command, args []string) {
 		Since: getSince(),
 	}
 
-	switch followArg {
+	switch watchArg {
 	case true:
 		logs.Watch(&logs.Watcher{
 			Filter:          filter,
@@ -80,5 +80,5 @@ func getSince() string {
 func init() {
 	LogsCmd.Flags().StringVar(&severityArg, "level", "0", `Severity (critical, error, warning, info (default), debug)`)
 	LogsCmd.Flags().StringVar(&sinceArg, "since", "", "Show since moment (i.e., 20min, 3h, UNIX timestamp)")
-	LogsCmd.Flags().BoolVarP(&followArg, "follow", "f", false, "Follow log output")
+	LogsCmd.Flags().BoolVarP(&watchArg, "watch", "w", false, "Watch / follow log output")
 }
