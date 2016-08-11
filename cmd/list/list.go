@@ -48,7 +48,5 @@ func init() {
 		&detailed,
 		"detailed", "d", false, "Show more containers details")
 
-	ListCmd.Flags().BoolVar(
-		&watch,
-		"watch", false, "Watch for changes")
+	ListCmd.Flags().BoolVarP(&watch, "watch", "w", false, "Watch for changes")
 }
