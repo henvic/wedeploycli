@@ -150,15 +150,6 @@ func AuthGet(path string, data interface{}) error {
 	return DecodeJSON(request, &data)
 }
 
-// AuthGetOrExit is like AuthGet, but exits on failure
-func AuthGetOrExit(path string, data interface{}) {
-	var err = AuthGet(path, data)
-
-	if err != nil {
-		exitError(err)
-	}
-}
-
 // DecodeJSON decodes a JSON response
 func DecodeJSON(request *wedeploy.WeDeploy, data interface{}) error {
 	var response = request.Response
