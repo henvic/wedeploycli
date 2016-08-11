@@ -11,30 +11,34 @@ import (
 	"time"
 
 	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/colorwheel"
 	"github.com/wedeploy/cli/verbose"
 )
 
 // Logs structure
 type Logs struct {
-	AppName    string `json:"appName"`
-	InstanceID string `json:"instanceId"`
-	Level      int    `json:"level"`
-	Message    string `json:"message"`
-	PodName    string `json:"podName"`
-	Severity   string `json:"severity"`
-	Timestamp  string `json:"timestamp"`
+	ContainerID  string `json:"containerId"`
+	ContainerUID string `json:"containerUid"`
+	ProjectID    string `json:"projectId"`
+	Level        int    `json:"level"`
+	Message      string `json:"message"`
+	Severity     string `json:"severity"`
+	Timestamp    string `json:"timestamp"`
 }
 
 // Filter structure
 type Filter struct {
-	Level int    `json:"level,omitempty"`
-	Since string `json:"start,omitempty"`
+	Project   string `json:"-"`
+	Container string `json:"containerId,omitempty"`
+	Instance  string `json:"containerUid,omitempty"`
+	Level     int    `json:"level,omitempty"`
+	Since     string `json:"start,omitempty"`
 }
 
 // Watcher structure
 type Watcher struct {
 	Filter          *Filter
-	Paths           []string
 	PoolingInterval time.Duration
 	end             bool
 }
@@ -50,6 +54,8 @@ var SeverityToLevel = map[string]int{
 
 // PoolingInterval is the time between retries
 var PoolingInterval = time.Second
+
+var instancesWheel = colorwheel.New(color.TextPalette)
 
 var outStream io.Writer = os.Stdout
 
@@ -69,9 +75,9 @@ func GetLevel(severityOrLevel string) (int, error) {
 }
 
 // GetList logs
-func GetList(filter *Filter, paths ...string) []Logs {
+func GetList(filter *Filter) []Logs {
 	var list []Logs
-	var req = apihelper.URL("/logs/" + strings.Join(paths, "/"))
+	var req = apihelper.URL("/logs/" + filter.Project)
 
 	apihelper.Auth(req)
 	apihelper.ParamsFromJSON(req, filter)
@@ -83,8 +89,8 @@ func GetList(filter *Filter, paths ...string) []Logs {
 }
 
 // List logs
-func List(filter *Filter, paths ...string) {
-	var list = GetList(filter, paths...)
+func List(filter *Filter) {
+	var list = GetList(filter)
 	printList(list)
 }
 
@@ -129,12 +135,14 @@ func (w *Watcher) Stop() {
 
 func printList(list []Logs) {
 	for _, log := range list {
-		fmt.Fprintln(outStream, log.Message)
+		iw := instancesWheel.Get(log.ContainerUID)
+		fd := color.Format(iw, log.ContainerID+"."+log.ProjectID+".wedeploy.me["+trim(log.ContainerUID, 7)+"]")
+		fmt.Fprintf(outStream, "%v %v\n", fd, log.Message)
 	}
 }
 
 func (w *Watcher) pool() {
-	var list = GetList(w.Filter, w.Paths...)
+	var list = GetList(w.Filter)
 
 	printList(list)
 
@@ -180,4 +188,14 @@ func GetUnixTimestamp(since string) (int64, error) {
 	}
 
 	return now.Add(-pds).Unix(), err
+}
+
+func trim(s string, max int) string {
+	runes := []rune(s)
+
+	if len(runes) > max {
+		return string(runes[:max])
+	}
+
+	return s
 }

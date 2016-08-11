@@ -1,6 +1,8 @@
 package integration
 
 import (
+	"fmt"
+	"net/http"
 	"sync"
 	"syscall"
 	"testing"
@@ -14,15 +16,22 @@ func TestLogs(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc(
-		"/logs/foo/nodejs5143",
-		tdata.ServerJSONFileHandler("../logs/mocks/logs_response.json"))
+	servertest.IntegrationMux.HandleFunc("/logs/foo",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Query().Get("containerId") != "nodejs5143" {
+				t.Errorf("Wrong value for containerId")
+			}
+
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, tdata.FromFile("../logs/mocks/logs_response.json"))
+		})
 
 	var cmd = &Command{
 		Args: []string{
 			"logs",
 			"foo",
-			"nodejs5143"},
+			"nodejs5143",
+			"--no-color"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/",
 	}
@@ -40,16 +49,22 @@ func TestWatch(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc(
-		"/logs/foo/nodejs5143",
-		tdata.ServerJSONHandler("[]"))
+	servertest.IntegrationMux.HandleFunc("/logs/foo",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Query().Get("containerId") != "nodejs5143" {
+				t.Errorf("Wrong value for containerId")
+			}
+
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, "[]")
+		})
 
 	var cmd = &Command{
 		Args: []string{
 			"logs",
 			"foo",
 			"nodejs5143",
-			"-f"},
+			"--watch"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/",
 	}

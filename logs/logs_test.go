@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/wedeploy/api-go/jsonlib"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/configmock"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/stringlib"
@@ -58,16 +59,32 @@ func TestGetList(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	servertest.Mux.HandleFunc("/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
-		tdata.ServerJSONFileHandler("mocks/logs_response.json"))
+	servertest.Mux.HandleFunc("/logs/foo",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Query().Get("containerId") != "nodejs5143" {
+				t.Errorf("Wrong value for containerId")
+			}
+
+			if r.URL.Query().Get("containerUid") != "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj" {
+				t.Errorf("Wrong value for containerUid")
+			}
+
+			if r.URL.Query().Get("level") != "4" {
+				t.Errorf("Wrong value for level")
+			}
+
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, tdata.FromFile("mocks/logs_response.json"))
+		})
 
 	var filter = &Filter{
-		Level: 4,
+		Project:   "foo",
+		Container: "nodejs5143",
+		Instance:  "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+		Level:     4,
 	}
 
-	var args = []string{"foo", "nodejs5143", "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj"}
-
-	var list = GetList(filter, args...)
+	var list = GetList(filter)
 
 	jsonlib.AssertJSONMarshal(t, tdata.FromFile("mocks/logs_response_ref.json"), list)
 
@@ -80,25 +97,30 @@ func TestList(t *testing.T) {
 	outStream = &bufOutStream
 	bufOutStream.Reset()
 
+	var defaultNoColor = color.NoColor
+	color.NoColor = true
+
 	configmock.Setup()
 	servertest.Setup()
 
-	servertest.Mux.HandleFunc("/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+	servertest.Mux.HandleFunc("/logs/foo",
 		tdata.ServerJSONFileHandler("mocks/logs_response.json"))
 
 	var filter = &Filter{
-		Level: 4,
+		Level:     4,
+		Project:   "foo",
+		Container: "nodejs5143",
+		Instance:  "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
 	}
 
-	var args = []string{"foo", "nodejs5143", "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj"}
-
-	List(filter, args...)
+	List(filter)
 
 	var want = tdata.FromFile("mocks/logs_response_print")
 	var got = bufOutStream.String()
 
 	stringlib.AssertSimilar(t, want, got)
 
+	color.NoColor = defaultNoColor
 	outStream = defaultOutStream
 
 	configmock.Teardown()
@@ -110,12 +132,15 @@ func TestWatch(t *testing.T) {
 	outStream = &bufOutStream
 	bufOutStream.Reset()
 
+	var defaultNoColor = color.NoColor
+	color.NoColor = true
+
 	configmock.Setup()
 	servertest.Setup()
 
 	var missing = true
 
-	servertest.Mux.HandleFunc("/logs/foo/bar",
+	servertest.Mux.HandleFunc("/logs/foo",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			switch missing {
@@ -128,10 +153,11 @@ func TestWatch(t *testing.T) {
 		})
 
 	var watcher = &Watcher{
-		Filter: &Filter{Level: 4},
-		Paths: []string{
-			"foo",
-			"bar"},
+		Filter: &Filter{
+			Project:   "foo",
+			Container: "bar",
+			Level:     4,
+		},
 		PoolingInterval: time.Millisecond,
 	}
 
@@ -161,6 +187,7 @@ func TestWatch(t *testing.T) {
 
 	// some time before cleaning up services on other goroutines...
 	time.Sleep(10 * time.Millisecond)
+	color.NoColor = defaultNoColor
 	outStream = defaultOutStream
 	configmock.Teardown()
 	servertest.Teardown()
@@ -170,12 +197,16 @@ func TestWatcherStart(t *testing.T) {
 	var defaultOutStream = outStream
 	outStream = &bufOutStream
 	bufOutStream.Reset()
+
+	var defaultNoColor = color.NoColor
+	color.NoColor = true
+
 	servertest.Setup()
 	configmock.Setup()
 
 	var fileNum = 0
 
-	servertest.Mux.HandleFunc("/logs/foo/nodejs5143/foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+	servertest.Mux.HandleFunc("/logs/foo",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			time.Sleep(2 * time.Millisecond)
@@ -189,11 +220,12 @@ func TestWatcherStart(t *testing.T) {
 		})
 
 	var watcher = &Watcher{
-		Filter: &Filter{Level: 4},
-		Paths: []string{
-			"foo",
-			"nodejs5143",
-			"foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj"},
+		Filter: &Filter{
+			Project:   "foo",
+			Container: "nodejs5143",
+			Instance:  "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+			Level:     4,
+		},
 		PoolingInterval: time.Millisecond,
 	}
 
@@ -216,6 +248,9 @@ func TestWatcherStart(t *testing.T) {
 
 	// some time before cleaning up services on other goroutines...
 	time.Sleep(10 * time.Millisecond)
+
+	color.NoColor = defaultNoColor
+
 	outStream = defaultOutStream
 	servertest.Teardown()
 	configmock.Teardown()

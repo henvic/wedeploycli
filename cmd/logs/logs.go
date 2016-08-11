@@ -12,6 +12,7 @@ import (
 )
 
 var (
+	instanceArg string
 	severityArg string
 	sinceArg    string
 	watchArg    bool
@@ -19,10 +20,11 @@ var (
 
 // LogsCmd is used for getting logs about a given scope
 var LogsCmd = &cobra.Command{
-	Use:   "logs [project] [container] [instance]",
+	Use:   "logs [project] [container] --instance hash",
 	Short: "Logs running on WeDeploy",
 	Run:   logsRun,
 	Example: `we logs (on container directory)
+we logs chat
 we logs portal email
 we logs portal email email5932`,
 }
@@ -33,30 +35,29 @@ func logsRun(cmd *cobra.Command, args []string) {
 	project, container, err := cmdcontext.GetProjectOrContainerID(c)
 	level, levelErr := logs.GetLevel(severityArg)
 
-	// 3rd argument might be instance ID
-	if err != nil || len(args) > 3 || levelErr != nil {
+	if err != nil || len(args) > 2 || levelErr != nil {
 		if err := cmd.Help(); err != nil {
 			panic(err)
 		}
 		os.Exit(1)
 	}
 
-	var logPath = []string{project, container}
-
 	filter := &logs.Filter{
-		Level: level,
-		Since: getSince(),
+		Project:   project,
+		Container: container,
+		Instance:  instanceArg,
+		Level:     level,
+		Since:     getSince(),
 	}
 
 	switch watchArg {
 	case true:
 		logs.Watch(&logs.Watcher{
 			Filter:          filter,
-			Paths:           logPath,
 			PoolingInterval: time.Second,
 		})
 	default:
-		logs.List(filter, logPath...)
+		logs.List(filter)
 	}
 }
 
@@ -78,6 +79,7 @@ func getSince() string {
 }
 
 func init() {
+	LogsCmd.Flags().StringVar(&instanceArg, "instance", "", `Instance ID or hash`)
 	LogsCmd.Flags().StringVar(&severityArg, "level", "0", `Severity (critical, error, warning, info (default), debug)`)
 	LogsCmd.Flags().StringVar(&sinceArg, "since", "", "Show since moment (i.e., 20min, 3h, UNIX timestamp)")
 	LogsCmd.Flags().BoolVarP(&watchArg, "watch", "w", false, "Watch / follow log output")
