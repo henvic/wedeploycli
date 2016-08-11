@@ -123,11 +123,10 @@ func unlinkRun(cmd *cobra.Command, args []string) {
 
 	var queue sync.WaitGroup
 
-	queue.Add(2)
+	queue.Add(1)
 
 	go func() {
 		u.do()
-		queue.Done()
 	}()
 
 	go func() {
