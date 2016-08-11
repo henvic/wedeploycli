@@ -23,10 +23,10 @@ var LogsCmd = &cobra.Command{
 	Use:   "logs [project] [container] --instance hash",
 	Short: "Logs running on WeDeploy",
 	Run:   logsRun,
-	Example: `we logs (on container directory)
+	Example: `we logs (on project or container directory)
 we logs chat
 we logs portal email
-we logs portal email email5932`,
+we logs portal email --instance abc`,
 }
 
 func logsRun(cmd *cobra.Command, args []string) {
