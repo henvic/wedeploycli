@@ -1,0 +1,8 @@
+{
+    "id": "container",
+    "hooks": {
+        "before_build": "ls",
+        "build": "cd .. && ls",
+        "after_build": "ls"
+    }
+}
