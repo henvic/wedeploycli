@@ -13,11 +13,14 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 )
 
@@ -239,6 +242,10 @@ func Validate(request *wedeploy.WeDeploy, err error) error {
 		return nil
 	}
 
+	if ue, ok := err.(*url.Error); ok {
+		return handleURLError(ue)
+	}
+
 	if err == wedeploy.ErrUnexpectedResponse {
 		if af := reportHTTPError(request); af != nil {
 			return af
@@ -246,6 +253,19 @@ func Validate(request *wedeploy.WeDeploy, err error) error {
 	}
 
 	return err
+}
+
+func handleURLError(ue *url.Error) error {
+	var s = "WeDeploy infrastructure error:"
+
+	if verbose.Enabled {
+		s += "\n{{err}}"
+	} else {
+		s += "\n" + ue.Err.Error()
+		s += "\n\n* Try: Run with --verbose option to get more log output."
+	}
+
+	return errwrap.Wrapf(s, ue)
 }
 
 // ValidateOrExit validates a request or exits the process on error

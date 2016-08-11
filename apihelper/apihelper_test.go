@@ -1108,7 +1108,10 @@ func TestURL(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	var want = "Get x://localhost: unsupported protocol scheme \"x\""
+	var want = `WeDeploy infrastructure error:
+unsupported protocol scheme "x"
+
+* Try: Run with --verbose option to get more log output.`
 
 	r := wedeploy.URL("x://localhost/")
 
@@ -1120,7 +1123,11 @@ func TestValidate(t *testing.T) {
 }
 
 func TestValidateOrExit(t *testing.T) {
-	var want = "Get x://localhost: unsupported protocol scheme \"x\"\n"
+	var want = `WeDeploy infrastructure error:
+unsupported protocol scheme "x"
+
+* Try: Run with --verbose option to get more log output.
+`
 	haltExitCommand = true
 	bufErrStream.Reset()
 
