@@ -12,6 +12,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/kylelemons/godebug/pretty"
 	"github.com/wedeploy/api-go/jsonlib"
 	"github.com/wedeploy/cli/apihelper"
@@ -388,8 +389,8 @@ func TestValidateInvalidError(t *testing.T) {
 
 	var err = Validate("foo", "bar")
 
-	if err == nil || err.Error() != "unexpected end of JSON input" {
-		t.Errorf("Expected error didn't happen")
+	if err == nil || errwrap.Get(err, "unexpected end of JSON input") == nil {
+		t.Errorf("Expected error didn't happen, got %v instead", err)
 	}
 
 	servertest.Teardown()

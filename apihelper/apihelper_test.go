@@ -456,7 +456,7 @@ func TestDecodeJSONOrExitFailure(t *testing.T) {
 
 	var post postMock
 
-	var want = "json: cannot unmarshal array into Go value of type apihelper.postMock\n"
+	var want = "Error while decoding JSON: json: cannot unmarshal array into Go value of type apihelper.postMock\n"
 
 	haltExitCommand = true
 	bufErrStream.Reset()

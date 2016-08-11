@@ -171,10 +171,16 @@ func DecodeJSON(request *wedeploy.WeDeploy, data interface{}) error {
 	body, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
-		return err
+		return errwrap.Wrapf("DecodeJSON error: {{err}}", err)
 	}
 
-	return json.Unmarshal(body, &data)
+	err = json.Unmarshal(body, &data)
+
+	if err != nil {
+		err = errwrap.Wrapf("Error while decoding JSON: {{err}}", err)
+	}
+
+	return err
 }
 
 // DecodeJSONOrExit decodes a JSON response or exits the process on error
