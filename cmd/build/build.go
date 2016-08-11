@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdcontext"
 	"github.com/wedeploy/cli/config"
@@ -96,7 +97,8 @@ func checkProjectOrContainer(args []string) {
 	}
 
 	if err != nil && errc != nil {
-		fmt.Fprintf(os.Stderr, "container.json error: %v\n", errc)
+		errc = errwrap.Wrapf("container.json error: {{err}}", errc)
+		fmt.Fprintf(os.Stderr, "%v\n", errc)
 		os.Exit(1)
 	}
 }
