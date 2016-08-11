@@ -86,6 +86,7 @@ func Link(projectID, containerPath string, container *Container) error {
 	apihelper.Auth(req)
 
 	req.Param("projectId", projectID)
+	req.Param("containerId", container.ID)
 	req.Param("source", normalizePath(containerPath))
 
 	var err = apihelper.SetBody(req, &container)

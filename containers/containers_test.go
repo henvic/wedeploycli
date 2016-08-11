@@ -152,6 +152,16 @@ func TestLink(t *testing.T) {
 				t.Errorf("Expected install method to be PUT")
 			}
 
+			var qp = r.URL.Query()
+
+			if qp.Get("projectId") != "sound" {
+				t.Errorf("Missing expected value for projectId query param")
+			}
+
+			if qp.Get("containerId") != "speaker" {
+				t.Errorf("Missing expected value for containerId query param")
+			}
+
 			var body, err = ioutil.ReadAll(r.Body)
 
 			if err != nil {
