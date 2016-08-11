@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
@@ -161,6 +162,12 @@ func (m *Machine) createProject() error {
 }
 
 func (m *Machine) condAuthProject() error {
+	// don't run auth when the context is not "project"
+	// this is a workaround. This auth system will be gone soon.
+	if config.Context.Scope != "project" {
+		return nil
+	}
+
 	var authFile = filepath.Join(m.ProjectPath, "auth.json")
 	var err = projects.SetAuth(m.Project.ID, authFile)
 
