@@ -88,6 +88,24 @@ const (
 	unescape = "\\x1b"
 )
 
+// BlockPalette is a basic text on background palette of colors for terminal
+var BlockPalette = [][]Attribute{
+	[]Attribute{BgHiRed, FgBlack},
+	[]Attribute{BgHiGreen, FgBlack},
+	[]Attribute{BgHiYellow, FgBlack},
+	[]Attribute{BgHiBlue, FgBlack},
+	[]Attribute{BgHiMagenta, FgBlack},
+}
+
+// TextPalette is a basic foreground-only palette of colors for terminal
+var TextPalette = [][]Attribute{
+	[]Attribute{FgHiRed},
+	[]Attribute{FgHiGreen},
+	[]Attribute{FgHiYellow},
+	[]Attribute{FgHiBlue},
+	[]Attribute{FgHiMagenta},
+}
+
 // Format text for terminal
 func Format(s ...interface{}) string {
 	var out = make([]interface{}, 0)
