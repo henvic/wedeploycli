@@ -116,13 +116,11 @@ func (l *List) handleRequestError(err error) {
 		return
 	}
 
-	var s = color.Format(color.FgHiRed, "Error fetching list:\n%v #%d\n", err, l.retry)
-
 	l.retry++
 	if l.watch {
-		l.printf(s)
+		l.printf(color.Format(color.FgHiRed, "%v #%d\n", err, l.retry))
 	} else {
-		println(s)
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
 }
