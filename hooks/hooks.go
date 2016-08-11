@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -40,14 +41,35 @@ var (
 	errStream io.Writer = os.Stderr
 )
 
-// Run invokes the hooks for the given hook type
-func (h *Hooks) Run(hookType string) error {
+// Run invokes the hooks for the given hook type on working directory
+func (h *Hooks) Run(hookType string, wdir string) error {
+	var owd, err = os.Getwd()
+
+	if err != nil {
+		return errwrap.Wrapf("Can't get current working dir on hooks run: {{err}}", err)
+	}
+
+	if wdir != "" {
+		if err = os.Chdir(wdir); err != nil {
+			return err
+		}
+	}
+
 	switch hookType {
 	case "build":
-		return h.runBuild()
+		err = h.runBuild()
 	default:
-		return ErrMissingHook
+		err = ErrMissingHook
 	}
+
+	if wdir != "" {
+		if ech := os.Chdir(owd); ech != nil {
+			fmt.Fprintf(os.Stderr, "Multiple errors: %v\n", err)
+			panic(ech)
+		}
+	}
+
+	return err
 }
 
 func (h *Hooks) runBuild() error {

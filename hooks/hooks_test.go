@@ -101,7 +101,7 @@ func TestRunHooks(t *testing.T) {
 		bufErrStream.Reset()
 		bufOutStream.Reset()
 
-		err := c.Hook.Run(c.Type)
+		err := c.Hook.Run(c.Type, "")
 
 		// get the error message + err type or the actual error
 		switch c.WantErrType {

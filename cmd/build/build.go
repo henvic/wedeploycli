@@ -83,7 +83,7 @@ func buildContainer(path string) error {
 		return nil
 	}
 
-	return container.Hooks.Run(hooks.Build)
+	return container.Hooks.Run(hooks.Build, filepath.Join(path))
 }
 
 func checkProjectOrContainer(args []string) {
