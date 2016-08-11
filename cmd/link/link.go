@@ -81,11 +81,10 @@ func linkRun(cmd *cobra.Command, args []string) {
 
 	var queue sync.WaitGroup
 
-	queue.Add(2)
+	queue.Add(1)
 
 	go func() {
 		m.Run()
-		queue.Done()
 	}()
 
 	go func() {

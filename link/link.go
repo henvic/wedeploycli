@@ -27,6 +27,7 @@ type Machine struct {
 	queue       sync.WaitGroup
 	Watcher     *list.Watcher
 	list        *list.List
+	end         bool
 }
 
 // Link holds the information of container to be linked
@@ -127,7 +128,7 @@ func (m *Machine) Watch() {
 }
 
 func (m *Machine) linkedContainersUp() bool {
-	if len(m.list.Projects) == 0 {
+	if !m.end || len(m.list.Projects) == 0 {
 		return false
 	}
 
@@ -176,6 +177,7 @@ func (m *Machine) Run() {
 	m.queue.Add(len(m.Links))
 	m.linkAll()
 	m.queue.Wait()
+	m.end = true
 }
 
 func (m *Machine) linkAll() {
