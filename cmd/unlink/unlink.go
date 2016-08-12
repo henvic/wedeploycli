@@ -1,10 +1,9 @@
 package cmdunlink
 
 import (
-	"fmt"
-	"os"
 	"sync"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdcontext"
 	"github.com/wedeploy/cli/containers"
@@ -16,7 +15,7 @@ import (
 var UnlinkCmd = &cobra.Command{
 	Use:   "unlink",
 	Short: "Unlinks the given project or container locally",
-	Run:   unlinkRun,
+	RunE:  unlinkRun,
 	Example: `we unlink
 we unlink <project>
 we unlink <project> <container>
@@ -98,12 +97,11 @@ func (u *unlink) checkProjectOrContainerExists() error {
 	return err
 }
 
-func unlinkRun(cmd *cobra.Command, args []string) {
+func unlinkRun(cmd *cobra.Command, args []string) error {
 	var project, container, err = cmdcontext.GetProjectOrContainerID(args)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "fatal: %v", err)
-		os.Exit(1)
+		return errwrap.Wrapf("fatal: {{err}}", err)
 	}
 
 	var u = &unlink{
@@ -117,7 +115,7 @@ func unlinkRun(cmd *cobra.Command, args []string) {
 
 	if quiet {
 		u.do()
-		return
+		return err
 	}
 
 	var queue sync.WaitGroup
