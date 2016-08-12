@@ -59,9 +59,9 @@ func buildRun(cmd *cobra.Command, args []string) error {
 
 	if hasError {
 		return errors.New("build hooks failure")
-	} else {
-		return nil
 	}
+
+	return nil
 }
 
 func buildContainer(path string) error {
