@@ -194,7 +194,7 @@ func TestInvalidArgument(t *testing.T) {
 		Stderr: fmt.Sprintf(`Error: unknown command "%v" for "we"
 Run 'we --help' for usage.
 `, invalidArg),
-		ExitCode: 255,
+		ExitCode: 1,
 	}
 
 	cmd.Run()
