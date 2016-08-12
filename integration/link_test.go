@@ -1,8 +1,10 @@
 package integration
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/tdata"
@@ -19,7 +21,13 @@ func TestLink(t *testing.T) {
 		func(w http.ResponseWriter, r *http.Request) {})
 
 	servertest.IntegrationMux.HandleFunc("/projects/app",
-		tdata.ServerJSONFileHandler("mocks/link/list.json"))
+		func(w http.ResponseWriter, r *http.Request) {
+			// this is a hack to make the link test more robust
+			// a nicer approach would be to clear the strings and match, though
+			time.Sleep(5 * time.Millisecond)
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, tdata.FromFile("mocks/link/list.json"))
+		})
 
 	var cmd = &Command{
 		Args: []string{"link", "--no-color"},
