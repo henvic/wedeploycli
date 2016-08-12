@@ -1,6 +1,7 @@
 package cmdbuild
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -18,41 +19,32 @@ import (
 var BuildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "Build container(s) (current or all containers of a project)",
-	Run:   buildRun,
+	RunE:  buildRun,
 }
 
-func getContainersFromScope() []string {
+func getContainersFromScope() ([]string, error) {
 	if config.Context.ContainerRoot != "" {
 		_, container := filepath.Split(config.Context.ContainerRoot)
-		return []string{container}
+		return []string{container}, nil
 	}
 
-	var list, err = containers.GetListFromDirectory(config.Context.ProjectRoot)
-
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-
-	return list
+	return containers.GetListFromDirectory(config.Context.ProjectRoot)
 }
 
-func buildRun(cmd *cobra.Command, args []string) {
-	// calling it for side-effects
-	checkProjectOrContainer(args)
-
-	if config.Context.Scope == "global" {
-		var err = buildContainer(".")
-
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "%v\n", err)
-			os.Exit(1)
-		}
-
-		return
+func buildRun(cmd *cobra.Command, args []string) error {
+	if err := checkProjectOrContainer(args); err != nil {
+		return err
 	}
 
-	var list = getContainersFromScope()
+	if config.Context.Scope == "global" {
+		return buildContainer(".")
+	}
+
+	var list, err = getContainersFromScope()
+
+	if err != nil {
+		return err
+	}
 
 	var hasError = false
 
@@ -66,7 +58,9 @@ func buildRun(cmd *cobra.Command, args []string) {
 	}
 
 	if hasError {
-		os.Exit(1)
+		return errors.New("build hooks failure")
+	} else {
+		return nil
 	}
 }
 
@@ -87,18 +81,17 @@ func buildContainer(path string) error {
 	return container.Hooks.Run(hooks.Build, filepath.Join(path))
 }
 
-func checkProjectOrContainer(args []string) {
+func checkProjectOrContainer(args []string) error {
 	var _, _, err = cmdcontext.GetProjectOrContainerID(args)
 	var _, errc = containers.Read(".")
 
 	if err != nil && os.IsNotExist(errc) {
-		println("fatal: not a project or container")
-		os.Exit(1)
+		return errors.New("fatal: not a project or container")
 	}
 
 	if err != nil && errc != nil {
-		errc = errwrap.Wrapf("container.json error: {{err}}", errc)
-		fmt.Fprintf(os.Stderr, "%v\n", errc)
-		os.Exit(1)
+		return errwrap.Wrapf("container.json error: {{err}}", errc)
 	}
+
+	return nil
 }

@@ -5,3 +5,4 @@ Command false failure: exit status 1
 > echo during
 > echo after
 container container has no build hooks
+Error: build hooks failure
