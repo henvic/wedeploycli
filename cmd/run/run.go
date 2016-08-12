@@ -1,7 +1,7 @@
 package cmdrun
 
 import (
-	"os"
+	"errors"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/run"
@@ -11,7 +11,7 @@ import (
 var RunCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run WeDeploy infrastructure for development locally",
-	Run:   runRun,
+	RunE:  runRun,
 }
 
 var (
@@ -21,10 +21,9 @@ var (
 	noUpdate bool
 )
 
-func runRun(cmd *cobra.Command, args []string) {
+func runRun(cmd *cobra.Command, args []string) error {
 	if len(args) != 0 {
-		println("This command doesn't take arguments.")
-		os.Exit(1)
+		return errors.New("Invalid number of arguments.")
 	}
 
 	run.Run(run.Flags{
@@ -33,6 +32,8 @@ func runRun(cmd *cobra.Command, args []string) {
 		ViewMode: viewMode,
 		NoUpdate: noUpdate,
 	})
+
+	return nil
 }
 
 func init() {
