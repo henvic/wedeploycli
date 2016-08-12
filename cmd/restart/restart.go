@@ -1,8 +1,6 @@
 package cmdrestart
 
 import (
-	"fmt"
-	"os"
 	"sync"
 
 	"github.com/spf13/cobra"
@@ -17,7 +15,7 @@ import (
 var RestartCmd = &cobra.Command{
 	Use:   "restart [project] [container]",
 	Short: "Restart project or container running on WeDeploy",
-	Run:   restartRun,
+	RunE:  restartRun,
 	Example: `we restart portal
 we restart portal email`,
 }
@@ -75,7 +73,7 @@ func (r *restart) isDone() bool {
 	return c.Health == "up"
 }
 
-func (r *restart) checkProjectOrContainerExists() {
+func (r *restart) checkProjectOrContainerExists() error {
 	var err error
 	if r.container == "" {
 		_, err = projects.Get(r.project)
@@ -83,20 +81,14 @@ func (r *restart) checkProjectOrContainerExists() {
 		_, err = containers.Get(r.project, r.container)
 	}
 
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
-	}
+	return err
 }
 
-func restartRun(cmd *cobra.Command, args []string) {
+func restartRun(cmd *cobra.Command, args []string) error {
 	project, container, err := cmdcontext.GetProjectOrContainerID(args)
 
 	if err != nil {
-		if err = cmd.Help(); err != nil {
-			panic(err)
-		}
-		os.Exit(1)
+		return err
 	}
 
 	var r = &restart{
@@ -104,11 +96,15 @@ func restartRun(cmd *cobra.Command, args []string) {
 		container: container,
 	}
 
-	r.checkProjectOrContainerExists()
+	err = r.checkProjectOrContainerExists()
+
+	if err != nil {
+		return err
+	}
 
 	if quiet {
 		r.do()
-		return
+		return err
 	}
 
 	var queue sync.WaitGroup
@@ -126,6 +122,7 @@ func restartRun(cmd *cobra.Command, args []string) {
 	}()
 
 	queue.Wait()
+	return err
 }
 
 func (r *restart) watch() {
