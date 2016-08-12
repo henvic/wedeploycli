@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/equinox-io/equinox"
+	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
@@ -105,19 +106,24 @@ func Notify() {
 }
 
 // Update this tool
-func Update(channel string) {
+func Update(channel string) error {
 	fmt.Println("Trying to update using the", channel, "distribution channel")
 	fmt.Println("Current installed version is " + defaults.Version)
 
 	var resp, err = check(channel)
 
-	switch err {
-	case nil:
-		updateApply(channel, resp)
-		fmt.Println("Updated to new version:", resp.ReleaseVersion)
-	default:
-		handleUpdateCheckError(err)
+	if err != nil {
+		return handleUpdateCheckError(err)
 	}
+
+	err = updateApply(channel, resp)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Updated to new version:", resp.ReleaseVersion)
+	return err
 }
 
 func check(channel string) (*equinox.Response, error) {
@@ -137,7 +143,7 @@ func getCurrentTime() string {
 	return time.Now().Format(lucFormat)
 }
 
-func handleUpdateCheckError(err error) {
+func handleUpdateCheckError(err error) error {
 	switch err {
 	case equinox.NotAvailableErr:
 		var g = config.Global
@@ -145,10 +151,9 @@ func handleUpdateCheckError(err error) {
 		g.LastUpdateCheck = getCurrentTime()
 		g.Save()
 		fmt.Println("No updates available.")
-		return
+		return nil
 	default:
-		println("Update failed:", err.Error())
-		os.Exit(1)
+		return errwrap.Wrapf("Update failed: {{err}}", err)
 	}
 }
 
@@ -176,17 +181,17 @@ func notify() {
 		`WARNING: WeDeploy CLI tool is outdated. Run "`+cmd+`".`))
 }
 
-func updateApply(channel string, resp *equinox.Response) {
+func updateApply(channel string, resp *equinox.Response) error {
 	run.StopOutdatedImage("")
 
 	var err = resp.Apply()
 
 	if err != nil {
-		println(err.Error())
-		os.Exit(1)
+		return err
 	}
 
 	updateConfig(channel)
+	return err
 }
 
 func updateConfig(channel string) {
