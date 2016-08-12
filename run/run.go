@@ -14,6 +14,7 @@ import (
 
 	"golang.org/x/crypto/ssh/terminal"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/henvic/uilive"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/projects"
@@ -132,29 +133,33 @@ func GetWeDeployHost() (string, error) {
 }
 
 // Run runs the WeDeploy infrastructure
-func Run(flags Flags) {
-	checkDockerExists()
+func Run(flags Flags) error {
+	if err := checkDockerExists(); err != nil {
+		return err
+	}
 
 	var dm = &DockerMachine{
 		Flags: flags,
 	}
 
-	dm.Run()
+	return dm.Run()
 }
 
 // Stop stops the WeDeploy infrastructure
-func Stop() {
-	checkDockerExists()
+func Stop() error {
+	if err := checkDockerExists(); err != nil {
+		return err
+	}
 
 	var dm = &DockerMachine{}
-	dm.Stop()
+	return dm.Stop()
 }
 
 // StopOutdatedImage stops the WeDeploy infrastructure if outdated
-func StopOutdatedImage(nextImage string) {
+func StopOutdatedImage(nextImage string) error {
 	// don't try to stop if docker isn't installed yet
 	if !existsDependency(bin) {
-		return
+		return nil
 	}
 
 	var dm = &DockerMachine{}
@@ -162,20 +167,19 @@ func StopOutdatedImage(nextImage string) {
 	dm.LoadDockerInfo()
 
 	if dm.Container == "" {
-		return
+		return nil
 	}
 
 	if nextImage == WeDeployImage && nextImage != dockerLatestImageTag {
 		verbose.Debug("Continuing update without stopping: same infrastructure version detected.")
-		return
+		return nil
 	}
 
 	println("New WeDeloy infrastructure image available.")
 	println("The infrastructure must be stopped before updating the CLI tool.")
 
 	if !terminal.IsTerminal(int(os.Stdin.Fd())) {
-		println("No terminal (/dev/tty) detected for asking to stop the infrastructure. Exiting.")
-		os.Exit(1)
+		return errors.New("No terminal (/dev/tty) detected for asking to stop the infrastructure. Exiting.")
 	}
 
 	if nextImage == dockerLatestImageTag {
@@ -188,11 +192,11 @@ func StopOutdatedImage(nextImage string) {
 		os.Exit(1)
 	}
 
-	cleanupEnvironment()
+	return cleanupEnvironment()
 }
 
 // Run executes the WeDeploy infraestruture
-func (dm *DockerMachine) Run() {
+func (dm *DockerMachine) Run() (err error) {
 	dm.prepare()
 
 	if dm.Flags.Detach {
@@ -200,9 +204,7 @@ func (dm *DockerMachine) Run() {
 	}
 
 	if len(dm.Container) == 0 && dm.Flags.ViewMode {
-		println("View mode is not available.")
-		println("WeDeploy is shutdown.")
-		os.Exit(1)
+		return errors.New("View mode is not available: WeDeploy is shutdown.")
 	}
 
 	var already = len(dm.Container) != 0 && !dm.Flags.DryRun
@@ -210,30 +212,35 @@ func (dm *DockerMachine) Run() {
 	if already {
 		fmt.Println("WeDeploy is already running.")
 	} else {
-		cleanupEnvironment()
+		return cleanupEnvironment()
 	}
 
 	dm.maybeStopListener()
 
 	if !already {
-		dm.start()
+		if err = dm.start(); err != nil {
+			return err
+		}
 	}
 
 	dm.maybeWaitEnd()
 	dm.started <- true
 	go dm.waitReadyState()
 	<-dm.end
+	return nil
 }
 
 // Stop stops the machine
-func (dm *DockerMachine) Stop() {
+func (dm *DockerMachine) Stop() error {
 	dm.LoadDockerInfo()
 
 	if dm.Container == "" {
 		verbose.Debug("No infrastructure container detected.")
 	}
 
-	cleanupEnvironment()
+	if err := cleanupEnvironment(); err != nil {
+		return err
+	}
 
 	// Windows doesn't implement grouping for processes
 	// so it is important to send a SIGTERM signal
@@ -242,22 +249,24 @@ func (dm *DockerMachine) Stop() {
 			panic(err)
 		}
 	}
+
+	return nil
 }
 
-func (dm *DockerMachine) checkPortsAreAvailable() {
+func (dm *DockerMachine) checkPortsAreAvailable() error {
 	var all, notAvailable = tcpPorts.getAvailability()
 
 	if all {
-		return
+		return nil
 	}
 
-	println("Can't start. The following network ports must be available:")
+	var s = "Can't start. The following network ports must be available:"
 
 	for _, port := range notAvailable {
-		println(port)
+		s += fmt.Sprintf("%v\n", port)
 	}
 
-	os.Exit(1)
+	return errors.New(s)
 }
 
 func (dm *DockerMachine) waitEnd() {
@@ -323,7 +332,7 @@ func (dm *DockerMachine) waitCleanup() {
 	dm.end <- true
 }
 
-func (dm *DockerMachine) start() {
+func (dm *DockerMachine) start() error {
 	var args = getRunCommandEnv()
 	var running = "docker " + strings.Join(args, " ")
 
@@ -337,7 +346,9 @@ func (dm *DockerMachine) start() {
 		os.Exit(0)
 	}
 
-	dm.checkPortsAreAvailable()
+	if err := dm.checkPortsAreAvailable(); err != nil {
+		return err
+	}
 
 	if !dm.Flags.NoUpdate && !dm.hasCurrentWeDeployImage() {
 		pull()
@@ -345,6 +356,7 @@ func (dm *DockerMachine) start() {
 
 	dm.Container = startCmd(args...)
 	verbose.Debug("Docker container ID:", dm.Container)
+	return nil
 }
 
 func (dm *DockerMachine) hasCurrentWeDeployImage() bool {
@@ -377,7 +389,11 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 	dm.tickerd <- true
 	dm.selfStopSignal = true
 	fmt.Println("\nStopping WeDeploy.")
-	cleanupEnvironment()
+
+	if err := cleanupEnvironment(); err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+	}
+
 	dm.waitCleanup()
 }
 
@@ -511,11 +527,12 @@ func (dm *DockerMachine) testAlreadyRunning() {
 	}
 }
 
-func checkDockerExists() {
+func checkDockerExists() error {
 	if !existsDependency(bin) {
-		println("Docker is not installed. Download it from http://docker.com/")
-		os.Exit(1)
+		return errors.New("Docker is not installed. Download it from http://docker.com/")
 	}
+
+	return nil
 }
 
 func getWeDeployHost() string {
@@ -601,19 +618,31 @@ func startCmd(args ...string) string {
 	return dockerContainer
 }
 
-func cleanupEnvironment() {
+func cleanupEnvironment() error {
 	verbose.Debug("Cleaning up processes and containers.")
-	stopContainers()
-	rmContainers()
+
+	if err := stopContainers(); err != nil {
+		return err
+	}
+
+	if err := rmContainers(); err != nil {
+		return err
+	}
+
 	verbose.Debug("End of environment clean up.")
+	return nil
 }
 
-func stopContainers() {
+func stopContainers() error {
 	verbose.Debug("Trying to stop WeDeploy containers and infrastructure containers.")
-	var ids = getDockerContainers(true)
+	var ids, err = getDockerContainers(true)
+
+	if err != nil {
+		return err
+	}
 
 	if len(ids) == 0 {
-		return
+		return nil
 	}
 
 	var params = []string{"stop"}
@@ -622,24 +651,25 @@ func stopContainers() {
 	var stop = exec.Command(bin, params...)
 	stop.Stderr = os.Stderr
 
-	var err = stop.Run()
-
-	switch err.(type) {
+	switch err = stop.Run(); err.(type) {
 	case nil:
+		return nil
 	case *exec.ExitError:
-		fmt.Fprintf(os.Stderr, "warning: still stopping WeDeploy on background: %v\n", err)
-		os.Exit(1)
+		return errwrap.Wrapf("warning: still stopping WeDeploy on background: {{err}}", err)
 	default:
-		fmt.Fprintf(os.Stderr, "docker stop error: %v\n", err)
-		os.Exit(1)
+		return errwrap.Wrapf("docker stop error: {{err}}", err)
 	}
 }
 
-func rmContainers() {
-	var ids = getDockerContainers(false)
+func rmContainers() error {
+	var ids, err = getDockerContainers(false)
+
+	if err != nil {
+		return err
+	}
 
 	if len(ids) == 0 {
-		return
+		return nil
 	}
 
 	var params = []string{"rm"}
@@ -648,19 +678,30 @@ func rmContainers() {
 	var rm = exec.Command(bin, params...)
 	rm.Stderr = os.Stderr
 
-	if err := rm.Run(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error trying to remove containers: %v\n", err)
-		os.Exit(1)
+	if err = rm.Run(); err != nil {
+		return errwrap.Wrapf("Error trying to remove containers: {{err}}", err)
 	}
+
+	return err
 }
 
-func getDockerContainers(onlyRunning bool) []string {
-	var ids = getContainersByLabel("com.wedeploy.container.type", onlyRunning)
-	ids = append(ids, getContainersByLabel("com.wedeploy.project.infra", onlyRunning)...)
-	return ids
+func getDockerContainers(onlyRunning bool) (cids []string, err error) {
+	cids, err = getContainersByLabel("com.wedeploy.container.type", onlyRunning)
+
+	if err != nil {
+		return []string{}, err
+	}
+
+	idsInfra, err := getContainersByLabel("com.wedeploy.project.infra", onlyRunning)
+
+	if err != nil {
+		return []string{}, err
+	}
+
+	return append(cids, idsInfra...), err
 }
 
-func getContainersByLabel(label string, onlyRunning bool) []string {
+func getContainersByLabel(label string, onlyRunning bool) (cs []string, err error) {
 	var params = []string{
 		"ps", "--filter", "label=" + label, "--quiet", "--no-trunc",
 	}
@@ -676,11 +717,10 @@ func getContainersByLabel(label string, onlyRunning bool) []string {
 	list.Stdout = &buf
 
 	if err := list.Run(); err != nil {
-		fmt.Fprintf(os.Stderr, "Can't get containers list: %v\n", err)
-		os.Exit(1)
+		return cs, errwrap.Wrapf("Can't get containers list: {{err}}", err)
 	}
 
-	return strings.Fields(buf.String())
+	return strings.Fields(buf.String()), nil
 }
 
 func existsDependency(cmd string) bool {
