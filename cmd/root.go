@@ -81,7 +81,7 @@ func Execute() {
 	var cue = checkUpdate()
 
 	if ccmd, err := RootCmd.ExecuteC(); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		commandErrorConditionalUsage(ccmd, err)
 		os.Exit(1)
 	}
@@ -93,13 +93,14 @@ func commandErrorConditionalUsage(cmd *cobra.Command, err error) {
 	// this tries to print the usage for a given command only when one of the
 	// errors below is caused by cobra
 	var emsg = err.Error()
-	if err != nil &&
-		strings.HasPrefix(emsg, "unknown flag: ") ||
+	if strings.HasPrefix(emsg, "unknown flag: ") ||
 		strings.HasPrefix(emsg, "unknown shorthand flag: ") ||
 		strings.HasPrefix(emsg, "invalid argument ") ||
 		strings.HasPrefix(emsg, "bad flag syntax: ") ||
 		strings.HasPrefix(emsg, "flag needs an argument: ") {
 		cmd.Usage()
+	} else if strings.HasPrefix(emsg, "unknown command ") {
+		println("Run 'we --help' for usage.")
 	}
 }
 
