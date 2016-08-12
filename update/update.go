@@ -182,16 +182,16 @@ func notify() {
 }
 
 func updateApply(channel string, resp *equinox.Response) error {
-	run.StopOutdatedImage("")
+	if err := run.StopOutdatedImage(""); err != nil {
+		return err
+	}
 
-	var err = resp.Apply()
-
-	if err != nil {
+	if err := resp.Apply(); err != nil {
 		return err
 	}
 
 	updateConfig(channel)
-	return err
+	return nil
 }
 
 func updateConfig(channel string) {
