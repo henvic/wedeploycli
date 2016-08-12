@@ -19,18 +19,11 @@ var CreateCmd = &cobra.Command{
 You can create a project anywhere on your machine.
 Containers can only be created from inside projects and
 are stored on the first subdirectory of its project.`,
-	Run:     createRun,
+	RunE:    createRun,
 	Example: `we create relay`,
 }
 
-func handleError(err error) {
-	if err != nil {
-		println(err.Error())
-		os.Exit(1)
-	}
-}
-
-func createRun(cmd *cobra.Command, args []string) {
+func createRun(cmd *cobra.Command, args []string) error {
 	var err error
 
 	switch len(args) {
@@ -44,7 +37,7 @@ func createRun(cmd *cobra.Command, args []string) {
 		err = errors.New("Invalid number of arguments.")
 	}
 
-	handleError(err)
+	return err
 }
 
 func cwdContextAndCreate(id, directory string) error {
