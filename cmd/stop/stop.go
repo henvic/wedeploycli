@@ -1,7 +1,7 @@
 package cmdstop
 
 import (
-	"os"
+	"errors"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/run"
@@ -11,15 +11,15 @@ import (
 var StopCmd = &cobra.Command{
 	Use:    "stop",
 	Short:  "Stop WeDeploy local infrastructure for development",
-	Run:    stopRun,
+	RunE:   stopRun,
 	Hidden: true,
 }
 
-func stopRun(cmd *cobra.Command, args []string) {
+func stopRun(cmd *cobra.Command, args []string) error {
 	if len(args) != 0 {
-		println("This command doesn't take arguments.")
-		os.Exit(1)
+		return errors.New("This command doesn't take arguments.")
 	}
 
 	run.Stop()
+	return nil
 }
