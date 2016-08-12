@@ -1,8 +1,8 @@
 package cmdlogs
 
 import (
+	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/hashicorp/errwrap"
@@ -22,24 +22,36 @@ var (
 var LogsCmd = &cobra.Command{
 	Use:   "logs [project] [container] --instance hash",
 	Short: "Logs running on WeDeploy",
-	Run:   logsRun,
+	RunE:  logsRun,
 	Example: `we logs (on project or container directory)
 we logs chat
 we logs portal email
 we logs portal email --instance abc`,
 }
 
-func logsRun(cmd *cobra.Command, args []string) {
+func logsRun(cmd *cobra.Command, args []string) error {
 	c := cmdcontext.SplitArguments(args, 0, 2)
 
 	project, container, err := cmdcontext.GetProjectOrContainerID(c)
+
+	if err != nil {
+		return err
+	}
+
 	level, levelErr := logs.GetLevel(severityArg)
 
-	if err != nil || len(args) > 2 || levelErr != nil {
-		if err := cmd.Help(); err != nil {
-			panic(err)
-		}
-		os.Exit(1)
+	if levelErr != nil {
+		return err
+	}
+
+	if len(args) > 2 {
+		return errors.New("Invalid number of arguments.")
+	}
+
+	since, err := getSince()
+
+	if err != nil {
+		return err
 	}
 
 	filter := &logs.Filter{
@@ -47,7 +59,7 @@ func logsRun(cmd *cobra.Command, args []string) {
 		Container: container,
 		Instance:  instanceArg,
 		Level:     level,
-		Since:     getSince(),
+		Since:     since,
 	}
 
 	switch watchArg {
@@ -57,25 +69,27 @@ func logsRun(cmd *cobra.Command, args []string) {
 			PoolingInterval: time.Second,
 		})
 	default:
-		logs.List(filter)
+		if err = logs.List(filter); err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
-func getSince() string {
+func getSince() (string, error) {
 	if sinceArg == "" {
-		return ""
+		return "", nil
 	}
 
-	var since, sinceErr = logs.GetUnixTimestamp(sinceArg)
+	var since, err = logs.GetUnixTimestamp(sinceArg)
 
-	if sinceErr != nil {
-		sinceErr = errwrap.Wrapf("Can't parse since argument: {{err}}.", sinceErr)
-		fmt.Fprintf(os.Stderr, "%v\n", sinceErr)
-		os.Exit(1)
+	if err != nil {
+		return "", errwrap.Wrapf("Can't parse since argument: {{err}}.", err)
 	}
 
 	// use microseconds instead of seconds (dashboard takes ms as a param)
-	return fmt.Sprintf("%v000", since)
+	return fmt.Sprintf("%v000", since), err
 }
 
 func init() {

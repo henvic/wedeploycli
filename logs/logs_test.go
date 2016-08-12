@@ -84,7 +84,11 @@ func TestGetList(t *testing.T) {
 		Level:     4,
 	}
 
-	var list = GetList(filter)
+	var list, err = GetList(filter)
+
+	if err != nil {
+		t.Errorf("Unexpected error %v on GetList", err)
+	}
 
 	jsonlib.AssertJSONMarshal(t, tdata.FromFile("mocks/logs_response_ref.json"), list)
 
@@ -113,7 +117,11 @@ func TestList(t *testing.T) {
 		Instance:  "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
 	}
 
-	List(filter)
+	var err = List(filter)
+
+	if err != nil {
+		t.Errorf("Unexpected error %v", err)
+	}
 
 	var want = tdata.FromFile("mocks/logs_response_print")
 	var got = bufOutStream.String()

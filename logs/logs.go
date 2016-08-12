@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/colorwheel"
@@ -57,6 +58,7 @@ var PoolingInterval = time.Second
 
 var instancesWheel = colorwheel.New(color.TextPalette)
 
+var errStream io.Writer = os.Stderr
 var outStream io.Writer = os.Stdout
 
 // GetLevel to get level from severity or itself
@@ -71,27 +73,47 @@ func GetLevel(severityOrLevel string) (int, error) {
 		return 0, nil
 	}
 
-	return strconv.Atoi(severityOrLevel)
+	var i, err = strconv.Atoi(severityOrLevel)
+
+	if err != nil {
+		err = errwrap.Wrapf("Can't translate log severity param to level: {{err}}", err)
+	}
+
+	return i, err
 }
 
 // GetList logs
-func GetList(filter *Filter) []Logs {
+func GetList(filter *Filter) ([]Logs, error) {
 	var list []Logs
 	var req = apihelper.URL("/logs/" + filter.Project)
 
 	apihelper.Auth(req)
 	apihelper.ParamsFromJSON(req, filter)
 
-	apihelper.ValidateOrExit(req, req.Get())
-	apihelper.DecodeJSONOrExit(req, &list)
+	var err = apihelper.Validate(req, req.Get())
 
-	return list
+	if err != nil {
+		return list, errwrap.Wrapf("Can't list logs: {{err}}", err)
+	}
+
+	err = apihelper.DecodeJSON(req, &list)
+
+	if err != nil {
+		return list, errwrap.Wrapf("Can't decode logs JSON: {{err}}", err)
+	}
+
+	return list, err
 }
 
 // List logs
-func List(filter *Filter) {
-	var list = GetList(filter)
-	printList(list)
+func List(filter *Filter) error {
+	var list, err = GetList(filter)
+
+	if err == nil {
+		printList(list)
+	}
+
+	return err
 }
 
 // Watch logs
@@ -142,7 +164,12 @@ func printList(list []Logs) {
 }
 
 func (w *Watcher) pool() {
-	var list = GetList(w.Filter)
+	var list, err = GetList(w.Filter)
+
+	if err != nil {
+		fmt.Fprintf(errStream, "%v\n", err)
+		return
+	}
 
 	printList(list)
 
