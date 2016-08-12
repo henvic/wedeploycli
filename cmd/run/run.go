@@ -26,14 +26,12 @@ func runRun(cmd *cobra.Command, args []string) error {
 		return errors.New("Invalid number of arguments.")
 	}
 
-	run.Run(run.Flags{
+	return run.Run(run.Flags{
 		Detach:   detach,
 		DryRun:   dryRun,
 		ViewMode: viewMode,
 		NoUpdate: noUpdate,
 	})
-
-	return nil
 }
 
 func init() {
