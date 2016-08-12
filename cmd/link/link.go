@@ -1,11 +1,11 @@
 package cmdlink
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdcontext"
 	"github.com/wedeploy/cli/config"
@@ -17,7 +17,7 @@ import (
 var LinkCmd = &cobra.Command{
 	Use:   "link",
 	Short: "Links the given project or container locally",
-	Run:   linkRun,
+	RunE:  linkRun,
 	Example: `we link
 we link <project>
 we link <container>`,
@@ -34,49 +34,43 @@ func init() {
 		"Link without watching status.")
 }
 
-func getContainersDirectoriesFromScope() []string {
+func getContainersDirectoriesFromScope() ([]string, error) {
 	if config.Context.ContainerRoot != "" {
 		_, container := filepath.Split(config.Context.ContainerRoot)
-		return []string{container}
+		return []string{container}, nil
 	}
 
 	var list, err = containers.GetListFromDirectory(config.Context.ProjectRoot)
 
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error retrieving containers list from directory.")
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		err = errwrap.Wrapf("Error retrieving containers list from directory: {{err}}", err)
 	}
 
-	return list
+	return list, err
 }
 
-func linkErrorsFeedback(err *link.Errors) {
-	if len(err.List) != 0 {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+func linkRun(cmd *cobra.Command, args []string) error {
+	if _, _, err := cmdcontext.GetProjectOrContainerID(args); err != nil {
+		return nil
 	}
-}
 
-func linkRun(cmd *cobra.Command, args []string) {
-	// calling it for side-effects
-	getProjectOrContainerID(args)
-	var csDirs = getContainersDirectoriesFromScope()
+	var csDirs, err = getContainersDirectoriesFromScope()
+
+	if err != nil {
+		return err
+	}
 
 	var m = &link.Machine{
 		FErrStream: os.Stderr,
 	}
 
-	var err = m.Setup(config.Context.ProjectRoot, csDirs)
-
-	if err != nil {
-		println(err.Error())
-		os.Exit(1)
+	if err = m.Setup(config.Context.ProjectRoot, csDirs); err != nil {
+		return err
 	}
 
 	if quiet {
 		m.Run()
-		return
+		return nil
 	}
 
 	var queue sync.WaitGroup
@@ -93,16 +87,10 @@ func linkRun(cmd *cobra.Command, args []string) {
 	}()
 
 	queue.Wait()
-	linkErrorsFeedback(m.Errors)
-}
 
-func getProjectOrContainerID(args []string) (string, string) {
-	var project, container, err = cmdcontext.GetProjectOrContainerID(args)
-
-	if err != nil {
-		println("fatal: not a project")
-		os.Exit(1)
+	if len(m.Errors.List) != 0 {
+		return m.Errors
+	} else {
+		return nil
 	}
-
-	return project, container
 }
