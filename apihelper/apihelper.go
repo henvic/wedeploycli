@@ -174,13 +174,6 @@ func DecodeJSON(request *wedeploy.WeDeploy, data interface{}) error {
 	return err
 }
 
-// DecodeJSONOrExit decodes a JSON response or exits the process on error
-func DecodeJSONOrExit(request *wedeploy.WeDeploy, data interface{}) {
-	if err := DecodeJSON(request, data); err != nil {
-		exitError(err)
-	}
-}
-
 // EncodeJSON encodes a object using its JSON annotations map
 // and creates a reader that can be used as body for requests, for example
 func EncodeJSON(data interface{}) (*bytes.Reader, error) {

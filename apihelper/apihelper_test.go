@@ -13,6 +13,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/kylelemons/godebug/pretty"
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/color"
@@ -326,59 +327,7 @@ func TestDecodeJSONInvalidContentType(t *testing.T) {
 	}
 }
 
-func TestDecodeJSONOrExit(t *testing.T) {
-	servertest.Setup()
-	defer servertest.Teardown()
-
-	servertest.Mux.HandleFunc("/posts/1", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-type", "application/json; charset=UTF-8")
-		fmt.Fprintf(w, `{
-    "id": "1234",
-    "title": "once upon a time",
-    "body": "to be written",
-    "comments": 30
-}`)
-	})
-
-	var post postMock
-
-	var wantID = "1234"
-	var wantTitle = "once upon a time"
-	var wantBody = "to be written"
-	var wantComments = 30
-
-	haltExitCommand = true
-	bufErrStream.Reset()
-
-	r := URL("/posts/1")
-
-	ValidateOrExit(r, r.Get())
-	DecodeJSONOrExit(r, &post)
-
-	if post.ID != wantID {
-		t.Errorf("Wanted Id %v, got %v instead", wantID, post.ID)
-	}
-
-	if post.Title != wantTitle {
-		t.Errorf("Wanted Title %v, got %v instead", wantTitle, post.Title)
-	}
-
-	if post.Body != wantBody {
-		t.Errorf("Wanted Body %v, got %v instead", wantBody, post.Body)
-	}
-
-	if post.Comments != wantComments {
-		t.Errorf("Wanted Comments %v, got %v instead", wantComments, post.Comments)
-	}
-
-	if bufErrStream.Len() != 0 {
-		t.Errorf("Unexpected content written to err stream: %v", bufErrStream.String())
-	}
-
-	haltExitCommand = false
-}
-
-func TestDecodeJSONOrExitFailure(t *testing.T) {
+func TestDecodeJSONFailure(t *testing.T) {
 	servertest.Setup()
 	defer servertest.Teardown()
 
@@ -389,21 +338,16 @@ func TestDecodeJSONOrExitFailure(t *testing.T) {
 
 	var post postMock
 
-	var want = "Error while decoding JSON: json: cannot unmarshal array into Go value of type apihelper.postMock\n"
-
-	haltExitCommand = true
-	bufErrStream.Reset()
-
 	r := URL("/posts/1/comments")
 
 	ValidateOrExit(r, r.Get())
-	DecodeJSONOrExit(r, &post)
+	var err = DecodeJSON(r, &post)
+	var wantErr = "json: cannot unmarshal array into Go value of type apihelper.postMock"
+	var ew = errwrap.Contains(err, wantErr)
 
-	if bufErrStream.String() != want {
-		t.Errorf("Wanted %v written to errStream, got %v instead", want, bufErrStream.String())
+	if !ew {
+		t.Errorf("Error message %v doesn't contain expected error %v", err, wantErr)
 	}
-
-	haltExitCommand = false
 }
 
 func TestEncodeJSON(t *testing.T) {
