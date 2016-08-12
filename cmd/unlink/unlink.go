@@ -87,7 +87,7 @@ func (u *unlink) watch() {
 	watcher.Start()
 }
 
-func (u *unlink) checkProjectOrContainerExists() {
+func (u *unlink) checkProjectOrContainerExists() error {
 	var err error
 	if u.container == "" {
 		_, err = projects.Get(u.project)
@@ -95,10 +95,7 @@ func (u *unlink) checkProjectOrContainerExists() {
 		_, err = containers.Get(u.project, u.container)
 	}
 
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
-	}
+	return err
 }
 
 func unlinkRun(cmd *cobra.Command, args []string) {
@@ -114,7 +111,9 @@ func unlinkRun(cmd *cobra.Command, args []string) {
 		container: container,
 	}
 
-	u.checkProjectOrContainerExists()
+	if err = u.checkProjectOrContainerExists(); err != nil {
+		return err
+	}
 
 	if quiet {
 		u.do()
@@ -137,6 +136,8 @@ func unlinkRun(cmd *cobra.Command, args []string) {
 	queue.Wait()
 
 	if u.err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+		return u.err
 	}
+
+	return nil
 }
