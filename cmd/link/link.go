@@ -90,7 +90,7 @@ func linkRun(cmd *cobra.Command, args []string) error {
 
 	if len(m.Errors.List) != 0 {
 		return m.Errors
-	} else {
-		return nil
 	}
+
+	return nil
 }
