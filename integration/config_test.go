@@ -31,7 +31,7 @@ func TestLoggedOut(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stderr:   "Please run \"we login\" first.\n",
+		Stderr:   "Error: Please run \"we login\" first.\n",
 		ExitCode: 1,
 	}
 

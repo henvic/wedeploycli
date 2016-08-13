@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -65,10 +66,10 @@ var RootCmd = &cobra.Command{
 Version ` + defaults.Version + `
 Copyright 2016 Liferay, Inc.
 http://wedeploy.com`,
-	PersistentPreRun: persistentPreRun,
-	Run:              run,
-	SilenceErrors:    true,
-	SilenceUsage:     true,
+	PersistentPreRunE: persistentPreRun,
+	Run:               run,
+	SilenceErrors:     true,
+	SilenceUsage:      true,
 }
 
 var (
@@ -171,11 +172,6 @@ func hideUnusedGlobalRemoteFlags() {
 }
 
 func init() {
-	if err := config.Setup(); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
-	}
-
 	RootCmd.PersistentFlags().BoolVarP(
 		&verbose.Enabled,
 		"verbose",
@@ -207,26 +203,22 @@ func init() {
 	hideNoVerboseRequestsFlag()
 	hideUnusedGlobalRemoteFlags()
 
-	if config.Global.NoColor {
-		color.NoColor = true
-	}
-
 	for _, c := range commands {
 		RootCmd.AddCommand(c)
 	}
 }
 
-func setLocal() {
+func setLocal() error {
 	config.Context.Token = apihelper.DefaultToken
 	config.Context.Endpoint = fmt.Sprintf("http://localhost:%d/", config.Global.LocalPort)
+	return nil
 }
 
-func setRemote() {
+func setRemote() error {
 	var r, ok = config.Global.Remotes.Get(remote)
 
 	if !ok {
-		fmt.Fprintf(os.Stderr, "Remote %v is not configured.\n", remote)
-		os.Exit(1)
+		return errors.New("Remote " + remote + " is not configured.")
 	}
 
 	config.Context.Remote = remote
@@ -234,6 +226,7 @@ func setRemote() {
 	config.Context.Username = config.Global.Username
 	config.Context.Password = config.Global.Password
 	config.Context.Token = config.Global.Token
+	return nil
 }
 
 func normalizeRemote(address string) string {
@@ -246,15 +239,28 @@ func normalizeRemote(address string) string {
 	return address
 }
 
-func persistentPreRun(cmd *cobra.Command, args []string) {
-	cmdSetLocalFlag()
-	verifyCmdReqAuth(cmd.CommandPath())
+func persistentPreRun(cmd *cobra.Command, args []string) error {
+	if err := config.Setup(); err != nil {
+		return err
+	}
+
+	if config.Global.NoColor {
+		color.NoColor = true
+	}
+
+	if err := cmdSetLocalFlag(); err != nil {
+		return err
+	}
+
+	if err := verifyCmdReqAuth(cmd.CommandPath()); err != nil {
+		return err
+	}
 
 	if remote == "" {
-		setLocal()
-	} else {
-		setRemote()
+		return setLocal()
 	}
+
+	return setRemote()
 }
 
 func run(cmd *cobra.Command, args []string) {
@@ -284,23 +290,25 @@ func isCmdWhitelistNoAuth(commandPath string) bool {
 	return false
 }
 
-func cmdSetLocalFlag() {
+func cmdSetLocalFlag() error {
 	var args = os.Args
 
 	if len(args) < 2 {
-		return
+		return nil
 	}
 
 	_, h := LocalOnlyCommands[args[1]]
 
 	if h {
-		setLocal()
+		return setLocal()
 	}
+
+	return nil
 }
 
-func verifyCmdReqAuth(commandPath string) {
+func verifyCmdReqAuth(commandPath string) error {
 	if remote == "" || isCmdWhitelistNoAuth(commandPath) {
-		return
+		return nil
 	}
 
 	var g = config.Global
@@ -308,13 +316,8 @@ func verifyCmdReqAuth(commandPath string) {
 	var hasAuth = (g.Token != "") || (g.Username != "" && g.Password != "")
 
 	if g.Endpoint != "" && hasAuth {
-		return
+		return nil
 	}
 
-	pleaseLoginFeedback()
-}
-
-func pleaseLoginFeedback() {
-	fmt.Fprintf(os.Stderr, "Please run \"we login\" first.\n")
-	os.Exit(1)
+	return errors.New(`Please run "we login" first.`)
 }
