@@ -276,7 +276,9 @@ func TestRestart(t *testing.T) {
 			fmt.Fprintf(w, `"on"`)
 		})
 
-	Restart("foo", "bar")
+	if err := Restart("foo", "bar"); err != nil {
+		t.Errorf("Unexpected error on container restart: %v", err)
+	}
 
 	servertest.Teardown()
 	configmock.Teardown()

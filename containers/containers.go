@@ -149,11 +149,11 @@ func readValidate(container Container, err error) error {
 }
 
 // Restart restarts a container inside a project
-func Restart(projectID, containerID string) {
+func Restart(projectID, containerID string) error {
 	var req = apihelper.URL("/restart/container?projectId=" + projectID + "&containerId=" + containerID)
 
 	apihelper.Auth(req)
-	apihelper.ValidateOrExit(req, req.Post())
+	return apihelper.Validate(req, req.Post())
 }
 
 // Validate container

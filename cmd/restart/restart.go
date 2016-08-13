@@ -35,15 +35,16 @@ type restart struct {
 	project   string
 	container string
 	list      *list.List
+	err       error
 	end       bool
 }
 
 func (r *restart) do() {
 	switch r.container {
 	case "":
-		projects.Restart(r.project)
+		r.err = projects.Restart(r.project)
 	default:
-		containers.Restart(r.project, r.container)
+		r.err = containers.Restart(r.project, r.container)
 	}
 
 	r.end = true
@@ -96,15 +97,13 @@ func restartRun(cmd *cobra.Command, args []string) error {
 		container: container,
 	}
 
-	err = r.checkProjectOrContainerExists()
-
-	if err != nil {
+	if err = r.checkProjectOrContainerExists(); err != nil {
 		return err
 	}
 
 	if quiet {
 		r.do()
-		return err
+		return r.err
 	}
 
 	var queue sync.WaitGroup
@@ -122,7 +121,7 @@ func restartRun(cmd *cobra.Command, args []string) error {
 	}()
 
 	queue.Wait()
-	return err
+	return r.err
 }
 
 func (r *restart) watch() {

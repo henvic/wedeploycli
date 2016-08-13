@@ -96,11 +96,11 @@ func readValidate(project Project, err error) error {
 }
 
 // Restart restarts a project
-func Restart(id string) {
+func Restart(id string) error {
 	var req = apihelper.URL("/restart/project?projectId=" + id)
 
 	apihelper.Auth(req)
-	apihelper.ValidateOrExit(req, req.Post())
+	return apihelper.Validate(req, req.Post())
 }
 
 // SetAuth sets a project authentication permissions

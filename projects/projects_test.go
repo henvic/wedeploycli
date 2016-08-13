@@ -167,7 +167,9 @@ func TestRestart(t *testing.T) {
 		fmt.Fprintf(w, `"on"`)
 	})
 
-	Restart("foo")
+	if err := Restart("foo"); err != nil {
+		t.Errorf("Unexpected error on project restart: %v", err)
+	}
 
 	configmock.Teardown()
 }
