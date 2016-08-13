@@ -211,8 +211,8 @@ func (dm *DockerMachine) Run() (err error) {
 
 	if already {
 		fmt.Println("WeDeploy is already running.")
-	} else {
-		return cleanupEnvironment()
+	} else if err = cleanupEnvironment(); err != nil {
+		return err
 	}
 
 	dm.maybeStopListener()
