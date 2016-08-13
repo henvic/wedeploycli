@@ -98,7 +98,9 @@ func commandErrorConditionalUsage(cmd *cobra.Command, err error) {
 		strings.HasPrefix(emsg, "invalid argument ") ||
 		strings.HasPrefix(emsg, "bad flag syntax: ") ||
 		strings.HasPrefix(emsg, "flag needs an argument: ") {
-		cmd.Usage()
+		if ue := cmd.Usage(); ue != nil {
+			panic(ue)
+		}
 	} else if strings.HasPrefix(emsg, "unknown command ") {
 		println("Run 'we --help' for usage.")
 	}
