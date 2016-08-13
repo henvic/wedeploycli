@@ -10,52 +10,72 @@ package main
 import (
 	"fmt"
 	"os"
-	"runtime"
-	"time"
+	"strings"
 
+	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/errorhandling"
+	"github.com/wedeploy/cli/update"
 )
 
-const timeFormat = "Mon Jan _2 15:04:05 MST 2006"
+// Execute is the Entry-point for the CLI
+func Execute() {
+	var cue = checkUpdate()
 
-const errorTemplate = `An unrecoverable error has occurred.
-Please report this error at
-https://github.com/wedeploy/cli/issues/
+	if ccmd, err := cmd.RootCmd.ExecuteC(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
+		commandErrorConditionalUsage(ccmd, err)
+		os.Exit(1)
+	}
 
-%s
-Time: %s
-%s`
+	updateFeedback(<-cue)
+}
 
 func panickingListener(panicking *bool) {
 	if !*panicking {
 		return
 	}
 
-	var version = fmt.Sprintf("Version: %s %s/%s (runtime: %s)",
-		defaults.Version,
-		runtime.GOOS,
-		runtime.GOARCH,
-		runtime.Version())
-
-	fmt.Fprintln(os.Stderr, color.Format(color.FgRed, errorTemplate,
-		version,
-		time.Now().Format(timeFormat), systemInfo()))
+	errorhandling.Info()
 }
 
-func systemInfo() string {
-	var m runtime.MemStats
-	runtime.ReadMemStats(&m)
+func commandErrorConditionalUsage(cmd *cobra.Command, err error) {
+	// this tries to print the usage for a given command only when one of the
+	// errors below is caused by cobra
+	var emsg = err.Error()
+	if strings.HasPrefix(emsg, "unknown flag: ") ||
+		strings.HasPrefix(emsg, "unknown shorthand flag: ") ||
+		strings.HasPrefix(emsg, "invalid argument ") ||
+		strings.HasPrefix(emsg, "bad flag syntax: ") ||
+		strings.HasPrefix(emsg, "flag needs an argument: ") {
+		if ue := cmd.Usage(); ue != nil {
+			panic(ue)
+		}
+	} else if strings.HasPrefix(emsg, "unknown command ") {
+		println("Run 'we --help' for usage.")
+	}
+}
 
-	return fmt.Sprintf(`goroutines: %v | cgo calls: %v
-CPUs: %v | Pointer lookups: %v
-`, runtime.NumGoroutine(), runtime.NumCgoCall(), runtime.NumCPU(), m.Lookups)
+func checkUpdate() chan error {
+	var euc = make(chan error, 1)
+	go func() {
+		euc <- update.NotifierCheck()
+	}()
+	return euc
+}
+
+func updateFeedback(err error) {
+	switch err {
+	case nil:
+		update.Notify()
+	default:
+		println("Update notification error:", err.Error())
+	}
 }
 
 func main() {
-	var panicking = true
-	defer panickingListener(&panicking)
-	cmd.Execute()
-	panicking = false
+	var panickingFlag = true
+	defer panickingListener(&panickingFlag)
+	Execute()
+	panickingFlag = false
 }

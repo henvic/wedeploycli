@@ -24,7 +24,6 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/update"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 )
@@ -76,53 +75,6 @@ var (
 	version bool
 	remote  string
 )
-
-// Execute is the Entry-point for the CLI
-func Execute() {
-	var cue = checkUpdate()
-
-	if ccmd, err := RootCmd.ExecuteC(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		commandErrorConditionalUsage(ccmd, err)
-		os.Exit(1)
-	}
-
-	updateFeedback(<-cue)
-}
-
-func commandErrorConditionalUsage(cmd *cobra.Command, err error) {
-	// this tries to print the usage for a given command only when one of the
-	// errors below is caused by cobra
-	var emsg = err.Error()
-	if strings.HasPrefix(emsg, "unknown flag: ") ||
-		strings.HasPrefix(emsg, "unknown shorthand flag: ") ||
-		strings.HasPrefix(emsg, "invalid argument ") ||
-		strings.HasPrefix(emsg, "bad flag syntax: ") ||
-		strings.HasPrefix(emsg, "flag needs an argument: ") {
-		if ue := cmd.Usage(); ue != nil {
-			panic(ue)
-		}
-	} else if strings.HasPrefix(emsg, "unknown command ") {
-		println("Run 'we --help' for usage.")
-	}
-}
-
-func checkUpdate() chan error {
-	var euc = make(chan error, 1)
-	go func() {
-		euc <- update.NotifierCheck()
-	}()
-	return euc
-}
-
-func updateFeedback(err error) {
-	switch err {
-	case nil:
-		update.Notify()
-	default:
-		println("Update notification error:", err.Error())
-	}
-}
 
 var commands = []*cobra.Command{
 	cmdauth.LoginCmd,
