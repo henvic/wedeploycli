@@ -222,7 +222,7 @@ func getListFromDirectory(dir string, files []os.FileInfo) ([]string, error) {
 		}
 
 		if err != ErrContainerNotFound {
-			return nil, err
+			return nil, errwrap.Wrapf("Can't list containers: container reading error: {{err}}", err)
 		}
 	}
 
