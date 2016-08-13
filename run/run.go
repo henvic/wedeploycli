@@ -189,7 +189,7 @@ func StopOutdatedImage(nextImage string) error {
 	var q = prompt.Prompt("Stop WeDeploy to allow update [yes]")
 
 	if q != "" && q != "y" && q != "yes" {
-		os.Exit(1)
+		return errors.New("Can't update image while running an old version of the infrastructure.")
 	}
 
 	return cleanupEnvironment()
@@ -332,7 +332,7 @@ func (dm *DockerMachine) waitCleanup() {
 	dm.end <- true
 }
 
-func (dm *DockerMachine) start() error {
+func (dm *DockerMachine) start() (err error) {
 	var args = getRunCommandEnv()
 	var running = "docker " + strings.Join(args, " ")
 
@@ -346,7 +346,7 @@ func (dm *DockerMachine) start() error {
 		os.Exit(0)
 	}
 
-	if err := dm.checkPortsAreAvailable(); err != nil {
+	if err = dm.checkPortsAreAvailable(); err != nil {
 		return err
 	}
 
@@ -354,9 +354,12 @@ func (dm *DockerMachine) start() error {
 		pull()
 	}
 
-	dm.Container = startCmd(args...)
+	if dm.Container, err = startCmd(args...); err != nil {
+		return err
+	}
+
 	verbose.Debug("Docker container ID:", dm.Container)
-	return nil
+	return err
 }
 
 func (dm *DockerMachine) hasCurrentWeDeployImage() bool {
@@ -602,20 +605,18 @@ func pullFeedback(err error) {
 	}
 }
 
-func startCmd(args ...string) string {
+func startCmd(args ...string) (dockerContainer string, err error) {
 	verbose.Debug("Starting WeDeploy")
 	var docker = exec.Command(bin, args...)
 	var dockerContainerBuf bytes.Buffer
 	docker.Stderr = os.Stderr
 	docker.Stdout = &dockerContainerBuf
 
-	if err := docker.Run(); err != nil {
-		fmt.Fprintln(os.Stderr, "docker run error:", err)
-		os.Exit(1)
+	if err = docker.Run(); err != nil {
+		return "", errwrap.Wrapf("docker run error: {{err}}", err)
 	}
 
-	var dockerContainer = strings.TrimSpace(dockerContainerBuf.String())
-	return dockerContainer
+	return strings.TrimSpace(dockerContainerBuf.String()), err
 }
 
 func cleanupEnvironment() error {
