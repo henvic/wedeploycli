@@ -61,7 +61,7 @@ func TestGetListFromDirectoryDuplicateID(t *testing.T) {
 	var wantErr = `Can't list containers: ID "email" was found duplicated on containers ./one and ./two`
 
 	if err.Error() != wantErr {
-		t.Error("Expected error message to be %v, got %v instead", wantErr, err)
+		t.Errorf("Expected error message to be %v, got %v instead", wantErr, err)
 	}
 }
 
