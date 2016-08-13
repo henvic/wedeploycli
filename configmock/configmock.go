@@ -20,7 +20,10 @@ func Setup() {
 		Path: os.DevNull,
 	}
 
-	global.Load()
+	if err := global.Load(); err != nil {
+		panic(err)
+	}
+
 	global.Username = "admin"
 	global.Password = "safe"
 	global.Token = "mock_token"

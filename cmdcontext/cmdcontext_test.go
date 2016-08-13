@@ -172,7 +172,9 @@ func TestGetProjectOrContainerID(t *testing.T) {
 func TestGetProjectIDWithProjectStore(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 	chdir("./mocks/project/")
-	config.Setup()
+	if err := config.Setup(); err != nil {
+		panic(err)
+	}
 
 	for _, c := range GetProjectIDWithProjectStoreCases {
 		project, err := GetProjectID(c.Args)
@@ -193,7 +195,9 @@ func TestGetProjectIDWithProjectStore(t *testing.T) {
 func TestGetProjectIDWithInvalidProjectStore(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 	chdir("./mocks/invalid-project/")
-	config.Setup()
+	if err := config.Setup(); err != nil {
+		panic(err)
+	}
 
 	for _, c := range GetProjectIDWithInvalidProjectStoreCases {
 		project, err := GetProjectID(c.Args)
@@ -214,7 +218,9 @@ func TestGetProjectIDWithInvalidProjectStore(t *testing.T) {
 func TestGetProjectAndContainerIDWithProjectStore(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 	chdir("./mocks/project/")
-	config.Setup()
+	if err := config.Setup(); err != nil {
+		panic(err)
+	}
 
 	for _, c := range GetProjectAndContainerIDWithProjectStoreCases {
 		project, container, err := GetProjectAndContainerID(c.Args)
@@ -239,7 +245,9 @@ func TestGetProjectAndContainerIDWithProjectStore(t *testing.T) {
 func TestGetProjectAndContainerIDWithProjectAndContainerStore(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 	chdir("./mocks/project/container")
-	config.Setup()
+	if err := config.Setup(); err != nil {
+		panic(err)
+	}
 
 	for _, c := range GetProjectAndContainerIDWithProjectAndContainerStoreCases {
 		project, container, err := GetProjectAndContainerID(c.Args)
@@ -264,7 +272,9 @@ func TestGetProjectAndContainerIDWithProjectAndContainerStore(t *testing.T) {
 func TestGetProjectOrContainerIDWithProjectStore(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 	chdir("./mocks/project")
-	config.Setup()
+	if err := config.Setup(); err != nil {
+		panic(err)
+	}
 
 	for _, c := range GetProjectOrContainerIDWithProjectStoreCases {
 		project, container, err := GetProjectOrContainerID(c.Args)
@@ -289,7 +299,9 @@ func TestGetProjectOrContainerIDWithProjectStore(t *testing.T) {
 func TestGetProjectOrContainerIDWithProjectOrContainerStore(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 	chdir("./mocks/project/container")
-	config.Setup()
+	if err := config.Setup(); err != nil {
+		panic(err)
+	}
 
 	for _, c := range GetProjectOrContainerIDWithProjectOrContainerStoreCases {
 		project, container, err := GetProjectOrContainerID(c.Args)

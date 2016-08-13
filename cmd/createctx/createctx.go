@@ -63,13 +63,13 @@ func cwdContextAndCreate(id, directory string) error {
 		return err
 	}
 
-	config.Setup()
+	if err = config.Setup(); err != nil {
+		return errwrap.Wrapf("Can't reset config object: {{err}}", err)
+	}
 
 	var cerr = createctx.New(id, abs)
 
-	err = os.Chdir(workingDir)
-
-	if err != nil {
+	if err = os.Chdir(workingDir); err != nil {
 		panic(err)
 	}
 

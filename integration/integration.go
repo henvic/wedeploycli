@@ -236,7 +236,10 @@ func setupLoginHome() {
 		Path: file,
 	}
 
-	mock.Load()
+	if err := mock.Load(); err != nil {
+		panic(err)
+	}
+
 	mock.Endpoint = servertest.IntegrationServer.URL
 	mock.LocalPort = getIntegrationServerPort()
 	mock.Username = "foo"

@@ -171,7 +171,10 @@ func hideUnusedGlobalRemoteFlags() {
 }
 
 func init() {
-	config.Setup()
+	if err := config.Setup(); err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
+	}
 
 	RootCmd.PersistentFlags().BoolVarP(
 		&verbose.Enabled,

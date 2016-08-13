@@ -31,7 +31,9 @@ func TestSetupAndTeardown(t *testing.T) {
 		t.Errorf("Expected config.Context to be null")
 	}
 
-	Setup()
+	if err := Setup(); err != nil {
+		panic(err)
+	}
 
 	if Global.Username != "admin" {
 		t.Errorf("Wrong username")
@@ -89,7 +91,9 @@ func TestSetupAndTeardownProject(t *testing.T) {
 		t.Error(err)
 	}
 
-	Setup()
+	if err := Setup(); err != nil {
+		panic(err)
+	}
 
 	if Context.Scope != "project" {
 		t.Errorf("Expected scope to be project, got %v instead", Context.Scope)
@@ -119,7 +123,9 @@ func TestSetupAndTeardownProjectAndContainer(t *testing.T) {
 		t.Error(err)
 	}
 
-	Setup()
+	if err := Setup(); err != nil {
+		panic(err)
+	}
 
 	if Context.Scope != "container" {
 		t.Errorf("Expected scope to be container, got %v instead", Context.Scope)
@@ -143,7 +149,9 @@ func TestSetupAndTeardownProjectAndContainer(t *testing.T) {
 
 func TestSave(t *testing.T) {
 	setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/home"))
-	Setup()
+	if err := Setup(); err != nil {
+		panic(err)
+	}
 
 	var tmp, err = ioutil.TempFile(os.TempDir(), "we")
 
@@ -178,7 +186,9 @@ func TestSave(t *testing.T) {
 
 func TestSaveAfterCreation(t *testing.T) {
 	setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/homeless"))
-	Setup()
+	if err := Setup(); err != nil {
+		panic(err)
+	}
 
 	var tmp, err = ioutil.TempFile(os.TempDir(), "we")
 
@@ -218,7 +228,9 @@ func TestRemotes(t *testing.T) {
 		t.Errorf("Expected config.Global to be null")
 	}
 
-	Setup()
+	if err := Setup(); err != nil {
+		panic(err)
+	}
 
 	var tmp, err = ioutil.TempFile(os.TempDir(), "we")
 
@@ -278,7 +290,9 @@ func TestRemotesListAndGet(t *testing.T) {
 		t.Errorf("Expected config.Global to be null")
 	}
 
-	Setup()
+	if err := Setup(); err != nil {
+		panic(err)
+	}
 
 	var wantOriginalRemotes = Remotes{
 		list: remotesList{

@@ -10,6 +10,7 @@ import (
 
 	"gopkg.in/ini.v1"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/context"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/user"
@@ -93,10 +94,12 @@ var (
 )
 
 // Load the configuration
-func (c *Config) Load() {
+func (c *Config) Load() error {
 	switch c.configExists() {
 	case true:
-		c.read()
+		if err := c.read(); err != nil {
+			return err
+		}
 	default:
 		verbose.Debug("Config file not found.")
 		c.file = ini.Empty()
@@ -104,6 +107,7 @@ func (c *Config) Load() {
 	}
 
 	c.load()
+	return nil
 }
 
 // Save the configuration
@@ -126,9 +130,16 @@ func (c *Config) Save() {
 }
 
 // Setup the environment
-func Setup() {
-	setupGlobal()
-	setupContext()
+func Setup() error {
+	if err := setupGlobal(); err != nil {
+		return errwrap.Wrapf("Error setting up global config: {{err}}", err)
+	}
+
+	if err := setupContext(); err != nil {
+		return errwrap.Wrapf("Error setting up context: {{err}}", err)
+	}
+
+	return nil
 }
 
 func (c *Config) setDefaults() {
@@ -167,17 +178,17 @@ func (c *Config) load() {
 	}
 }
 
-func (c *Config) read() {
+func (c *Config) read() error {
 	var err error
 	c.file, err = ini.Load(c.Path)
 
 	if err != nil {
-		println("Error reading configuration file:", err.Error())
-		println("Fix " + c.Path + " by hand or erase it.")
-		os.Exit(1)
+		return errwrap.Wrapf("Error reading configuration file: {{err}}\n"+
+			"Fix "+c.Path+" by hand or erase it.", err)
 	}
 
 	c.readRemotes()
+	return nil
 }
 
 func parseRemoteSectionName(parsable string) (parsed string, is bool) {
@@ -290,23 +301,22 @@ func (c *Config) banner() {
 # https://wedeploy.io`
 }
 
-func setupContext() {
-	var err error
+func setupContext() (err error) {
 	Context, err = context.Get()
 
 	if err != nil {
-		println("Fatal context setup failure.")
-		println(err.Error())
-		os.Exit(-1)
+		err = errwrap.Wrapf("Fatal context setup failure: {{err}}", err)
 	}
+
+	return err
 }
 
-func setupGlobal() {
+func setupGlobal() error {
 	Global = &Config{
 		Path: filepath.Join(user.GetHomeDir(), ".we"),
 	}
 
-	Global.Load()
+	return Global.Load()
 }
 
 // Teardown resets the configuration environment
