@@ -47,6 +47,24 @@ func TestGetListFromDirectory(t *testing.T) {
 	}
 }
 
+func TestGetListFromDirectoryDuplicateID(t *testing.T) {
+	var containers, err = GetListFromDirectory("mocks/project-with-duplicate-containers-ids")
+
+	if len(containers) != 0 {
+		t.Errorf("Expected containers length to be 0 on error.")
+	}
+
+	if err == nil {
+		t.Errorf("Expected error, got %v instead.", err)
+	}
+
+	var wantErr = `Can't list containers: ID "email" was found duplicated on containers ./one and ./two`
+
+	if err.Error() != wantErr {
+		t.Error("Expected error message to be %v, got %v instead", wantErr, err)
+	}
+}
+
 func TestGetListFromDirectoryInvalid(t *testing.T) {
 	var containers, err = GetListFromDirectory("mocks/app-with-invalid-container")
 

@@ -1,5 +1,5 @@
 {
-    "id": "container",
+    "id": "build-error-container",
     "hooks": {
         "before_build": "echo before",
         "build": "false",

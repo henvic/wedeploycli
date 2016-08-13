@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/defaults"
@@ -201,15 +202,21 @@ func getValidateAPIFaultError(errDoc apihelper.APIFault) error {
 
 func getListFromDirectory(dir string, files []os.FileInfo) ([]string, error) {
 	var list []string
+	var idToPathMap = map[string]string{}
 
 	for _, file := range files {
 		if !file.IsDir() {
 			continue
 		}
 
-		var _, err = Read(filepath.Join(dir, file.Name()))
+		var container, err = Read(filepath.Join(dir, file.Name()))
 
 		if err == nil {
+			if cp, ok := idToPathMap[container.ID]; ok {
+				return nil, errors.New("Can't list containers: ID \"" + container.ID + "\" was found duplicated on containers ./" + cp + " and ./" + file.Name())
+			}
+
+			idToPathMap[container.ID] = file.Name()
 			list = append(list, file.Name())
 			continue
 		}

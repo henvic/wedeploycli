@@ -1,5 +1,5 @@
 {
-    "id": "container",
+    "id": "empty-hooks-container",
     "hooks": {
         "before_build": "",
         "build": "",
