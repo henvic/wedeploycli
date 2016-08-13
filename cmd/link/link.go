@@ -51,7 +51,7 @@ func getContainersDirectoriesFromScope() ([]string, error) {
 
 func linkRun(cmd *cobra.Command, args []string) error {
 	if _, _, err := cmdcontext.GetProjectOrContainerID(args); err != nil {
-		return nil
+		return err
 	}
 
 	var csDirs, err = getContainersDirectoriesFromScope()
