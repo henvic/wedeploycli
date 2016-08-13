@@ -293,12 +293,7 @@ func (w *Watcher) Stop() {
 }
 
 func getType(t string) string {
-	var r, err = regexp.Compile(`(.+?)(\:[^:]*$|$)`)
-
-	if err != nil {
-		panic(err)
-	}
-
+	var r = regexp.MustCompile(`(.+?)(\:[^:]*$|$)`)
 	var matches = r.FindStringSubmatch(t)
 
 	if len(matches) < 2 {
