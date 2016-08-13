@@ -1,6 +1,6 @@
 /*
 Package errorhandling provides a error handling system to be used as
-root.Execute() error handler. It should not be used somewhere else.
+root.Execute() error handler or on watches. It should not be used somewhere else.
 */
 package errorhandling
 

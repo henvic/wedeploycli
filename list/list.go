@@ -15,6 +15,7 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/projects"
 )
 
@@ -118,9 +119,9 @@ func (l *List) handleRequestError(err error) {
 
 	l.retry++
 	if l.watch {
-		l.printf(color.Format(color.FgHiRed, "%v #%d\n", err, l.retry))
+		l.printf(color.Format(color.FgHiRed, "%v #%d\n", errorhandling.Handle(err), l.retry))
 	} else {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+		fmt.Fprintf(os.Stderr, "%v\n", errorhandling.Handle(err))
 		os.Exit(1)
 	}
 }
