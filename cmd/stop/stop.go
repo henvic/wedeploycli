@@ -20,6 +20,5 @@ func stopRun(cmd *cobra.Command, args []string) error {
 		return errors.New("This command doesn't take arguments.")
 	}
 
-	run.Stop()
-	return nil
+	return run.Stop()
 }
