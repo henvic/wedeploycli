@@ -113,9 +113,7 @@ func Update(channel string) error {
 	var resp, err = check(channel)
 
 	if err != nil {
-		if err = handleUpdateCheckError(err); err != nil {
-			return err
-		}
+		return handleUpdateCheckError(err)
 	}
 
 	err = updateApply(channel, resp)
