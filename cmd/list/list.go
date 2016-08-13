@@ -34,13 +34,12 @@ func listRun(cmd *cobra.Command, args []string) {
 
 	l.Detailed = detailed
 
-	switch watch {
-	case true:
-		var w = list.NewWatcher(l)
-		w.Start()
-	default:
-		l.Print()
+	if watch {
+		list.NewWatcher(l).Start()
+		return
 	}
+
+	l.Print()
 }
 
 func init() {
