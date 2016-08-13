@@ -1,8 +1,8 @@
 package cmdremote
 
 import (
+	"errors"
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/config"
@@ -13,46 +13,45 @@ import (
 var RemoteCmd = &cobra.Command{
 	Use:   "remote",
 	Short: "Configure WeDeploy remotes",
-	Run:   remoteRun,
+	RunE:  remoteRun,
 }
 
 var addCmd = &cobra.Command{
 	Use:     "add",
 	Short:   "Adds a remote named <name> for the repository at <url>",
 	Example: "we remote add hk https://hk.example.com/",
-	Run:     addRun,
+	RunE:    addRun,
 }
 
 var renameCmd = &cobra.Command{
 	Use:     "rename",
 	Short:   "Rename the remote named <old> to <new>",
 	Example: "we remote rename asia hk",
-	Run:     renameRun,
+	RunE:    renameRun,
 }
 
 var removeCmd = &cobra.Command{
 	Use:     "remove",
 	Short:   "Remove the remote named <name>",
 	Example: "we remote remove hk",
-	Run:     removeRun,
+	RunE:    removeRun,
 }
 
 var getURLCmd = &cobra.Command{
 	Use:   "get-url",
 	Short: "Retrieves the URLs for a remote",
-	Run:   getURLRun,
+	RunE:  getURLRun,
 }
 
 var setURLCmd = &cobra.Command{
 	Use:   "set-url",
 	Short: "Changes URLs for the remote",
-	Run:   setURLRun,
+	RunE:  setURLRun,
 }
 
-func remoteRun(cmd *cobra.Command, args []string) {
+func remoteRun(cmd *cobra.Command, args []string) error {
 	if len(args) != 0 {
-		println("This command doesn't take arguments.")
-		os.Exit(1)
+		return errors.New("Invalid number of arguments.")
 	}
 
 	var remotes = config.Global.Remotes
@@ -66,12 +65,13 @@ func remoteRun(cmd *cobra.Command, args []string) {
 			fmt.Println(k)
 		}
 	}
+
+	return nil
 }
 
-func addRun(cmd *cobra.Command, args []string) {
+func addRun(cmd *cobra.Command, args []string) error {
 	if len(args) != 2 {
-		println("This command takes 2 arguments.")
-		os.Exit(1)
+		return errors.New("Invalid number of arguments.")
 	}
 
 	var global = config.Global
@@ -79,18 +79,17 @@ func addRun(cmd *cobra.Command, args []string) {
 	var name = args[0]
 
 	if _, ok := remotes.Get(name); ok {
-		println("fatal: remote " + name + " already exists.")
-		os.Exit(1)
+		return errors.New("fatal: remote " + name + " already exists.")
 	}
 
 	remotes.Set(name, args[1])
 	global.Save()
+	return nil
 }
 
-func renameRun(cmd *cobra.Command, args []string) {
+func renameRun(cmd *cobra.Command, args []string) error {
 	if len(args) != 2 {
-		println("This command takes 2 arguments.")
-		os.Exit(1)
+		return errors.New("Invalid number of arguments.")
 	}
 
 	var global = config.Global
@@ -101,24 +100,22 @@ func renameRun(cmd *cobra.Command, args []string) {
 	var oldRemote, ok = remotes.Get(old)
 
 	if !ok {
-		println("fatal: remote " + old + " doesn't exists.")
-		os.Exit(1)
+		return errors.New("fatal: remote " + old + " doesn't exists.")
 	}
 
 	if _, ok := remotes.Get(name); ok {
-		println("fatal: remote " + name + " already exists.")
-		os.Exit(1)
+		return errors.New("fatal: remote " + name + " already exists.")
 	}
 
 	remotes.Set(name, oldRemote.URL, oldRemote.Comment)
 	remotes.Del(old)
 	global.Save()
+	return nil
 }
 
-func removeRun(cmd *cobra.Command, args []string) {
+func removeRun(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		println("This command takes 1 argument.")
-		os.Exit(1)
+		return errors.New("This command takes 1 argument.")
 	}
 
 	var global = config.Global
@@ -126,18 +123,17 @@ func removeRun(cmd *cobra.Command, args []string) {
 	var name = args[0]
 
 	if _, ok := remotes.Get(name); !ok {
-		println("fatal: remote " + name + " doesn't exists.")
-		os.Exit(1)
+		return errors.New("fatal: remote " + name + " doesn't exists.")
 	}
 
 	remotes.Del(name)
 	global.Save()
+	return nil
 }
 
-func getURLRun(cmd *cobra.Command, args []string) {
+func getURLRun(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		println("This command takes 1 argument.")
-		os.Exit(1)
+		return errors.New("This command takes 1 argument.")
 	}
 
 	var remotes = config.Global.Remotes
@@ -145,17 +141,16 @@ func getURLRun(cmd *cobra.Command, args []string) {
 	var remote, ok = remotes.Get(name)
 
 	if !ok {
-		println("fatal: remote " + name + " doesn't exists.")
-		os.Exit(1)
+		return errors.New("fatal: remote " + name + " doesn't exists.")
 	}
 
 	fmt.Println(remote.URL)
+	return nil
 }
 
-func setURLRun(cmd *cobra.Command, args []string) {
+func setURLRun(cmd *cobra.Command, args []string) error {
 	if len(args) != 2 {
-		println("This command takes 2 arguments.")
-		os.Exit(1)
+		return errors.New("This command takes 2 arguments.")
 	}
 
 	var global = config.Global
@@ -164,12 +159,12 @@ func setURLRun(cmd *cobra.Command, args []string) {
 	var uri = args[1]
 
 	if _, ok := remotes.Get(name); !ok {
-		println("fatal: remote " + name + " doesn't exists.")
-		os.Exit(1)
+		return errors.New("fatal: remote " + name + " doesn't exists.")
 	}
 
 	remotes.Set(name, uri)
 	global.Save()
+	return nil
 }
 
 func init() {
