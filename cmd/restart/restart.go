@@ -108,11 +108,10 @@ func restartRun(cmd *cobra.Command, args []string) error {
 
 	var queue sync.WaitGroup
 
-	queue.Add(2)
+	queue.Add(1)
 
 	go func() {
 		r.do()
-		queue.Done()
 	}()
 
 	go func() {
