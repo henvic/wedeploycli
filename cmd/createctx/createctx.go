@@ -59,12 +59,11 @@ func cwdContextAndCreate(id, directory string) error {
 		panic(eabs)
 	}
 
-	err = os.Chdir(abs)
-	config.Setup()
-
-	if err != nil {
+	if err = os.Chdir(abs); err != nil {
 		return err
 	}
+
+	config.Setup()
 
 	var cerr = createctx.New(id, abs)
 
