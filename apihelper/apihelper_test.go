@@ -274,7 +274,10 @@ func TestDecodeJSON(t *testing.T) {
 
 	r := URL("/posts/1")
 
-	ValidateOrExit(r, r.Get())
+	if err := Validate(r, r.Get()); err != nil {
+		panic(err)
+	}
+
 	err := DecodeJSON(r, &post)
 
 	if err != nil {
@@ -319,7 +322,10 @@ func TestDecodeJSONInvalidContentType(t *testing.T) {
 
 	r := URL("/posts/1")
 
-	ValidateOrExit(r, r.Get())
+	if err := Validate(r, r.Get()); err != nil {
+		panic(err)
+	}
+
 	err := DecodeJSON(r, &post)
 
 	if err != ErrInvalidContentType {
@@ -340,7 +346,10 @@ func TestDecodeJSONFailure(t *testing.T) {
 
 	r := URL("/posts/1/comments")
 
-	ValidateOrExit(r, r.Get())
+	if err := Validate(r, r.Get()); err != nil {
+		panic(err)
+	}
+
 	var err = DecodeJSON(r, &post)
 	var wantErr = "json: cannot unmarshal array into Go value of type apihelper.postMock"
 	var ew = errwrap.Contains(err, wantErr)
@@ -999,41 +1008,15 @@ unsupported protocol scheme "x"
 	}
 }
 
-func TestValidateOrExit(t *testing.T) {
-	var want = `WeDeploy infrastructure error:
-unsupported protocol scheme "x"
-
-* Try: Run with --verbose option to get more log output.
-`
-	haltExitCommand = true
-	bufErrStream.Reset()
-
+func TestValidateNoError(t *testing.T) {
 	r := wedeploy.URL("x://localhost/")
 
-	ValidateOrExit(r, r.Get())
-
-	if bufErrStream.String() != want {
-		t.Errorf("Wanted %v, got %v", want, bufErrStream.String())
+	if err := Validate(r, nil); err != nil {
+		t.Errorf("Unexpected error %v", err)
 	}
-
-	haltExitCommand = false
 }
 
-func TestValidateOrExitNoError(t *testing.T) {
-	haltExitCommand = true
-	bufErrStream.Reset()
-
-	r := wedeploy.URL("x://localhost/")
-	ValidateOrExit(r, nil)
-
-	if bufErrStream.Len() != 0 {
-		t.Errorf("Unexpected content written to err stream: %v", bufErrStream.String())
-	}
-
-	haltExitCommand = false
-}
-
-func TestValidateOrExitUnexpectedResponse(t *testing.T) {
+func TestValidateUnexpectedResponse(t *testing.T) {
 	servertest.Setup()
 	defer servertest.Teardown()
 
@@ -1053,29 +1036,28 @@ func TestValidateOrExitUnexpectedResponse(t *testing.T) {
 	})
 
 	var want = "WeDeploy API error: 403 Forbidden (GET http://www.example.com/foo/bah)\n\t" +
-		"forbidden: The requested operation failed because you do not have access.\n"
-
-	haltExitCommand = true
-	bufErrStream.Reset()
+		"forbidden: The requested operation failed because you do not have access."
 
 	r := URL("/foo/bah")
+	err := Validate(r, r.Get())
 
-	ValidateOrExit(r, r.Get())
-
-	if bufErrStream.String() != want {
-		t.Errorf("Wanted %v, got %v", bufErrStream.String(), want)
+	switch err.(type) {
+	case *APIFault:
+	default:
+		t.Errorf("Unexpected error type %v", reflect.TypeOf(err))
 	}
 
-	haltExitCommand = false
+	if err.Error() != want {
+		t.Errorf("Wanted %v, got %v", err.Error(), want)
+	}
 }
 
-func TestValidateOrExitUnexpectedNonJSONResponse(t *testing.T) {
+func TestValidateUnexpectedNonJSONResponse(t *testing.T) {
 	var defaultVerboseErrStream = verbose.ErrStream
 	var defaultNoColor = color.NoColor
 	color.NoColor = true
 	verbose.Enabled = true
 	verbose.ErrStream = &bufErrStream
-	haltExitCommand = true
 	servertest.Setup()
 
 	servertest.Mux.HandleFunc("/foo/bah", func(w http.ResponseWriter, r *http.Request) {
@@ -1108,11 +1090,10 @@ func TestValidateOrExitUnexpectedNonJSONResponse(t *testing.T) {
 	color.NoColor = defaultNoColor
 	verbose.Enabled = false
 	verbose.ErrStream = defaultVerboseErrStream
-	haltExitCommand = false
 	servertest.Teardown()
 }
 
-func TestValidateOrExitUnexpectedResponseCustom(t *testing.T) {
+func TestValidateUnexpectedResponseCustom(t *testing.T) {
 	servertest.Setup()
 	defer servertest.Teardown()
 
@@ -1122,16 +1103,15 @@ func TestValidateOrExitUnexpectedResponseCustom(t *testing.T) {
 	})
 
 	var want = tdata.FromFile("mocks/unexpected_response_error")
-	haltExitCommand = true
-	bufErrStream.Reset()
 
 	r := URL("/foo/bah")
+	err := Validate(r, r.Get())
 
-	ValidateOrExit(r, r.Get())
-
-	if bufErrStream.String() != want {
-		t.Errorf("Wanted %v, got %v", want, bufErrStream.String())
+	if err == nil {
+		t.Errorf("Expected error, got %v instead", err)
 	}
 
-	haltExitCommand = false
+	if err.Error() != want {
+		t.Errorf("Wanted %v, got %v", want, err.Error())
+	}
 }

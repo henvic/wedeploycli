@@ -121,8 +121,7 @@ var (
 	// ErrExtractingParams is used when query string params fail due to unrecognized type
 	ErrExtractingParams = errors.New("Can only extract query string params from flat objects")
 
-	errStream       io.Writer = os.Stderr
-	haltExitCommand           = false
+	errStream io.Writer = os.Stderr
 )
 
 // Auth a WeDeploy request with the global authentication data
@@ -256,26 +255,6 @@ func handleURLError(ue *url.Error) error {
 	}
 
 	return errwrap.Wrapf(s, ue)
-}
-
-// ValidateOrExit validates a request or exits the process on error
-func ValidateOrExit(request *wedeploy.WeDeploy, err error) {
-	err = Validate(request, err)
-
-	if err != nil {
-		exitError(err)
-	}
-}
-
-func exitError(err error) {
-	fmt.Fprintln(errStream, err)
-	exitCommand(1)
-}
-
-func exitCommand(code int) {
-	if !haltExitCommand {
-		os.Exit(code)
-	}
 }
 
 func reportHTTPError(request *wedeploy.WeDeploy) error {
