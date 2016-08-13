@@ -7,7 +7,7 @@ import (
 
 func TestCorruptConfig(t *testing.T) {
 	var cmd = &Command{
-		Args: []string{"projects", "-v"},
+		Args: []string{"list", "-v"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetBrokenHome()},
 	}
 
