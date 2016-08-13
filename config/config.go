@@ -192,12 +192,7 @@ func (c *Config) read() error {
 }
 
 func parseRemoteSectionName(parsable string) (parsed string, is bool) {
-	var r, err = regexp.Compile(`remote \"(.*)\"`)
-
-	if err != nil {
-		panic(err)
-	}
-
+	var r = regexp.MustCompile(`remote \"(.*)\"`)
 	var matches = r.FindStringSubmatch(parsable)
 
 	if len(matches) == 2 {
