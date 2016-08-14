@@ -18,17 +18,19 @@ import (
 	"github.com/wedeploy/cli/update"
 )
 
-// Execute is the Entry-point for the CLI
-func Execute() {
+func main() {
+	var panickingFlag = true
+	defer panickingListener(&panickingFlag)
 	var cue = checkUpdate()
 
 	if ccmd, err := cmd.RootCmd.ExecuteC(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
+		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(ccmd.Name(), err))
 		commandErrorConditionalUsage(ccmd, err)
 		os.Exit(1)
 	}
 
 	updateFeedback(<-cue)
+	panickingFlag = false
 }
 
 func panickingListener(panicking *bool) {
@@ -71,11 +73,4 @@ func updateFeedback(err error) {
 	default:
 		println("Update notification error:", err.Error())
 	}
-}
-
-func main() {
-	var panickingFlag = true
-	defer panickingListener(&panickingFlag)
-	Execute()
-	panickingFlag = false
 }

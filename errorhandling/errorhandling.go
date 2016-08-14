@@ -17,6 +17,7 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/verbose"
 )
 
 const timeFormat = "Mon Jan _2 15:04:05 MST 2006"
@@ -30,52 +31,91 @@ Time: %s
 %s`
 
 // Handle error to a more friendly format
-func Handle(err error) error {
+func Handle(cmdName string, err error) error {
 	if err == nil {
 		return nil
 	}
 
-	return (&handler{err}).handle()
+	return (&handler{
+		cmdName: cmdName,
+		err:     err,
+	}).handle()
 }
 
 type handler struct {
-	err error
+	cmdName string
+	err     error
 }
 
 type reason struct {
-	url     string
-	regex   *regexp.Regexp
+	filter  reasonFilter
 	reason  string
 	message string
 }
 
-func init() {
-	for i, rm := range friendlyMessages {
-		if rm.url == "" {
-			panic(errors.New("Trying to compile empty regex for friendly messages"))
-		}
+type reasonFilter struct {
+	url      string
+	urlRegex *regexp.Regexp
+}
 
-		friendlyMessages[i].regex = regexp.MustCompile(rm.url)
+// this can't be a map because we don't want to rely on guaranteed order
+// it stops at the first time a reliable message is found
+type messages []reason
+
+func init() {
+	for k := range friendlyMessages {
+		rm := friendlyMessages[k]
+
+		for j, i := range rm {
+			if i.filter.url != "" {
+				friendlyMessages[k][j].filter.urlRegex = regexp.MustCompile(i.filter.url)
+			}
+		}
 	}
 }
 
-func tryGetMessage(uri string, reason string) (string, bool) {
-	for _, fm := range friendlyMessages {
-		var u, err = url.Parse(uri)
-
-		if err != nil {
-			println("error handling failed to parse URL: " + err.Error())
-			return "", false
+func (m messages) tryGetMessage(cmd, uri string, reason string) (string, bool) {
+	for _, fm := range m {
+		if fm.reason != reason {
+			continue
 		}
 
-		var matches = fm.regex.FindStringSubmatch(u.Path)
+		if fm.filter.urlRegex != nil {
+			var u, err = url.Parse(uri)
 
-		if len(matches) != 0 {
+			if err != nil {
+				println("error handling failed to parse URL: " + err.Error())
+				return "", false
+			}
+
+			var matches = fm.filter.urlRegex.FindStringSubmatch(u.Path)
+
+			if len(matches) == 0 {
+				return "", false
+			}
+		}
+
+		if fm.message != "" {
 			return fm.message, true
 		}
+
+		verbose.Debug("Missing friendly message for reason " + reason + " in command " + cmd)
 	}
 
 	return "", false
+}
+
+// tryGetMessage tries to get a human-friendly error message from the
+// command / local (falling back to the global) error message lists.
+// It uses an array to store the errors and stops
+func tryGetMessage(cmd, uri string, reason string) (string, bool) {
+	if _, ok := friendlyMessages[cmd]; ok {
+		if msg, msgFound := friendlyMessages[cmd].tryGetMessage(cmd, uri, reason); msgFound {
+			return msg, msgFound
+		}
+	}
+
+	return friendlyMessages["we"].tryGetMessage(cmd, uri, reason)
 }
 
 func (h *handler) handle() error {
@@ -94,7 +134,7 @@ func (h *handler) handleAPIFaultError() error {
 	var anyFriendly bool
 
 	for _, e := range err.Errors {
-		rtm, ok := tryGetMessage(err.URL, e.Reason)
+		rtm, ok := tryGetMessage(h.cmdName, err.URL, e.Reason)
 		if ok {
 			anyFriendly = true
 			msgs = append(msgs, rtm)
