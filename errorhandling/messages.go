@@ -1,4 +1,11 @@
 package errorhandling
 
-var friendlyMessages = map[string]messages{
+var errorReasonMessage = messages{
+	"documentNotFound": "Document not found.",
+}
+
+var errorReasonCommandMessageOverrides = map[string]messages{
+	"list": messages{
+		"projectNotFound": "Project not found.",
+	},
 }
