@@ -351,7 +351,9 @@ func (dm *DockerMachine) start() (err error) {
 	}
 
 	if !dm.Flags.NoUpdate && !dm.hasCurrentWeDeployImage() {
-		pull()
+		if err := pull(); err != nil {
+			return err
+		}
 	}
 
 	if dm.Container, err = startCmd(args...); err != nil {
@@ -582,27 +584,27 @@ func getDockerPath() string {
 	return path
 }
 
-func pull() {
+func pull() error {
 	fmt.Println("Pulling WeDeploy infrastructure docker image. Hold on.")
 	var docker = exec.Command(bin, "pull", WeDeployImage)
 	docker.Stderr = os.Stderr
 	docker.Stdout = os.Stdout
 
-	pullFeedback(docker.Run())
+	return pullFeedback(docker.Run())
 }
 
-func pullFeedback(err error) {
+func pullFeedback(err error) error {
 	if err == nil {
-		return
+		return nil
 	}
-
-	println("docker pull error:", err.Error())
 
 	// we ignore it for, say, "latest"
 	if defaults.WeDeployImageTag != dockerLatestImageTag {
-		println("Can't continue running with an outdated image.")
-		os.Exit(1)
+		return errwrap.Wrapf("docker pull error: {{err}}\n"+
+			"Can't continue running with an outdated image", err)
 	}
+
+	return errwrap.Wrapf("docker pull error: {{err}}", err)
 }
 
 func startCmd(args ...string) (dockerContainer string, err error) {
