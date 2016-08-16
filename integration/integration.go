@@ -245,7 +245,9 @@ func setupLoginHome() {
 	mock.Username = "foo"
 	mock.Password = "bar"
 	mock.Local = false
-	mock.Save()
+	if err := mock.Save(); err != nil {
+		panic(err)
+	}
 }
 
 func getIntegrationServerPort() int {

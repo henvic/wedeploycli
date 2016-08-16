@@ -12,33 +12,37 @@ import (
 var LoginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Using Basic Authentication with your credentials",
-	Run:   loginRun,
+	RunE:  loginRun,
 }
 
 // LogoutCmd unsets the user credential
 var LogoutCmd = &cobra.Command{
 	Use:   "logout",
 	Short: "Revoke credentials",
-	Run:   logoutRun,
+	RunE:  logoutRun,
 }
 
-func loginRun(cmd *cobra.Command, args []string) {
+func loginRun(cmd *cobra.Command, args []string) error {
 	var username = prompt.Prompt("Username")
 	var password = prompt.Prompt("Password")
 	var g = config.Global
 
 	g.Username = username
 	g.Password = password
-	g.Save()
+	var err = g.Save()
 
-	fmt.Println("Authentication information saved.")
+	if err == nil {
+		fmt.Println("Authentication information saved.")
+	}
+
+	return err
 }
 
-func logoutRun(cmd *cobra.Command, args []string) {
+func logoutRun(cmd *cobra.Command, args []string) error {
 	var g = config.Global
 
 	g.Username = ""
 	g.Password = ""
 	g.Token = ""
-	g.Save()
+	return g.Save()
 }

@@ -76,17 +76,24 @@ func notifierCheck() error {
 	// save, just to be safe (e.g., if the check below breaks)
 	var g = config.Global
 	g.LastUpdateCheck = getCurrentTime()
-	g.Save()
+
+	if err := g.Save(); err != nil {
+		return err
+	}
 
 	var resp, err = check(GetReleaseChannel())
 
 	switch err {
 	case nil:
 		g.NextVersion = resp.ReleaseVersion
-		g.Save()
+		if err := g.Save(); err != nil {
+			return err
+		}
 	case equinox.NotAvailableErr:
 		g.NextVersion = ""
-		g.Save()
+		if err := g.Save(); err != nil {
+			return err
+		}
 		return nil
 	}
 
@@ -149,7 +156,9 @@ func handleUpdateCheckError(err error) error {
 		var g = config.Global
 		g.NextVersion = ""
 		g.LastUpdateCheck = getCurrentTime()
-		g.Save()
+		if err := g.Save(); err != nil {
+			return err
+		}
 		fmt.Println("No updates available.")
 		return nil
 	default:
@@ -190,15 +199,14 @@ func updateApply(channel string, resp *equinox.Response) error {
 		return err
 	}
 
-	updateConfig(channel)
-	return nil
+	return updateConfig(channel)
 }
 
-func updateConfig(channel string) {
+func updateConfig(channel string) error {
 	var g = config.Global
 
 	g.ReleaseChannel = channel
 	g.NextVersion = ""
 	g.LastUpdateCheck = getCurrentTime()
-	g.Save()
+	return g.Save()
 }

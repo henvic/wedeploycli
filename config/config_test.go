@@ -163,7 +163,10 @@ func TestSave(t *testing.T) {
 	Global.Path = tmp.Name()
 
 	Global.Username = "other"
-	Global.Save()
+
+	if err := Global.Save(); err != nil {
+		panic(err)
+	}
 
 	var got = tdata.FromFile(Global.Path)
 	var want = tdata.FromFile("./mocks/we-reference.ini")
@@ -200,7 +203,10 @@ func TestSaveAfterCreation(t *testing.T) {
 	Global.Path = tmp.Name()
 
 	Global.Username = "other"
-	Global.Save()
+
+	if err := Global.Save(); err != nil {
+		panic(err)
+	}
 
 	var got = tdata.FromFile(Global.Path)
 	var want = tdata.FromFile("./mocks/we-reference-homeless.ini")
@@ -249,7 +255,10 @@ func TestRemotes(t *testing.T) {
 
 	// save in a different location
 	Global.Path = tmp.Name()
-	Global.Save()
+
+	if err := Global.Save(); err != nil {
+		panic(err)
+	}
 
 	var got = tdata.FromFile(Global.Path)
 

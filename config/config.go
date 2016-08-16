@@ -111,12 +111,12 @@ func (c *Config) Load() error {
 }
 
 // Save the configuration
-func (c *Config) Save() {
+func (c *Config) Save() error {
 	var cfg = c.file
 	var err = cfg.ReflectFrom(c)
 
 	if err != nil {
-		panic(err)
+		return errwrap.Wrapf("Can't load configuration: {{err}}", err)
 	}
 
 	c.updateRemotes()
@@ -125,8 +125,10 @@ func (c *Config) Save() {
 	err = cfg.SaveToIndent(c.Path, "    ")
 
 	if err != nil {
-		panic(err)
+		return errwrap.Wrapf("Can't save configuration: {{err}}", err)
 	}
+
+	return nil
 }
 
 // Setup the environment

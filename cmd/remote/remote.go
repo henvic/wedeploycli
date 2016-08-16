@@ -83,8 +83,7 @@ func addRun(cmd *cobra.Command, args []string) error {
 	}
 
 	remotes.Set(name, args[1])
-	global.Save()
-	return nil
+	return global.Save()
 }
 
 func renameRun(cmd *cobra.Command, args []string) error {
@@ -109,8 +108,7 @@ func renameRun(cmd *cobra.Command, args []string) error {
 
 	remotes.Set(name, oldRemote.URL, oldRemote.Comment)
 	remotes.Del(old)
-	global.Save()
-	return nil
+	return global.Save()
 }
 
 func removeRun(cmd *cobra.Command, args []string) error {
@@ -127,8 +125,7 @@ func removeRun(cmd *cobra.Command, args []string) error {
 	}
 
 	remotes.Del(name)
-	global.Save()
-	return nil
+	return global.Save()
 }
 
 func getURLRun(cmd *cobra.Command, args []string) error {
@@ -163,8 +160,7 @@ func setURLRun(cmd *cobra.Command, args []string) error {
 	}
 
 	remotes.Set(name, uri)
-	global.Save()
-	return nil
+	return global.Save()
 }
 
 func init() {
