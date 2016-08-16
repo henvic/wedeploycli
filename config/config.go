@@ -11,9 +11,9 @@ import (
 	"gopkg.in/ini.v1"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/context"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/user"
+	"github.com/wedeploy/cli/usercontext"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -90,7 +90,7 @@ var (
 	Global *Config
 
 	// Context stores the environmental context
-	Context *context.Context
+	Context *usercontext.Context
 )
 
 // Load the configuration
@@ -299,7 +299,7 @@ func (c *Config) banner() {
 }
 
 func setupContext() (err error) {
-	Context, err = context.Get()
+	Context, err = usercontext.Get()
 
 	if err != nil {
 		err = errwrap.Wrapf("Fatal context setup failure: {{err}}", err)

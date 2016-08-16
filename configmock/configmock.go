@@ -5,11 +5,11 @@ import (
 	"os"
 
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/context"
+	"github.com/wedeploy/cli/usercontext"
 )
 
 var originalGlobal *config.Config
-var originalContext *context.Context
+var originalContext *usercontext.Context
 
 // Setup the global config mock
 func Setup() {
@@ -35,7 +35,7 @@ func Setup() {
 	global.LastUpdateCheck = "Sat Jun  4 04:47:03 BRT 2016"
 	config.Global = global
 
-	config.Context = &context.Context{
+	config.Context = &usercontext.Context{
 		Username: global.Username,
 		Password: global.Password,
 		Token:    global.Token,

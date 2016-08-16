@@ -1,4 +1,4 @@
-package context
+package usercontext
 
 import (
 	"os"
@@ -80,11 +80,11 @@ func TestGlobalContext(t *testing.T) {
 	setSysRoot("./mocks")
 	chdir(filepath.Join(workingDir, "mocks/list/basic"))
 
-	var context, configurations = Get()
+	var usercontext, configurations = Get()
 	var wantContext = "global"
 
-	if context.Scope != wantContext {
-		t.Errorf("Expected context to be %s, got %s instead", wantContext, context.Scope)
+	if usercontext.Scope != wantContext {
+		t.Errorf("Expected context to be %s, got %s instead", wantContext, usercontext.Scope)
 	}
 
 	if configurations != nil {
@@ -114,18 +114,18 @@ func TestProjectContext(t *testing.T) {
 	var projectDir = filepath.Join(workingDir, "mocks/project")
 	chdir(projectDir)
 
-	var context, err = Get()
+	var usercontext, err = Get()
 
-	if context.Scope != "project" {
-		t.Errorf("Expected context to be project, got %s instead", context.Scope)
+	if usercontext.Scope != "project" {
+		t.Errorf("Expected context to be project, got %s instead", usercontext.Scope)
 	}
 
-	if context.ProjectRoot != projectDir {
-		t.Errorf("Wanted projectDir %s, got %s instead", projectDir, context.ProjectRoot)
+	if usercontext.ProjectRoot != projectDir {
+		t.Errorf("Wanted projectDir %s, got %s instead", projectDir, usercontext.ProjectRoot)
 	}
 
-	if context.ContainerRoot != "" {
-		t.Errorf("Expected container root to be empty, got %s instead", context.ContainerRoot)
+	if usercontext.ContainerRoot != "" {
+		t.Errorf("Expected container root to be empty, got %s instead", usercontext.ContainerRoot)
 	}
 
 	if err != nil {
@@ -142,18 +142,18 @@ func TestContainerContext(t *testing.T) {
 	var containerDir = filepath.Join(projectDir, "container")
 	chdir(containerDir)
 
-	var context, err = Get()
+	var usercontext, err = Get()
 
-	if context.Scope != "container" {
-		t.Errorf("Expected context to be container, got %s instead", context.Scope)
+	if usercontext.Scope != "container" {
+		t.Errorf("Expected context to be container, got %s instead", usercontext.Scope)
 	}
 
-	if context.ProjectRoot != projectDir {
-		t.Errorf("Wanted projectDir %s, got %s instead", projectDir, context.ProjectRoot)
+	if usercontext.ProjectRoot != projectDir {
+		t.Errorf("Wanted projectDir %s, got %s instead", projectDir, usercontext.ProjectRoot)
 	}
 
-	if context.ContainerRoot != containerDir {
-		t.Errorf("Wanted containerDir %s, got %s instead", containerDir, context.ContainerRoot)
+	if usercontext.ContainerRoot != containerDir {
+		t.Errorf("Wanted containerDir %s, got %s instead", containerDir, usercontext.ContainerRoot)
 	}
 
 	if err != nil {
@@ -168,22 +168,22 @@ func TestOrphanContainerContext(t *testing.T) {
 	setSysRoot("./mocks")
 	chdir(filepath.Join(workingDir, "mocks/orphan_container"))
 
-	var context, err = Get()
+	var usercontext, err = Get()
 
-	if context.Scope != "global" {
-		t.Errorf("Expected context to be global, got %s instead", context)
+	if usercontext.Scope != "global" {
+		t.Errorf("Expected context to be global, got %s instead", usercontext)
 	}
 
 	if err != nil {
 		t.Errorf("Expected error to be nil, got %s instead", err)
 	}
 
-	if context.ContainerRoot != "" {
-		t.Errorf("Expected Container root to be empty, got %s instead", context.ContainerRoot)
+	if usercontext.ContainerRoot != "" {
+		t.Errorf("Expected Container root to be empty, got %s instead", usercontext.ContainerRoot)
 	}
 
-	if context.ProjectRoot != "" {
-		t.Errorf("Expected Project root to be empty, got %s instead", context.ProjectRoot)
+	if usercontext.ProjectRoot != "" {
+		t.Errorf("Expected Project root to be empty, got %s instead", usercontext.ProjectRoot)
 	}
 
 	chdir(workingDir)
@@ -194,17 +194,17 @@ func TestInvalidContext(t *testing.T) {
 	setSysRoot("./mocks")
 	chdir(filepath.Join(workingDir, "mocks/schizophrenic"))
 
-	var context, err = Get()
+	var usercontext, err = Get()
 
-	if context.Scope != "project" {
-		t.Errorf("Expected context type to be project, got %s instead", context.Scope)
+	if usercontext.Scope != "project" {
+		t.Errorf("Expected context type to be project, got %s instead", usercontext.Scope)
 	}
 
-	if context.ProjectRoot != filepath.Join(workingDir, "mocks/schizophrenic") {
+	if usercontext.ProjectRoot != filepath.Join(workingDir, "mocks/schizophrenic") {
 		t.Errorf("Unexpected project root")
 	}
 
-	if context.ContainerRoot != "" {
+	if usercontext.ContainerRoot != "" {
 		t.Errorf("Unexpected container root")
 	}
 

@@ -1,6 +1,6 @@
 // +build !windows
 
-package context
+package usercontext
 
 func setupOSRoot() {
 	sysRoot = "/"
