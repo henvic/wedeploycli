@@ -246,7 +246,7 @@ func (dm *DockerMachine) Stop() error {
 	// so it is important to send a SIGTERM signal
 	if dm.waitProcess != nil {
 		if err := dm.waitProcess.Signal(syscall.SIGTERM); err != nil {
-			panic(err)
+			return errwrap.Wrapf("Can't terminate docker wait process: {{err}}", err)
 		}
 	}
 
