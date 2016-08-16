@@ -100,6 +100,10 @@ func Info() {
 		runtime.GOARCH,
 		runtime.Version())
 
+	if defaults.Build != "" {
+		version += "\nbuild:" + defaults.Build
+	}
+
 	fmt.Fprintln(os.Stderr, color.Format(color.FgRed, panicTemplate,
 		version,
 		time.Now().Format(timeFormat), systemInfo()))

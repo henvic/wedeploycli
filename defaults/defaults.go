@@ -4,6 +4,9 @@ var (
 	// Version of the WeDeploy Project CLI tool
 	Version = "master"
 
+	// Build commit
+	Build = ""
+
 	// Endpoint default to the client
 	Endpoint = "https://wedeploy.io"
 

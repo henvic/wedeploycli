@@ -131,6 +131,9 @@ function tag() {
     echo "Changes:"
     git log $LAST_TAG..HEAD --pretty="format:%h %s" --abbrev=10 || true
     echo ""
+    echo "Build commit:"
+    echo $BUILD_COMMIT
+    echo ""
   ) > .git/TAG_EDITMSG
 
   bash -c "$editor .git/TAG_EDITMSG"
@@ -146,7 +149,8 @@ function publish() {
   --channel=$RELEASE_CHANNEL \
   --config=$config \
   -- \
-  -ldflags="-X github.com/wedeploy/cli/defaults.Version=$NEW_RELEASE_VERSION" \
+  -ldflags="-X github.com/wedeploy/cli/defaults.Version=$NEW_RELEASE_VERSION \
+  -X github.com/wedeploy/cli/defaults.Build=$BUILD_COMMIT" \
   github.com/wedeploy/cli
 
   git push origin "v$NEW_RELEASE_VERSION"
@@ -178,6 +182,9 @@ function release() {
   read -p "New version: " NEW_RELEASE_VERSION < /dev/tty;
   # normalize by removing leading v (i.e., v0.0.1)
   NEW_RELEASE_VERSION=`echo $NEW_RELEASE_VERSION | sed 's/^v//'`
+  BUILD_COMMIT=`git rev-list -n 1 HEAD`
+
+  echo "build commit $BUILD_COMMIT"
 
   runTestsOnDrone
   checkPublishedTag

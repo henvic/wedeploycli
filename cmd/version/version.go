@@ -23,4 +23,8 @@ func versionRun(cmd *cobra.Command, args []string) {
 		defaults.Version,
 		os,
 		arch)
+
+	if defaults.Build != "" {
+		fmt.Printf("build %v\n", defaults.Build)
+	}
 }
