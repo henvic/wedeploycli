@@ -417,33 +417,6 @@ func TestEncodeJSONMap(t *testing.T) {
 	}
 }
 
-func TestEncodeJSONMapUnsupportedType(t *testing.T) {
-	var m = map[int]string{
-		3: "bar",
-	}
-
-	var foo, err = EncodeJSON(m)
-
-	var wantErr = "json: unsupported type: map[int]string"
-
-	if err == nil || err.Error() != wantErr {
-		t.Errorf("Wanted err to be %v, got %v instead", wantErr, wantErr)
-	}
-
-	var b bytes.Buffer
-	_, err = foo.WriteTo(&b)
-
-	if err != nil {
-		panic(err)
-	}
-
-	var got = b.String()
-
-	if len(got) != 0 {
-		t.Errorf("Wanted unsupported JSON to have length 0, got %v instead", len(got))
-	}
-}
-
 func TestParamsFromJSON(t *testing.T) {
 	type musicianMock struct {
 		ID       int64   `json:"id"`
@@ -507,23 +480,6 @@ func TestParamsFromJSONFailure(t *testing.T) {
 
 		if r != ErrExtractingParams {
 			t.Errorf("Expected panic with %v error, got %v instead", ErrExtractingParams, r)
-		}
-	}()
-
-	ParamsFromJSON(req, invalid)
-}
-
-func TestParamsFromJSONInvalidSstructure(t *testing.T) {
-	var invalid = map[int]string{
-		10: "foo",
-	}
-	var req = wedeploy.URL("htt://example.com/")
-
-	defer func() {
-		r := recover()
-
-		if r == nil {
-			t.Errorf("Expected panic, got nil instead")
 		}
 	}()
 
@@ -967,21 +923,6 @@ func TestSetBody(t *testing.T) {
 	}
 
 	servertest.Teardown()
-}
-
-func TestSetBodyUnsupportedType(t *testing.T) {
-	var request = URL("/foo")
-
-	var m = map[int]string{
-		3: "bar",
-	}
-
-	var err = SetBody(request, m)
-	var wantErr = "json: unsupported type: map[int]string"
-
-	if err == nil || err.Error() != wantErr {
-		t.Errorf("Wanted err to be %v, got %v instead", wantErr, wantErr)
-	}
 }
 
 func TestURL(t *testing.T) {
