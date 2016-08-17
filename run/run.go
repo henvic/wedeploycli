@@ -311,7 +311,7 @@ func (dm *DockerMachine) waitReadyState() {
 
 		if err == nil {
 			dm.tickerd <- true
-			fmt.Fprintf(dm.livew, "WeDeploy is ready!\n")
+			fmt.Fprintf(dm.livew, "WeDeploy is ready! %vs\n", dm.getStartupTime())
 			dm.ready()
 			return
 		}
@@ -418,9 +418,8 @@ func (dm *DockerMachine) checkConnectionCounter(ticker *time.Ticker) {
 
 			var dots = strings.Repeat(".", t.Second()%3+1)
 
-			fmt.Fprintf(dm.livew,
-				"%c Starting WeDeploy%s %ds\n", p, dots,
-				int(-dm.upTime.Sub(t).Seconds()))
+			fmt.Fprintf(dm.livew, "%c Starting WeDeploy%s %ds\n",
+				p, dots, dm.getStartupTime())
 
 			if err := dm.livew.Flush(); err != nil {
 				fmt.Fprintf(os.Stderr, "%v\n", err)
@@ -433,6 +432,10 @@ func (dm *DockerMachine) checkConnectionCounter(ticker *time.Ticker) {
 	}
 }
 
+func (dm *DockerMachine) getStartupTime() int {
+	return int(-dm.upTime.Sub(time.Now()).Seconds())
+}
+
 func (dm *DockerMachine) prepare() {
 	dm.testAlreadyRunning()
 	dm.livew = uilive.New()
@@ -442,17 +445,21 @@ func (dm *DockerMachine) prepare() {
 }
 
 func (dm *DockerMachine) ready() {
-	fmt.Print("You can now test your apps locally.")
+	fmt.Fprintf(dm.livew, "You can now test your apps locally.")
 
 	if !dm.Flags.ViewMode && !dm.Flags.Detach {
-		fmt.Print(" Press Ctrl+C to shut it down when you are done.")
+		fmt.Fprintf(dm.livew, " Press Ctrl+C to shut it down when you are done.")
 	}
 
 	if !dm.Flags.ViewMode && dm.Flags.Detach {
-		fmt.Print("\nRunning on background. \"we stop\" stops the infrastructure.")
+		fmt.Fprintf(dm.livew, "\nRunning on background. \"we stop\" stops the infrastructure.")
 	}
 
-	fmt.Println("")
+	fmt.Fprintf(dm.livew, "\n")
+
+	if err := dm.livew.Flush(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error flushing startup ready message: %v\n", err)
+	}
 }
 
 // LoadDockerInfo loads the docker info on the DockerMachine object
