@@ -192,10 +192,6 @@ func normalizeRemote(address string) string {
 }
 
 func persistentPreRun(cmd *cobra.Command, args []string) error {
-	if err := config.Setup(); err != nil {
-		return err
-	}
-
 	if config.Global.NoColor {
 		color.NoColor = true
 	}

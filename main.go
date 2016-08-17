@@ -14,6 +14,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd"
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/update"
 )
@@ -22,6 +23,11 @@ func main() {
 	var panickingFlag = true
 	defer panickingListener(&panickingFlag)
 	var cue = checkUpdate()
+
+	if err := config.Setup(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle("we", err))
+		os.Exit(1)
+	}
 
 	if ccmd, err := cmd.RootCmd.ExecuteC(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(ccmd.Name(), err))
