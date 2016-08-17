@@ -1,0 +1,30 @@
+WeDeploy Command Line Interface
+Version master
+Copyright 2016 Liferay, Inc.
+http://wedeploy.com
+
+Usage:
+  we [flags]
+  we [command]
+
+Available Commands:
+  build       Build container(s) (current or all containers of a project)
+  create      Creates a project or container
+  link        Links the given project or container locally
+  list        List projects and containers running on WeDeploy
+  login       Using Basic Authentication with your credentials
+  logout      Revoke credentials
+  logs        Logs running on WeDeploy
+  remote      Configure WeDeploy remotes
+  restart     Restart project or container running on WeDeploy
+  run         Run WeDeploy infrastructure for development locally
+  unlink      Unlinks the given project or container locally
+  update      Updates this tool to the latest version
+  version     Print version information and quit
+
+Flags:
+      --no-color        Disable color output
+      --remote string   Remote to use
+  -v, --verbose         Verbose output
+
+Use "we [command] --help" for more information about a command.
