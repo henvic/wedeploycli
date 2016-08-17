@@ -221,6 +221,8 @@ func newProject(id, directory string) error {
 	if p.ID == "" {
 		fmt.Println("Creating project:")
 		p.ID = prompt.Prompt("ID")
+	} else {
+		fmt.Println("Creating project: " + p.ID)
 	}
 
 	if p.ID == "" {
