@@ -14,6 +14,7 @@ import (
 	"github.com/henvic/uilive"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/projects"
@@ -169,7 +170,8 @@ func (l *List) printProject(p projects.Project) {
 	word := fmt.Sprintf("Project %v ", p.Name)
 
 	switch {
-	case p.CustomDomain == "":
+	// TestLink: custom domain should not be shown for local
+	case p.CustomDomain == "" || config.Context.Remote == "":
 		word += fmt.Sprintf("%v", getProjectDomain(p.ID))
 	case !l.Detailed:
 		word += fmt.Sprintf("%v ", p.CustomDomain)
