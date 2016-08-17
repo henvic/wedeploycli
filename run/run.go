@@ -608,7 +608,6 @@ func pullFeedback(err error) error {
 }
 
 func startCmd(args ...string) (dockerContainer string, err error) {
-	verbose.Debug("Starting WeDeploy")
 	var docker = exec.Command(bin, args...)
 	var dockerContainerBuf bytes.Buffer
 	docker.Stderr = os.Stderr
