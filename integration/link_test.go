@@ -44,3 +44,23 @@ func TestLink(t *testing.T) {
 	cmd.Run()
 	e.Assert(t, cmd)
 }
+
+func TestLinkRemoteError(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	var cmd = &Command{
+		Args: []string{"link", "--remote=foo"},
+		Env: []string{
+			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir: "mocks/home/bucket/project/container",
+	}
+
+	var e = &Expect{
+		ExitCode: 1,
+		Stderr:   "Error: can not use command with a remote",
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+}
