@@ -160,6 +160,18 @@ func init() {
 	}
 }
 
+func setEndpoint() error {
+	if isLocalCommandOnly() && remote != "" {
+		return errors.New("can not use command with a remote")
+	}
+
+	if remote == "" {
+		return setLocal()
+	}
+
+	return setRemote()
+}
+
 func setLocal() error {
 	config.Context.Token = apihelper.DefaultToken
 	config.Context.Endpoint = fmt.Sprintf("http://localhost:%d/", config.Global.LocalPort)
@@ -196,19 +208,11 @@ func persistentPreRun(cmd *cobra.Command, args []string) error {
 		color.NoColor = true
 	}
 
-	if err := cmdSetLocalFlag(); err != nil {
-		return err
-	}
-
 	if err := verifyCmdReqAuth(cmd.CommandPath()); err != nil {
 		return err
 	}
 
-	if remote == "" {
-		return setLocal()
-	}
-
-	return setRemote()
+	return setEndpoint()
 }
 
 func run(cmd *cobra.Command, args []string) {
@@ -238,20 +242,15 @@ func isCmdWhitelistNoAuth(commandPath string) bool {
 	return false
 }
 
-func cmdSetLocalFlag() error {
+func isLocalCommandOnly() bool {
 	var args = os.Args
 
 	if len(args) < 2 {
-		return nil
+		return false
 	}
 
 	_, h := LocalOnlyCommands[args[1]]
-
-	if h {
-		return setLocal()
-	}
-
-	return nil
+	return h
 }
 
 func verifyCmdReqAuth(commandPath string) error {
