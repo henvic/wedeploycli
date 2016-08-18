@@ -103,24 +103,6 @@ func Restart(id string) error {
 	return apihelper.Validate(req, req.Post())
 }
 
-// SetAuth sets a project authentication permissions
-func SetAuth(id, filename string) error {
-	var file, err = os.Open(filename)
-
-	if err != nil {
-		return err
-	}
-
-	verbose.Debug("Setting project authentication using:")
-	verbose.Debug(filename)
-
-	var req = apihelper.URL("/projects/" + id + "/auth")
-	apihelper.Auth(req)
-	req.Body(file)
-
-	return apihelper.Validate(req, req.Put())
-}
-
 // Unlink project
 func Unlink(projectID string) error {
 	var req = apihelper.URL("/deploy", projectID)

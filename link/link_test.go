@@ -118,9 +118,6 @@ func TestAllAuth(t *testing.T) {
 	servertest.Mux.HandleFunc("/deploy",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	servertest.Mux.HandleFunc("/projects/project/auth",
-		func(w http.ResponseWriter, r *http.Request) {})
-
 	var m Machine
 	var err = m.Setup("mocks/project-with-auth", []string{"mycontainer"})
 

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
@@ -172,51 +171,6 @@ func TestRestart(t *testing.T) {
 	}
 
 	configmock.Teardown()
-}
-
-func TestSetAuth(t *testing.T) {
-	defer servertest.Teardown()
-	servertest.Setup()
-	configmock.Setup()
-
-	servertest.Mux.HandleFunc("/projects/little/auth",
-		func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "PUT" {
-				t.Errorf("Unexpected method %v", r.Method)
-			}
-
-			got, err := ioutil.ReadAll(r.Body)
-
-			if err != nil {
-				t.Error(err)
-			}
-
-			want, err := ioutil.ReadFile("mocks/little/auth.json")
-
-			if err != nil {
-				panic(err)
-			}
-
-			if !reflect.DeepEqual(want, got) {
-				t.Errorf("Received object isn't sent object.")
-			}
-		})
-
-	err := SetAuth("little", "mocks/little/auth.json")
-
-	if err != nil {
-		t.Errorf("Wanted err to be nil, got %v instead", err)
-	}
-
-	configmock.Teardown()
-}
-
-func TestSetAuthFailureNotFound(t *testing.T) {
-	var err = SetAuth("foo", fmt.Sprintf("foo-%d.json", rand.Int()))
-
-	if !os.IsNotExist(err) {
-		t.Errorf("Wanted err to be due to file not found, got %v instead", err)
-	}
 }
 
 func TestUnlink(t *testing.T) {
