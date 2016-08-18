@@ -58,6 +58,55 @@ func TestCreateFailureNotFound(t *testing.T) {
 	}
 }
 
+func TestNew(t *testing.T) {
+	servertest.Setup()
+	configmock.Setup()
+
+	servertest.Mux.HandleFunc("/projects",
+		tdata.ServerJSONFileHandler("mocks/new_response.json"))
+
+	var project, err = New()
+
+	if project.ID != "tesla36" {
+		t.Errorf("Wanted project ID to be tesla36, got %v instead", project.ID)
+	}
+
+	if project.Name != "Evil Tesla" {
+		t.Errorf("Wanted project name to be Evil Tesla, got %v instead", project.Name)
+	}
+
+	if project.Health != "on" {
+		t.Errorf("Wanted project Health to be on, got %v instead", project.Health)
+	}
+
+	if err != nil {
+		t.Errorf("Wanted error to be nil, got %v instead", err)
+	}
+
+	servertest.Teardown()
+	configmock.Teardown()
+}
+
+func TestNewError(t *testing.T) {
+	servertest.Setup()
+	configmock.Setup()
+
+	var project, err = New()
+
+	if project != nil {
+		t.Errorf("Wanted project to be nil, got %v instead", project)
+	}
+
+	switch err.(type) {
+	case *apihelper.APIFault:
+	default:
+		t.Errorf("Wanted APIFault error, got nil instead", err)
+	}
+
+	servertest.Teardown()
+	configmock.Teardown()
+}
+
 func TestGet(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()

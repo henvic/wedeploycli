@@ -56,6 +56,19 @@ func Create(filename string) error {
 	return apihelper.Validate(req, req.Post())
 }
 
+// New project with id created by the backend
+func New() (project *Project, err error) {
+	var req = apihelper.URL("/projects")
+	apihelper.Auth(req)
+
+	if err := apihelper.Validate(req, req.Post()); err != nil {
+		return project, err
+	}
+
+	err = apihelper.DecodeJSON(req, &project)
+	return project, err
+}
+
 // Get project by ID
 func Get(id string) (project Project, err error) {
 	err = apihelper.AuthGet("/projects/"+id, &project)
