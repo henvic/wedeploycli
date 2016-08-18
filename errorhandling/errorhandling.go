@@ -27,21 +27,21 @@ https://github.com/wedeploy/cli/issues/
 Time: %s
 %s`
 
+var CommandName string
+
 // Handle error to a more friendly format
-func Handle(cmdName string, err error) error {
+func Handle(err error) error {
 	if err == nil {
 		return nil
 	}
 
 	return (&handler{
-		cmdName: cmdName,
-		err:     err,
+		err: err,
 	}).handle()
 }
 
 type handler struct {
-	cmdName string
-	err     error
+	err error
 }
 
 type messages map[string]string
@@ -75,7 +75,7 @@ func (h *handler) handleAPIFaultError() error {
 	var anyFriendly bool
 
 	for _, e := range err.Errors {
-		rtm, ok := tryGetMessage(h.cmdName, e.Reason)
+		rtm, ok := tryGetMessage(CommandName, e.Reason)
 		if ok {
 			anyFriendly = true
 			msgs = append(msgs, rtm)

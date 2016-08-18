@@ -25,12 +25,13 @@ func main() {
 	var cue = checkUpdate()
 
 	if err := config.Setup(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle("we", err))
+		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
 		os.Exit(1)
 	}
 
 	if ccmd, err := cmd.RootCmd.ExecuteC(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(ccmd.Name(), err))
+		errorhandling.CommandName = ccmd.Name()
+		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
 		commandErrorConditionalUsage(ccmd, err)
 		os.Exit(1)
 	}

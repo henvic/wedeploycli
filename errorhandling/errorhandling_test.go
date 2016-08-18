@@ -13,14 +13,34 @@ var (
 )
 
 func TestHandleNil(t *testing.T) {
-	if got := Handle("create", nil); got != nil {
+	CommandName = ""
+	if got := Handle(nil); got != nil {
+		t.Errorf("Expected nil for handling nil error, got %v instead", got)
+	}
+}
+
+func TestHandleNilOnCommand(t *testing.T) {
+	CommandName = "create"
+	if got := Handle(nil); got != nil {
 		t.Errorf("Expected nil for handling nil error, got %v instead", got)
 	}
 }
 
 func TestHandleGenericErrorNotHumanized(t *testing.T) {
+	CommandName = ""
 	var err = errors.New("my error")
-	var handle = Handle("foo", err)
+	var handle = Handle(err)
+	var want = "my error"
+
+	if handle.Error() != want {
+		t.Errorf("Error message %v differ from expected value %v", handle.Error(), want)
+	}
+}
+
+func TestHandleGenericErrorNotHumanizedOnCommandUnknown(t *testing.T) {
+	CommandName = "foo"
+	var err = errors.New("my error")
+	var handle = Handle(err)
 	var want = "my error"
 
 	if handle.Error() != want {
@@ -29,6 +49,7 @@ func TestHandleGenericErrorNotHumanized(t *testing.T) {
 }
 
 func TestHandleAPIFaultGenericErrorMessageNotFound(t *testing.T) {
+	CommandName = "payment"
 	defer restoreOriginalErrorMessages()
 
 	errorReasonMessage = messages{}
@@ -52,7 +73,7 @@ func TestHandleAPIFaultGenericErrorMessageNotFound(t *testing.T) {
 		},
 	}
 
-	var got = Handle("payment", err)
+	var got = Handle(err)
 
 	var want = "WeDeploy API error: 404 Not Found (GET http://example.com/)\n" +
 		"\tDocument not found: documentNotFound"
@@ -63,6 +84,7 @@ func TestHandleAPIFaultGenericErrorMessageNotFound(t *testing.T) {
 }
 
 func TestHandleAPIFaultGenericErrorFound(t *testing.T) {
+	CommandName = "payment"
 	defer restoreOriginalErrorMessages()
 
 	errorReasonMessage = messages{
@@ -89,7 +111,7 @@ func TestHandleAPIFaultGenericErrorFound(t *testing.T) {
 		},
 	}
 
-	var got = Handle("payment", err)
+	var got = Handle(err)
 
 	var want = "Credential not valid for payment"
 
@@ -99,6 +121,7 @@ func TestHandleAPIFaultGenericErrorFound(t *testing.T) {
 }
 
 func TestHandleAPIFaultCommandOverridesErrorMessage(t *testing.T) {
+	CommandName = "payment"
 	defer restoreOriginalErrorMessages()
 
 	errorReasonMessage = messages{
@@ -129,7 +152,7 @@ func TestHandleAPIFaultCommandOverridesErrorMessage(t *testing.T) {
 		},
 	}
 
-	var got = Handle("payment", err)
+	var got = Handle(err)
 
 	var want = "Payment not found"
 

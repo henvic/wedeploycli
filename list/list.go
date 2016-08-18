@@ -120,9 +120,9 @@ func (l *List) handleRequestError(err error) {
 
 	l.retry++
 	if l.watch {
-		l.printf(color.Format(color.FgHiRed, "%v #%d\n", errorhandling.Handle("list", err), l.retry))
+		l.printf(color.Format(color.FgHiRed, "%v #%d\n", errorhandling.Handle(err), l.retry))
 	} else {
-		fmt.Fprintf(os.Stderr, "%v\n", errorhandling.Handle("list", err))
+		fmt.Fprintf(os.Stderr, "%v\n", errorhandling.Handle(err))
 		os.Exit(1)
 	}
 }
