@@ -23,6 +23,7 @@ func main() {
 	var panickingFlag = true
 	defer panickingListener(&panickingFlag)
 	var cue = checkUpdate()
+	setErrorHandlingCommandName()
 
 	if err := config.Setup(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
@@ -30,7 +31,6 @@ func main() {
 	}
 
 	if ccmd, err := cmd.RootCmd.ExecuteC(); err != nil {
-		errorhandling.CommandName = ccmd.Name()
 		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
 		commandErrorConditionalUsage(ccmd, err)
 		os.Exit(1)
@@ -38,6 +38,16 @@ func main() {
 
 	updateFeedback(<-cue)
 	panickingFlag = false
+}
+
+func setErrorHandlingCommandName() {
+	ccmd, _, err := cmd.RootCmd.Find(os.Args[1:])
+
+	if err != nil {
+		return
+	}
+
+	errorhandling.CommandName = ccmd.Name()
 }
 
 func panickingListener(panicking *bool) {
