@@ -29,7 +29,7 @@ func TestMain(m *testing.M) {
 	os.Exit(ec)
 }
 
-func TestCreate(t *testing.T) {
+func TestCreateFromJSON(t *testing.T) {
 	defer servertest.Teardown()
 	servertest.Setup()
 	configmock.Setup()
@@ -41,7 +41,7 @@ func TestCreate(t *testing.T) {
 			}
 		})
 
-	err := Create("mocks/little/project.json")
+	err := CreateFromJSON("mocks/little/project.json")
 
 	if err != nil {
 		t.Errorf("Wanted err to be nil, got %v instead", err)
@@ -50,22 +50,22 @@ func TestCreate(t *testing.T) {
 	configmock.Teardown()
 }
 
-func TestCreateFailureNotFound(t *testing.T) {
-	var err = Create(fmt.Sprintf("foo-%d.json", rand.Int()))
+func TestCreateFromJSONFailureNotFound(t *testing.T) {
+	var err = CreateFromJSON(fmt.Sprintf("foo-%d.json", rand.Int()))
 
 	if !os.IsNotExist(err) {
 		t.Errorf("Wanted err to be due to file not found, got %v instead", err)
 	}
 }
 
-func TestNew(t *testing.T) {
+func TestCreate(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects",
 		tdata.ServerJSONFileHandler("mocks/new_response.json"))
 
-	var project, err = New()
+	var project, err = Create("")
 
 	if project.ID != "tesla36" {
 		t.Errorf("Wanted project ID to be tesla36, got %v instead", project.ID)
@@ -87,11 +87,40 @@ func TestNew(t *testing.T) {
 	configmock.Teardown()
 }
 
-func TestNewError(t *testing.T) {
+func TestCreateNamed(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	var project, err = New()
+	servertest.Mux.HandleFunc("/projects",
+		tdata.ServerJSONFileHandler("mocks/new_named_response.json"))
+
+	var project, err = Create("banach30")
+
+	if project.ID != "banach30" {
+		t.Errorf("Wanted project ID to be banach30, got %v instead", project.ID)
+	}
+
+	if project.Name != "Evil Banach" {
+		t.Errorf("Wanted project name to be Evil Banach, got %v instead", project.Name)
+	}
+
+	if project.Health != "on" {
+		t.Errorf("Wanted project Health to be on, got %v instead", project.Health)
+	}
+
+	if err != nil {
+		t.Errorf("Wanted error to be nil, got %v instead", err)
+	}
+
+	servertest.Teardown()
+	configmock.Teardown()
+}
+
+func TestCreateError(t *testing.T) {
+	servertest.Setup()
+	configmock.Setup()
+
+	var project, err = Create("")
 
 	if project != nil {
 		t.Errorf("Wanted project to be nil, got %v instead", project)
@@ -341,6 +370,24 @@ func TestValidateInvalidError(t *testing.T) {
 	configmock.Teardown()
 }
 
+func TestValidateOrCreate(t *testing.T) {
+	servertest.Setup()
+	configmock.Setup()
+
+	servertest.Mux.HandleFunc("/projects",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, tdata.FromFile("mocks/new_response.json"))
+		})
+
+	if fid, err := ValidateOrCreate("tesla36"); fid != "tesla36" || err != nil {
+		t.Errorf("Wanted (%v, %v), got (%v, %v) instead", "tesla36", nil, fid, err)
+	}
+
+	servertest.Teardown()
+	configmock.Teardown()
+}
+
 func TestValidateOrCreateAlreadyExists(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
@@ -352,7 +399,40 @@ func TestValidateOrCreateAlreadyExists(t *testing.T) {
 			fmt.Fprintf(w, tdata.FromFile("mocks/create_already_exists_response.json"))
 		})
 
-	if ok, err := ValidateOrCreate("mocks/little/project.json"); ok != false || err != nil {
+	if fid, err := ValidateOrCreate("little"); fid != "little" || err != nil {
+		t.Errorf("Wanted (%v, %v), got (%v, %v) instead", "", nil, fid, err)
+	}
+
+	servertest.Teardown()
+	configmock.Teardown()
+}
+
+func TestValidateOrCreateInvalidError(t *testing.T) {
+	servertest.Setup()
+	configmock.Setup()
+
+	var _, err = ValidateOrCreate("little")
+
+	if err == nil {
+		t.Errorf("Expected error, got %v instead", err)
+	}
+
+	servertest.Teardown()
+	configmock.Teardown()
+}
+
+func TestValidateOrCreateFromJSONAlreadyExists(t *testing.T) {
+	servertest.Setup()
+	configmock.Setup()
+
+	servertest.Mux.HandleFunc("/projects",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			w.WriteHeader(400)
+			fmt.Fprintf(w, tdata.FromFile("mocks/create_already_exists_response.json"))
+		})
+
+	if ok, err := ValidateOrCreateFromJSON("mocks/little/project.json"); ok != false || err != nil {
 		t.Errorf("Wanted (%v, %v), got (%v, %v) instead", false, nil, ok, err)
 	}
 
@@ -360,7 +440,7 @@ func TestValidateOrCreateAlreadyExists(t *testing.T) {
 	configmock.Teardown()
 }
 
-func TestValidateOrCreateNotExists(t *testing.T) {
+func TestValidateOrCreateFromJSONNotExists(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 	bufOutStream.Reset()
@@ -372,7 +452,7 @@ func TestValidateOrCreateNotExists(t *testing.T) {
 			}
 		})
 
-	var ok, err = ValidateOrCreate("mocks/little/project.json")
+	var ok, err = ValidateOrCreateFromJSON("mocks/little/project.json")
 
 	if ok != true || err != nil {
 		t.Errorf("Unexpected error on Install: (%v, %v)", ok, err)
@@ -382,11 +462,11 @@ func TestValidateOrCreateNotExists(t *testing.T) {
 	configmock.Teardown()
 }
 
-func TestValidateOrCreateInvalidError(t *testing.T) {
+func TestValidateOrCreateFromJSONInvalidError(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	var _, err = ValidateOrCreate("mocks/little/project.json")
+	var _, err = ValidateOrCreateFromJSON("mocks/little/project.json")
 
 	if err == nil {
 		t.Errorf("Expected error, got %v instead", err)

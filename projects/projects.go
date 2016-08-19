@@ -38,8 +38,8 @@ var (
 	outStream io.Writer = os.Stdout
 )
 
-// Create a project on WeDeploy
-func Create(filename string) error {
+// CreateFromJSON a project on WeDeploy
+func CreateFromJSON(filename string) error {
 	var file, err = os.Open(filename)
 
 	if err != nil {
@@ -56,10 +56,15 @@ func Create(filename string) error {
 	return apihelper.Validate(req, req.Post())
 }
 
-// New project with id created by the backend
-func New() (project *Project, err error) {
+// Create project. If id is empty, a random one is created by the backend
+func Create(id string) (project *Project, err error) {
 	var req = apihelper.URL("/projects")
+
 	apihelper.Auth(req)
+
+	if id != "" {
+		req.Param("id", id)
+	}
 
 	if err := apihelper.Validate(req, req.Post()); err != nil {
 		return project, err
@@ -145,9 +150,24 @@ func Validate(projectID string) (err error) {
 }
 
 // ValidateOrCreate project
-func ValidateOrCreate(filename string) (created bool, err error) {
-	err = Create(filename)
+func ValidateOrCreate(id string) (fid string, err error) {
+	project, err := Create(id)
 
+	if err == nil {
+		id = project.ID
+		return id, nil
+	}
+
+	_, err = validateOrCreate(err)
+	return id, err
+}
+
+// ValidateOrCreateFromJSON project
+func ValidateOrCreateFromJSON(filename string) (created bool, err error) {
+	return validateOrCreate(CreateFromJSON(filename))
+}
+
+func validateOrCreate(err error) (created bool, e error) {
 	switch err.(type) {
 	case nil:
 		return true, err

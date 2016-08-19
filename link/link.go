@@ -3,23 +3,19 @@ package link
 import (
 	"fmt"
 	"io"
-	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
 
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/list"
-	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/verbose"
 )
 
 // Machine structure
 type Machine struct {
-	Project     *projects.Project
+	ProjectID   string
 	Links       []*Link
-	ProjectPath string
 	Errors      *Errors
 	FErrStream  io.Writer
 	ErrorsMutex sync.Mutex
@@ -32,7 +28,6 @@ type Machine struct {
 
 // Link holds the information of container to be linked
 type Link struct {
-	Project       *projects.Project
 	Container     *containers.Container
 	ContainerPath string
 }
@@ -48,15 +43,11 @@ type Errors struct {
 	List []ContainerError
 }
 
-var outStream io.Writer = os.Stdout
-
 // New Container link
-func New(project *projects.Project, dir string) (*Link, error) {
+func New(dir string) (*Link, error) {
 	var l = &Link{
 		ContainerPath: dir,
 	}
-
-	l.Project = project
 
 	c, err := containers.Read(l.ContainerPath)
 	l.Container = c
@@ -81,32 +72,16 @@ func (le Errors) Error() string {
 		strings.Join(msgs, "\n"))
 }
 
-// Setup prepares a project / container for linking
-func (m *Machine) Setup(projectPath string, list []string) error {
+func (m *Machine) Setup(list []string) error {
 	m.Errors = &Errors{
 		List: []ContainerError{},
-	}
-
-	project, err := projects.Read(projectPath)
-
-	if err != nil {
-		return err
-	}
-
-	m.Project = project
-	m.ProjectPath = projectPath
-
-	err = m.createProject()
-
-	if err != nil {
-		return err
 	}
 
 	for _, dir := range list {
 		m.mount(dir)
 	}
 
-	return err
+	return nil
 }
 
 // Watch changes due to linking
@@ -118,7 +93,7 @@ func (m *Machine) Watch() {
 	}
 
 	m.list = list.New(list.Filter{
-		Project:    m.Project.ID,
+		Project:    m.ProjectID,
 		Containers: cs,
 	})
 
@@ -143,17 +118,6 @@ func (m *Machine) linkedContainersUp() bool {
 	}
 
 	return true
-}
-
-func (m *Machine) createProject() error {
-	created, err := projects.ValidateOrCreate(
-		filepath.Join(m.ProjectPath, "project.json"))
-
-	if created {
-		fmt.Fprintf(outStream, "New project %v created.\n", m.Project.ID)
-	}
-
-	return err
 }
 
 // Run links the containers of the list input
@@ -182,7 +146,7 @@ func (m *Machine) doLink(cl *Link) {
 
 func (m *Machine) link(l *Link) error {
 	m.dirMutex.Lock()
-	var err = containers.Link(m.Project.ID,
+	var err = containers.Link(m.ProjectID,
 		l.ContainerPath,
 		l.Container)
 	m.dirMutex.Unlock()
@@ -199,14 +163,14 @@ func (m *Machine) logError(dir string, err error) {
 	})
 
 	if m.FErrStream != nil {
-		fmt.Fprintf(m.FErrStream, "%v/ dir error: %v\n", dir, err)
+		fmt.Fprintf(m.FErrStream, "%v error: %v\n", dir, err)
 	}
 
 	m.ErrorsMutex.Unlock()
 }
 
 func (m *Machine) mount(dir string) {
-	var l, err = New(m.Project, filepath.Join(m.ProjectPath, dir))
+	var l, err = New(dir)
 
 	if err != nil {
 		m.logError(dir, err)
