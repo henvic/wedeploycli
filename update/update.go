@@ -15,7 +15,7 @@ import (
 
 const lucFormat = "Mon Jan _2 15:04:05 MST 2006"
 
-var cacheNonAvailabilityDays = 4
+var cacheNonAvailabilityDays = 1
 
 // AppID is Equinox's app ID for this tool
 var AppID = "app_g12mjgk2k9D"
