@@ -70,6 +70,7 @@ func (le Errors) Error() string {
 	return fmt.Sprintf("Linking errors\n%v", strings.Join(msgs, "\n"))
 }
 
+// Setup the linking machine
 func (m *Machine) Setup(list []string) error {
 	m.Errors = &Errors{
 		List: []ContainerError{},
