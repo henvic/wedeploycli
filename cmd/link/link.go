@@ -48,7 +48,7 @@ func getContainersDirectoriesFromScope() ([]string, error) {
 		_, err = containers.Read(wd)
 
 		if err != nil {
-			err = errwrap.Wrapf("Can't find projectless container: {{err}}", err)
+			err = errwrap.Wrapf("Can't find project-orphan container: {{err}}", err)
 		}
 
 		return []string{wd}, err
@@ -111,8 +111,7 @@ func linkRun(cmd *cobra.Command, args []string) error {
 
 func linkMachineSetup(projectID string, csDirs []string) error {
 	var m = &link.Machine{
-		ProjectID:  projectID,
-		FErrStream: os.Stderr,
+		ProjectID: projectID,
 	}
 
 	if err := m.Setup(csDirs); err != nil {

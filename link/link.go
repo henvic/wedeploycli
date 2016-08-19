@@ -2,7 +2,6 @@ package link
 
 import (
 	"fmt"
-	"io"
 	"runtime"
 	"strings"
 	"sync"
@@ -18,7 +17,6 @@ type Machine struct {
 	ProjectID   string
 	Links       []*Link
 	Errors      *Errors
-	FErrStream  io.Writer
 	ErrorsMutex sync.Mutex
 	dirMutex    sync.Mutex
 	queue       sync.WaitGroup
@@ -69,8 +67,7 @@ func (le Errors) Error() string {
 		msgs = append(msgs, fmt.Sprintf("%v: %v", e.ContainerPath, e.Error.Error()))
 	}
 
-	return fmt.Sprintf("List of errors (format is container path: error)\n%v",
-		strings.Join(msgs, "\n"))
+	return fmt.Sprintf("Linking errors\n%v", strings.Join(msgs, "\n"))
 }
 
 func (m *Machine) Setup(list []string) error {
@@ -99,23 +96,27 @@ func (m *Machine) Watch() {
 	})
 
 	m.Watcher = list.NewWatcher(m.list)
-	m.Watcher.StopCondition = m.linkedContainersUp
+	m.Watcher.StopCondition = m.isDone
 	m.Watcher.Start()
 }
 
-func (m *Machine) linkedContainersUp() bool {
-	if !m.end || len(m.list.Projects) == 0 {
+func (m *Machine) isDone() bool {
+	if !m.end {
 		return false
 	}
 
-	var projectWatched = m.list.Projects[0]
+	if len(m.Errors.List) == 0 {
+		var projectWatched = m.list.Projects[0]
 
-	for _, link := range m.Links {
-		c, ok := projectWatched.Containers[link.Container.ID]
+		for _, link := range m.Links {
+			c, ok := projectWatched.Containers[link.Container.ID]
 
-		if !ok || c.Health != "up" {
-			return false
+			if !ok || c.Health != "up" {
+				return false
+			}
 		}
+	} else {
+		println("Killing linking watcher after linking errors (use \"we list\" to see what is up).")
 	}
 
 	return true
@@ -160,12 +161,8 @@ func (m *Machine) logError(dir string, err error) {
 	m.ErrorsMutex.Lock()
 	m.Errors.List = append(m.Errors.List, ContainerError{
 		ContainerPath: dir,
-		Error:         err,
+		Error:         errorhandling.Handle(err),
 	})
-
-	if m.FErrStream != nil {
-		fmt.Fprintf(m.FErrStream, "%v error: %v\n", dir, errorhandling.Handle(err))
-	}
 
 	m.ErrorsMutex.Unlock()
 }
