@@ -131,6 +131,7 @@ function tag() {
     echo "Changes:"
     git log $LAST_TAG..HEAD --pretty="format:%h %s" --abbrev=10 || true
     echo ""
+    echo ""
     echo "Build commit:"
     echo $BUILD_COMMIT
     echo ""
