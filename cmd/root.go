@@ -143,9 +143,9 @@ func init() {
 		false,
 		"Disable color output")
 
-	RootCmd.PersistentFlags().StringVar(
+	RootCmd.PersistentFlags().StringVarP(
 		&remote,
-		"remote", "", "Remote to use")
+		"remote", "r", "", "Remote to use")
 
 	RootCmd.Flags().BoolVar(
 		&version,
