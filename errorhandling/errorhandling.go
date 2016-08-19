@@ -27,6 +27,7 @@ https://github.com/wedeploy/cli/issues/
 Time: %s
 %s`
 
+// CommandName for the local message repository
 var CommandName string
 
 // Handle error to a more friendly format
