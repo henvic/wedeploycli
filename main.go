@@ -22,13 +22,14 @@ import (
 func main() {
 	var panickingFlag = true
 	defer panickingListener(&panickingFlag)
-	var cue = checkUpdate()
 	setErrorHandlingCommandName()
 
 	if err := config.Setup(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
 		os.Exit(1)
 	}
+
+	var cue = checkUpdate()
 
 	if ccmd, err := cmd.RootCmd.ExecuteC(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
