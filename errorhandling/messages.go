@@ -26,7 +26,7 @@ var errorReasonCommandMessageOverrides = map[string]messages{
 	},
 	"unlink": messages{
 		"deleteProject": "Can't delete project",
-	}
+	},
 	"list": messages{
 		"projectNotFound": "Project not found",
 	},
