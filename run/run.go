@@ -175,7 +175,7 @@ func StopOutdatedImage(nextImage string) error {
 		return nil
 	}
 
-	println("New WeDeloy infrastructure image available.")
+	println("New WeDeploy infrastructure image available.")
 	println("The infrastructure must be stopped before updating the CLI tool.")
 
 	if !terminal.IsTerminal(int(os.Stdin.Fd())) {
