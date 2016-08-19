@@ -129,7 +129,7 @@ func TestCreateError(t *testing.T) {
 	switch err.(type) {
 	case *apihelper.APIFault:
 	default:
-		t.Errorf("Wanted APIFault error, got nil instead", err)
+		t.Errorf("Wanted APIFault error, got %v instead", err)
 	}
 
 	servertest.Teardown()
