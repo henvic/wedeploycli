@@ -935,10 +935,7 @@ func TestURL(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	var want = `WeDeploy infrastructure error:
-unsupported protocol scheme "x"
-
-* Try: Run with --verbose option to get more log output.`
+	var want = `WeDeploy platform error: could not connect to remote infrastructure`
 
 	r := wedeploy.URL("x://localhost/")
 

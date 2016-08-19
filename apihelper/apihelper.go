@@ -245,13 +245,17 @@ func Validate(request *wedeploy.WeDeploy, err error) error {
 }
 
 func handleURLError(ue *url.Error) error {
-	var s = "WeDeploy infrastructure error:"
+	var s = "WeDeploy platform error:"
 
 	if verbose.Enabled {
 		s += "\n{{err}}"
 	} else {
-		s += "\n" + ue.Err.Error()
-		s += "\n\n* Try: Run with --verbose option to get more log output."
+		if config.Context.Remote == "" {
+			s += " local infrastructure is not running\n"
+			s += `tip: try running "we run" and then run this command again`
+		} else {
+			s += " could not connect to remote infrastructure"
+		}
 	}
 
 	return errwrap.Wrapf(s, ue)
