@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/verbose"
 )
@@ -163,7 +164,7 @@ func (m *Machine) logError(dir string, err error) {
 	})
 
 	if m.FErrStream != nil {
-		fmt.Fprintf(m.FErrStream, "%v error: %v\n", dir, err)
+		fmt.Fprintf(m.FErrStream, "%v error: %v\n", dir, errorhandling.Handle(err))
 	}
 
 	m.ErrorsMutex.Unlock()
