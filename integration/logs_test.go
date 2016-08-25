@@ -28,7 +28,7 @@ func TestLogs(t *testing.T) {
 
 	var cmd = &Command{
 		Args: []string{
-			"logs",
+			"log",
 			"foo",
 			"nodejs5143",
 			"--no-color"},
@@ -61,7 +61,7 @@ func TestWatch(t *testing.T) {
 
 	var cmd = &Command{
 		Args: []string{
-			"logs",
+			"log",
 			"foo",
 			"nodejs5143",
 			"--watch"},

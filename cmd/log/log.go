@@ -1,4 +1,4 @@
-package cmdlogs
+package cmdlog
 
 import (
 	"errors"
@@ -18,18 +18,18 @@ var (
 	watchArg    bool
 )
 
-// LogsCmd is used for getting logs about a given scope
-var LogsCmd = &cobra.Command{
-	Use:   "logs [project] [container] --instance hash",
-	Short: "Logs running on WeDeploy",
-	RunE:  logsRun,
-	Example: `we logs (on project or container directory)
-we logs chat
-we logs portal email
-we logs portal email --instance abc`,
+// LogCmd is used for getting logs about a given scope
+var LogCmd = &cobra.Command{
+	Use:   "log [project] [container] --instance hash",
+	Short: "See logs of what is running on WeDeploy",
+	RunE:  logRun,
+	Example: `we log (on project or container directory)
+we log chat
+we log portal email
+we log portal email --instance abc`,
 }
 
-func logsRun(cmd *cobra.Command, args []string) error {
+func logRun(cmd *cobra.Command, args []string) error {
 	c := cmdcontext.SplitArguments(args, 0, 2)
 
 	project, container, err := cmdcontext.GetProjectOrContainerID(c)
@@ -93,8 +93,8 @@ func getSince() (string, error) {
 }
 
 func init() {
-	LogsCmd.Flags().StringVar(&instanceArg, "instance", "", `Instance ID or hash`)
-	LogsCmd.Flags().StringVar(&severityArg, "level", "0", `Severity (critical, error, warning, info (default), debug)`)
-	LogsCmd.Flags().StringVar(&sinceArg, "since", "", "Show since moment (i.e., 20min, 3h, UNIX timestamp)")
-	LogsCmd.Flags().BoolVarP(&watchArg, "watch", "w", false, "Watch / follow log output")
+	LogCmd.Flags().StringVar(&instanceArg, "instance", "", `Instance ID or hash`)
+	LogCmd.Flags().StringVar(&severityArg, "level", "0", `Severity (critical, error, warning, info (default), debug)`)
+	LogCmd.Flags().StringVar(&sinceArg, "since", "", "Show since moment (i.e., 20min, 3h, UNIX timestamp)")
+	LogCmd.Flags().BoolVarP(&watchArg, "watch", "w", false, "Watch / follow log output")
 }

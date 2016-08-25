@@ -15,7 +15,7 @@ import (
 	"github.com/wedeploy/cli/cmd/createctx"
 	"github.com/wedeploy/cli/cmd/link"
 	"github.com/wedeploy/cli/cmd/list"
-	"github.com/wedeploy/cli/cmd/logs"
+	"github.com/wedeploy/cli/cmd/log"
 	"github.com/wedeploy/cli/cmd/remote"
 	"github.com/wedeploy/cli/cmd/restart"
 	"github.com/wedeploy/cli/cmd/run"
@@ -73,7 +73,7 @@ var commands = []*cobra.Command{
 	cmdauth.LoginCmd,
 	cmdauth.LogoutCmd,
 	cmdcreate.CreateCmd,
-	cmdlogs.LogsCmd,
+	cmdlog.LogCmd,
 	cmdlist.ListCmd,
 	cmdrestart.RestartCmd,
 	cmdbuild.BuildCmd,
