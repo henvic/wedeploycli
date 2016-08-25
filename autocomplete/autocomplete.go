@@ -11,12 +11,14 @@ import (
 // RootCmd is the entry-point of the program
 var RootCmd *cobra.Command
 
+// AutoInstall autocomplete
 func AutoInstall() {
 	if !config.Global.NoAutocomplete {
 		autoInstall()
 	}
 }
 
+// Run autocomplete rules
 func Run(args []string) {
 	(&autocomplete{
 		args: args,
