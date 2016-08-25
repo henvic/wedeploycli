@@ -31,8 +31,7 @@ func TestExistsDependency(t *testing.T) {
 }
 
 func TestTCPPortsExpose(t *testing.T) {
-	var originalTCPPorts = tcpPorts
-	tcpPorts = tcpPortsStruct{80, 8000, 9000}
+	var tcpPorts = tcpPortsStruct{80, 8000, 9000}
 	var de = []string{
 		"-p", "80:80",
 		"-p", "8000:8000",
@@ -42,13 +41,10 @@ func TestTCPPortsExpose(t *testing.T) {
 	if !reflect.DeepEqual(tcpPorts.expose(), de) {
 		t.Errorf("Expected ports exposure doesn't match expected value")
 	}
-
-	tcpPorts = originalTCPPorts
 }
 
 func TestTCPPortsAvailableNone(t *testing.T) {
-	var originalTCPPorts = tcpPorts
-	tcpPorts = tcpPortsStruct{}
+	var tcpPorts = tcpPortsStruct{}
 
 	var all, notAvailable = tcpPorts.getAvailability()
 
@@ -59,8 +55,6 @@ func TestTCPPortsAvailableNone(t *testing.T) {
 	if len(notAvailable) != 0 {
 		t.Errorf("Expected notAvailable to have length 0, got %v instead", notAvailable)
 	}
-
-	tcpPorts = originalTCPPorts
 }
 
 func TestTCPPortsAvailableNotFree(t *testing.T) {
@@ -77,8 +71,7 @@ func TestTCPPortsAvailableNotFree(t *testing.T) {
 		panic(ea)
 	}
 
-	var originalTCPPorts = tcpPorts
-	tcpPorts = tcpPortsStruct{port}
+	var tcpPorts = tcpPortsStruct{port}
 
 	var all, notAvailable = tcpPorts.getAvailability()
 
@@ -95,8 +88,6 @@ func TestTCPPortsAvailableNotFree(t *testing.T) {
 	if err := l.Close(); err != nil {
 		panic(err)
 	}
-
-	tcpPorts = originalTCPPorts
 }
 
 func TestTCPPortsAvailableFree(t *testing.T) {
@@ -117,8 +108,7 @@ func TestTCPPortsAvailableFree(t *testing.T) {
 		panic(err)
 	}
 
-	var originalTCPPorts = tcpPorts
-	tcpPorts = tcpPortsStruct{port}
+	var tcpPorts = tcpPortsStruct{port}
 
 	var all, notAvailable = tcpPorts.getAvailability()
 
@@ -129,6 +119,4 @@ func TestTCPPortsAvailableFree(t *testing.T) {
 	if len(notAvailable) != 0 {
 		t.Errorf("There should be no non-available TCP ports, got %v instead", notAvailable)
 	}
-
-	tcpPorts = originalTCPPorts
 }

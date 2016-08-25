@@ -15,6 +15,7 @@ var RunCmd = &cobra.Command{
 }
 
 var (
+	debug    bool
 	detach   bool
 	dryRun   bool
 	viewMode bool
@@ -27,6 +28,7 @@ func runRun(cmd *cobra.Command, args []string) error {
 	}
 
 	return run.Run(run.Flags{
+		Debug:    debug,
 		Detach:   detach,
 		DryRun:   dryRun,
 		ViewMode: viewMode,
@@ -35,6 +37,9 @@ func runRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
+	// debug can only run on the first time
+	RunCmd.Flags().BoolVar(&debug, "debug", false, "Open debug ports")
+
 	RunCmd.Flags().BoolVarP(&detach, "detach", "d", false,
 		"Run in background")
 

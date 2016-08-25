@@ -42,6 +42,7 @@ var dockerLatestImageTag = "latest"
 
 // Flags modifiers
 type Flags struct {
+	Debug    bool
 	Detach   bool
 	DryRun   bool
 	ViewMode bool
@@ -61,20 +62,10 @@ type DockerMachine struct {
 	end            chan bool
 	started        chan bool
 	selfStopSignal bool
+	tcpPorts       tcpPortsStruct
 }
 
 type tcpPortsStruct []int
-
-var tcpPorts = tcpPortsStruct{
-	24224,
-	80,
-	5001,
-	5005,
-	8001,
-	8080,
-	8500,
-	9200,
-}
 
 func (t tcpPortsStruct) getAvailability() (all bool, notAvailable []int) {
 	all = true
@@ -211,6 +202,10 @@ func (dm *DockerMachine) Run() (err error) {
 
 	if already {
 		fmt.Println("WeDeploy is already running.")
+
+		if dm.Flags.Debug {
+			fmt.Fprintf(os.Stderr, "Can't expose debug ports because system is already up.\n")
+		}
 	} else if err = cleanupEnvironment(); err != nil {
 		return err
 	}
@@ -253,8 +248,25 @@ func (dm *DockerMachine) Stop() error {
 	return nil
 }
 
+func (dm *DockerMachine) setupPorts() {
+	if dm.Flags.Debug {
+		dm.tcpPorts = tcpPortsStruct{
+			24224,
+			80,
+			5001,
+			5005,
+			8001,
+			8080,
+			8500,
+			9200,
+		}
+	} else {
+		dm.tcpPorts = tcpPortsStruct{80}
+	}
+}
+
 func (dm *DockerMachine) checkPortsAreAvailable() error {
-	var all, notAvailable = tcpPorts.getAvailability()
+	var all, notAvailable = dm.tcpPorts.getAvailability()
 
 	if all {
 		return nil
@@ -333,7 +345,7 @@ func (dm *DockerMachine) waitCleanup() {
 }
 
 func (dm *DockerMachine) start() (err error) {
-	var args = getRunCommandEnv()
+	var args = dm.getRunCommandEnv()
 	var running = "docker " + strings.Join(args, " ")
 
 	if dm.Flags.DryRun && !verbose.Enabled {
@@ -442,6 +454,7 @@ func (dm *DockerMachine) prepare() {
 	dm.tickerd = make(chan bool, 1)
 	dm.started = make(chan bool, 1)
 	dm.end = make(chan bool, 1)
+	dm.setupPorts()
 }
 
 func (dm *DockerMachine) ready() {
@@ -560,14 +573,16 @@ func getWeDeployHost() string {
 	return address
 }
 
-func getRunCommandEnv() []string {
+func (dm *DockerMachine) getRunCommandEnv() []string {
 	var address = getWeDeployHost()
 	var args = []string{"run"}
 
-	// fluentd might use either TCP or UDP, hence this special case
-	args = append(args, "-p", "24224:24224/udp")
+	if dm.Flags.Debug {
+		// fluentd might use either TCP or UDP, hence this special case
+		args = append(args, "-p", "24224:24224/udp")
+	}
 
-	args = append(args, tcpPorts.expose()...)
+	args = append(args, dm.tcpPorts.expose()...)
 	args = append(args, []string{
 		"-v",
 		"/var/run/docker.sock:/var/run/docker-host.sock",
