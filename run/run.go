@@ -653,6 +653,10 @@ func cleanupEnvironment() error {
 		return err
 	}
 
+	if err := rmOldInfrastructureImages(); err != nil {
+		return err
+	}
+
 	verbose.Debug("End of environment clean up.")
 	return nil
 }
@@ -709,6 +713,30 @@ func rmContainers() error {
 	return err
 }
 
+func rmOldInfrastructureImages() error {
+	var ids, err = getOldInfrastructureImages()
+
+	if err != nil {
+		return err
+	}
+
+	if len(ids) == 0 {
+		return nil
+	}
+
+	var params = []string{"rmi"}
+	params = append(params, ids...)
+	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
+	var rm = exec.Command(bin, params...)
+	rm.Stderr = os.Stderr
+
+	if err = rm.Run(); err != nil {
+		return errwrap.Wrapf("Error trying to remove images: {{err}}", err)
+	}
+
+	return err
+}
+
 func getDockerContainers(onlyRunning bool) (cids []string, err error) {
 	cids, err = getContainersByLabel("com.wedeploy.container.type", onlyRunning)
 
@@ -745,6 +773,40 @@ func getContainersByLabel(label string, onlyRunning bool) (cs []string, err erro
 	}
 
 	return strings.Fields(buf.String()), nil
+}
+
+func getOldInfrastructureImages() ([]string, error) {
+	var params = []string{
+		"images",
+		"wedeploy/local",
+		"--format",
+		"{{.Tag}}\t{{.ID}}",
+		"--no-trunc",
+	}
+
+	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
+	var list = exec.Command(bin, params...)
+	var buf bytes.Buffer
+	list.Stderr = os.Stderr
+	list.Stdout = &buf
+
+	if err := list.Run(); err != nil {
+		return []string{}, err
+	}
+
+	var images = strings.Split(buf.String(), "\n")
+	var imageHashes = []string{}
+
+	for _, ia := range images {
+		var i = strings.Fields(ia)
+		if len(i) == 2 && (i[0] != "latest" && i[0] != defaults.WeDeployImageTag) {
+			imageHashes = append(
+				imageHashes,
+				strings.TrimSuffix(i[1], "sha256:"))
+		}
+	}
+
+	return imageHashes, nil
 }
 
 func existsDependency(cmd string) bool {
