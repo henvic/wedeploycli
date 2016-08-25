@@ -57,6 +57,7 @@ function info() {
     return
   fi
 
+  we 2>&1 >/dev/null
   echo "Installed from $TAG, type 'we help' to start."
 }
 

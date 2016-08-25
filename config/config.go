@@ -74,6 +74,7 @@ type Config struct {
 	Token           string    `ini:"token"`
 	Local           bool      `ini:"local"`
 	LocalPort       int       `ini:"local_port"`
+	NoAutocomplete  bool      `ini:"disable_autocomplete_autoinstall"`
 	NoColor         bool      `ini:"disable_colors"`
 	Endpoint        string    `ini:"endpoint"`
 	NotifyUpdates   bool      `ini:"notify_updates"`

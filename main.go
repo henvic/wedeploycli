@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/autocomplete"
 	"github.com/wedeploy/cli/cmd"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/errorhandling"
@@ -29,7 +30,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	var cue = checkUpdate()
+	var isAutoComplete = isAutoCompleteCommand()
+	var cue chan error
+
+	if !isAutoComplete {
+		cue = checkUpdate()
+	}
 
 	if ccmd, err := cmd.RootCmd.ExecuteC(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
@@ -37,8 +43,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	updateFeedback(<-cue)
+	if !isAutoComplete {
+		updateFeedback(<-cue)
+	}
+
+	autocomplete.AutoInstall()
 	panickingFlag = false
+}
+
+func isAutoCompleteCommand() bool {
+	for _, s := range os.Args {
+		if s == "autocomplete" {
+			return true
+		}
+	}
+
+	return false
 }
 
 func setErrorHandlingCommandName() {

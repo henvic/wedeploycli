@@ -3,13 +3,15 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/autocomplete"
 	"github.com/wedeploy/cli/cmd/auth"
+	"github.com/wedeploy/cli/cmd/autocomplete"
 	"github.com/wedeploy/cli/cmd/build"
+	"github.com/wedeploy/cli/cmd/cmdmanager"
 	"github.com/wedeploy/cli/cmd/createctx"
 	"github.com/wedeploy/cli/cmd/link"
 	"github.com/wedeploy/cli/cmd/list"
@@ -30,31 +32,21 @@ import (
 
 // WhitelistCmdsNoAuthentication for cmds that doesn't require authentication
 var WhitelistCmdsNoAuthentication = map[string]bool{
-	"login":   true,
-	"logout":  true,
-	"build":   true,
-	"deploy":  true,
-	"update":  true,
-	"version": true,
-}
-
-// ListNoRemoteFlags hides the globals non used --remote
-var ListNoRemoteFlags = map[string]bool{
-	"link":    true,
-	"unlink":  true,
-	"run":     true,
-	"stop":    true,
-	"remote":  true,
-	"update":  true,
-	"version": true,
+	"autocomplete": true,
+	"login":        true,
+	"logout":       true,
+	"build":        true,
+	"deploy":       true,
+	"update":       true,
+	"version":      true,
 }
 
 // LocalOnlyCommands for local-only commands
 var LocalOnlyCommands = map[string]bool{
-	"link":   true,
-	"unlink": true,
-	"run":    true,
-	"stop":   true,
+	"we link":   true,
+	"we unlink": true,
+	"we run":    true,
+	"we stop":   true,
 }
 
 // RootCmd is the main command for the CLI
@@ -77,6 +69,7 @@ var (
 )
 
 var commands = []*cobra.Command{
+	cmdautocomplete.AutocompleteCmd,
 	cmdauth.LoginCmd,
 	cmdauth.LogoutCmd,
 	cmdcreate.CreateCmd,
@@ -93,37 +86,10 @@ var commands = []*cobra.Command{
 	cmdversion.VersionCmd,
 }
 
-func hideVersionFlag() {
-	if err := RootCmd.Flags().MarkHidden("version"); err != nil {
-		panic(err)
-	}
-}
-
-func hideNoVerboseRequestsFlag() {
-	if err := RootCmd.PersistentFlags().MarkHidden("no-verbose-requests"); err != nil {
-		panic(err)
-	}
-}
-
-func hideUnusedGlobalRemoteFlags() {
-	var args = os.Args
-
-	if len(args) < 2 {
-		return
-	}
-
-	_, h := ListNoRemoteFlags[args[1]]
-
-	if !h {
-		return
-	}
-
-	if err := RootCmd.PersistentFlags().MarkHidden("remote"); err != nil {
-		panic(err)
-	}
-}
-
 func init() {
+	cmdmanager.RootCmd = RootCmd
+	autocomplete.RootCmd = RootCmd
+
 	RootCmd.PersistentFlags().BoolVarP(
 		&verbose.Enabled,
 		"verbose",
@@ -151,9 +117,9 @@ func init() {
 		&version,
 		"version", false, "Print version information and quit")
 
-	hideVersionFlag()
-	hideNoVerboseRequestsFlag()
-	hideUnusedGlobalRemoteFlags()
+	cmdmanager.HideVersionFlag()
+	cmdmanager.HideNoVerboseRequestsFlag()
+	cmdmanager.HideUnusedGlobalRemoteFlags()
 
 	for _, c := range commands {
 		RootCmd.AddCommand(c)
@@ -161,10 +127,6 @@ func init() {
 }
 
 func setEndpoint() error {
-	if isLocalCommandOnly() && remote != "" {
-		return errors.New("can not use command with a remote")
-	}
-
 	if remote == "" {
 		return setLocal()
 	}
@@ -212,6 +174,10 @@ func persistentPreRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	if isLocalCommandOnly(cmd.CommandPath()) && remote != "" {
+		return errors.New("can not use command with a remote")
+	}
+
 	return setEndpoint()
 }
 
@@ -242,14 +208,8 @@ func isCmdWhitelistNoAuth(commandPath string) bool {
 	return false
 }
 
-func isLocalCommandOnly() bool {
-	var args = os.Args
-
-	if len(args) < 2 {
-		return false
-	}
-
-	_, h := LocalOnlyCommands[args[1]]
+func isLocalCommandOnly(command string) bool {
+	_, h := LocalOnlyCommands[command]
 	return h
 }
 

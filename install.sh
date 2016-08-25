@@ -45,6 +45,7 @@ function info() {
     return
   fi
 
+  we 2>&1 >/dev/null
   echo "Installed, type 'we help' to start."
 }
 
