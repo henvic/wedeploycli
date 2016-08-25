@@ -4,4 +4,4 @@
 > echo before
 > echo during
 > echo after
-container empty-hooks-container has no build hooks
+> [empty-hooks-container] has no build hooks

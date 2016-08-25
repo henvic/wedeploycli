@@ -4,5 +4,5 @@ Command false failure: exit status 1
 > echo before
 > echo during
 > echo after
-container empty-hooks-container has no build hooks
+> [empty-hooks-container] has no build hooks
 Error: build hooks failure

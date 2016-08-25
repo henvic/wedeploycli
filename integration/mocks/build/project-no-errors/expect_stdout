@@ -1,5 +1,11 @@
+> [build-error-container] before_build : echo before
 before
+> [build-error-container] build : true
+> [build-error-container] after_build : echo after
 after
+> [container] before_build : echo before
 before
+> [container] build : echo during
 during
+> [container] after_build : echo after
 after

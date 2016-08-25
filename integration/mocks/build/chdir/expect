@@ -1,5 +1,8 @@
+> [container] before_build : ls
 container.json
+> [container] build : cd .. && ls
 container
 expect
 project.json
+> [container] after_build : ls
 container.json

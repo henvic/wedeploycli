@@ -42,7 +42,7 @@ var (
 )
 
 // Run invokes the hooks for the given hook type on working directory
-func (h *Hooks) Run(hookType string, wdir string) error {
+func (h *Hooks) Run(hookType string, wdir string, notes ...string) error {
 	var owd, err = os.Getwd()
 
 	if err != nil {
@@ -57,7 +57,7 @@ func (h *Hooks) Run(hookType string, wdir string) error {
 
 	switch hookType {
 	case "build":
-		err = h.runBuild()
+		err = h.runBuild(notes...)
 	default:
 		err = ErrMissingHook
 	}
@@ -72,27 +72,44 @@ func (h *Hooks) Run(hookType string, wdir string) error {
 	return err
 }
 
-func (h *Hooks) runBuild() error {
+func (h *Hooks) runBuild(notes ...string) error {
 	if h.Build == "" && (h.BeforeBuild != "" || h.AfterBuild != "") {
 		fmt.Fprintf(errStream, "Error: no build hook main action\n")
 	}
 
 	var steps = []string{
-		h.BeforeBuild,
-		h.Build,
-		h.AfterBuild,
+		"before_build",
+		"build",
+		"after_build",
+	}
+
+	var stepAction = map[string]string{
+		"before_build": h.BeforeBuild,
+		"build":        h.Build,
+		"after_build":  h.AfterBuild,
 	}
 
 	for _, eachStep := range steps {
-		if eachStep == "" {
+		var cmd = stepAction[eachStep]
+
+		if cmd == "" {
 			continue
 		}
 
-		var err = Run(eachStep)
+		var feedback = "> "
+
+		if len(notes) != 0 {
+			feedback += fmt.Sprintf("%v ", notes)
+		}
+
+		feedback += eachStep + " : " + cmd
+		fmt.Println(feedback)
+
+		var err = Run(cmd)
 
 		if err != nil {
 			return HookError{
-				Command: eachStep,
+				Command: cmd,
 				Err:     err,
 			}
 		}

@@ -12,7 +12,6 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/hooks"
-	"github.com/wedeploy/cli/verbose"
 )
 
 // BuildCmd builds the current project or container
@@ -74,11 +73,11 @@ func buildContainer(path string) error {
 	if container.Hooks == nil || (container.Hooks.BeforeBuild == "" &&
 		container.Hooks.Build == "" &&
 		container.Hooks.AfterBuild == "") {
-		verbose.Debug("container " + container.ID + " has no build hooks")
+		println("> [" + container.ID + "] has no build hooks")
 		return nil
 	}
 
-	return container.Hooks.Run(hooks.Build, filepath.Join(path))
+	return container.Hooks.Run(hooks.Build, filepath.Join(path), container.ID)
 }
 
 func checkProjectOrContainer(args []string) error {
