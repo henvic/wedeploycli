@@ -2,7 +2,7 @@
 
 Install this tool with
 
-`curl https://raw.githubusercontent.com/wedeploy/cli/master/install.sh -s | bash`
+`curl http://cdn.wedeploy.com/cli/latest/wedeploy.sh -sL | bash`
 
 or download from our [stable release channel](https://dl.equinox.io/wedeploy/cli/stable).
 
