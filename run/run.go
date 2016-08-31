@@ -249,19 +249,19 @@ func (dm *DockerMachine) Stop() error {
 }
 
 func (dm *DockerMachine) setupPorts() {
+	dm.tcpPorts = tcpPortsStruct{
+		80,
+		8080,
+	}
+
 	if dm.Flags.Debug {
-		dm.tcpPorts = tcpPortsStruct{
+		dm.tcpPorts = append(dm.tcpPorts,
 			24224,
-			80,
 			5001,
 			5005,
 			8001,
-			8080,
 			8500,
-			9200,
-		}
-	} else {
-		dm.tcpPorts = tcpPortsStruct{80}
+			9200)
 	}
 }
 
