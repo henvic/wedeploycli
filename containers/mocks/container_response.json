@@ -2,7 +2,6 @@
     "type": "cloudsearch",
     "basePath": "\/search",
     "instances": 7,
-    "name": "Cloud Search",
     "id": "search7606",
     "health": "on",
     "maxInstances": 5

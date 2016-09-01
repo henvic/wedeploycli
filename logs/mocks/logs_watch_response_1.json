@@ -8,7 +8,6 @@
             "line": 125,
             "message": "Server started\r",
             "method": "start",
-            "name": "com.liferay.wedeploy.server.AppServer",
             "thread": "main"
         },
         "message": "[2016-03-29 18:55:51,234] INFO  [main] com.liferay.wedeploy.server.AppServer#start:125 - Server started\r",
@@ -25,7 +24,6 @@
             "line": 163,
             "message": "Server is up and running\r",
             "method": "startServer",
-            "name": "com.liferay.wedeploy.WeDeploy",
             "thread": "main"
         },
         "message": "[2016-03-29 18:55:51,237] INFO  [main] com.liferay.wedeploy.WeDeploy#startServer:163 - Server is up and running\r",

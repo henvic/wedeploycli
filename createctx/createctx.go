@@ -131,7 +131,7 @@ func (cc *containerCreator) getContainersRegister() error {
 	}
 
 	for pos, r := range registry {
-		ne := fmt.Sprintf("%d) %v", pos+1, r.Name)
+		ne := fmt.Sprintf("%d) %v", pos+1, r.ID)
 
 		p := 80 - len(ne) - len(r.Type) + 1
 
@@ -173,12 +173,6 @@ func (cc *containerCreator) chooseContainerOptions() error {
 
 	if err != nil {
 		return err
-	}
-
-	cc.Container.Name = prompt.Prompt("Name [default: " + cc.Register.Name + "]")
-
-	if cc.Container.Name == "" {
-		cc.Container.Name = cc.Register.Name
 	}
 
 	cc.Container.Type = cc.Register.Type
@@ -237,7 +231,6 @@ func newProject(id, directory string) error {
 		return err
 	}
 
-	p.Name = prompt.Prompt("Name")
 	p.CustomDomain = prompt.Prompt("Custom domain")
 
 	return saveProject(p, directory)

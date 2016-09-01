@@ -71,10 +71,6 @@ func TestCreate(t *testing.T) {
 		t.Errorf("Wanted project ID to be tesla36, got %v instead", project.ID)
 	}
 
-	if project.Name != "Evil Tesla" {
-		t.Errorf("Wanted project name to be Evil Tesla, got %v instead", project.Name)
-	}
-
 	if project.Health != "on" {
 		t.Errorf("Wanted project Health to be on, got %v instead", project.Health)
 	}
@@ -98,14 +94,6 @@ func TestCreateNamed(t *testing.T) {
 
 	if project.ID != "banach30" {
 		t.Errorf("Wanted project ID to be banach30, got %v instead", project.ID)
-	}
-
-	if project.Name != "Evil Banach" {
-		t.Errorf("Wanted project name to be Evil Banach, got %v instead", project.Name)
-	}
-
-	if project.Health != "on" {
-		t.Errorf("Wanted project Health to be on, got %v instead", project.Health)
 	}
 
 	if err != nil {
@@ -148,7 +136,6 @@ func TestGet(t *testing.T) {
 
 	var want = Project{
 		ID:     "images",
-		Name:   "Image Server",
 		Health: "on",
 	}
 
@@ -177,7 +164,6 @@ func TestList(t *testing.T) {
 	var want = []Project{
 		Project{
 			ID:     "images",
-			Name:   "Image Server",
 			Health: "on",
 		},
 	}

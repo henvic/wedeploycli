@@ -1,6 +1,5 @@
 {
     "id": "app-with-invalid-container",
-    "name": "my app with invalid container",
     "description": "App example project",
     "custom_domain": "app.liferay.io",
     "environment": {

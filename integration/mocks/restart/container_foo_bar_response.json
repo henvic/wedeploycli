@@ -1,6 +1,5 @@
 {
     "type": "nodejs",
-    "name": "Foobah",
     "id": "bar",
     "health": "on"
 }

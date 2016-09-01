@@ -1,6 +1,5 @@
 {
     "id": "extraction",
-    "name": "Extraction system",
     "description": "App example project",
     "custom_domain": "app.liferay.io",
     "environment": {

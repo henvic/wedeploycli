@@ -95,7 +95,6 @@ func TestGet(t *testing.T) {
 
 	var want = Container{
 		ID:        "search7606",
-		Name:      "Cloud Search",
 		Health:    "on",
 		Type:      "cloudsearch",
 		Instances: 7,
@@ -126,14 +125,12 @@ func TestList(t *testing.T) {
 	var want = Containers{
 		"search7606": &Container{
 			ID:        "search7606",
-			Name:      "Cloud Search",
 			Health:    "on",
 			Type:      "cloudsearch",
 			Instances: 7,
 		},
 		"nodejs5143": &Container{
 			ID:        "nodejs5143",
-			Name:      "Node.js",
 			Health:    "on",
 			Type:      "nodejs",
 			Instances: 5,
@@ -195,13 +192,12 @@ func TestLink(t *testing.T) {
 			}
 
 			jsonlib.AssertJSONMarshal(t,
-				`{"id":"speaker", "name": "Speaker", "type": "nodejs"}`,
+				`{"id":"speaker", "type": "nodejs"}`,
 				data)
 		})
 
 	var c = &Container{
 		ID:   "speaker",
-		Name: "Speaker",
 		Type: "nodejs",
 	}
 

@@ -24,7 +24,6 @@ type Containers map[string]*Container
 // Container structure
 type Container struct {
 	ID        string            `json:"id"`
-	Name      string            `json:"name,omitempty"`
 	Health    string            `json:"health,omitempty"`
 	Type      string            `json:"type,omitempty"`
 	Hooks     *hooks.Hooks      `json:"hooks,omitempty"`
@@ -35,7 +34,6 @@ type Container struct {
 // Register for the container structure
 type Register struct {
 	ID          string `json:"id"`
-	Name        string `json:"name"`
 	Type        string `json:"type"`
 	Category    string `json:"category"`
 	Description string `json:"description"`

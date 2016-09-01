@@ -1,5 +1,4 @@
 {
-    "name": "app",
     "description": "App example project",
     "custom_domain": "app.liferay.io",
     "environment": {

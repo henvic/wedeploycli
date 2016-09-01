@@ -3,7 +3,6 @@
     "type": "cloudsearch",
     "basePath": "\/search",
     "instances": 7,
-    "name": "Cloud Search",
     "id": "search7606",
     "health": "on",
     "maxInstances": 5
@@ -12,7 +11,6 @@
     "type": "nodejs",
     "basePath": "\/nodejs",
     "instances": 5,
-    "name": "Node.js",
     "id": "nodejs5143",
     "health": "on",
     "maxInstances": 5

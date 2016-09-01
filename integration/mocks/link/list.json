@@ -16,7 +16,6 @@
 	"users": [null],
 	"maxContainers": 10,
 	"invitations": {},
-	"name": "Hopeful Banach",
 	"containers": {
 		"container": {
 			"template": null,
@@ -30,7 +29,6 @@
 			},
 			"type": "wedeploy\/engine",
 			"port": null,
-			"name": "Gloomy",
 			"id": "container",
 			"maxInstances": 5,
 			"projectId": "wechat"
