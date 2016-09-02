@@ -167,7 +167,7 @@ func (l *List) printProjects() {
 }
 
 func (l *List) printProject(p projects.Project) {
-	word := fmt.Sprintf("Project %v ", p.ID)
+	var word string
 
 	switch {
 	// TestLink: custom domain should not be shown for local
@@ -182,7 +182,7 @@ func (l *List) printProject(p projects.Project) {
 
 	l.printf(word)
 	l.printf(" ")
-	l.conditionalPad(word, 72)
+	l.conditionalPad(word, 55)
 	l.printf(getFormattedHealth(p.Health) + "\n")
 	l.printContainers(p.ID, p.Containers)
 }
@@ -211,15 +211,14 @@ func (l *List) conditionalPad(word string, maxWord int) {
 }
 
 func (l *List) printContainer(projectID string, c *containers.Container) {
-	l.printf(color.Format(getHealthForegroundColor(c.Health), "● "))
-	l.printf("%v ", c.ID)
+	l.printf(color.Format(getHealthForegroundColor(c.Health), " ● "))
 	containerDomain := getContainerDomain(projectID, c.ID)
 	l.printf("%v ", containerDomain)
-	l.conditionalPad(containerDomain, 42)
+	l.conditionalPad(containerDomain, 52)
 	l.printInstances(c.Instances)
 	t := getType(c.Type)
 	l.printf(color.Format(color.FgHiBlack, "%v ", t))
-	l.conditionalPad(t, 20)
+	l.conditionalPad(t, 23)
 	l.printf("%v\n", c.Health)
 }
 
