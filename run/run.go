@@ -252,11 +252,11 @@ func (dm *DockerMachine) setupPorts() {
 	dm.tcpPorts = tcpPortsStruct{
 		80,
 		8080,
+		24224,
 	}
 
 	if dm.Flags.Debug {
 		dm.tcpPorts = append(dm.tcpPorts,
-			24224,
 			5001,
 			5005,
 			8001,
@@ -577,10 +577,8 @@ func (dm *DockerMachine) getRunCommandEnv() []string {
 	var address = getWeDeployHost()
 	var args = []string{"run"}
 
-	if dm.Flags.Debug {
-		// fluentd might use either TCP or UDP, hence this special case
-		args = append(args, "-p", "24224:24224/udp")
-	}
+	// fluentd might use either TCP or UDP, hence this special case
+	args = append(args, "-p", "24224:24224/udp")
 
 	args = append(args, dm.tcpPorts.expose()...)
 	args = append(args, []string{
