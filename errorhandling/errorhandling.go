@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
@@ -60,7 +61,19 @@ func tryGetMessage(cmd, reason string) (string, bool) {
 	return msg, ok
 }
 
+func (h *handler) unwrap() {
+	// unwrapping has the side-effect of discarding wrapped messages
+	// but we assume it is expected to do so (currently)
+	var aerr = errwrap.GetType(h.err, new(apihelper.APIFault))
+
+	if aerr != nil {
+		h.err = aerr
+	}
+}
+
 func (h *handler) handle() error {
+	h.unwrap()
+
 	switch h.err.(type) {
 	case *apihelper.APIFault:
 		return h.handleAPIFaultError()
