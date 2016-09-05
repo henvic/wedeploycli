@@ -13,6 +13,9 @@ import (
 )
 
 var script = `
+autoload bashcompinit
+bashcompinit
+
 _we()  {
   COMPREPLY=()
   local cur="${COMP_WORDS[COMP_CWORD]}"

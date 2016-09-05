@@ -206,6 +206,7 @@ func updateConfig(channel string) error {
 	var g = config.Global
 
 	g.ReleaseChannel = channel
+	g.PastVersion = defaults.Version
 	g.NextVersion = ""
 	g.LastUpdateCheck = getCurrentTime()
 	return g.Save()

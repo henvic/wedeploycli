@@ -80,6 +80,7 @@ type Config struct {
 	NotifyUpdates   bool      `ini:"notify_updates"`
 	ReleaseChannel  string    `ini:"release_channel"`
 	LastUpdateCheck string    `ini:"last_update_check"`
+	PastVersion     string    `ini:"past_version"`
 	NextVersion     string    `ini:"next_version"`
 	Path            string    `ini:"-"`
 	Remotes         Remotes   `ini:"-"`
@@ -251,7 +252,7 @@ func (c *Config) readRemotes() {
 
 func (c *Config) simplify() {
 	var mainSection = c.file.Section("")
-	var omitempty = []string{"next_version", "last_update_check"}
+	var omitempty = []string{"past_version", "next_version", "last_update_check"}
 
 	for _, k := range omitempty {
 		var key = mainSection.Key(k)

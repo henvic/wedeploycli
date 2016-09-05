@@ -24,11 +24,7 @@ func main() {
 	var panickingFlag = true
 	defer panickingListener(&panickingFlag)
 	setErrorHandlingCommandName()
-
-	if err := config.Setup(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
-		os.Exit(1)
-	}
+	load()
 
 	var isAutoComplete = isAutoCompleteCommand()
 	var cue chan error
@@ -49,6 +45,30 @@ func main() {
 
 	autocomplete.AutoInstall()
 	panickingFlag = false
+}
+
+func loadConfig() {
+	if err := config.Setup(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
+		os.Exit(1)
+	}
+}
+
+func load() {
+	loadConfig()
+
+	if config.Global.PastVersion != "" {
+		update.ApplyFixes(config.Global.PastVersion)
+		config.Global.PastVersion = ""
+
+		if err := config.Global.Save(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
+			os.Exit(1)
+		}
+
+		// reload config as something might have changed
+		loadConfig()
+	}
 }
 
 func isAutoCompleteCommand() bool {
