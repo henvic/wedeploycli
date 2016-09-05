@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/cmdcontext"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/list"
@@ -97,6 +98,20 @@ func (u *unlink) checkProjectOrContainerExists() error {
 	return err
 }
 
+func handleCheckProjectOrContainerError(err error) error {
+	switch err.(type) {
+	case *apihelper.APIFault:
+		var ae = err.(*apihelper.APIFault)
+
+		if ae.Has("documentNotFound") {
+			println("Successfully unlinked")
+			return nil
+		}
+	}
+
+	return err
+}
+
 func unlinkRun(cmd *cobra.Command, args []string) error {
 	var project, container, err = cmdcontext.GetProjectOrContainerID(args)
 
@@ -110,7 +125,7 @@ func unlinkRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if err = u.checkProjectOrContainerExists(); err != nil {
-		return err
+		return handleCheckProjectOrContainerError(err)
 	}
 
 	if quiet {
