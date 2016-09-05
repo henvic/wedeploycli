@@ -14,6 +14,7 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/colorwheel"
+	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -167,7 +168,7 @@ func (w *Watcher) pool() {
 	var list, err = GetList(w.Filter)
 
 	if err != nil {
-		fmt.Fprintf(errStream, "%v\n", err)
+		fmt.Fprintf(errStream, "%v\n", errorhandling.Handle(err))
 		return
 	}
 

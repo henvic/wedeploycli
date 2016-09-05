@@ -30,4 +30,7 @@ var errorReasonCommandMessageOverrides = map[string]messages{
 	"list": messages{
 		"projectNotFound": "Project not found",
 	},
+	"log": messages{
+		"notFound": "Log not found",
+	},
 }
