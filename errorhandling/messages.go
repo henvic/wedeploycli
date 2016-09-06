@@ -25,7 +25,8 @@ var errorReasonCommandMessageOverrides = map[string]messages{
 		"typeNotFound": "Container type not found",
 	},
 	"unlink": messages{
-		"deleteProject": "Can't delete project",
+		"documentNotFound": "Can't find project or container",
+		"deleteProject":    "Can't delete project",
 	},
 	"list": messages{
 		"projectNotFound": "Project not found",
