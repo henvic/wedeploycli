@@ -237,8 +237,7 @@ func (dm *DockerMachine) Stop() error {
 		return err
 	}
 
-	// Windows doesn't implement grouping for processes
-	// so it is important to send a SIGTERM signal
+	// try to terminate wait process child by sending a SIGTERM
 	if dm.waitProcess != nil {
 		if err := dm.waitProcess.Signal(syscall.SIGTERM); err != nil {
 			return errwrap.Wrapf("Can't terminate docker wait process: {{err}}", err)
@@ -597,14 +596,11 @@ func (dm *DockerMachine) getRunCommandEnv() []string {
 	return args
 }
 
-func getDockerPath() string {
-	var path, err = exec.LookPath(bin)
+func runWait(container string) (*os.Process, error) {
+	var c = exec.Command(bin, "wait", container)
+	var err = c.Start()
 
-	if err != nil {
-		panic(err)
-	}
-
-	return path
+	return c.Process, err
 }
 
 func pull() error {
