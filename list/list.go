@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/henvic/uilive"
-	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
@@ -28,14 +27,15 @@ type Filter struct {
 
 // List containers object
 type List struct {
-	Detailed       bool
-	Filter         Filter
-	Projects       []projects.Project
-	StyledNotFound bool
-	outStream      io.Writer
-	watch          bool
-	retry          int
-	preprint       string
+	Detailed              bool
+	Filter                Filter
+	Projects              []projects.Project
+	HandleProjectNotFound func() string
+	HandleRequestError    func(error) string
+	outStream             io.Writer
+	watch                 bool
+	retry                 int
+	preprint              string
 }
 
 // New creates a list using the values of a passed Filter
@@ -44,6 +44,9 @@ func New(filter Filter) *List {
 		Filter:    filter,
 		outStream: os.Stdout,
 	}
+
+	l.HandleProjectNotFound = handleProjectNotFound
+	l.HandleRequestError = l.handleRequestError
 
 	return l
 }
@@ -62,7 +65,7 @@ func (l *List) Print() {
 	l.clear()
 
 	if err != nil {
-		l.handleRequestError(err)
+		l.preprint = l.HandleRequestError(err)
 		fmt.Fprintf(l.outStream, "%v", l.preprint)
 		return
 	}
@@ -71,20 +74,20 @@ func (l *List) Print() {
 	l.printProjects()
 
 	if len(l.Projects) == 0 {
-		l.handleNoProjectFound()
+		var noProjectFound = l.HandleProjectNotFound()
+
+		if l.watch {
+			l.preprint = noProjectFound
+		} else {
+			print(noProjectFound)
+		}
 	}
 
 	fmt.Fprintf(l.outStream, "%v", l.preprint)
 }
 
-func (l *List) handleNoProjectFound() {
-	var p = "No project or container found.\n"
-
-	if l.watch {
-		l.preprint = p
-	} else {
-		print(p)
-	}
+func handleProjectNotFound() string {
+	return "Project not found.\n"
 }
 
 func (l *List) clear() {
@@ -105,26 +108,14 @@ func (l *List) fetch() error {
 	return l.fetchOneProject()
 }
 
-func (l *List) handleRequestError(err error) {
-	var ae, ok = err.(*apihelper.APIFault)
-
-	if l.StyledNotFound && ok && ae.Code == 404 {
-		l.handleNoProjectFound()
-
-		if !l.watch {
-			os.Exit(1)
-		}
-
-		return
-	}
-
+func (l *List) handleRequestError(err error) string {
 	l.retry++
-	if l.watch {
-		l.printf(color.Format(color.FgHiRed, "%v #%d\n", errorhandling.Handle(err), l.retry))
-	} else {
+	if !l.watch {
 		fmt.Fprintf(os.Stderr, "%v\n", errorhandling.Handle(err))
 		os.Exit(1)
 	}
+
+	return fmt.Sprintf(color.Format(color.FgHiRed, "%v #%d\n", errorhandling.Handle(err), l.retry))
 }
 
 func (l *List) resetObjects() {
@@ -246,6 +237,7 @@ type Watcher struct {
 	StopCondition   (func() bool)
 	livew           *uilive.Writer
 	End             chan bool
+	Teardown        func() string
 }
 
 // Start for Watcher
@@ -269,6 +261,14 @@ func (w *Watcher) Start() {
 	}()
 
 	<-w.End
+
+	if w.Teardown != nil {
+		fmt.Fprintf(w.List.outStream, "%v", w.Teardown())
+
+		if err := w.livew.Flush(); err != nil {
+			fmt.Fprintf(os.Stderr, "%v\n", err)
+		}
+	}
 }
 
 func (w *Watcher) watch() {

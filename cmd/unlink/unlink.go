@@ -1,6 +1,8 @@
 package cmdunlink
 
 import (
+	"fmt"
+	"os"
 	"sync"
 
 	"github.com/hashicorp/errwrap"
@@ -8,6 +10,7 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/cmdcontext"
 	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
 )
@@ -37,6 +40,7 @@ func init() {
 type unlink struct {
 	project   string
 	container string
+	watcher   *list.Watcher
 	list      *list.List
 	end       bool
 	err       error
@@ -58,15 +62,29 @@ func (u *unlink) isDone() bool {
 		return false
 	}
 
-	if len(u.list.Projects) == 0 {
+	if len(u.watcher.List.Projects) == 0 {
 		return true
 	}
 
-	if u.container != "" && u.list.Projects[0].Containers[u.container] == nil {
+	if u.container != "" && u.watcher.List.Projects[0].Containers[u.container] == nil {
+		u.watcher.Teardown = func() string {
+			return "Container unlinked successfully!\n"
+		}
+
 		return true
 	}
 
 	return false
+}
+
+func (u *unlink) handleWatchRequestError(err error) string {
+	var ae, ok = err.(*apihelper.APIFault)
+
+	if !ok || ae.Code != 404 {
+		fmt.Fprintf(os.Stderr, "%v", errorhandling.Handle(err))
+	}
+
+	return "Unlinked successfully!\n"
 }
 
 func (u *unlink) watch() {
@@ -77,14 +95,10 @@ func (u *unlink) watch() {
 	if u.container != "" {
 		filter.Containers = []string{u.container}
 	}
-
-	u.list = list.New(filter)
-
-	u.list.StyledNotFound = true
-
-	var watcher = list.NewWatcher(u.list)
-	watcher.StopCondition = u.isDone
-	watcher.Start()
+	u.watcher = list.NewWatcher(list.New(filter))
+	u.watcher.List.HandleRequestError = u.handleWatchRequestError
+	u.watcher.StopCondition = u.isDone
+	u.watcher.Start()
 }
 
 func (u *unlink) checkProjectOrContainerExists() error {
@@ -125,7 +139,7 @@ func unlinkRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if err = u.checkProjectOrContainerExists(); err != nil {
-		return handleCheckProjectOrContainerError(err)
+		return err
 	}
 
 	if quiet {
