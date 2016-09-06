@@ -278,6 +278,9 @@ func (dm *DockerMachine) checkPortsAreAvailable() error {
 		s += fmt.Sprintf("%v\n", port)
 	}
 
+	s += "Sometimes docker doesn't free up ports properly.\n" +
+		"If you don't know why these ports are not available, try restarting docker.\n"
+
 	return errors.New(s)
 }
 
