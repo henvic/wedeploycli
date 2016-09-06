@@ -12,9 +12,10 @@ import (
 	"github.com/wedeploy/cli/user"
 )
 
-var script = `
-autoload bashcompinit
-bashcompinit
+var script = `if [ -n "$ZSH_VERSION" ]; then
+  autoload bashcompinit
+  bashcompinit
+fi
 
 _we()  {
   COMPREPLY=()
