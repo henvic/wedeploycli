@@ -84,7 +84,7 @@ func (u *unlink) handleWatchRequestError(err error) string {
 		fmt.Fprintf(os.Stderr, "%v", errorhandling.Handle(err))
 	}
 
-	return "Unlinked successfully!\n"
+	return "Unlinked successfully\n"
 }
 
 func (u *unlink) watch() {
