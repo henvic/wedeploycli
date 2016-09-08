@@ -25,6 +25,7 @@ var fixes = map[string]func(){
 	"1.0.0-alpha-26": autocompleteFix,
 	"1.0.0-alpha-27": autocompleteFix,
 	"1.0.0-alpha-28": autocompleteFix,
+	"1.0.0-alpha-29": autocompleteFix,
 }
 
 // ApplyFixes applies fixes functions for updating this tool after updates
