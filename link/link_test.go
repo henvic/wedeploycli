@@ -67,23 +67,6 @@ func TestAll(t *testing.T) {
 	servertest.Teardown()
 }
 
-func TestAllAuth(t *testing.T) {
-	servertest.Setup()
-	configmock.Setup()
-
-	var m Machine
-	var err = m.Setup([]string{"mocks/project-with-auth/mycontainer"})
-
-	if err != nil {
-		t.Errorf("Unexpected error %v on linking", err)
-	}
-
-	m.Run()
-
-	configmock.Teardown()
-	servertest.Teardown()
-}
-
 func TestAllOnlyNewError(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
