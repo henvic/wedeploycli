@@ -32,17 +32,21 @@ var add = `
 autocompleteCommand="[ -f ~/.we_autocomplete ] && source ~/.we_autocomplete"
 
 # Install autocomplete for bash
-grep -Fxq "$autocompleteCommand" ~/.bashrc && ec=$? || ec=$?
+if [ -w ~/.bashrc ] ; then
+  grep -Fxq "$autocompleteCommand" ~/.bashrc && ec=$? || ec=$?
 
-if [ $ec -ne 0 ] ; then
-  echo -e "\n# Adding autocomplete for 'we' \n$autocompleteCommand\n" >> ~/.bashrc
+  if [ $ec -ne 0 ] ; then
+    echo -e "\n# Adding autocomplete for 'we'\n$autocompleteCommand" >> ~/.bashrc
+  fi
 fi
 
 # Install autocomplete for zsh
-grep -Fxq "$autocompleteCommand" ~/.zshrc && ec=$? || ec=$?
+if [ -w ~/.zshrc ] ; then
+  grep -Fxq "$autocompleteCommand" ~/.zshrc && ec=$? || ec=$?
 
-if [ $ec -ne 0 ] ; then
-  echo -e "\n# Adding autocomplete for 'we' \n$autocompleteCommand\n" >> ~/.zshrc
+  if [ $ec -ne 0 ] ; then
+    echo -e "\n# Adding autocomplete for 'we'\n$autocompleteCommand" >> ~/.zshrc
+  fi
 fi
 `
 
