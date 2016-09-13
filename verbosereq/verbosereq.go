@@ -19,10 +19,21 @@ import (
 // Disabled flag
 var Disabled = false
 
+var log func(...interface{})
+
+// SetLogFunc for printing the verbosereq debug message
+func SetLogFunc(i func(...interface{})) {
+	log = i
+}
+
+func init() {
+	SetLogFunc(verbose.Debug)
+}
+
 // debugRequestBody prints verbose messages when debugging is enabled
 func debugRequestBody(body io.Reader) {
 	if body != nil {
-		verbose.Debug("")
+		log("")
 	}
 
 	switch body.(type) {
@@ -42,12 +53,12 @@ func debugRequestBody(body io.Reader) {
 
 func debugFileReaderBody(body io.Reader) {
 	var fr = body.(*os.File)
-	verbose.Debug(
+	log(
 		color.Format(color.FgMagenta, "Sending file as request body:\n%v", fr.Name()))
 }
 
 func debugBufferReaderBody(body io.Reader) {
-	verbose.Debug(fmt.Sprintf("\n%s", body.(*bytes.Buffer)))
+	log(fmt.Sprintf("\n%s", body.(*bytes.Buffer)))
 }
 
 func debugBytesReaderBody(body io.Reader) {
@@ -62,7 +73,7 @@ func debugBytesReaderBody(body io.Reader) {
 		panic(err)
 	}
 
-	verbose.Debug("\n" + b.String())
+	log("\n" + b.String())
 }
 
 func debugStringsReaderBody(body io.Reader) {
@@ -77,11 +88,11 @@ func debugStringsReaderBody(body io.Reader) {
 		panic(err)
 	}
 
-	verbose.Debug("\n" + (b.String()))
+	log("\n" + (b.String()))
 }
 
 func debugUnknownTypeBody(body io.Reader) {
-	verbose.Debug("\n" + color.Format(
+	log("\n" + color.Format(
 		color.FgRed,
 		"(request body: "+reflect.TypeOf(body).String()+")"),
 	)
@@ -94,7 +105,7 @@ func Feedback(request *wedeploy.WeDeploy) {
 	}
 
 	if request.Request == nil {
-		verbose.Debug(">", color.Format(color.FgRed, "(wait)"), request.URL)
+		log(">", color.Format(color.FgRed, "(wait)"), request.URL)
 		return
 	}
 
@@ -102,7 +113,7 @@ func Feedback(request *wedeploy.WeDeploy) {
 }
 
 func requestVerboseFeedback(request *wedeploy.WeDeploy) {
-	verbose.Debug(">",
+	log(">",
 		color.Format(color.FgBlue, request.Request.Method),
 		color.Format(color.FgYellow, request.URL),
 		color.Format(color.FgBlue, request.Request.Proto))
@@ -110,22 +121,22 @@ func requestVerboseFeedback(request *wedeploy.WeDeploy) {
 	verbosePrintHeaders(request.Headers)
 	debugRequestBody(request.RequestBody)
 
-	verbose.Debug("\n")
+	log("\n")
 	feedbackResponse(request.Response)
 }
 
 func feedbackResponse(response *http.Response) {
 	if response == nil {
-		verbose.Debug(color.Format(color.FgRed, "(null response)"))
+		log(color.Format(color.FgRed, "(null response)"))
 		return
 	}
 
-	verbose.Debug("<",
+	log("<",
 		color.Format(color.FgBlue, response.Proto),
 		color.Format(color.FgRed, response.Status))
 
 	verbosePrintHeaders(response.Header)
-	verbose.Debug("")
+	log("")
 
 	feedbackResponseBody(response)
 }
@@ -134,8 +145,8 @@ func feedbackResponseBody(response *http.Response) {
 	var body, err = ioutil.ReadAll(response.Body)
 
 	if err != nil {
-		verbose.Debug("Error reading response body")
-		verbose.Debug(err)
+		log("Error reading response body")
+		log(err)
 		return
 	}
 
@@ -147,8 +158,8 @@ func feedbackResponseBodyReadJSON(response *http.Response, body []byte) (
 	if strings.Contains(
 		response.Header.Get("Content-Type"), "application/json") {
 		if err := json.Indent(&out, body, "", "    "); err != nil {
-			verbose.Debug("Response not JSON (as expected by Content-Type)")
-			verbose.Debug(err)
+			log("Response not JSON (as expected by Content-Type)")
+			log(err)
 		}
 	}
 
@@ -165,15 +176,15 @@ func feedbackResponseBodyAll(response *http.Response, body []byte) {
 		}
 	}
 
-	verbose.Debug(color.Format(color.FgMagenta, out.String()) + "\n")
+	log(color.Format(color.FgMagenta, out.String()) + "\n")
 }
 
 func verbosePrintHeaders(headers http.Header) {
 	for h, r := range headers {
 		if len(r) == 1 {
-			verbose.Debug(color.Format(color.FgBlue, h)+color.Format(color.FgRed, ":"), color.Format(color.FgYellow, r[0]))
+			log(color.Format(color.FgBlue, h)+color.Format(color.FgRed, ":"), color.Format(color.FgYellow, r[0]))
 		} else {
-			verbose.Debug(color.Format(color.FgBlue, h)+color.Format(color.FgRed, ":"), r)
+			log(color.Format(color.FgBlue, h)+color.Format(color.FgRed, ":"), r)
 		}
 	}
 }
