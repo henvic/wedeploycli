@@ -1,5 +1,5 @@
 build:
-  image: golang:1.7
+  image: golang:1.7.1
   commands:
     - go version
     - go get github.com/Masterminds/glide
