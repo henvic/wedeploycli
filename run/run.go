@@ -690,7 +690,7 @@ func rmContainers() error {
 		return nil
 	}
 
-	var params = []string{"rm"}
+	var params = []string{"rm", "--force"}
 	params = append(params, ids...)
 	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
 	var rm = exec.Command(bin, params...)
