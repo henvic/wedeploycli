@@ -233,6 +233,10 @@ func (dm *DockerMachine) Stop() error {
 		verbose.Debug("No infrastructure container detected.")
 	}
 
+	if err := unlinkProjects(); err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+	}
+
 	if err := cleanupEnvironment(); err != nil {
 		return err
 	}
@@ -630,6 +634,24 @@ func startCmd(args ...string) (dockerContainer string, err error) {
 	}
 
 	return strings.TrimSpace(dockerContainerBuf.String()), err
+}
+
+func unlinkProjects() error {
+	verbose.Debug("Unlinking projects")
+
+	list, err := projects.List()
+
+	if err != nil {
+		return errwrap.Wrapf("Can't list projects for unlinking: {{err}}", err)
+	}
+
+	for _, p := range list {
+		if err := projects.Unlink(p.ID); err != nil {
+			fmt.Fprintf(os.Stderr, "Unlinking project %v error: %v\n", p.ID, err)
+		}
+	}
+
+	return err
 }
 
 func cleanupEnvironment() error {
