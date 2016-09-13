@@ -293,20 +293,13 @@ func (dm *DockerMachine) waitEnd() {
 	verbose.Debug("docker wait process pid:", p.Pid)
 	dm.waitProcess = p
 
-	var ps *os.ProcessState
-	ps, err = p.Wait()
-
-	switch {
-	case err != nil:
+	if _, err = p.Wait(); err != nil {
 		fmt.Fprintf(os.Stderr, "WeDeploy exit listener error: %v. Containers might still be running.\n", err)
 		os.Exit(1)
-	case ps.Success():
-		if !dm.selfStopSignal {
-			dm.waitCleanup()
-		}
-	default:
-		println("WeDeploy exit listener failure.")
-		os.Exit(1)
+	}
+
+	if !dm.selfStopSignal {
+		dm.waitCleanup()
 	}
 }
 
