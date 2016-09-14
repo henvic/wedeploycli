@@ -670,7 +670,18 @@ func cleanupEnvironment() error {
 	}
 
 	verbose.Debug("End of environment clean up.")
-	return nil
+
+	ids, err := getDockerContainers(true)
+
+	if err != nil {
+		return errwrap.Wrapf("Can't verify containers are down: {{err}}", err)
+	}
+
+	if len(ids) != 0 {
+		err = fmt.Errorf("Containers still up after shutdown procedure: %v", ids)
+	}
+
+	return err
 }
 
 func stopContainers() error {
