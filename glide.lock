@@ -1,61 +1,63 @@
-hash: 60188287996601d9a93a15edb0e6205b6ab1334f3c7027b1ea6a838709a93fe1
-updated: 2016-08-08T09:19:29.706605202-07:00
+hash: e51662fa6bd5a1091430ad3de34ba4c97e2bae819b7097682f9662e44103a4bd
+updated: 2016-09-14T19:34:38.958491064-03:00
 imports:
 - name: github.com/cpuguy83/go-md2man
-  version: 2724a9c9051aa62e9cca11304e7dd518e9e41599
+  version: a65d4d2de4d5f7c74868dfa9b202a3c8be315aaa
   subpackages:
   - md2man
 - name: github.com/equinox-io/equinox
   version: 6f97d0d3970881d3e53dd6f547a41109eb055e54
   subpackages:
   - internal/go-update
-  - internal/osext
-  - proto
   - internal/go-update/internal/binarydist
   - internal/go-update/internal/osext
+  - internal/osext
+  - proto
 - name: github.com/hashicorp/errwrap
   version: 7554cd9344cec97297fa6649b055a8c98c2a1e55
 - name: github.com/henvic/uilive
   version: 5fa69abff5263544d2b7fd68e21ab36a3a381a1b
 - name: github.com/howeyc/gopass
-  version: 66487b23f2880ba32e185121d2cd51a338ea069a
+  version: 26c6e1184fd5255fa5f5289d0b789a4819c203a4
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/kylelemons/godebug
   version: eadb3ce320cbab8393bea5ca17bebac3f78a021b
   subpackages:
   - diff
+  - pretty
 - name: github.com/mattn/go-isatty
-  version: 56b76bdf51f7708750eac80fa38b952bb9f32639
+  version: 66b8e73f3f5cda9f96b69efd03dd3d7fc4a5cdb8
 - name: github.com/mitchellh/go-wordwrap
   version: ad45545899c7b13c020ea92b2072220eefad42b8
 - name: github.com/russross/blackfriday
-  version: 93622da34e54fb6529bfb7c57e710f37a8d9cbd8
+  version: 35eb537633d9950afc8ae7bdf0edb6134584e9fc
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/spf13/cobra
-  version: f62e98d28ab7ad31d707ba837a966378465c7b57
+  version: 9c28e4bbd74e5c3ed7aacbc552b2cab7cfdfe744
   subpackages:
   - doc
 - name: github.com/spf13/pflag
-  version: 1560c1005499d61b80f865c04d39ca7505bf7f0b
+  version: 7b17cc4658ef5ca157b986ea5c0b43af7938532b
 - name: github.com/wedeploy/api-go
-  version: 98f9fe9488368af653b90022fa88d6ee3098c6d4
+  version: 7a3b231eabc524a88219bcfc8b641c7938a5f7f6
   subpackages:
-  - query
-  - urilib
   - aggregation
   - filter
-  - qrange
   - geo
+  - jsonlib
+  - qrange
+  - query
+  - urilib
 - name: golang.org/x/crypto
-  version: 911fafb28f4ee7c7bd483539a6c96190bbbccc3f
+  version: 119f50887f8fe324fe2386421c27a11af014b64e
   subpackages:
   - ssh/terminal
 - name: golang.org/x/sys
-  version: a646d33e2ee3172a661fc09bca23bb4889a41bc8
+  version: 30de6d19a3bd89a5f38ae4028e23aaa5582648af
   subpackages:
   - unix
 - name: gopkg.in/ini.v1
-  version: cf53f9204df4fbdd7ec4164b57fa6184ba168292
+  version: 6e4869b434bd001f6983749881c7ead3545887d8
 testImports: []

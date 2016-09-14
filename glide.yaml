@@ -10,8 +10,8 @@ import:
   subpackages:
   - doc
 - package: github.com/wedeploy/api-go
-  version: v1.0.0-alpha.5
+  version: v1.0.0-alpha.7.2
 - package: gopkg.in/ini.v1
-  version: v1.18.0
+  version: v1.21.1
 - package: github.com/mitchellh/go-wordwrap
 - package: github.com/hashicorp/errwrap
