@@ -34,8 +34,6 @@ var WeDeployImage = "wedeploy/local:" + defaults.WeDeployImageTag
 
 var bin = "docker"
 
-var dockerLatestImageTag = "latest"
-
 type tcpPortsStruct []int
 
 func (t tcpPortsStruct) getAvailability() (all bool, notAvailable []int) {
@@ -109,7 +107,7 @@ func StopOutdatedImage(nextImage string) error {
 		return nil
 	}
 
-	if nextImage == WeDeployImage && nextImage != dockerLatestImageTag {
+	if nextImage == WeDeployImage && nextImage != defaults.WeDeployImageTag {
 		verbose.Debug("Continuing update without stopping: same infrastructure version detected.")
 		return nil
 	}
@@ -121,7 +119,7 @@ func StopOutdatedImage(nextImage string) error {
 		return errors.New("No terminal (/dev/tty) detected for asking to stop the infrastructure. Exiting.")
 	}
 
-	if nextImage == dockerLatestImageTag {
+	if nextImage == "latest" {
 		println("Notice: Updating to latest always requires WeDeploy infrastructure to be turned off.")
 	}
 
@@ -177,8 +175,8 @@ func pullFeedback(err error) error {
 		return nil
 	}
 
-	// we ignore it for, say, "latest"
-	if defaults.WeDeployImageTag != dockerLatestImageTag {
+	// we ignore it for "latest"
+	if defaults.WeDeployImageTag != "latest" {
 		return errwrap.Wrapf("docker pull error: {{err}}\n"+
 			"Can't continue running with an outdated image", err)
 	}

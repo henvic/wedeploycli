@@ -257,7 +257,7 @@ func (dm *DockerMachine) start() (err error) {
 }
 
 func (dm *DockerMachine) hasCurrentWeDeployImage() bool {
-	if defaults.WeDeployImageTag == dockerLatestImageTag {
+	if defaults.WeDeployImageTag == "latest" {
 		verbose.Debug("Shortcutting WeDeploy docker image as outdated (because its tag is \"latest\").")
 		return false
 	}
