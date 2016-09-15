@@ -14,9 +14,9 @@ import (
 
 	"github.com/gosuri/uilive"
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/verbose"
+	"github.com/wedeploy/cli/waitlivemsg"
 )
 
 // Flags modifiers
@@ -24,20 +24,18 @@ type Flags struct {
 	Debug    bool
 	Detach   bool
 	DryRun   bool
-	ViewMode bool
 	NoUpdate bool
 }
 
 // DockerMachine for the run command
 type DockerMachine struct {
-	Container string
-	Image     string
-	Flags     Flags
-	upTime    time.Time
+	Container   string
+	Image       string
+	Flags       Flags
+	WaitLiveMsg *waitlivemsg.WaitLiveMsg
 	// waitProcess is the "docker wait" PID
 	waitProcess    *os.Process
 	livew          *uilive.Writer
-	tickerd        chan bool
 	end            chan bool
 	started        chan bool
 	selfStopSignal bool
@@ -69,52 +67,56 @@ func Stop() error {
 
 // Run executes the WeDeploy infraestruture
 func (dm *DockerMachine) Run() (err error) {
-	dm.prepare()
+	dm.LoadDockerInfo()
+	dm.setupPorts()
 
-	if dm.Flags.Detach {
-		dm.end <- true
+	if !dm.Flags.DryRun && dm.Container != "" {
+		println(`Infrastructure already running.`)
+		println(`Use "we stop" to stop it.`)
+		os.Exit(0)
 	}
 
-	if len(dm.Container) == 0 && dm.Flags.ViewMode {
-		return errors.New("View mode is not available: WeDeploy is shutdown.")
-	}
+	dm.livew = uilive.New()
+	dm.started = make(chan bool, 1)
+	dm.end = make(chan bool, 1)
 
-	var already = len(dm.Container) != 0 && !dm.Flags.DryRun
-
-	if already {
-		fmt.Println("WeDeploy is already running.")
-
-		if dm.Flags.Debug {
-			fmt.Fprintf(os.Stderr, "Can't expose debug ports because system is already up.\n")
-		}
-	} else if err = cleanupEnvironment(); err != nil {
-		return err
-	}
-
-	dm.maybeStopListener()
-
-	if !already {
-		if err = dm.start(); err != nil {
+	if !dm.Flags.DryRun {
+		if err = cleanupEnvironment(); err != nil {
 			return err
 		}
+	}
+
+	dm.stopListener()
+
+	if err = dm.start(); err != nil {
+		return err
 	}
 
 	dm.maybeWaitEnd()
 	dm.started <- true
 	go dm.waitReadyState()
 	<-dm.end
+
 	return nil
 }
 
 // Stop stops the machine
 func (dm *DockerMachine) Stop() error {
+	dm.livew = uilive.New()
+	stopMsg := waitlivemsg.WaitLiveMsg{
+		Msg:    "Stopping WeDeploy.",
+		Stream: dm.livew,
+	}
+
+	go stopMsg.Wait()
 	dm.LoadDockerInfo()
 
 	if dm.Container == "" {
 		verbose.Debug("No infrastructure container detected.")
 	}
 
-	if err := unlinkProjects(); err != nil {
+	if err := unlinkProjects(); err != nil &&
+		!strings.Contains(err.Error(), "local infrastructure is not running") {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 	}
 
@@ -128,6 +130,9 @@ func (dm *DockerMachine) Stop() error {
 			return errwrap.Wrapf("Can't terminate docker wait process: {{err}}", err)
 		}
 	}
+
+	stopMsg.Stop()
+	fmt.Println("WeDeploy is shutdown.")
 
 	return nil
 }
@@ -184,7 +189,7 @@ func (dm *DockerMachine) waitEnd() {
 	}
 
 	if !dm.selfStopSignal {
-		dm.waitCleanup()
+		dm.endRun()
 	}
 }
 
@@ -196,15 +201,24 @@ func (dm *DockerMachine) maybeWaitEnd() {
 
 func (dm *DockerMachine) waitReadyState() {
 	var tries = 1
-	dm.upTime = time.Now()
-	dm.checkConnection()
+	dm.WaitLiveMsg = &waitlivemsg.WaitLiveMsg{
+		Msg:    "Starting WeDeploy",
+		Stream: dm.livew,
+	}
+
+	go dm.WaitLiveMsg.Wait()
+
+	// Starting WeDeploy
 	for tries <= 100 {
 		var _, err = projects.List()
 
 		if err == nil {
-			dm.tickerd <- true
-			fmt.Fprintf(dm.livew, "WeDeploy is ready! %vs\n", dm.getStartupTime())
+			dm.WaitLiveMsg.Stop()
+			fmt.Fprintf(dm.livew, "WeDeploy is ready! %vs\n", dm.WaitLiveMsg.Duration())
 			dm.ready()
+			if dm.Flags.Detach {
+				dm.end <- true
+			}
 			return
 		}
 
@@ -213,13 +227,15 @@ func (dm *DockerMachine) waitReadyState() {
 		time.Sleep(1 * time.Second)
 	}
 
-	dm.tickerd <- true
+	dm.WaitLiveMsg.Stop()
 
-	fmt.Fprintf(dm.livew, "WeDeploy is up.\n")
 	println("Failed to verify if WeDeploy is working correctly.")
+	if dm.Flags.Detach {
+		dm.end <- true
+	}
 }
 
-func (dm *DockerMachine) waitCleanup() {
+func (dm *DockerMachine) endRun() {
 	fmt.Println("WeDeploy is shutdown.")
 	dm.end <- true
 }
@@ -242,33 +258,12 @@ func (dm *DockerMachine) start() (err error) {
 		return err
 	}
 
-	if !dm.Flags.NoUpdate && !dm.hasCurrentWeDeployImage() {
-		if err := pull(); err != nil {
-			return err
-		}
-	}
-
 	if dm.Container, err = startCmd(args...); err != nil {
 		return err
 	}
 
 	verbose.Debug("Docker container ID:", dm.Container)
 	return err
-}
-
-func (dm *DockerMachine) hasCurrentWeDeployImage() bool {
-	if defaults.WeDeployImageTag == "latest" {
-		verbose.Debug("Shortcutting WeDeploy docker image as outdated (because its tag is \"latest\").")
-		return false
-	}
-
-	return dm.Image == WeDeployImage
-}
-
-func (dm *DockerMachine) maybeStopListener() {
-	if !dm.Flags.Detach && !dm.Flags.ViewMode {
-		dm.stopListener()
-	}
 }
 
 func (dm *DockerMachine) stopListener() {
@@ -283,9 +278,16 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 	<-dm.started
 	verbose.Debug("Started end signal received.")
 
-	dm.tickerd <- true
+	dm.WaitLiveMsg.Stop()
 	dm.selfStopSignal = true
-	fmt.Println("\nStopping WeDeploy.")
+	fmt.Println("\n")
+
+	stopMsg := waitlivemsg.WaitLiveMsg{
+		Msg:    "Stopping WeDeploy.",
+		Stream: dm.livew,
+	}
+
+	go stopMsg.Wait()
 
 	var killListenerStarted sync.WaitGroup
 	killListenerStarted.Add(1)
@@ -318,61 +320,15 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 	}
 
-	dm.waitCleanup()
-}
-
-func (dm *DockerMachine) checkConnection() {
-	var ticker = time.NewTicker(time.Second)
-	go dm.checkConnectionCounter(ticker)
-}
-
-func (dm *DockerMachine) checkConnectionCounter(ticker *time.Ticker) {
-	for {
-		select {
-		case t := <-ticker.C:
-			var p = WarmupOn
-			if t.Second()%2 == 0 {
-				p = WarmupOff
-			}
-
-			var dots = strings.Repeat(".", t.Second()%3+1)
-
-			fmt.Fprintf(dm.livew, "%c Starting WeDeploy%s %ds\n",
-				p, dots, dm.getStartupTime())
-
-			if err := dm.livew.Flush(); err != nil {
-				fmt.Fprintf(os.Stderr, "%v\n", err)
-			}
-		case <-dm.tickerd:
-			ticker.Stop()
-			ticker = nil
-			return
-		}
-	}
-}
-
-func (dm *DockerMachine) getStartupTime() int {
-	return int(-dm.upTime.Sub(time.Now()).Seconds())
-}
-
-func (dm *DockerMachine) prepare() {
-	dm.testAlreadyRunning()
-	dm.livew = uilive.New()
-	dm.tickerd = make(chan bool, 1)
-	dm.started = make(chan bool, 1)
-	dm.end = make(chan bool, 1)
-	dm.setupPorts()
+	stopMsg.Stop()
+	dm.endRun()
 }
 
 func (dm *DockerMachine) ready() {
 	fmt.Fprintf(dm.livew, "You can now test your apps locally.")
 
-	if !dm.Flags.ViewMode && !dm.Flags.Detach {
+	if !dm.Flags.Detach {
 		fmt.Fprintf(dm.livew, " Press Ctrl+C to shut it down when you are done.")
-	}
-
-	if !dm.Flags.ViewMode && dm.Flags.Detach {
-		fmt.Fprintf(dm.livew, "\nRunning on background. \"we stop\" stops the infrastructure.")
 	}
 
 	fmt.Fprintf(dm.livew, "\n")
@@ -443,21 +399,6 @@ func (dm *DockerMachine) checkImage() {
 
 	if dm.Image == "" {
 		verbose.Debug("Docker image for the infrastructure not found.")
-	}
-}
-
-func (dm *DockerMachine) testAlreadyRunning() {
-	dm.LoadDockerInfo()
-
-	// if the infrastructure is already running, test version
-	if dm.Container != "" && WeDeployImage != dm.Image {
-		fmt.Fprintf(os.Stderr, "docker image %v found instead of required %v\n", dm.Image, WeDeployImage)
-		println("Stop the infrastructure on docker before running this command again.")
-		os.Exit(1)
-	}
-
-	if !dm.Flags.DryRun && dm.Container != "" {
-		verbose.Debug("Docker container ID:", dm.Container)
 	}
 }
 

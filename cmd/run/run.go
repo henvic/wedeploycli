@@ -19,7 +19,6 @@ var (
 	debug    bool
 	detach   bool
 	dryRun   bool
-	viewMode bool
 	noUpdate bool
 )
 
@@ -38,7 +37,6 @@ func runRun(cmd *cobra.Command, args []string) error {
 		Debug:    debug,
 		Detach:   detach,
 		DryRun:   dryRun,
-		ViewMode: viewMode,
 		NoUpdate: noUpdate,
 	})
 }
@@ -52,9 +50,6 @@ func init() {
 
 	RunCmd.Flags().BoolVar(&dryRun, "dry-run", false,
 		"Obtain a summary of what docker command is invoked")
-
-	RunCmd.Flags().BoolVar(&viewMode, "view-mode", false,
-		"View only mode (no controls)")
 
 	RunCmd.Flags().BoolVar(&noUpdate, "no-update", false,
 		"Don't try to update the docker image")

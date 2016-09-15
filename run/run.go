@@ -18,14 +18,6 @@ import (
 	"github.com/wedeploy/cli/verbose"
 )
 
-const (
-	// WarmupOn symbol
-	WarmupOn = '○'
-
-	// WarmupOff symbol
-	WarmupOff = '●'
-)
-
 // ErrHostNotFound is used when host is not found
 var ErrHostNotFound = errors.New("You need to be connected to a network.")
 
@@ -159,29 +151,6 @@ func runWait(container string) (*os.Process, error) {
 	var err = c.Start()
 
 	return c.Process, err
-}
-
-func pull() error {
-	fmt.Println("Pulling WeDeploy infrastructure docker image. Hold on.")
-	var docker = exec.Command(bin, "pull", WeDeployImage)
-	docker.Stderr = os.Stderr
-	docker.Stdout = os.Stdout
-
-	return pullFeedback(docker.Run())
-}
-
-func pullFeedback(err error) error {
-	if err == nil {
-		return nil
-	}
-
-	// we ignore it for "latest"
-	if defaults.WeDeployImageTag != "latest" {
-		return errwrap.Wrapf("docker pull error: {{err}}\n"+
-			"Can't continue running with an outdated image", err)
-	}
-
-	return errwrap.Wrapf("docker pull error: {{err}}", err)
 }
 
 func startCmd(args ...string) (dockerContainer string, err error) {
