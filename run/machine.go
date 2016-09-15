@@ -250,12 +250,12 @@ func (dm *DockerMachine) start() (err error) {
 		verbose.Debug(running)
 	}
 
-	if dm.Flags.DryRun {
-		os.Exit(0)
-	}
-
 	if err = dm.checkPortsAreAvailable(); err != nil {
 		return err
+	}
+
+	if dm.Flags.DryRun {
+		os.Exit(0)
 	}
 
 	if dm.Container, err = startCmd(args...); err != nil {
