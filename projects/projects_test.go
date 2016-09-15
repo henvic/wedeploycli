@@ -241,7 +241,7 @@ func TestUnlink(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	servertest.Mux.HandleFunc("/deploy/foo", func(w http.ResponseWriter, r *http.Request) {
+	servertest.Mux.HandleFunc("/projects/foo", func(w http.ResponseWriter, r *http.Request) {
 		var wantMethod = "DELETE"
 		if r.Method != wantMethod {
 			t.Errorf("Wanted method %v, got %v instead", wantMethod, r.Method)

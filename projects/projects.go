@@ -122,7 +122,7 @@ func Restart(id string) error {
 
 // Unlink project
 func Unlink(projectID string) error {
-	var req = apihelper.URL("/deploy", projectID)
+	var req = apihelper.URL("/projects", projectID)
 	apihelper.Auth(req)
 
 	return apihelper.Validate(req, req.Delete())
