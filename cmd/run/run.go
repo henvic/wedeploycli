@@ -15,6 +15,7 @@ var RunCmd = &cobra.Command{
 }
 
 var (
+	image    string
 	debug    bool
 	detach   bool
 	dryRun   bool
@@ -25,6 +26,12 @@ var (
 func runRun(cmd *cobra.Command, args []string) error {
 	if len(args) != 0 {
 		return errors.New("Invalid number of arguments.")
+	}
+
+	if image != "" {
+		println("INFO: Experimental image are never updated if available locally")
+		run.WeDeployImage = image
+		noUpdate = true
 	}
 
 	return run.Run(run.Flags{
@@ -51,4 +58,10 @@ func init() {
 
 	RunCmd.Flags().BoolVar(&noUpdate, "no-update", false,
 		"Don't try to update the docker image")
+
+	RunCmd.Flags().StringVar(&image, "experimental-image", "", "Experimental image to run")
+
+	if err := RunCmd.Flags().MarkHidden("experimental-image"); err != nil {
+		panic(err)
+	}
 }
