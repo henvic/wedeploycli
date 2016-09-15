@@ -280,7 +280,7 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 
 	dm.WaitLiveMsg.Stop()
 	dm.selfStopSignal = true
-	fmt.Println("\n")
+	fmt.Println("")
 
 	stopMsg := waitlivemsg.WaitLiveMsg{
 		Msg:    "Stopping WeDeploy.",
