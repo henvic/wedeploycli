@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -406,6 +407,29 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 	dm.selfStopSignal = true
 	fmt.Println("\nStopping WeDeploy.")
 
+	var killListenerStarted sync.WaitGroup
+	killListenerStarted.Add(1)
+
+	go func() {
+		killListenerStarted.Done()
+		<-sigs
+		println("Cleaning up running infrastructure. Please wait.")
+		<-sigs
+		println("To kill this window (not recommended), try again in 60 seconds.")
+		var gracefulExitLoopTimeout = time.Now().Add(1 * time.Minute)
+	killLoop:
+		<-sigs
+
+		if time.Now().After(gracefulExitLoopTimeout) {
+			println("\n\"we run\" killed awkwardly. Use \"we stop\" to kill ghosts.")
+			os.Exit(1)
+		}
+
+		goto killLoop
+	}()
+
+	killListenerStarted.Wait()
+
 	if err := cleanupEnvironment(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 	}
@@ -486,6 +510,7 @@ func (dm *DockerMachine) LoadDockerInfo() {
 	}
 
 	var docker = exec.Command(bin, args...)
+	tryAddCommandToNewProcessGroup(docker)
 	var buf bytes.Buffer
 	docker.Stderr = os.Stderr
 	docker.Stdout = &buf
@@ -520,6 +545,7 @@ func (dm *DockerMachine) checkImage() {
 	}
 
 	var docker = exec.Command(bin, args...)
+	tryAddCommandToNewProcessGroup(docker)
 	var buf bytes.Buffer
 	docker.Stderr = os.Stderr
 	docker.Stdout = &buf
@@ -595,6 +621,7 @@ func (dm *DockerMachine) getRunCommandEnv() []string {
 
 func runWait(container string) (*os.Process, error) {
 	var c = exec.Command(bin, "wait", container)
+	tryAddCommandToNewProcessGroup(c)
 	var err = c.Start()
 
 	return c.Process, err
@@ -700,6 +727,7 @@ func stopContainers() error {
 	params = append(params, ids...)
 	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
 	var stop = exec.Command(bin, params...)
+	tryAddCommandToNewProcessGroup(stop)
 	stop.Stderr = os.Stderr
 
 	switch err = stop.Run(); err.(type) {
@@ -727,6 +755,7 @@ func rmContainers() error {
 	params = append(params, ids...)
 	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
 	var rm = exec.Command(bin, params...)
+	tryAddCommandToNewProcessGroup(rm)
 	rm.Stderr = os.Stderr
 
 	if err = rm.Run(); err != nil {
@@ -751,6 +780,7 @@ func rmOldInfrastructureImages() error {
 	params = append(params, ids...)
 	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
 	var rm = exec.Command(bin, params...)
+	tryAddCommandToNewProcessGroup(rm)
 	rm.Stderr = os.Stderr
 
 	if err = rm.Run(); err != nil {
@@ -787,6 +817,7 @@ func getContainersByLabel(label string, onlyRunning bool) (cs []string, err erro
 
 	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
 	var list = exec.Command(bin, params...)
+	tryAddCommandToNewProcessGroup(list)
 	var buf bytes.Buffer
 	list.Stderr = os.Stderr
 	list.Stdout = &buf
@@ -809,6 +840,7 @@ func getOldInfrastructureImages() ([]string, error) {
 
 	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
 	var list = exec.Command(bin, params...)
+	tryAddCommandToNewProcessGroup(list)
 	var buf bytes.Buffer
 	list.Stderr = os.Stderr
 	list.Stdout = &buf
