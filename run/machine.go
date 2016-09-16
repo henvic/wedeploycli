@@ -12,8 +12,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gosuri/uilive"
 	"github.com/hashicorp/errwrap"
+	"github.com/henvic/uilive"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/waitlivemsg"

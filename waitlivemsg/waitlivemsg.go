@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gosuri/uilive"
+	"github.com/henvic/uilive"
 )
 
 const (
