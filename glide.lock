@@ -1,5 +1,5 @@
-hash: e51662fa6bd5a1091430ad3de34ba4c97e2bae819b7097682f9662e44103a4bd
-updated: 2016-09-14T19:34:38.958491064-03:00
+hash: 0bd7ad30f7c30fdee3c0e3927f113bc2b01a8f95cdd909ff6cdadec96090415a
+updated: 2016-09-17T05:20:26.523037775-03:00
 imports:
 - name: github.com/cpuguy83/go-md2man
   version: a65d4d2de4d5f7c74868dfa9b202a3c8be315aaa
@@ -39,9 +39,9 @@ imports:
   subpackages:
   - doc
 - name: github.com/spf13/pflag
-  version: 7b17cc4658ef5ca157b986ea5c0b43af7938532b
+  version: c7e63cf4530bcd3ba943729cee0efeff2ebea63f
 - name: github.com/wedeploy/api-go
-  version: 7a3b231eabc524a88219bcfc8b641c7938a5f7f6
+  version: e4258f3d87609e819bd8a9f998ca31c5d538f19e
   subpackages:
   - aggregation
   - filter
@@ -51,11 +51,11 @@ imports:
   - query
   - urilib
 - name: golang.org/x/crypto
-  version: 119f50887f8fe324fe2386421c27a11af014b64e
+  version: 81372b2fc2f10bef2a7f338da115c315a56b2726
   subpackages:
   - ssh/terminal
 - name: golang.org/x/sys
-  version: 30de6d19a3bd89a5f38ae4028e23aaa5582648af
+  version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
   subpackages:
   - unix
 - name: gopkg.in/ini.v1
