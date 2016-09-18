@@ -2,6 +2,7 @@ package containers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -103,7 +104,7 @@ func TestGet(t *testing.T) {
 	servertest.Mux.HandleFunc("/projects/images/containers/search7606",
 		tdata.ServerJSONFileHandler("mocks/container_response.json"))
 
-	var got, err = Get("images", "search7606")
+	var got, err = Get(context.Background(), "images", "search7606")
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v instead", err)
@@ -140,7 +141,7 @@ func TestList(t *testing.T) {
 	servertest.Mux.HandleFunc("/projects/images/containers",
 		tdata.ServerJSONFileHandler("mocks/containers_response.json"))
 
-	var got, err = List("images")
+	var got, err = List(context.Background(), "images")
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v instead", err)
@@ -201,7 +202,7 @@ func TestLink(t *testing.T) {
 		Type: "nodejs",
 	}
 
-	var err = Link("sound", "", c)
+	var err = Link(context.Background(), "sound", "", c)
 
 	if err != nil {
 		t.Errorf("Unexpected error on Install: %v", err)
@@ -220,7 +221,7 @@ func TestRegistry(t *testing.T) {
 		"/registry.json",
 		tdata.ServerJSONFileHandler("mocks/registry.json"))
 
-	var registry, err = GetRegistry()
+	var registry, err = GetRegistry(context.Background())
 
 	if len(registry) != 7 {
 		t.Errorf("Expected registry to have 7 images")
@@ -290,7 +291,7 @@ func TestRestart(t *testing.T) {
 			fmt.Fprintf(w, `"on"`)
 		})
 
-	if err := Restart("foo", "bar"); err != nil {
+	if err := Restart(context.Background(), "foo", "bar"); err != nil {
 		t.Errorf("Unexpected error on container restart: %v", err)
 	}
 
@@ -309,7 +310,7 @@ func TestUnlink(t *testing.T) {
 		}
 	})
 
-	var err = Unlink("foo", "bar")
+	var err = Unlink(context.Background(), "foo", "bar")
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v instead", err)
@@ -334,7 +335,7 @@ func TestValidate(t *testing.T) {
 			}
 		})
 
-	if err := Validate("foo", "bar"); err != nil {
+	if err := Validate(context.Background(), "foo", "bar"); err != nil {
 		t.Errorf("Wanted null error, got %v instead", err)
 	}
 
@@ -353,7 +354,7 @@ func TestValidateAlreadyExists(t *testing.T) {
 			fmt.Fprintf(w, tdata.FromFile("mocks/container_already_exists_response.json"))
 		})
 
-	if err := Validate("foo", "bar"); err != ErrContainerAlreadyExists {
+	if err := Validate(context.Background(), "foo", "bar"); err != ErrContainerAlreadyExists {
 		t.Errorf("Wanted %v error, got %v instead", ErrContainerAlreadyExists, err)
 	}
 
@@ -372,7 +373,7 @@ func TestValidateInvalidID(t *testing.T) {
 			fmt.Fprintf(w, tdata.FromFile("mocks/container_invalid_id_response.json"))
 		})
 
-	if err := Validate("foo", "bar"); err != ErrInvalidContainerID {
+	if err := Validate(context.Background(), "foo", "bar"); err != ErrInvalidContainerID {
 		t.Errorf("Wanted %v error, got %v instead", ErrInvalidContainerID, err)
 	}
 
@@ -391,7 +392,7 @@ func TestValidateError(t *testing.T) {
 			fmt.Fprintf(w, tdata.FromFile("../apihelper/mocks/unknown_error_api_response.json"))
 		})
 
-	var err = Validate("foo", "bar")
+	var err = Validate(context.Background(), "foo", "bar")
 
 	switch err.(type) {
 	case apihelper.APIFault:
@@ -413,7 +414,7 @@ func TestValidateInvalidError(t *testing.T) {
 			w.WriteHeader(404)
 		})
 
-	var err = Validate("foo", "bar")
+	var err = Validate(context.Background(), "foo", "bar")
 
 	if err == nil || errwrap.Get(err, "unexpected end of JSON input") == nil {
 		t.Errorf("Expected error didn't happen, got %v instead", err)

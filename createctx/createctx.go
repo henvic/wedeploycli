@@ -1,6 +1,7 @@
 package createctx
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -124,7 +125,7 @@ func (cc *containerCreator) run() error {
 }
 
 func (cc *containerCreator) getContainersRegister() error {
-	registry, err := containers.GetRegistry()
+	registry, err := containers.GetRegistry(context.Background())
 
 	if err != nil {
 		return errwrap.Wrapf("Can't get the registry: {{err}}", err)

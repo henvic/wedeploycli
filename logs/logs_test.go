@@ -2,6 +2,7 @@ package logs
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"sync"
@@ -84,7 +85,7 @@ func TestGetList(t *testing.T) {
 		Level:     4,
 	}
 
-	var list, err = GetList(filter)
+	var list, err = GetList(context.Background(), filter)
 
 	if err != nil {
 		t.Errorf("Unexpected error %v on GetList", err)
@@ -117,7 +118,7 @@ func TestList(t *testing.T) {
 		Instance:  "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
 	}
 
-	var err = List(filter)
+	var err = List(context.Background(), filter)
 
 	if err != nil {
 		t.Errorf("Unexpected error %v", err)

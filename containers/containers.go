@@ -1,6 +1,7 @@
 package containers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -64,24 +65,24 @@ func GetListFromDirectory(root string) ([]string, error) {
 }
 
 // List containers of a given project
-func List(projectID string) (Containers, error) {
+func List(ctx context.Context, projectID string) (Containers, error) {
 	var cs Containers
-	var err = apihelper.AuthGet("/projects/"+projectID+"/containers", &cs)
+	var err = apihelper.AuthGet(ctx, "/projects/"+projectID+"/containers", &cs)
 	return cs, err
 }
 
 // Get container
-func Get(projectID, containerID string) (Container, error) {
+func Get(ctx context.Context, projectID, containerID string) (Container, error) {
 	var c Container
-	var err = apihelper.AuthGet("/projects/"+projectID+"/containers/"+containerID, &c)
+	var err = apihelper.AuthGet(ctx, "/projects/"+projectID+"/containers/"+containerID, &c)
 	return c, err
 }
 
 // Link container to project
-func Link(projectID, containerPath string, container *Container) error {
+func Link(ctx context.Context, projectID, containerPath string, container *Container) error {
 	verbose.Debug("Installing container from definition")
 
-	var req = apihelper.URL("/deploy")
+	var req = apihelper.URL(ctx, "/deploy")
 	apihelper.Auth(req)
 
 	req.Param("projectId", projectID)
@@ -98,16 +99,17 @@ func Link(projectID, containerPath string, container *Container) error {
 }
 
 // Unlink container
-func Unlink(projectID, containerID string) error {
-	var req = apihelper.URL("/deploy", projectID, containerID)
+func Unlink(ctx context.Context, projectID, containerID string) error {
+	var req = apihelper.URL(ctx, "/deploy", projectID, containerID)
 	apihelper.Auth(req)
 
 	return apihelper.Validate(req, req.Delete())
 }
 
 // GetRegistry gets a list of container images
-func GetRegistry() (registry []Register, err error) {
+func GetRegistry(ctx context.Context) (registry []Register, err error) {
 	var request = wedeploy.URL(defaults.Hub, "/registry.json")
+	request.SetContext(ctx)
 
 	err = apihelper.Validate(request, request.Get())
 
@@ -148,16 +150,16 @@ func readValidate(container Container, err error) error {
 }
 
 // Restart restarts a container inside a project
-func Restart(projectID, containerID string) error {
-	var req = apihelper.URL("/restart/container?projectId=" + projectID + "&containerId=" + containerID)
+func Restart(ctx context.Context, projectID, containerID string) error {
+	var req = apihelper.URL(ctx, "/restart/container?projectId="+projectID+"&containerId="+containerID)
 
 	apihelper.Auth(req)
 	return apihelper.Validate(req, req.Post())
 }
 
 // Validate container
-func Validate(projectID, containerID string) (err error) {
-	var req = apihelper.URL("/validators/containers/id")
+func Validate(ctx context.Context, projectID, containerID string) (err error) {
+	var req = apihelper.URL(ctx, "/validators/containers/id")
 	err = doValidate(projectID, containerID, req)
 
 	if err == nil || err != wedeploy.ErrUnexpectedResponse {

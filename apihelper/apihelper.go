@@ -7,6 +7,7 @@ package apihelper
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -137,9 +138,8 @@ func Auth(request *wedeploy.WeDeploy) {
 }
 
 // AuthGet creates an authenticated GET request for a JSON response end-point
-func AuthGet(path string, data interface{}) error {
-	var request = URL(path)
-
+func AuthGet(ctx context.Context, path string, data interface{}) error {
+	var request = URL(ctx, path)
 	Auth(request)
 
 	if err := Validate(request, request.Get()); err != nil {
@@ -219,8 +219,10 @@ func SetBody(request *wedeploy.WeDeploy, data interface{}) error {
 }
 
 // URL creates a WeDeploy URL instance
-func URL(paths ...string) *wedeploy.WeDeploy {
-	return wedeploy.URL(config.Context.Endpoint, paths...)
+func URL(ctx context.Context, paths ...string) *wedeploy.WeDeploy {
+	u := wedeploy.URL(config.Context.Endpoint, paths...)
+	u.SetContext(ctx)
+	return u
 }
 
 // Validate validates a request and sends an error on error

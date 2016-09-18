@@ -1,6 +1,7 @@
 package list
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -36,6 +37,7 @@ type List struct {
 	watch                 bool
 	retry                 int
 	preprint              string
+	poolingInterval       time.Duration
 }
 
 // New creates a list using the values of a passed Filter
@@ -53,6 +55,7 @@ func New(filter Filter) *List {
 
 // NewWatcher creates a list watcher for a given List
 func NewWatcher(list *List) *Watcher {
+	list.poolingInterval = 1 * time.Second
 	return &Watcher{
 		List:            list,
 		PoolingInterval: 200 * time.Millisecond,
@@ -123,7 +126,18 @@ func (l *List) resetObjects() {
 }
 
 func (l *List) fetchAllProjects() error {
-	var ps, err = projects.List()
+	var ctx context.Context
+	var cancel context.CancelFunc
+
+	if l.watch && l.poolingInterval != 0*time.Second {
+		ctx, cancel = context.WithTimeout(context.Background(), l.poolingInterval)
+	}
+
+	var ps, err = projects.List(ctx)
+
+	if l.watch && l.poolingInterval != 0*time.Second {
+		cancel()
+	}
 
 	if err != nil {
 		return err
@@ -137,7 +151,18 @@ func (l *List) fetchAllProjects() error {
 }
 
 func (l *List) fetchOneProject() error {
-	var p, err = projects.Get(l.Filter.Project)
+	var ctx context.Context
+	var cancel context.CancelFunc
+
+	if l.watch && l.poolingInterval != 0*time.Second {
+		ctx, cancel = context.WithTimeout(context.Background(), l.poolingInterval)
+	}
+
+	var p, err = projects.Get(ctx, l.Filter.Project)
+
+	if l.watch && l.poolingInterval != 0*time.Second {
+		cancel()
+	}
 
 	if err != nil {
 		return err

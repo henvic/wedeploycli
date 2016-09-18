@@ -1,6 +1,7 @@
 package projects
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -38,7 +39,7 @@ var (
 )
 
 // CreateFromJSON a project on WeDeploy
-func CreateFromJSON(filename string) error {
+func CreateFromJSON(ctx context.Context, filename string) error {
 	var file, err = os.Open(filename)
 
 	if err != nil {
@@ -48,7 +49,7 @@ func CreateFromJSON(filename string) error {
 	verbose.Debug("Creating project from definition:")
 	verbose.Debug(filename)
 
-	var req = apihelper.URL("/projects")
+	var req = apihelper.URL(ctx, "/projects")
 	apihelper.Auth(req)
 	req.Body(file)
 
@@ -56,8 +57,8 @@ func CreateFromJSON(filename string) error {
 }
 
 // Create project. If id is empty, a random one is created by the backend
-func Create(id string) (project *Project, err error) {
-	var req = apihelper.URL("/projects")
+func Create(ctx context.Context, id string) (project *Project, err error) {
+	var req = apihelper.URL(ctx, "/projects")
 
 	apihelper.Auth(req)
 
@@ -74,14 +75,14 @@ func Create(id string) (project *Project, err error) {
 }
 
 // Get project by ID
-func Get(id string) (project Project, err error) {
-	err = apihelper.AuthGet("/projects/"+id, &project)
+func Get(ctx context.Context, id string) (project Project, err error) {
+	err = apihelper.AuthGet(ctx, "/projects/"+id, &project)
 	return project, err
 }
 
 // List projects
-func List() (list []Project, err error) {
-	err = apihelper.AuthGet("/projects", &list)
+func List(ctx context.Context) (list []Project, err error) {
+	err = apihelper.AuthGet(ctx, "/projects", &list)
 	return list, err
 }
 
@@ -113,24 +114,24 @@ func readValidate(project Project, err error) error {
 }
 
 // Restart restarts a project
-func Restart(id string) error {
-	var req = apihelper.URL("/restart/project?projectId=" + id)
+func Restart(ctx context.Context, id string) error {
+	var req = apihelper.URL(ctx, "/restart/project?projectId="+id)
 
 	apihelper.Auth(req)
 	return apihelper.Validate(req, req.Post())
 }
 
 // Unlink project
-func Unlink(projectID string) error {
-	var req = apihelper.URL("/projects", projectID)
+func Unlink(ctx context.Context, projectID string) error {
+	var req = apihelper.URL(ctx, "/projects", projectID)
 	apihelper.Auth(req)
 
 	return apihelper.Validate(req, req.Delete())
 }
 
 // Validate project
-func Validate(projectID string) (err error) {
-	var req = apihelper.URL("/validators/project/id")
+func Validate(ctx context.Context, projectID string) (err error) {
+	var req = apihelper.URL(ctx, "/validators/project/id")
 	err = doValidate(projectID, req)
 
 	if err == nil || err != wedeploy.ErrUnexpectedResponse {
@@ -150,7 +151,7 @@ func Validate(projectID string) (err error) {
 
 // ValidateOrCreate project
 func ValidateOrCreate(id string) (fid string, err error) {
-	project, err := Create(id)
+	project, err := Create(context.Background(), id)
 
 	if err == nil {
 		id = project.ID
@@ -163,7 +164,7 @@ func ValidateOrCreate(id string) (fid string, err error) {
 
 // ValidateOrCreateFromJSON project
 func ValidateOrCreateFromJSON(filename string) (created bool, err error) {
-	return validateOrCreate(CreateFromJSON(filename))
+	return validateOrCreate(CreateFromJSON(context.Background(), filename))
 }
 
 func validateOrCreate(err error) (created bool, e error) {

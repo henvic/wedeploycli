@@ -2,6 +2,7 @@ package run
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -210,7 +211,10 @@ func (dm *DockerMachine) waitReadyState() {
 
 	// Starting WeDeploy
 	for tries <= 100 {
-		var _, err = projects.List()
+		var ctx, cancel = context.WithTimeout(context.Background(), 500*time.Millisecond)
+		var _, err = projects.List(ctx)
+
+		cancel()
 
 		if err == nil {
 			dm.WaitLiveMsg.Stop()

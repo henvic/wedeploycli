@@ -1,6 +1,7 @@
 package cmdunlink
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"sync"
@@ -49,9 +50,9 @@ type unlink struct {
 func (u *unlink) do() {
 	switch u.container {
 	case "":
-		u.err = projects.Unlink(u.project)
+		u.err = projects.Unlink(context.Background(), u.project)
 	default:
-		u.err = containers.Unlink(u.project, u.container)
+		u.err = containers.Unlink(context.Background(), u.project, u.container)
 	}
 
 	u.end = true
@@ -104,9 +105,9 @@ func (u *unlink) watch() {
 func (u *unlink) checkProjectOrContainerExists() error {
 	var err error
 	if u.container == "" {
-		_, err = projects.Get(u.project)
+		_, err = projects.Get(context.Background(), u.project)
 	} else {
-		_, err = containers.Get(u.project, u.container)
+		_, err = containers.Get(context.Background(), u.project, u.container)
 	}
 
 	return err

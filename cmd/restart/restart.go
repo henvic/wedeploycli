@@ -1,6 +1,7 @@
 package cmdrestart
 
 import (
+	"context"
 	"sync"
 
 	"github.com/spf13/cobra"
@@ -42,9 +43,9 @@ type restart struct {
 func (r *restart) do() {
 	switch r.container {
 	case "":
-		r.err = projects.Restart(r.project)
+		r.err = projects.Restart(context.Background(), r.project)
 	default:
-		r.err = containers.Restart(r.project, r.container)
+		r.err = containers.Restart(context.Background(), r.project, r.container)
 	}
 
 	r.end = true
@@ -77,9 +78,9 @@ func (r *restart) isDone() bool {
 func (r *restart) checkProjectOrContainerExists() error {
 	var err error
 	if r.container == "" {
-		_, err = projects.Get(r.project)
+		_, err = projects.Get(context.Background(), r.project)
 	} else {
-		_, err = containers.Get(r.project, r.container)
+		_, err = containers.Get(context.Background(), r.project, r.container)
 	}
 
 	return err

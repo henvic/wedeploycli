@@ -1,6 +1,7 @@
 package cmdlog
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -69,7 +70,7 @@ func logRun(cmd *cobra.Command, args []string) error {
 			PoolingInterval: time.Second,
 		})
 	default:
-		if err = logs.List(filter); err != nil {
+		if err = logs.List(context.Background(), filter); err != nil {
 			return err
 		}
 	}

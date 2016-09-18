@@ -1,6 +1,7 @@
 package logs
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -84,9 +85,9 @@ func GetLevel(severityOrLevel string) (int, error) {
 }
 
 // GetList logs
-func GetList(filter *Filter) ([]Logs, error) {
+func GetList(ctx context.Context, filter *Filter) ([]Logs, error) {
 	var list []Logs
-	var req = apihelper.URL("/logs/" + filter.Project)
+	var req = apihelper.URL(ctx, "/logs/"+filter.Project)
 
 	apihelper.Auth(req)
 	apihelper.ParamsFromJSON(req, filter)
@@ -107,8 +108,8 @@ func GetList(filter *Filter) ([]Logs, error) {
 }
 
 // List logs
-func List(filter *Filter) error {
-	var list, err = GetList(filter)
+func List(ctx context.Context, filter *Filter) error {
+	var list, err = GetList(ctx, filter)
 
 	if err == nil {
 		printList(list)
@@ -165,7 +166,10 @@ func printList(list []Logs) {
 }
 
 func (w *Watcher) pool() {
-	var list, err = GetList(w.Filter)
+	var ctx, cancel = context.WithTimeout(context.Background(), 500*time.Millisecond)
+	var list, err = GetList(ctx, w.Filter)
+
+	cancel()
 
 	if err != nil {
 		fmt.Fprintf(errStream, "%v\n", errorhandling.Handle(err))

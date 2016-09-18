@@ -2,6 +2,7 @@ package apihelper
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -103,7 +104,7 @@ func TestAuthGet(t *testing.T) {
 	var wantBody = "to be written"
 	var wantComments = 30
 
-	var err = AuthGet("/posts/1", &post)
+	var err = AuthGet(nil, "/posts/1", &post)
 
 	if err != nil {
 		t.Errorf("Wanted error to be nil, got %v instead", err)
@@ -135,7 +136,7 @@ func TestAuthGetError(t *testing.T) {
 		w.WriteHeader(403)
 	})
 
-	var err = AuthGet("/foo", nil)
+	var err = AuthGet(context.Background(), "/foo", nil)
 
 	switch err.(type) {
 	case *APIFault:
@@ -272,7 +273,7 @@ func TestDecodeJSON(t *testing.T) {
 
 	bufErrStream.Reset()
 
-	r := URL("/posts/1")
+	r := URL(context.Background(), "/posts/1")
 
 	if err := Validate(r, r.Get()); err != nil {
 		panic(err)
@@ -320,7 +321,7 @@ func TestDecodeJSONInvalidContentType(t *testing.T) {
 
 	var post postMock
 
-	r := URL("/posts/1")
+	r := URL(context.Background(), "/posts/1")
 
 	if err := Validate(r, r.Get()); err != nil {
 		panic(err)
@@ -344,7 +345,7 @@ func TestDecodeJSONFailure(t *testing.T) {
 
 	var post postMock
 
-	r := URL("/posts/1/comments")
+	r := URL(context.Background(), "/posts/1/comments")
 
 	if err := Validate(r, r.Get()); err != nil {
 		panic(err)
@@ -504,7 +505,7 @@ func TestRequestVerboseFeedback(t *testing.T) {
 		fmt.Fprintf(w, "Hello")
 	})
 
-	var request = URL("/foo")
+	var request = URL(context.Background(), "/foo")
 
 	request.Headers.Add("Accept", "application/json")
 	request.Headers.Add("Accept", "text/plain")
@@ -555,7 +556,7 @@ func TestRequestVerboseFeedbackUpload(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/foo", tdata.ServerHandler(""))
 
-	var request = URL("/foo")
+	var request = URL(context.Background(), "/foo")
 
 	var file, err = os.Open("mocks/config.json")
 
@@ -608,7 +609,7 @@ func TestRequestVerboseFeedbackStringReader(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/foo", tdata.ServerHandler(""))
 
-	var request = URL("/foo")
+	var request = URL(context.Background(), "/foo")
 
 	request.Body(strings.NewReader("custom body"))
 
@@ -655,7 +656,7 @@ func TestRequestVerboseFeedbackBytesReader(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/foo", tdata.ServerHandler(""))
 
-	var request = URL("/foo")
+	var request = URL(context.Background(), "/foo")
 
 	var sr = strings.NewReader("custom body")
 
@@ -711,7 +712,7 @@ func TestRequestVerboseFeedbackOtherReader(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/foo", tdata.ServerHandler(""))
 
-	var request = URL("/foo")
+	var request = URL(context.Background(), "/foo")
 
 	var body = strings.NewReader("custom body")
 
@@ -765,7 +766,7 @@ func TestRequestVerboseFeedbackJSONResponse(t *testing.T) {
 		fmt.Fprintf(w, `{"Hello": "World"}`)
 	})
 
-	var request = URL("/foo")
+	var request = URL(context.Background(), "/foo")
 
 	type Foo struct {
 		Bar string `json:"bar"`
@@ -820,7 +821,7 @@ func TestRequestVerboseFeedbackNullResponse(t *testing.T) {
 	verbose.ErrStream = &bufErrStream
 	bufErrStream.Reset()
 
-	var request = URL("/foo")
+	var request = URL(context.Background(), "/foo")
 
 	request.URL = "x://"
 
@@ -866,7 +867,7 @@ func TestRequestVerboseFeedbackNotComplete(t *testing.T) {
 	verbose.ErrStream = &bufErrStream
 	bufErrStream.Reset()
 
-	var request = URL("/foo")
+	var request = URL(context.Background(), "/foo")
 	if err := Validate(request, nil); err != nil {
 		panic(err)
 	}
@@ -894,7 +895,7 @@ func TestSetBody(t *testing.T) {
 		got = string(body)
 	})
 
-	var request = URL("/foo")
+	var request = URL(context.Background(), "/foo")
 
 	type simple struct {
 		Foo string `json:"foo"`
@@ -926,7 +927,7 @@ func TestSetBody(t *testing.T) {
 }
 
 func TestURL(t *testing.T) {
-	var request = URL("x", "y", "z/k")
+	var request = URL(context.Background(), "x", "y", "z/k")
 	var want = "http://www.example.com/x/y/z/k"
 
 	if request.URL != want {
@@ -976,7 +977,7 @@ func TestValidateUnexpectedResponse(t *testing.T) {
 	var want = "WeDeploy API error: 403 Forbidden (GET http://www.example.com/foo/bah)\n\t" +
 		"forbidden: The requested operation failed because you do not have access."
 
-	r := URL("/foo/bah")
+	r := URL(context.Background(), "/foo/bah")
 	err := Validate(r, r.Get())
 
 	switch err.(type) {
@@ -1006,7 +1007,7 @@ func TestValidateUnexpectedNonJSONResponse(t *testing.T) {
 
 	bufErrStream.Reset()
 
-	var r = URL("/foo/bah")
+	var r = URL(context.Background(), "/foo/bah")
 	var err = Validate(r, r.Get())
 
 	if err == nil {
@@ -1042,7 +1043,7 @@ func TestValidateUnexpectedResponseCustom(t *testing.T) {
 
 	var want = tdata.FromFile("mocks/unexpected_response_error")
 
-	r := URL("/foo/bah")
+	r := URL(context.Background(), "/foo/bah")
 	err := Validate(r, r.Get())
 
 	if err == nil {

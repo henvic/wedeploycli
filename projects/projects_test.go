@@ -2,6 +2,7 @@ package projects
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -41,7 +42,7 @@ func TestCreateFromJSON(t *testing.T) {
 			}
 		})
 
-	err := CreateFromJSON("mocks/little/project.json")
+	err := CreateFromJSON(context.Background(), "mocks/little/project.json")
 
 	if err != nil {
 		t.Errorf("Wanted err to be nil, got %v instead", err)
@@ -51,7 +52,8 @@ func TestCreateFromJSON(t *testing.T) {
 }
 
 func TestCreateFromJSONFailureNotFound(t *testing.T) {
-	var err = CreateFromJSON(fmt.Sprintf("foo-%d.json", rand.Int()))
+	var err = CreateFromJSON(context.Background(),
+		fmt.Sprintf("foo-%d.json", rand.Int()))
 
 	if !os.IsNotExist(err) {
 		t.Errorf("Wanted err to be due to file not found, got %v instead", err)
@@ -65,7 +67,7 @@ func TestCreate(t *testing.T) {
 	servertest.Mux.HandleFunc("/projects",
 		tdata.ServerJSONFileHandler("mocks/new_response.json"))
 
-	var project, err = Create("")
+	var project, err = Create(context.Background(), "")
 
 	if project.ID != "tesla36" {
 		t.Errorf("Wanted project ID to be tesla36, got %v instead", project.ID)
@@ -90,7 +92,7 @@ func TestCreateNamed(t *testing.T) {
 	servertest.Mux.HandleFunc("/projects",
 		tdata.ServerJSONFileHandler("mocks/new_named_response.json"))
 
-	var project, err = Create("banach30")
+	var project, err = Create(context.Background(), "banach30")
 
 	if project.ID != "banach30" {
 		t.Errorf("Wanted project ID to be banach30, got %v instead", project.ID)
@@ -108,7 +110,7 @@ func TestCreateError(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	var project, err = Create("")
+	var project, err = Create(context.Background(), "")
 
 	if project != nil {
 		t.Errorf("Wanted project to be nil, got %v instead", project)
@@ -132,7 +134,7 @@ func TestGet(t *testing.T) {
 		"/projects/images",
 		tdata.ServerJSONFileHandler("mocks/project_get_response.json"))
 
-	var list, err = Get("images")
+	var list, err = Get(context.Background(), "images")
 
 	var want = Project{
 		ID:     "images",
@@ -159,7 +161,7 @@ func TestList(t *testing.T) {
 		"/projects",
 		tdata.ServerJSONFileHandler("mocks/projects_response.json"))
 
-	var list, err = List()
+	var list, err = List(context.Background())
 
 	var want = []Project{
 		Project{
@@ -230,7 +232,7 @@ func TestRestart(t *testing.T) {
 		fmt.Fprintf(w, `"on"`)
 	})
 
-	if err := Restart("foo"); err != nil {
+	if err := Restart(context.Background(), "foo"); err != nil {
 		t.Errorf("Unexpected error on project restart: %v", err)
 	}
 
@@ -248,7 +250,7 @@ func TestUnlink(t *testing.T) {
 		}
 	})
 
-	var err = Unlink("foo")
+	var err = Unlink(context.Background(), "foo")
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v instead", err)
@@ -268,7 +270,7 @@ func TestValidate(t *testing.T) {
 		}
 	})
 
-	if err := Validate("foo"); err != nil {
+	if err := Validate(context.Background(), "foo"); err != nil {
 		t.Errorf("Wanted null error, got %v instead", err)
 	}
 
@@ -287,7 +289,7 @@ func TestValidateAlreadyExists(t *testing.T) {
 			fmt.Fprintf(w, tdata.FromFile("mocks/project_already_exists_response.json"))
 		})
 
-	if err := Validate("foo"); err != ErrProjectAlreadyExists {
+	if err := Validate(context.Background(), "foo"); err != ErrProjectAlreadyExists {
 		t.Errorf("Wanted %v error, got %v instead", ErrProjectAlreadyExists, err)
 	}
 
@@ -306,7 +308,7 @@ func TestValidateInvalidID(t *testing.T) {
 			fmt.Fprintf(w, tdata.FromFile("mocks/project_invalid_id_response.json"))
 		})
 
-	if err := Validate("foo"); err != ErrInvalidProjectID {
+	if err := Validate(context.Background(), "foo"); err != ErrInvalidProjectID {
 		t.Errorf("Wanted %v error, got %v instead", ErrInvalidProjectID, err)
 	}
 
@@ -325,7 +327,7 @@ func TestValidateError(t *testing.T) {
 			fmt.Fprintf(w, tdata.FromFile("../apihelper/mocks/unknown_error_api_response.json"))
 		})
 
-	var err = Validate("foo")
+	var err = Validate(context.Background(), "foo")
 
 	switch err.(type) {
 	case apihelper.APIFault:
@@ -346,7 +348,7 @@ func TestValidateInvalidError(t *testing.T) {
 			w.WriteHeader(404)
 		})
 
-	var err = Validate("foo")
+	var err = Validate(context.Background(), "foo")
 
 	if err != apihelper.ErrInvalidContentType {
 		t.Errorf("Expected content-type error didn't happen")

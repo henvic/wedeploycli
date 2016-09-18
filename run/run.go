@@ -2,6 +2,7 @@ package run
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -169,14 +170,14 @@ func startCmd(args ...string) (dockerContainer string, err error) {
 func unlinkProjects() error {
 	verbose.Debug("Unlinking projects")
 
-	list, err := projects.List()
+	list, err := projects.List(context.Background())
 
 	if err != nil {
 		return errwrap.Wrapf("Can't list projects for unlinking: {{err}}", err)
 	}
 
 	for _, p := range list {
-		if err := projects.Unlink(p.ID); err != nil {
+		if err := projects.Unlink(context.Background(), p.ID); err != nil {
 			fmt.Fprintf(os.Stderr, "Unlinking project %v error: %v\n", p.ID, err)
 		}
 	}
