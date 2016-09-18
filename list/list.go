@@ -126,17 +126,15 @@ func (l *List) resetObjects() {
 }
 
 func (l *List) fetchAllProjects() error {
-	var ctx context.Context
-	var cancel context.CancelFunc
+	var ps []projects.Project
+	var err error
 
-	if l.watch && l.poolingInterval != 0*time.Second {
-		ctx, cancel = context.WithTimeout(context.Background(), l.poolingInterval)
-	}
-
-	var ps, err = projects.List(ctx)
-
-	if l.watch && l.poolingInterval != 0*time.Second {
+	if l.watch {
+		var ctx, cancel = context.WithTimeout(context.Background(), l.poolingInterval)
+		ps, err = projects.List(ctx)
 		cancel()
+	} else {
+		ps, err = projects.List(nil)
 	}
 
 	if err != nil {
@@ -151,17 +149,15 @@ func (l *List) fetchAllProjects() error {
 }
 
 func (l *List) fetchOneProject() error {
-	var ctx context.Context
-	var cancel context.CancelFunc
+	var p projects.Project
+	var err error
 
-	if l.watch && l.poolingInterval != 0*time.Second {
-		ctx, cancel = context.WithTimeout(context.Background(), l.poolingInterval)
-	}
-
-	var p, err = projects.Get(ctx, l.Filter.Project)
-
-	if l.watch && l.poolingInterval != 0*time.Second {
+	if l.watch {
+		var ctx, cancel = context.WithTimeout(context.Background(), l.poolingInterval)
+		p, err = projects.Get(ctx, l.Filter.Project)
 		cancel()
+	} else {
+		p, err = projects.Get(nil, l.Filter.Project)
 	}
 
 	if err != nil {
