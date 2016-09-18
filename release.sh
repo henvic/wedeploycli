@@ -152,6 +152,8 @@ function publish() {
   -- \
   -ldflags="-X github.com/wedeploy/cli/defaults.Version=$NEW_RELEASE_VERSION \
   -X github.com/wedeploy/cli/defaults.Build=$BUILD_COMMIT" \
+  -gcflags=-trimpath=$GOPATH
+  -asmflags=-trimpath=$GOPATH
   github.com/wedeploy/cli
 
   git push origin "v$NEW_RELEASE_VERSION"
