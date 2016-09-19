@@ -108,7 +108,7 @@ func Unlink(ctx context.Context, projectID, containerID string) error {
 
 // GetRegistry gets a list of container images
 func GetRegistry(ctx context.Context) (registry []Register, err error) {
-	var request = wedeploy.URL(defaults.Hub, "/registry.json")
+	var request = wedeploy.URL(defaults.Hub, "/registry")
 	request.SetContext(ctx)
 
 	err = apihelper.Validate(request, request.Get())

@@ -218,7 +218,7 @@ func TestRegistry(t *testing.T) {
 	bufOutStream.Reset()
 
 	servertest.Mux.HandleFunc(
-		"/registry.json",
+		"/registry",
 		tdata.ServerJSONFileHandler("mocks/registry.json"))
 
 	var registry, err = GetRegistry(context.Background())
