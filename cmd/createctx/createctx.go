@@ -2,76 +2,63 @@ package cmdcreate
 
 import (
 	"errors"
-	"os"
 	"path/filepath"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/createctx"
+)
+
+var (
+	project   string
+	container string
 )
 
 // CreateCmd creates a project or container
 var CreateCmd = &cobra.Command{
-	Use:   "create <project/container id>",
+	Use:   "create --project <project> --container <container> [directory]",
 	Short: "Creates a project or container",
 	Long: `Use "we create" to create projects and containers.
 You can create a project anywhere on your machine.
 Containers can only be created from inside projects and
 are stored on the first subdirectory of its project.`,
 	RunE:    createRun,
-	Example: `we create relay`,
+	Example: `we create --project cinema --container projector room`,
+}
+
+func init() {
+	CreateCmd.Flags().StringVar(&project, "project", "", "Project ID")
+	CreateCmd.Flags().StringVar(&container, "container", "", "Container ID")
 }
 
 func createRun(cmd *cobra.Command, args []string) error {
-	var err error
+	var directory = ""
 
 	switch len(args) {
 	case 0:
-		err = createctx.New("", "")
 	case 1:
-		err = createctx.New(args[0], "")
-	case 2:
-		err = cwdContextAndCreate(args[0], args[1])
+		directory = args[0]
 	default:
-		err = errors.New("Invalid number of arguments.")
+		return errors.New("Invalid number of arguments")
 	}
 
-	return err
-}
+	if directory == "" {
+		directory = "."
+	}
 
-func cwdContextAndCreate(id, directory string) error {
-	var workingDir, err = os.Getwd()
+	directory, err := filepath.Abs(directory)
 
 	if err != nil {
-		panic(err)
+		return errwrap.Wrapf("Can't get absolute path: {{err}}", err)
 	}
 
-	err = os.MkdirAll(directory, 0775)
-
-	if err != nil {
-		return errwrap.Wrapf("Can't create new directory: {{err}}", err)
+	if project == "" {
+		return errors.New("Missing --project <id>")
 	}
 
-	abs, eabs := filepath.Abs(directory)
-
-	if eabs != nil {
-		panic(eabs)
+	if container == "" {
+		return createctx.NewProject(project, directory)
 	}
 
-	if err = os.Chdir(abs); err != nil {
-		return err
-	}
-
-	if err = config.Setup(); err != nil {
-		return errwrap.Wrapf("Can't reset config object: {{err}}", err)
-	}
-
-	var cerr = createctx.New(id, abs)
-
-	if err = os.Chdir(workingDir); err != nil {
-		panic(err)
-	}
-
-	return cerr
+	return createctx.NewContainer(project, container, directory)
 }

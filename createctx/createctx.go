@@ -12,9 +12,8 @@ import (
 	"strings"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/mitchellh/go-wordwrap"
+	wordwrap "github.com/mitchellh/go-wordwrap"
 	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/prompt"
@@ -23,47 +22,7 @@ import (
 var (
 	// ErrContainerPath indicates an invalid container location
 	ErrContainerPath = errors.New("A container immediate parent dir must be the root of a project")
-
-	// ErrProjectPath indicates an invalid project location
-	ErrProjectPath = errors.New("A project can not have another project as its parent")
-
-	// ErrInvalidID indicates an invalid resource ID (such as empty string)
-	ErrInvalidID = errors.New("Value for ID is invalid")
-
-	// ErrProjectAlreadyExists indicates that a project already exists
-	ErrProjectAlreadyExists = errors.New("Invalid path for new configuration: project already exists")
-
-	// ErrContainerAlreadyExists indicates that a container already exists
-	ErrContainerAlreadyExists = errors.New("Invalid path for new configuration: container already exists")
 )
-
-// New creates a resource
-func New(id, directory string) error {
-	if directory == "" {
-		directory = id
-	}
-
-	// On Windows probably something like C:\ and D:\ can't be related
-	// so don't check for err here
-	var rel, _ = filepath.Rel(directory, config.Context.ProjectRoot)
-
-	if rel == "." && config.Context.Scope == "container" {
-		return getErrContainerAlreadyExists(config.Context.ContainerRoot)
-	}
-
-	if rel == "." && config.Context.Scope == "project" {
-		return getErrProjectAlreadyExists(config.Context.ProjectRoot)
-	}
-
-	switch config.Context.Scope {
-	case "project":
-		return newContainer(id, directory)
-	case "global":
-		return newProject(id, directory)
-	default:
-		return getErrContainerAlreadyExists(config.Context.ContainerRoot)
-	}
-}
 
 type containerCreator struct {
 	Container *containers.Container
@@ -71,53 +30,41 @@ type containerCreator struct {
 	Directory string
 }
 
-func newContainer(id, directory string) error {
-	if config.Context.Scope == "container" {
-		return getErrContainerAlreadyExists(config.Context.ContainerRoot)
-	}
-
-	if config.Context.Scope != "project" {
-		return getErrProjectAlreadyExists(config.Context.ProjectRoot)
+func NewContainer(container, project, directory string) error {
+	if err := tryCreateDirectory(directory); err != nil {
+		return err
 	}
 
 	return (&containerCreator{
 		Directory: directory,
 		Container: &containers.Container{
-			ID: id,
+			ID: container,
 		},
 	}).run()
 }
 
+func (cc *containerCreator) checkParentDirIsProject() error {
+	switch _, err := projects.Read(filepath.Join(cc.Directory, "..")); err {
+	case nil:
+	case projects.ErrProjectNotFound:
+		return errwrap.Wrapf("Parent directory is not a project", err)
+	default:
+		return errwrap.Wrapf("Error trying to find project on parent dir: {{err}}", err)
+	}
+
+	return nil
+}
+
 func (cc *containerCreator) run() error {
-	var rel string
-
-	if cc.Directory != "" {
-		if err := tryContainerDirectory(cc.Directory); err != nil {
-			return err
-		}
-	}
-
-	projectRoot := config.Context.ProjectRoot
-	workingDir, err := os.Getwd()
-
-	if err == nil {
-		rel, err = filepath.Rel(projectRoot, workingDir)
-	}
-
-	if err != nil {
+	if err := cc.checkParentDirIsProject(); err != nil {
 		return err
 	}
 
-	// only allow container creation at first subdir level
-	if strings.ContainsRune(rel, os.PathSeparator) {
-		return ErrContainerPath
-	}
-
-	if err = cc.getContainersRegister(); err != nil {
+	if err := cc.getContainersRegister(); err != nil {
 		return err
 	}
 
-	if err = cc.chooseContainerOptions(); err != nil {
+	if err := cc.chooseContainerOptions(); err != nil {
 		return err
 	}
 
@@ -170,7 +117,7 @@ func (cc *containerCreator) chooseContainerOptions() error {
 		cc.Directory = cc.Container.ID
 	}
 
-	var err = tryContainerDirectory(cc.Directory)
+	var err = tryCreateDirectory(cc.Directory)
 
 	if err != nil {
 		return err
@@ -204,14 +151,10 @@ func (cc *containerCreator) saveContainer() error {
 	return err
 }
 
-func newProject(id, directory string) error {
-	if config.Context.Scope != "global" {
-		return ErrProjectPath
-	}
-
+func NewProject(project, directory string) error {
 	var p = &projects.Project{}
 
-	p.ID = id
+	p.ID = project
 
 	if p.ID == "" {
 		fmt.Println("Creating project:")
@@ -221,14 +164,14 @@ func newProject(id, directory string) error {
 	}
 
 	if p.ID == "" {
-		return ErrInvalidID
+		return errors.New("Empty value for project ID is invalid")
 	}
 
 	if directory == "" {
 		directory = p.ID
 	}
 
-	if err := tryProjectDirectory(directory); err != nil {
+	if err := tryCreateDirectory(directory); err != nil {
 		return err
 	}
 
@@ -259,64 +202,41 @@ func saveProject(p *projects.Project, directory string) error {
 	return err
 }
 
-func tryProjectDirectory(directory string) error {
-	var err = os.MkdirAll(directory, 0775)
-
-	if err != nil {
-		return errwrap.Wrapf("Can't create project directory: {{err}}", err)
-	}
-
-	_, err = os.Stat(filepath.Join(directory, "project.json"))
-
-	abs, eabs := filepath.Abs(directory)
-
-	if eabs != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", eabs)
-	}
-
-	switch {
+func checkDirectoryIsFree(directory string) error {
+	switch _, err := os.Stat(filepath.Join(directory, "project.json")); {
+	case os.IsNotExist(err):
 	case err == nil:
-		return getErrProjectAlreadyExists(abs)
+		return errors.New("Project already exists in " + directory)
+	default:
+		return errwrap.Wrapf("Error trying to read project on "+
+			directory+": {{err}}", err)
+	}
+
+	switch _, err := os.Stat(filepath.Join(directory, "container.json")); {
 	case os.IsNotExist(err):
 		return nil
+	case err == nil:
+		return errors.New("Container already exists in " + directory)
 	default:
-		return err
+		return errwrap.Wrapf("Error trying to read container on "+
+			directory+": {{err}}", err)
 	}
 }
 
-func tryContainerDirectory(directory string) error {
+func tryCreateDirectory(directory string) error {
+	if err := checkDirectoryIsFree(directory); err != nil {
+		return err
+	}
+
 	var err = os.MkdirAll(directory, 0775)
 
 	if err != nil {
-		return errwrap.Wrapf("Can't create container directory: {{err}}", err)
+		return errwrap.Wrapf("Can't create directory: {{err}}", err)
 	}
 
-	_, err = os.Stat(filepath.Join(directory, "container.json"))
-
-	abs, eabs := filepath.Abs(directory)
-
-	if eabs != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", eabs)
-	}
-
-	switch {
-	case err == nil:
-		return getErrContainerAlreadyExists(abs)
-	case os.IsNotExist(err):
-		return nil
-	default:
-		return err
-	}
+	return err
 }
 
 func pad(space int) string {
 	return strings.Join(make([]string, space), " ")
-}
-
-func getErrProjectAlreadyExists(directory string) error {
-	return errwrap.Wrapf("{{err}} in "+directory, ErrProjectAlreadyExists)
-}
-
-func getErrContainerAlreadyExists(directory string) error {
-	return errwrap.Wrapf("{{err}} in "+directory, ErrContainerAlreadyExists)
 }
