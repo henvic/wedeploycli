@@ -22,7 +22,7 @@ function setupAlternateDir() {
   fi
 
   echo "No permission to install in $DESTDIR"
-  echo "Cancel to run again as root / sudoer or install it somewhere else"
+  echo "Cancel to run again as root / sudoer or install it somewhere else."
   read -p "Install in [current dir]: " DESTDIR < /dev/tty;
   DESTDIR=${DESTDIR:-`pwd`}
 }
