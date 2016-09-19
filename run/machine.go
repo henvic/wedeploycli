@@ -22,10 +22,9 @@ import (
 
 // Flags modifiers
 type Flags struct {
-	Debug    bool
-	Detach   bool
-	DryRun   bool
-	NoUpdate bool
+	Debug  bool
+	Detach bool
+	DryRun bool
 }
 
 // DockerMachine for the run command
