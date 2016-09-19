@@ -30,6 +30,7 @@ type containerCreator struct {
 	Directory string
 }
 
+// NewContainer creates a new container directory
 func NewContainer(container, project, directory string) error {
 	if err := tryCreateDirectory(directory); err != nil {
 		return err
@@ -151,6 +152,7 @@ func (cc *containerCreator) saveContainer() error {
 	return err
 }
 
+// NewProject creates a new project directory
 func NewProject(project, directory string) error {
 	var p = &projects.Project{}
 
