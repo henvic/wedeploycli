@@ -19,6 +19,14 @@ import (
 // Disabled flag
 var Disabled = false
 
+// BlacklistHeadersValues of sensitive information headers
+var BlacklistHeadersValues = map[string]bool{
+	"Authorization":       true,
+	"Set-Cookie":          true,
+	"Cookie":              true,
+	"Proxy-Authorization": true,
+}
+
 var log func(...interface{})
 
 // SetLogFunc for printing the verbosereq debug message
@@ -179,12 +187,35 @@ func feedbackResponseBodyAll(response *http.Response, body []byte) {
 	log(color.Format(color.FgMagenta, out.String()) + "\n")
 }
 
+func getHeaderValue(key string, values []string) string {
+	var v string
+
+	if BlacklistHeadersValues[key] {
+		var plural string
+
+		if len(values) != 1 {
+			plural = "s"
+		}
+
+		return color.Format(color.BgYellow, " %d hidden value%s ", len(values), plural)
+	}
+
+	switch len(values) {
+	case 0:
+		v = color.Format(color.FgRed, "(no values)")
+	case 1:
+		v = color.Format(color.FgYellow, values[0])
+	default:
+		v = "[" + color.Format(color.FgYellow, strings.Join(values, " ")) + "]"
+	}
+
+	return v
+}
+
 func verbosePrintHeaders(headers http.Header) {
 	for h, r := range headers {
-		if len(r) == 1 {
-			log(color.Format(color.FgBlue, h)+color.Format(color.FgRed, ":"), color.Format(color.FgYellow, r[0]))
-		} else {
-			log(color.Format(color.FgBlue, h)+color.Format(color.FgRed, ":"), r)
-		}
+		log(color.Format(color.FgBlue, h)+
+			color.Format(color.FgRed, ":"),
+			getHeaderValue(h, r))
 	}
 }
