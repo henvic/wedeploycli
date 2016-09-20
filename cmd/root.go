@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/autocomplete"
-	"github.com/wedeploy/cli/cmd/auth"
 	"github.com/wedeploy/cli/cmd/autocomplete"
 	"github.com/wedeploy/cli/cmd/build"
 	"github.com/wedeploy/cli/cmd/cmdmanager"
@@ -16,6 +15,8 @@ import (
 	"github.com/wedeploy/cli/cmd/link"
 	"github.com/wedeploy/cli/cmd/list"
 	"github.com/wedeploy/cli/cmd/log"
+	"github.com/wedeploy/cli/cmd/login"
+	"github.com/wedeploy/cli/cmd/logout"
 	"github.com/wedeploy/cli/cmd/remote"
 	"github.com/wedeploy/cli/cmd/restart"
 	"github.com/wedeploy/cli/cmd/run"
@@ -70,8 +71,8 @@ var (
 
 var commands = []*cobra.Command{
 	cmdautocomplete.AutocompleteCmd,
-	cmdauth.LoginCmd,
-	cmdauth.LogoutCmd,
+	cmdlogin.LoginCmd,
+	cmdlogout.LogoutCmd,
 	cmdcreate.CreateCmd,
 	cmdlog.LogCmd,
 	cmdlist.ListCmd,

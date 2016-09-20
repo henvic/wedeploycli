@@ -1,4 +1,4 @@
-package cmdauth
+package cmdlogin
 
 import (
 	"fmt"
@@ -15,13 +15,6 @@ var LoginCmd = &cobra.Command{
 	RunE:  loginRun,
 }
 
-// LogoutCmd unsets the user credential
-var LogoutCmd = &cobra.Command{
-	Use:   "logout",
-	Short: "Revoke credentials",
-	RunE:  logoutRun,
-}
-
 func loginRun(cmd *cobra.Command, args []string) error {
 	var username = prompt.Prompt("Username")
 	var password = prompt.Prompt("Password")
@@ -36,13 +29,4 @@ func loginRun(cmd *cobra.Command, args []string) error {
 	}
 
 	return err
-}
-
-func logoutRun(cmd *cobra.Command, args []string) error {
-	var g = config.Global
-
-	g.Username = ""
-	g.Password = ""
-	g.Token = ""
-	return g.Save()
 }
