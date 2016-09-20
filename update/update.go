@@ -2,7 +2,9 @@ package update
 
 import (
 	"fmt"
+	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/equinox-io/equinox"
@@ -11,6 +13,7 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/run"
+	"github.com/wedeploy/cli/verbose"
 )
 
 const lucFormat = "Mon Jan _2 15:04:05 MST 2006"
@@ -64,12 +67,21 @@ func canVerifyAgain() bool {
 
 // NotifierCheck enquires equinox if a new version is available
 func NotifierCheck() error {
-	switch {
-	case isNotifyOn() && canVerify():
-		return notifierCheck()
-	default:
+	if !isNotifyOn() || !canVerify() {
 		return nil
 	}
+
+	err := notifierCheck()
+
+	switch err.(type) {
+	case *url.Error:
+		// Don't show connection error as the user might be off-line for a while
+		if !verbose.Enabled && err != nil && strings.Contains(err.Error(), "no such host") {
+			return nil
+		}
+	}
+
+	return err
 }
 
 func notifierCheck() error {
