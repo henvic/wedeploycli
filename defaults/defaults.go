@@ -11,7 +11,7 @@ var (
 	Endpoint = "https://wedeploy.io"
 
 	// Hub for the system
-	Hub = "http://wedeploy.com"
+	Hub = "http://api.dashboard.wedeploy.com"
 
 	// WeDeployImageTag is the WeDeploy image tag for docker
 	WeDeployImageTag = "latest"
