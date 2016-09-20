@@ -26,10 +26,10 @@ func main() {
 	setErrorHandlingCommandName()
 	load()
 
-	var isAutoComplete = isAutoCompleteCommand()
+	var isAutoComplete = isCommand("autocomplete")
 	var cue chan error
 
-	if !isAutoComplete {
+	if !isAutoComplete && !isCommand("build") {
 		cue = checkUpdate()
 	}
 
@@ -39,7 +39,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if !isAutoComplete {
+	if cue != nil {
 		updateFeedback(<-cue)
 	}
 
@@ -71,9 +71,9 @@ func load() {
 	}
 }
 
-func isAutoCompleteCommand() bool {
+func isCommand(cmd string) bool {
 	for _, s := range os.Args {
-		if s == "autocomplete" {
+		if s == cmd {
 			return true
 		}
 	}
