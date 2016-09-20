@@ -142,6 +142,7 @@ function tag() {
 }
 
 function publish() {
+  git push -v
   tag
   git checkout "v$NEW_RELEASE_VERSION"
 
