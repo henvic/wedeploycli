@@ -3,12 +3,22 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-VERSION_PKG='8WGbGy94JXa'
+RELEASE_CHANNEL=${1:-"stable"}
+RELEASE_CHANNEL_ADDRESS=""
+
+if [[ $RELEASE_CHANNEL == "help" ]] || [[ $RELEASE_CHANNEL == "--help" ]]; then
+  echo "WeDeploy CLI install script:
+
+install.sh [channel] [dest]
+
+Use install.sh to install the stable version on your system."
+  exit 1
+fi
 
 UNAME=$(uname)
 ARCH=$(uname -m | sed 's/x86_64/amd64/' | sed 's/i686/386/')
 UNAME_ARCH=$(echo ${UNAME}_${ARCH} | tr '[:upper:]' '[:lower:]' | tr '_' '-')
-FILE=cli-stable-$UNAME_ARCH
+FILE=cli-$RELEASE_CHANNEL-$UNAME_ARCH
 PACKAGE_FORMAT=""
 
 # default DESTDIR
@@ -48,6 +58,14 @@ function setPackageFormat() {
   exit 1
 }
 
+function setupReleaseChannelAddress() {
+  case $RELEASE_CHANNEL in
+    "stable") RELEASE_CHANNEL_ADDRESS="8WGbGy94JXa" ;;
+    "unstable") RELEASE_CHANNEL_ADDRESS="5VvYPvs2CSX" ;;
+    *) echo "Error translating release channel glob." exit 1 ;;
+  esac
+}
+
 function extractPackage() {
   case $PACKAGE_FORMAT in
     "zip")
@@ -65,8 +83,15 @@ esac
 
 function run() {
   setPackageFormat
-  URL=https://bin.equinox.io/c/${VERSION_PKG}/$FILE.$PACKAGE_FORMAT
-  echo Downloading from $URL
+  setupReleaseChannelAddress
+  URL=https://bin.equinox.io/c/${RELEASE_CHANNEL_ADDRESS}/$FILE.$PACKAGE_FORMAT
+
+  if [ $RELEASE_CHANNEL != "stable" ] ; then
+    echo "Downloading from $URL ($RELEASE_CHANNEL channel)."
+  else
+    echo "Downloading from $URL."
+  fi
+
   curl -L -O $URL -f --progress-bar
   extractPackage
   chmod +x $DESTDIR/we
