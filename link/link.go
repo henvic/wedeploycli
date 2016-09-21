@@ -108,6 +108,10 @@ func (m *Machine) isDone() bool {
 	}
 
 	if len(m.Errors.List) == 0 {
+		if len(m.list.Projects) == 0 {
+			return false
+		}
+
 		var projectWatched = m.list.Projects[0]
 
 		for _, link := range m.Links {
