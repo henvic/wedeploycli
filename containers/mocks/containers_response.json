@@ -2,7 +2,7 @@
   "search7606": {
     "type": "cloudsearch",
     "basePath": "\/search",
-    "instances": 7,
+    "scale": 7,
     "id": "search7606",
     "health": "on",
     "maxInstances": 5
@@ -10,7 +10,7 @@
   "nodejs5143": {
     "type": "nodejs",
     "basePath": "\/nodejs",
-    "instances": 5,
+    "scale": 5,
     "id": "nodejs5143",
     "health": "on",
     "maxInstances": 5

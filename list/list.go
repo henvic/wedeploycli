@@ -227,7 +227,7 @@ func (l *List) printContainer(projectID string, c *containers.Container) {
 	containerDomain := getContainerDomain(projectID, c.ID)
 	l.printf("%v ", containerDomain)
 	l.conditionalPad(containerDomain, 52)
-	l.printInstances(c.Instances)
+	l.printInstances(c.Scale)
 	t := getType(c.Type)
 	l.printf(color.Format(color.FgHiBlack, "%v ", t))
 	l.conditionalPad(t, 23)

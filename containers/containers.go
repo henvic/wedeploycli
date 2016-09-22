@@ -24,12 +24,12 @@ type Containers map[string]*Container
 
 // Container structure
 type Container struct {
-	ID        string            `json:"id"`
-	Health    string            `json:"health,omitempty"`
-	Type      string            `json:"type,omitempty"`
-	Hooks     *hooks.Hooks      `json:"hooks,omitempty"`
-	Env       map[string]string `json:"env,omitempty"`
-	Instances int               `json:"instances,omitempty"`
+	ID     string            `json:"id"`
+	Health string            `json:"health,omitempty"`
+	Type   string            `json:"type,omitempty"`
+	Hooks  *hooks.Hooks      `json:"hooks,omitempty"`
+	Env    map[string]string `json:"env,omitempty"`
+	Scale  int               `json:"scale,omitempty"`
 }
 
 // Register for the container structure

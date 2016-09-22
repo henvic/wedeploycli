@@ -95,10 +95,10 @@ func TestGet(t *testing.T) {
 	configmock.Setup()
 
 	var want = Container{
-		ID:        "search7606",
-		Health:    "on",
-		Type:      "cloudsearch",
-		Instances: 7,
+		ID:     "search7606",
+		Health: "on",
+		Type:   "cloudsearch",
+		Scale:  7,
 	}
 
 	servertest.Mux.HandleFunc("/projects/images/containers/search7606",
@@ -125,16 +125,16 @@ func TestList(t *testing.T) {
 
 	var want = Containers{
 		"search7606": &Container{
-			ID:        "search7606",
-			Health:    "on",
-			Type:      "cloudsearch",
-			Instances: 7,
+			ID:     "search7606",
+			Health: "on",
+			Type:   "cloudsearch",
+			Scale:  7,
 		},
 		"nodejs5143": &Container{
-			ID:        "nodejs5143",
-			Health:    "on",
-			Type:      "nodejs",
-			Instances: 5,
+			ID:     "nodejs5143",
+			Health: "on",
+			Type:   "nodejs",
+			Scale:  5,
 		},
 	}
 

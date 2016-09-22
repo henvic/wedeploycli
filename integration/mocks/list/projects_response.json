@@ -22,7 +22,7 @@
 			"template": null,
 			"image": null,
 			"configuration": {},
-			"instances": 1,
+			"scale": 1,
 			"health": "up",
 			"source": "/foo/bar",
 			"env": {
@@ -38,7 +38,7 @@
 			"template": null,
 			"image": null,
 			"configuration": {},
-			"instances": 1,
+			"scale": 1,
 			"health": "up",
 			"source": "/foo/bar2",
 			"env": null,

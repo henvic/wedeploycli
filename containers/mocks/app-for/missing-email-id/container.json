@@ -5,7 +5,7 @@
     "runtime": "static",
     "basePath": "/",
     "webPath": "/",
-    "instances": 1,
+    "scale": 1,
     "memory": 128,
     "environment": {},
     "hooks": {

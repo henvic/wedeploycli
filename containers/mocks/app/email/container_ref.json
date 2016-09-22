@@ -8,5 +8,5 @@
         "deploy": "",
         "after_deploy": ""
     },
-    "instances": 1
+    "scale": 1
 }

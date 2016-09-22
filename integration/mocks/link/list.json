@@ -21,7 +21,7 @@
 			"template": null,
 			"image": null,
 			"configuration": {},
-			"instances": 1,
+			"scale": 1,
 			"health": "up",
 			"source": "\/Users\/henvic\/mocks\/demo-wechat\/static",
 			"env": {
