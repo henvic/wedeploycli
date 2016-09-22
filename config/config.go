@@ -5,86 +5,36 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
-	"sort"
 	"strings"
 
 	"gopkg.in/ini.v1"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/remotes"
 	"github.com/wedeploy/cli/user"
 	"github.com/wedeploy/cli/usercontext"
 	"github.com/wedeploy/cli/verbose"
 )
 
-// RemoteConfig for a remote
-type RemoteConfig struct {
-	URL        string
-	URLComment string
-	Comment    string
-}
-
-// Remotes (list of alternative endpoints)
-type Remotes struct {
-	list remotesList
-}
-
-type remotesList map[string]RemoteConfig
-
-// List remotes
-func (r *Remotes) List() []string {
-	var keys = make([]string, 0, len(r.list))
-
-	for k := range r.list {
-		keys = append(keys, k)
-	}
-
-	sort.Strings(keys)
-	return keys
-}
-
-// Get a given remote by name
-func (r *Remotes) Get(name string) (RemoteConfig, bool) {
-	remote, ok := r.list[name]
-	return remote, ok
-}
-
-// Set a remote
-func (r *Remotes) Set(name string, url string, comment ...string) {
-	// make sure to use # by default, instead of ;
-	if len(comment) != 0 {
-		comment = append([]string{"#"}, comment...)
-	}
-
-	r.list[name] = RemoteConfig{
-		URL:     url,
-		Comment: strings.Join(comment, " "),
-	}
-}
-
-// Del deletes a remote by name
-func (r *Remotes) Del(name string) {
-	delete(r.list, name)
-}
-
 // Config of the application
 type Config struct {
-	Username        string    `ini:"username"`
-	Password        string    `ini:"password"`
-	Token           string    `ini:"token"`
-	Local           bool      `ini:"local"`
-	LocalPort       int       `ini:"local_port"`
-	NoAutocomplete  bool      `ini:"disable_autocomplete_autoinstall"`
-	NoColor         bool      `ini:"disable_colors"`
-	Endpoint        string    `ini:"endpoint"`
-	NotifyUpdates   bool      `ini:"notify_updates"`
-	ReleaseChannel  string    `ini:"release_channel"`
-	LastUpdateCheck string    `ini:"last_update_check"`
-	PastVersion     string    `ini:"past_version"`
-	NextVersion     string    `ini:"next_version"`
-	Path            string    `ini:"-"`
-	Remotes         Remotes   `ini:"-"`
-	file            *ini.File `ini:"-"`
+	Username        string       `ini:"username"`
+	Password        string       `ini:"password"`
+	Token           string       `ini:"token"`
+	Local           bool         `ini:"local"`
+	LocalPort       int          `ini:"local_port"`
+	NoAutocomplete  bool         `ini:"disable_autocomplete_autoinstall"`
+	NoColor         bool         `ini:"disable_colors"`
+	Endpoint        string       `ini:"endpoint"`
+	NotifyUpdates   bool         `ini:"notify_updates"`
+	ReleaseChannel  string       `ini:"release_channel"`
+	LastUpdateCheck string       `ini:"last_update_check"`
+	PastVersion     string       `ini:"past_version"`
+	NextVersion     string       `ini:"next_version"`
+	Path            string       `ini:"-"`
+	Remotes         remotes.List `ini:"-"`
+	file            *ini.File    `ini:"-"`
 }
 
 var (
@@ -232,9 +182,7 @@ func (c *Config) deleteRemote(key string) {
 }
 
 func (c *Config) readRemotes() {
-	c.Remotes = Remotes{
-		list: remotesList{},
-	}
+	c.Remotes = remotes.List{}
 
 	for _, k := range c.listRemotes() {
 		s := c.getRemote(k)
@@ -242,7 +190,7 @@ func (c *Config) readRemotes() {
 		URLComment := strings.TrimPrefix(u.Comment, "#")
 		comment := strings.TrimPrefix(s.Comment, "#")
 
-		c.Remotes.list[k] = RemoteConfig{
+		c.Remotes[k] = remotes.Entry{
 			URL:        u.String(),
 			URLComment: strings.TrimSpace(URLComment),
 			Comment:    strings.TrimSpace(comment),
@@ -279,12 +227,12 @@ func (c *Config) simplifyRemotes() {
 
 func (c *Config) updateRemotes() {
 	for _, k := range c.listRemotes() {
-		if _, ok := c.Remotes.list[k]; !ok {
+		if _, ok := c.Remotes[k]; !ok {
 			c.deleteRemote(k)
 		}
 	}
 
-	for k, v := range c.Remotes.list {
+	for k, v := range c.Remotes {
 		s := c.getRemote(k)
 		key := s.Key("url")
 		key.SetValue(v.URL)

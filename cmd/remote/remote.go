@@ -56,7 +56,7 @@ func remoteRun(cmd *cobra.Command, args []string) error {
 
 	var remotes = config.Global.Remotes
 
-	for _, k := range remotes.List() {
+	for _, k := range remotes.Keys() {
 		switch verbose.Enabled {
 		case true:
 			var key, _ = remotes.Get(k)

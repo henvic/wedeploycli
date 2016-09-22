@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/wedeploy/cli/remotes"
 	"github.com/wedeploy/cli/tdata"
 )
 
@@ -303,28 +304,26 @@ func TestRemotesListAndGet(t *testing.T) {
 		panic(err)
 	}
 
-	var wantOriginalRemotes = Remotes{
-		list: remotesList{
-			"alternative": RemoteConfig{
-				URL: "http://example.net/",
-			},
-			"staging": RemoteConfig{
-				URL: "http://staging.example.net/",
-			},
-			"beta": RemoteConfig{
-				URL:        "http://beta.example.com/",
-				URLComment: "my beta comment",
-			},
-			"remain": RemoteConfig{
-				URL:     "http://localhost/",
-				Comment: "commented vars remains even when empty",
-			},
-			"dontremain": RemoteConfig{
-				URL: "http://localhost/",
-			},
-			"dontremain2": RemoteConfig{
-				URL: "http://localhost/",
-			},
+	var wantOriginalRemotes = remotes.List{
+		"alternative": remotes.Entry{
+			URL: "http://example.net/",
+		},
+		"staging": remotes.Entry{
+			URL: "http://staging.example.net/",
+		},
+		"beta": remotes.Entry{
+			URL:        "http://beta.example.com/",
+			URLComment: "my beta comment",
+		},
+		"remain": remotes.Entry{
+			URL:     "http://localhost/",
+			Comment: "commented vars remains even when empty",
+		},
+		"dontremain": remotes.Entry{
+			URL: "http://localhost/",
+		},
+		"dontremain2": remotes.Entry{
+			URL: "http://localhost/",
 		},
 	}
 
@@ -341,13 +340,13 @@ func TestRemotesListAndGet(t *testing.T) {
 		"staging",
 	}
 
-	var gotList = Global.Remotes.List()
+	var names = Global.Remotes.Keys()
 
-	if !reflect.DeepEqual(gotList, wantList) {
-		t.Errorf("Wanted %v, got %v instead", wantList, gotList)
+	if !reflect.DeepEqual(names, wantList) {
+		t.Errorf("Wanted %v, got %v instead", wantList, names)
 	}
 
-	var wantRemain = RemoteConfig{
+	var wantRemain = remotes.Entry{
 		URL:     "http://localhost/",
 		Comment: "commented vars remains even when empty",
 	}
