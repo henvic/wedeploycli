@@ -17,6 +17,7 @@ import (
 	"github.com/wedeploy/cli/cmd"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/errorhandling"
+	"github.com/wedeploy/cli/flagsfromhost"
 	"github.com/wedeploy/cli/update"
 )
 
@@ -56,6 +57,7 @@ func loadConfig() {
 
 func load() {
 	loadConfig()
+	flagsfromhost.InjectRemotes(&(config.Global.Remotes))
 
 	if config.Global.PastVersion != "" {
 		update.ApplyFixes(config.Global.PastVersion)
