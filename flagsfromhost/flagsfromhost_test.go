@@ -305,7 +305,36 @@ var parseHostOnlyMocks = []parseHostOnlyMockStruct{
 		wantRemote:    "foo",
 		wantErr:       nil,
 	},
-
+	parseHostOnlyMockStruct{
+		host:          "abc.def.ghi.jkl.mnn.opq.rst.uvw.xyz",
+		project:       "",
+		container:     "",
+		remote:        "",
+		wantProject:   "abc",
+		wantContainer: "",
+		wantRemote:    "alphabet",
+		wantErr:       nil,
+	},
+	parseHostOnlyMockStruct{
+		host:          "abc.11.22.33.44:5555",
+		project:       "",
+		container:     "",
+		remote:        "",
+		wantProject:   "abc",
+		wantContainer: "",
+		wantRemote:    "ip",
+		wantErr:       nil,
+	},
+	parseHostOnlyMockStruct{
+		host:          "def.abc.11.22.33.44:5555",
+		project:       "",
+		container:     "",
+		remote:        "",
+		wantProject:   "abc",
+		wantContainer: "def",
+		wantRemote:    "ip",
+		wantErr:       nil,
+	},
 	parseHostOnlyMockStruct{
 		host:          "",
 		project:       "",
@@ -323,6 +352,12 @@ func TestParse(t *testing.T) {
 	remotesList = &remotes.List{
 		"foo": remotes.Entry{
 			URL: "example.com",
+		},
+		"alphabet": remotes.Entry{
+			URL: "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
+		},
+		"ip": remotes.Entry{
+			URL: "11.22.33.44:5555",
 		},
 	}
 
