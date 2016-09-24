@@ -351,7 +351,7 @@ func TestRemotesListAndGet(t *testing.T) {
 		Comment: "commented vars remains even when empty",
 	}
 
-	var gotRemain, gotRemainOK = Global.Remotes.Get("remain")
+	var gotRemain, gotRemainOK = Global.Remotes["remain"]
 
 	if gotRemain != wantRemain {
 		t.Errorf("Wanted %v, got %v instead", wantRemain, gotRemain)
