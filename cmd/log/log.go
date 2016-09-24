@@ -42,7 +42,7 @@ func logRun(cmd *cobra.Command, args []string) error {
 	level, levelErr := logs.GetLevel(severityArg)
 
 	if levelErr != nil {
-		return err
+		return levelErr
 	}
 
 	if len(args) > 2 {
