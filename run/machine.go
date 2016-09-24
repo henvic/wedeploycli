@@ -161,14 +161,14 @@ func (dm *DockerMachine) checkPortsAreAvailable() error {
 		return nil
 	}
 
-	var s = "Can't start. The following network ports must be available:"
+	var s = "Can't start. The following network ports must be available:\n"
 
 	for _, port := range notAvailable {
 		s += fmt.Sprintf("%v\n", port)
 	}
 
-	s += "Sometimes docker doesn't free up ports properly.\n" +
-		"If you don't know why these ports are not available, try restarting docker.\n"
+	s += "\nSometimes docker doesn't free up ports properly.\n" +
+		"If you don't know why these ports are not available, try restarting docker."
 
 	return errors.New(s)
 }
