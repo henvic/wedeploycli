@@ -49,7 +49,7 @@ func TestGetAndDelete(t *testing.T) {
 		},
 	}
 
-	alt, ok := list.Get("alternative")
+	alt, ok := list["alternative"]
 
 	if !ok || alt.URL != "http://example.net/" || alt.Comment != "123" || alt.URLComment != "abc" {
 		t.Errorf("Expected values ((http://example.net/, 123, abc), true), got (%v, %v) instead", alt, ok)
@@ -57,7 +57,7 @@ func TestGetAndDelete(t *testing.T) {
 
 	list.Del("staging")
 
-	if s, ok := list.Get("staging"); ok {
+	if s, ok := list["staging"]; ok {
 		t.Errorf(`Expecting "staging" to not exist, got %v instead`, s)
 	}
 }
@@ -67,7 +67,7 @@ func TestSet(t *testing.T) {
 
 	list.Set("alternative", "http://example.net/", "123")
 
-	alt, ok := list.Get("alternative")
+	alt, ok := list["alternative"]
 
 	if !ok || alt.URL != "http://example.net/" || alt.Comment != "# 123" {
 		t.Errorf("Expected values ((http://example.net/, # 123), true), got (%v, %v) instead", alt, ok)

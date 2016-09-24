@@ -27,12 +27,6 @@ func (l List) Keys() []string {
 	return keys
 }
 
-// Get a given remote by name
-func (l List) Get(name string) (Entry, bool) {
-	remote, ok := l[name]
-	return remote, ok
-}
-
 // Set a remote
 func (l List) Set(name string, url string, comment ...string) {
 	// make sure to use # by default, instead of ;
