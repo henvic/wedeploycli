@@ -376,6 +376,24 @@ func TestParse(t *testing.T) {
 	}
 }
 
+func TestParseUnknownRemoteFlag(t *testing.T) {
+	defer resetDefaults()
+	remotesList = &remotes.List{}
+	_, err := Parse("project", "", "", "not-found")
+
+	switch err.(type) {
+	case ErrorNotFound:
+	default:
+		t.Errorf(`Expected error "%v" doesn't match expected type`, err)
+	}
+
+	var wantErr = "Remote not-found not found"
+
+	if err.Error() != wantErr {
+		t.Errorf("Expected error to be %v on parsing, got %v instead", wantErr, err)
+	}
+}
+
 func TestParseNoMixingProjectAndHost(t *testing.T) {
 	defer resetDefaults()
 	switch _, err := Parse("foo.wedeploy.me", "foo", "", ""); err.(type) {

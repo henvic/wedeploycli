@@ -44,6 +44,15 @@ func (e ErrorFoundNoRemote) Error() string {
 	return fmt.Sprintf("Found no remote for address %v", e.Host)
 }
 
+// ErrorFoundNoRemote happens when a remote isn't found
+type ErrorNotFound struct {
+	Remote string
+}
+
+func (e ErrorNotFound) Error() string {
+	return fmt.Sprintf("Remote %v not found", e.Remote)
+}
+
 // ErrorFoundMultipleRemote happens when multiple resolutions are found for a given host address
 type ErrorFoundMultipleRemote struct {
 	Host    string
@@ -129,6 +138,10 @@ func parseWithHost(host, remoteFromFlag string) (*FlagsFromHost, error) {
 	}
 
 	if remoteFromFlag != "" {
+		if _, ok := (*remotesList)[remoteFromFlag]; !ok {
+			return nil, ErrorNotFound{remoteFromFlag}
+		}
+
 		flagsFromHost.remote = remoteFromFlag
 	}
 
