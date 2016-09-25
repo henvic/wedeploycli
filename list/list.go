@@ -375,11 +375,13 @@ func getFormattedHealth(s string) string {
 }
 
 func getProjectDomain(projectID string) string {
-	return fmt.Sprintf("%v.wedeploy.me", color.Format(color.Bold, "%v", projectID))
+	return fmt.Sprintf("%v", color.Format(
+		color.Bold, "%v.%v", projectID, config.Context.RemoteAddress))
 }
 
 func getContainerDomain(projectID, containerID string) string {
-	return fmt.Sprintf("%v.%v.wedeploy.me", color.Format(color.Bold, "%v", containerID), projectID)
+	return fmt.Sprintf("%v.%v", color.Format(
+		color.Bold, "%v.%v", containerID, projectID), config.Context.RemoteAddress)
 }
 
 func inArray(key string, haystack []string) bool {
