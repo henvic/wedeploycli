@@ -31,7 +31,7 @@ func getContainersFromScope() ([]string, error) {
 }
 
 func buildRun(cmd *cobra.Command, args []string) error {
-	if err := checkProjectOrContainer(args); err != nil {
+	if err := checkProjectOrContainer(); err != nil {
 		return err
 	}
 
@@ -80,8 +80,8 @@ func buildContainer(path string) error {
 	return container.Hooks.Run(hooks.Build, filepath.Join(path), container.ID)
 }
 
-func checkProjectOrContainer(args []string) error {
-	var _, _, err = cmdcontext.GetProjectOrContainerID(args)
+func checkProjectOrContainer() error {
+	var _, _, err = wdircontext.GetProjectOrContainerID()
 	var _, errc = containers.Read(".")
 
 	if err != nil && os.IsNotExist(errc) {
