@@ -8,10 +8,10 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmdcontext"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/hooks"
+	"github.com/wedeploy/cli/wdircontext"
 )
 
 // BuildCmd builds the current project or container
