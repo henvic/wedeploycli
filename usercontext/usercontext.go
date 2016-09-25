@@ -12,6 +12,7 @@ type Context struct {
 	ProjectRoot   string
 	ContainerRoot string
 	Remote        string
+	RemoteAddress string
 	Endpoint      string
 	Username      string
 	Password      string
