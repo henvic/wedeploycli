@@ -42,6 +42,19 @@ function checkBranch() {
   fi
 }
 
+function checkWeDeployImageTag() {
+  cat defaults/defaults.go | grep -q "WeDeployImageTag = \"latest\"" && ec=$? || ec=$?
+
+  if [ $ec -eq 0 ] ; then
+    >&2 echo -e "\x1B[101m\x1B[1mWarning: you MUST NOT use docker image tag \"latest\" for releases.\x1B[0m"
+
+    if [ $config != "--pre-release" ]; then
+      read -p "Continue? [no]: " CONT < /dev/tty;
+      checkCONT
+    fi
+  fi
+}
+
 function checkWorkingDir() {
   if [ `git status --short | wc -l` -gt 0 ]; then
     echo "You have uncommited changes."
@@ -163,6 +176,7 @@ function publish() {
 
 function prerelease() {
   testHuman
+  checkWeDeployImageTag
 
   if [ $config != "--pre-release" ]; then
     checkBranch
