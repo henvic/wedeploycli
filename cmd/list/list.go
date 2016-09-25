@@ -1,6 +1,7 @@
 package cmdlist
 
 import (
+	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/list"
 
 	"github.com/spf13/cobra"
@@ -8,9 +9,15 @@ import (
 
 // ListCmd is used for getting a list of projects and containers
 var ListCmd = &cobra.Command{
-	Use:   "list or list [project] to filter by project",
-	Short: "List projects and containers running on WeDeploy",
-	Run:   listRun,
+	Use: "list <host> or --project <project> --container <container>",
+	Example: `we list --project chat --container data
+we list chat
+we list data.chat
+we list data.chat.wedeploy.me
+we list data.chat.wedeploy.io`,
+	Short:   "List projects and containers running on WeDeploy",
+	PreRunE: preRun,
+	Run:     listRun,
 }
 
 var (
@@ -18,16 +25,30 @@ var (
 	watch    bool
 )
 
-func listRun(cmd *cobra.Command, args []string) {
-	var filter = list.Filter{}
+var setupHost = cmdflagsfromhost.SetupHost{
+	Pattern: cmdflagsfromhost.FullHostPattern,
+	Requires: cmdflagsfromhost.Requires{
+		Auth: true,
+	},
+}
 
-	switch len(args) {
-	case 0:
-	case 1:
-		filter.Project = args[0]
-	default:
-		filter.Project = args[0]
-		filter.Containers = args[1:]
+func init() {
+	setupHost.Init(ListCmd)
+}
+
+func preRun(cmd *cobra.Command, args []string) error {
+	return setupHost.Process(args)
+}
+
+func listRun(cmd *cobra.Command, args []string) {
+	var filter = list.Filter{
+		Project: setupHost.Project(),
+	}
+
+	if setupHost.Container() != "" {
+		filter.Containers = []string{
+			setupHost.Container(),
+		}
 	}
 
 	var l = list.New(filter)
