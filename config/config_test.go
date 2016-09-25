@@ -200,6 +200,10 @@ func TestSaveAfterCreation(t *testing.T) {
 		panic(err)
 	}
 
+	if Global.Remotes == nil {
+		t.Error("Remotes should be initialized, not nil")
+	}
+
 	// save in a different location
 	Global.Path = tmp.Name()
 

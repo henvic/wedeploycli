@@ -59,6 +59,11 @@ func (c *Config) Load() error {
 	}
 
 	c.load()
+
+	if c.Remotes == nil {
+		c.Remotes = remotes.List{}
+	}
+
 	return nil
 }
 
