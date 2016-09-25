@@ -6,28 +6,35 @@ import (
 	"os"
 	"sync"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/cmdcontext"
+	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/wdircontext"
 )
 
 // UnlinkCmd unlinks the given project or container locally
 var UnlinkCmd = &cobra.Command{
-	Use:   "unlink",
-	Short: "Unlinks the given project or container locally",
-	RunE:  unlinkRun,
+	Use:     "unlink",
+	Short:   "Unlinks the given project or container locally",
+	PreRunE: preRun,
+	RunE:    unlinkRun,
 	Example: `we unlink
 we unlink <project>
-we unlink <project> <container>
-we unlink <container>`,
+we unlink <project> <container>`,
 }
 
 var quiet bool
+
+var setupHost = cmdflagsfromhost.SetupHost{
+	Pattern: cmdflagsfromhost.ProjectAndContainerPattern,
+	Requires: cmdflagsfromhost.Requires{
+		Local: true,
+	},
+}
 
 func init() {
 	UnlinkCmd.Flags().BoolVarP(
@@ -36,6 +43,8 @@ func init() {
 		"q",
 		false,
 		"Unlink without watching status.")
+
+	setupHost.Init(UnlinkCmd)
 }
 
 type unlink struct {
@@ -127,11 +136,21 @@ func handleCheckProjectOrContainerError(err error) error {
 	return err
 }
 
-func unlinkRun(cmd *cobra.Command, args []string) error {
-	var project, container, err = cmdcontext.GetProjectOrContainerID(args)
+func preRun(cmd *cobra.Command, args []string) error {
+	return setupHost.Process(args)
+}
 
-	if err != nil {
-		return errwrap.Wrapf("fatal: {{err}}", err)
+func unlinkRun(cmd *cobra.Command, args []string) error {
+	var project = setupHost.Project()
+	var container = setupHost.Container()
+
+	if project == "" {
+		var err error
+		project, container, err = wdircontext.GetProjectOrContainerID()
+
+		if err != nil {
+			return err
+		}
 	}
 
 	var u = &unlink{
@@ -139,13 +158,13 @@ func unlinkRun(cmd *cobra.Command, args []string) error {
 		container: container,
 	}
 
-	if err = u.checkProjectOrContainerExists(); err != nil {
+	if err := u.checkProjectOrContainerExists(); err != nil {
 		return err
 	}
 
 	if quiet {
 		u.do()
-		return err
+		return nil
 	}
 
 	var queue sync.WaitGroup
