@@ -12,6 +12,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	semver "github.com/hashicorp/go-version"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/prompt"
@@ -159,10 +160,18 @@ func checkDockerAvailable() error {
 	}
 
 	if !constraints.Check(installedDockerVersion) {
-		return fmt.Errorf("docker version too old: %v, required >= %v\n"+
-			"Update it or download a new version from http://docker.com/",
-			installedDockerVersion,
-			defaults.RequiresDockerConstraint)
+		return fmt.Errorf(`docker version too old: ` +
+			color.Format(color.FgHiRed, `%v`, installedDockerVersion) +
+			", required is " +
+			color.Format(color.FgHiRed, `%v`,
+				defaults.RequiresDockerConstraint) + `
+Update it or download a new version from http://docker.com/
+	If this doesn't work:
+	1) check for multiple older docker versions on your system
+	2) if you find them, backup any containers or settings you need
+	3) stop and uninstall all docker instances ` +
+			color.Format(color.Bold, "until the docker command fails") + "\n" +
+			`	4) install docker again`)
 	}
 
 	return nil
