@@ -44,7 +44,7 @@ func (e ErrorFoundNoRemote) Error() string {
 	return fmt.Sprintf("Found no remote for address %v", e.Host)
 }
 
-// ErrorFoundNoRemote happens when a remote isn't found
+// ErrorNotFound happens when a remote isn't found
 type ErrorNotFound struct {
 	Remote string
 }
