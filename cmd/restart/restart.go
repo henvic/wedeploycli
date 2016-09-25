@@ -4,26 +4,40 @@ import (
 	"context"
 	"sync"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmdcontext"
+	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/verbose"
+	"github.com/wedeploy/cli/wdircontext"
 )
 
 // RestartCmd is used for getting restart
 var RestartCmd = &cobra.Command{
-	Use:   "restart [project] [container]",
-	Short: "Restart project or container running on WeDeploy",
-	RunE:  restartRun,
-	Example: `we restart portal
-we restart portal email`,
+	Use:     "restart <host> or --project <project> --container <container>",
+	Short:   "Restart project or container running on WeDeploy",
+	PreRunE: preRun,
+	RunE:    restartRun,
+	Example: `we restart --project chat --container data
+we restart chat
+we restart data.chat
+we restart data.chat --remote cloud
+we restart data.chat.wedeploy.me`,
 }
 
 var quiet bool
 
+var setupHost = cmdflagsfromhost.SetupHost{
+	Requires: cmdflagsfromhost.Requires{
+		Auth: true,
+	},
+	Pattern: cmdflagsfromhost.FullHostPattern,
+}
+
 func init() {
+	setupHost.Init(RestartCmd)
 	RestartCmd.Flags().BoolVarP(
 		&quiet,
 		"quiet",
@@ -86,11 +100,20 @@ func (r *restart) checkProjectOrContainerExists() error {
 	return err
 }
 
-func restartRun(cmd *cobra.Command, args []string) error {
-	project, container, err := cmdcontext.GetProjectOrContainerID(args)
+func preRun(cmd *cobra.Command, args []string) error {
+	return setupHost.Process(args)
+}
 
-	if err != nil {
-		return err
+func restartRun(cmd *cobra.Command, args []string) error {
+	var project = setupHost.Project()
+	var container = setupHost.Container()
+	if setupHost.Project() == "" && setupHost.Container() == "" {
+		var err error
+		project, container, err = wdircontext.GetProjectOrContainerID()
+
+		if err != nil {
+			return errwrap.Wrapf("No flags or local files: {{err}}", err)
+		}
 	}
 
 	var r = &restart{
@@ -98,7 +121,7 @@ func restartRun(cmd *cobra.Command, args []string) error {
 		container: container,
 	}
 
-	if err = r.checkProjectOrContainerExists(); err != nil {
+	if err := r.checkProjectOrContainerExists(); err != nil {
 		return err
 	}
 
