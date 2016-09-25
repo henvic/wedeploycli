@@ -35,6 +35,7 @@ function setupAlternateDir() {
   echo "Cancel to run again as root / sudoer or install it somewhere else."
   read -p "Install in [current dir]: " DESTDIR < /dev/tty;
   DESTDIR=${DESTDIR:-`pwd`}
+  DESTDIR=${DESTDIR/"~"/$HOME}
 }
 
 if [ ! -w $DESTDIR ] ; then setupAlternateDir ; fi
@@ -99,8 +100,8 @@ function run() {
 }
 
 function info() {
-  wepath=(which we)
-  if [[ $wepath != "$DESTDIR/we" ]]; then
+  wepath=`which we`
+  if [[ ! $wepath -ef "$DESTDIR/we" ]]; then
     echo "Installed, but not on your \$PATH"
     echo "Run with $DESTDIR/we"
     return
