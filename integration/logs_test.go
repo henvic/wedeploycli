@@ -29,8 +29,39 @@ func TestLogs(t *testing.T) {
 	var cmd = &Command{
 		Args: []string{
 			"log",
-			"foo",
-			"nodejs5143",
+			"nodejs5143.foo",
+			"--no-color"},
+		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir: "mocks/home/",
+	}
+
+	var e = &Expect{
+		Stdout:   tdata.FromFile("../logs/mocks/logs_response_print"),
+		ExitCode: 0,
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+}
+
+func TestLogsWithWeDeployDotMeAddress(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	servertest.IntegrationMux.HandleFunc("/logs/foo",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Query().Get("containerId") != "nodejs5143" {
+				t.Errorf("Wrong value for containerId")
+			}
+
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, tdata.FromFile("../logs/mocks/logs_response.json"))
+		})
+
+	var cmd = &Command{
+		Args: []string{
+			"log",
+			"nodejs5143.foo.wedeploy.me",
 			"--no-color"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/",
@@ -62,8 +93,7 @@ func TestWatch(t *testing.T) {
 	var cmd = &Command{
 		Args: []string{
 			"log",
-			"foo",
-			"nodejs5143",
+			"nodejs5143.foo",
 			"--watch"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/",

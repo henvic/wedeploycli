@@ -8,8 +8,9 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmdcontext"
+	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/logs"
+	"github.com/wedeploy/cli/wdircontext"
 )
 
 var (
@@ -19,24 +20,44 @@ var (
 	watchArg    bool
 )
 
+var setupHost = cmdflagsfromhost.SetupHost{
+	Requires: cmdflagsfromhost.Requires{
+		Auth: true,
+	},
+	Pattern: cmdflagsfromhost.FullHostPattern,
+}
+
+func init() {
+	setupHost.Init(LogCmd)
+}
+
 // LogCmd is used for getting logs about a given scope
 var LogCmd = &cobra.Command{
-	Use:   "log [project] [container] --instance hash",
-	Short: "See logs of what is running on WeDeploy",
-	RunE:  logRun,
-	Example: `we log (on project or container directory)
+	Use:     "log <host> or --project <project> --container <container> --instance hash",
+	Short:   "See logs of what is running on WeDeploy",
+	PreRunE: preRun,
+	RunE:    logRun,
+	Example: `we log --project chat --container data
 we log chat
-we log portal email
-we log portal email --instance abc`,
+we log data.chat
+we log data.chat.wedeploy.me
+we log data.chat.wedeploy.io --instance abc`,
+}
+
+func preRun(cmd *cobra.Command, args []string) error {
+	return setupHost.Process(args)
 }
 
 func logRun(cmd *cobra.Command, args []string) error {
-	c := cmdcontext.SplitArguments(args, 0, 2)
+	var project = setupHost.Project()
+	var container = setupHost.Container()
+	if setupHost.Project() == "" && setupHost.Container() == "" {
+		var err error
+		project, container, err = wdircontext.GetProjectOrContainerID()
 
-	project, container, err := cmdcontext.GetProjectOrContainerID(c)
-
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
 	}
 
 	level, levelErr := logs.GetLevel(severityArg)
