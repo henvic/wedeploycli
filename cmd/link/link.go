@@ -9,24 +9,29 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmdcontext"
+	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/link"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/wdircontext"
 )
 
 // LinkCmd links the given project or container locally
 var LinkCmd = &cobra.Command{
-	Use:   "link",
-	Short: "Links the given project or container locally",
-	RunE:  linkRun,
+	Use:     "link",
+	Short:   "Links the given project or container locally",
+	PreRunE: preRun,
+	RunE:    linkRun,
 	Example: `we link
-we link <project>
-we link <container>`,
+we link <project>`,
 }
 
 var quiet bool
+
+var setupHost = cmdflagsfromhost.SetupHost{
+	Pattern: cmdflagsfromhost.ProjectPattern,
+}
 
 func init() {
 	LinkCmd.Flags().BoolVarP(
@@ -35,6 +40,8 @@ func init() {
 		"q",
 		false,
 		"Link without watching status.")
+
+	setupHost.Init(LinkCmd)
 }
 
 func getContainersDirectoriesFromScope() ([]string, error) {
@@ -73,25 +80,30 @@ func getContainersDirectoriesFromScope() ([]string, error) {
 	return absList, err
 }
 
-func linkRun(cmd *cobra.Command, args []string) error {
-	projectID, err := cmdcontext.GetProjectID(args)
+func preRun(cmd *cobra.Command, args []string) error {
+	return setupHost.Process(args)
+}
 
-	if err == projects.ErrProjectNotFound {
-		err = nil
+func linkRun(cmd *cobra.Command, args []string) error {
+	var projectID = setupHost.Project()
+
+	if config.Context.Scope == "project" && projectID != "" {
+		return errors.New("Can't use we link arguments when inside a project")
 	}
 
-	if err != nil {
-		return err
+	if projectID == "" {
+		var err error
+		projectID, err = wdircontext.GetProjectID()
+
+		if err != nil {
+			return err
+		}
 	}
 
 	csDirs, err := getContainersDirectoriesFromScope()
 
 	if err != nil {
 		return err
-	}
-
-	if config.Context.Scope == "project" && len(args) != 0 {
-		return errors.New("Can't link containers from one project to another project")
 	}
 
 	if projectID != "" && config.Context.ProjectRoot != "" {

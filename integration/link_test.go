@@ -3,6 +3,7 @@ package integration
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -56,13 +57,18 @@ func TestLinkRemoteError(t *testing.T) {
 		Dir: "mocks/home/bucket/project/container",
 	}
 
-	var e = &Expect{
-		ExitCode: 1,
-		Stderr:   "Error: can not use command with a remote",
+	cmd.Run()
+
+	if cmd.ExitCode != 1 {
+		t.Errorf("Unexpected exit code %v", cmd.ExitCode)
 	}
 
-	cmd.Run()
-	e.Assert(t, cmd)
+	var got = cmd.Stdout.String()
+	var want = "Error: unknown flag: --remote"
+
+	if strings.Contains(got, want) {
+		t.Errorf("Error message doesn't contain expected value %v, got %v instead", want, got)
+	}
 }
 
 func TestLinkRemoteShortcutError(t *testing.T) {
@@ -76,11 +82,16 @@ func TestLinkRemoteShortcutError(t *testing.T) {
 		Dir: "mocks/home/bucket/project/container",
 	}
 
-	var e = &Expect{
-		ExitCode: 1,
-		Stderr:   "Error: can not use command with a remote",
+	cmd.Run()
+
+	if cmd.ExitCode != 1 {
+		t.Errorf("Unexpected exit code %v", cmd.ExitCode)
 	}
 
-	cmd.Run()
-	e.Assert(t, cmd)
+	var got = cmd.Stdout.String()
+	var want = "Error: unknown flag: --remote"
+
+	if strings.Contains(got, want) {
+		t.Errorf("Error message doesn't contain expected value %v, got %v instead", want, got)
+	}
 }
