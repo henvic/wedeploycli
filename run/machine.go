@@ -44,7 +44,7 @@ type DockerMachine struct {
 
 // Run runs the WeDeploy infrastructure
 func Run(flags Flags) error {
-	if err := checkDockerExists(); err != nil {
+	if err := checkDockerAvailable(); err != nil {
 		return err
 	}
 
@@ -57,7 +57,7 @@ func Run(flags Flags) error {
 
 // Stop stops the WeDeploy infrastructure
 func Stop() error {
-	if err := checkDockerExists(); err != nil {
+	if err := checkDockerAvailable(); err != nil {
 		return err
 	}
 

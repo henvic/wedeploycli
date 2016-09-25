@@ -13,6 +13,7 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/hashicorp/errwrap"
+	semver "github.com/hashicorp/go-version"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/prompt"
@@ -125,9 +126,44 @@ func StopOutdatedImage(nextImage string) error {
 	return cleanupEnvironment()
 }
 
-func checkDockerExists() error {
+func checkDockerAvailable() error {
 	if !existsDependency(bin) {
 		return errors.New("Docker is not installed. Download it from http://docker.com/")
+	}
+
+	var params = []string{
+		"version", "--format", "{{.Client.Version}}",
+	}
+
+	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
+	var versionBuf bytes.Buffer
+	var version = exec.Command(bin, params...)
+	version.Stderr = os.Stderr
+	version.Stdout = &versionBuf
+
+	if err := version.Run(); err != nil {
+		return errwrap.Wrapf("Can't get docker version: {{err}}", err)
+	}
+
+	v := strings.TrimSpace(versionBuf.String())
+	installedDockerVersion, err := semver.NewVersion(v)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error parsing docker [semantic] version: %v (ignoring)\n", err)
+		return nil
+	}
+
+	constraints, err := semver.NewConstraint(defaults.RequiresDockerConstraint)
+
+	if err != nil {
+		panic(err)
+	}
+
+	if !constraints.Check(installedDockerVersion) {
+		return fmt.Errorf("docker version too old: %v, required >= %v\n"+
+			"Update it or download a new version from http://docker.com/",
+			installedDockerVersion,
+			defaults.RequiresDockerConstraint)
 	}
 
 	return nil

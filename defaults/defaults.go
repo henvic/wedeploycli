@@ -15,4 +15,7 @@ var (
 
 	// WeDeployImageTag is the WeDeploy image tag for docker
 	WeDeployImageTag = "latest"
+
+	// RequiresDockerConstraint semver version constraint
+	RequiresDockerConstraint = ">= 1.12.0"
 )

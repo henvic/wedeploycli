@@ -15,3 +15,4 @@ import:
   version: v1.21.1
 - package: github.com/mitchellh/go-wordwrap
 - package: github.com/hashicorp/errwrap
+- package: github.com/hashicorp/go-version
