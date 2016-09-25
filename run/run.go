@@ -10,14 +10,13 @@ import (
 	"os/exec"
 	"strings"
 
-	"golang.org/x/crypto/ssh/terminal"
-
 	"github.com/hashicorp/errwrap"
 	semver "github.com/hashicorp/go-version"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/prompt"
 	"github.com/wedeploy/cli/verbose"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 // ErrHostNotFound is used when host is not found
