@@ -127,7 +127,13 @@ func parse(host, project, container, remote string) (*FlagsFromHost, error) {
 }
 
 func parseWithHost(host, remoteFromFlag string) (*FlagsFromHost, error) {
-	var flagsFromHost, err = parseHost(host)
+	if remote, err := ParseRemoteAddress(host); err == nil {
+		return &FlagsFromHost{
+			remote: remote,
+		}, nil
+	}
+
+	flagsFromHost, err := parseHost(host)
 
 	if err != nil {
 		return nil, err

@@ -345,6 +345,36 @@ var parseHostOnlyMocks = []parseHostOnlyMockStruct{
 		wantRemote:    "",
 		wantErr:       nil,
 	},
+	parseHostOnlyMockStruct{
+		host:          "wedeploy.io",
+		project:       "",
+		container:     "",
+		remote:        "",
+		wantProject:   "",
+		wantContainer: "",
+		wantRemote:    "wedeploy",
+		wantErr:       nil,
+	},
+	parseHostOnlyMockStruct{
+		host:          "wedeploy.me",
+		project:       "",
+		container:     "",
+		remote:        "",
+		wantProject:   "",
+		wantContainer: "",
+		wantRemote:    "",
+		wantErr:       nil,
+	},
+	parseHostOnlyMockStruct{
+		host:          "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
+		project:       "",
+		container:     "",
+		remote:        "",
+		wantProject:   "",
+		wantContainer: "",
+		wantRemote:    "alphabet",
+		wantErr:       nil,
+	},
 }
 
 func TestParse(t *testing.T) {
@@ -358,6 +388,9 @@ func TestParse(t *testing.T) {
 		},
 		"ip": remotes.Entry{
 			URL: "11.22.33.44:5555",
+		},
+		"wedeploy": remotes.Entry{
+			URL: "wedeploy.io",
 		},
 	}
 
