@@ -62,6 +62,7 @@ func (c *Config) Load() error {
 
 	if c.Remotes == nil {
 		c.Remotes = remotes.List{}
+		c.Remotes.Set("wedeploy", "wedeploy.io", "Default remote")
 	}
 
 	return nil
