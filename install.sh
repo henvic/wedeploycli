@@ -20,9 +20,7 @@ ARCH=$(uname -m | sed 's/x86_64/amd64/' | sed 's/i686/386/')
 UNAME_ARCH=$(echo ${UNAME}_${ARCH} | tr '[:upper:]' '[:lower:]' | tr '_' '-')
 FILE=cli-$RELEASE_CHANNEL-$UNAME_ARCH
 PACKAGE_FORMAT=""
-
-# default DESTDIR
-DESTDIR=/usr/local/bin
+DESTDIR=${2:-"/usr/local/bin"}
 
 function setupAlternateDir() {
   if [ ! -t 1 ] ; then
