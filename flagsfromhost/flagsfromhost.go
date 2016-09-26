@@ -227,10 +227,10 @@ func parseRemoteAddress(remoteAddress string) (found []string) {
 	for _, k := range remotesList.Keys() {
 		var v = (*remotesList)[k]
 
-		var sameHTTP = matchStringWithPrefix("http://", remoteAddress, "http://"+strings.TrimPrefix(v.URL, "http://api.dashboard."))
-		var sameHTTPS = matchStringWithPrefix("https://", remoteAddress, "https://"+strings.TrimPrefix(v.URL, "https://api.dashboard."))
+		var sameHTTP = matchStringWithPrefix("http://", remoteAddress, v.URL)
+		var sameHTTPS = matchStringWithPrefix("https://", remoteAddress, v.URL)
 
-		if sameHTTP || sameHTTPS || remoteAddress == strings.TrimPrefix(v.URL, "api.dashboard.") {
+		if sameHTTP || sameHTTPS || remoteAddress == v.URL {
 			found = append(found, k)
 		}
 	}

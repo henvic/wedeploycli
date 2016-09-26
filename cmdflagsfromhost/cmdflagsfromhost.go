@@ -9,6 +9,7 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/flagsfromhost"
+	"github.com/wedeploy/cli/remoteuriparser"
 )
 
 // ListRemoteFlags hides the globals non used --remote
@@ -204,11 +205,11 @@ func (s *SetupHost) setEndpoint() error {
 	return s.setRemote()
 }
 
-func (s *SetupHost) setRemote() error {
+func (s *SetupHost) setRemote() (err error) {
 	var r = config.Global.Remotes[s.parsed.Remote()]
 	config.Context.Remote = s.parsed.Remote()
 	config.Context.RemoteAddress = getRemoteAddress(r.URL)
-	config.Context.Endpoint = normalizeRemote(r.URL)
+	config.Context.Endpoint = remoteuriparser.Parse(r.URL)
 	config.Context.Username = config.Global.Username
 	config.Context.Password = config.Global.Password
 	config.Context.Token = config.Global.Token
@@ -217,9 +218,6 @@ func (s *SetupHost) setRemote() error {
 
 func getRemoteAddress(address string) string {
 	var removePrefixes = []string{
-		"http://api.dashboard.",
-		"https://api.dashboard.",
-		"api.dashboard.",
 		"http://",
 		"https://",
 	}
@@ -228,16 +226,6 @@ func getRemoteAddress(address string) string {
 		if strings.HasPrefix(address, prefix) {
 			return strings.TrimPrefix(address, prefix)
 		}
-	}
-
-	return address
-}
-
-func normalizeRemote(address string) string {
-	if address != "" &&
-		!strings.HasPrefix(address, "http://") &&
-		!strings.HasPrefix(address, "https://") {
-		return "http://" + address
 	}
 
 	return address
