@@ -22,7 +22,7 @@ func loginRun(cmd *cobra.Command, args []string) error {
 Have you signed up with an authentication provider such as Google or GitHub?
 Please, set up a WeDeploy password first at
 ` + color.Format(color.FgHiRed, "http://dashboard.wedeploy.com/password/reset") +
-		"\nor you won't be enable to continue.\n")
+		"\nor you won't be able to continue.\n")
 	var username = prompt.Prompt("Username")
 	var password = prompt.Prompt("Password")
 	var g = config.Global
