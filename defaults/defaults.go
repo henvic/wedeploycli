@@ -7,9 +7,6 @@ var (
 	// Build commit
 	Build = ""
 
-	// Endpoint default to the client
-	Endpoint = "https://wedeploy.io"
-
 	// Hub for the system
 	Hub = "http://api.dashboard.wedeploy.io"
 

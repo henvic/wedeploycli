@@ -6,7 +6,6 @@ last_update_check =
 next_version      = 
 notify_updates    = true
 no_color          = false
-endpoint          = http://www.example.com/
 local             = false
 username          = 
 password          = 

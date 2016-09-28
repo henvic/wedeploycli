@@ -2,5 +2,4 @@
 # https://wedeploy.io
 username          = admin
 password          = safe
-endpoint          = http://www.example.com/
 

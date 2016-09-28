@@ -48,10 +48,6 @@ func TestSetupAndTeardown(t *testing.T) {
 		t.Errorf("Wrong local value")
 	}
 
-	if Global.Endpoint != "http://www.example.com/" {
-		t.Errorf("Wrong endpoint")
-	}
-
 	if Global.NotifyUpdates != true {
 		t.Errorf("Wrong NotifyUpdate value")
 	}
@@ -283,10 +279,6 @@ func TestRemotes(t *testing.T) {
 
 	if Global.Username != "fool" {
 		t.Errorf("Wrong username")
-	}
-
-	if Global.Endpoint != "http://www.example.com/" {
-		t.Errorf("Wrong endpoint")
 	}
 
 	unsetenv("WEDEPLOY_CUSTOM_HOME")

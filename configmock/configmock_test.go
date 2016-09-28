@@ -73,7 +73,7 @@ func TestConfigMockRemoteContext(t *testing.T) {
 		t.Errorf("Unexpected remote for remote context")
 	}
 
-	if config.Context.Endpoint != "http://www.example.com" {
+	if config.Context.Endpoint != "http://www.example.com/" {
 		t.Errorf("Unexpected endpoint for remote context")
 	}
 

@@ -29,7 +29,6 @@ func Setup() {
 	global.Token = "mock_token"
 	global.Local = false
 	global.NoColor = false
-	global.Endpoint = "http://www.example.com"
 	global.NotifyUpdates = true
 	global.ReleaseChannel = "stable"
 	global.LastUpdateCheck = "Sat Jun  4 04:47:03 BRT 2016"
@@ -55,7 +54,7 @@ func SetupLocalContext() {
 // SetupRemoteContext loads the config mock remote context
 func SetupRemoteContext() {
 	config.Context.Remote = "foo"
-	config.Context.Endpoint = config.Global.Endpoint
+	config.Context.Endpoint = "http://www.example.com/"
 	config.Context.Token = config.Global.Token
 }
 

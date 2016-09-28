@@ -10,7 +10,6 @@ import (
 	"gopkg.in/ini.v1"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/remotes"
 	"github.com/wedeploy/cli/user"
 	"github.com/wedeploy/cli/usercontext"
@@ -26,7 +25,6 @@ type Config struct {
 	LocalPort       int          `ini:"local_port"`
 	NoAutocomplete  bool         `ini:"disable_autocomplete_autoinstall"`
 	NoColor         bool         `ini:"disable_colors"`
-	Endpoint        string       `ini:"endpoint"`
 	NotifyUpdates   bool         `ini:"notify_updates"`
 	ReleaseChannel  string       `ini:"release_channel"`
 	LastUpdateCheck string       `ini:"last_update_check"`
@@ -105,7 +103,6 @@ func Setup() error {
 func (c *Config) setDefaults() {
 	c.Local = true
 	c.LocalPort = 8080
-	c.Endpoint = defaults.Endpoint
 	c.NotifyUpdates = true
 	c.ReleaseChannel = "stable"
 
