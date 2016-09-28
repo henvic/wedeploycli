@@ -189,7 +189,7 @@ func (s *SetupHost) verifyCmdReqAuth() error {
 
 	var hasAuth = (g.Token != "") || (g.Username != "" && g.Password != "")
 
-	if g.Endpoint != "" && hasAuth {
+	if hasAuth {
 		return nil
 	}
 
