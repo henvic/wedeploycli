@@ -140,7 +140,9 @@ func (dm *DockerMachine) Stop() error {
 func (dm *DockerMachine) setupPorts() {
 	dm.tcpPorts = tcpPortsStruct{
 		80,
+		6379,
 		8080,
+		9300,
 		24224,
 	}
 
