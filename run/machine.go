@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"runtime"
 	"strings"
 	"sync"
 	"syscall"
@@ -259,6 +260,10 @@ func (dm *DockerMachine) start() (err error) {
 		return err
 	}
 
+	if err := dm.checkDockerHost(); err != nil {
+		return err
+	}
+
 	if dm.Flags.DryRun {
 		os.Exit(0)
 	}
@@ -269,6 +274,27 @@ func (dm *DockerMachine) start() (err error) {
 
 	verbose.Debug("Docker container ID:", dm.Container)
 	return err
+}
+
+func (dm *DockerMachine) checkDockerHost() error {
+	dh, ok := os.LookupEnv("DOCKER_HOST")
+
+	if !ok {
+		return nil
+	}
+
+	if _, err := os.Stat(dh); err == nil || !os.IsNotExist(err) {
+		return nil
+	}
+
+	var m = `Can't work with $DOCKER_HOST env variable set to non-socket.`
+
+	if runtime.GOOS != "linux" {
+		m += `If you are using docker-machine, please use Docker Native instead.
+Download it from http://docker.com/`
+	}
+
+	return errors.New(m)
 }
 
 func (dm *DockerMachine) stopListener() {
