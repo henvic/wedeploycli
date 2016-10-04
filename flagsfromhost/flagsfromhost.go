@@ -119,6 +119,12 @@ func parse(host, project, container, remote string) (*FlagsFromHost, error) {
 		return parseWithHost(host, remote)
 	}
 
+	if remote != "" {
+		if _, ok := (*remotesList)[remote]; !ok {
+			return nil, ErrorNotFound{remote}
+		}
+	}
+
 	return &FlagsFromHost{
 		project:   project,
 		container: container,

@@ -139,6 +139,11 @@ var parseByFlagsMocks = []parseByFlagsMockStruct{
 
 func TestParseByFlagsOnly(t *testing.T) {
 	defer resetDefaults()
+	remotesList = &remotes.List{
+		"hollywood": remotes.Entry{
+			URL: "example.com",
+		},
+	}
 
 	for _, k := range parseByFlagsMocks {
 		var parsed, err = Parse("", k.project, k.container, k.remote)
@@ -406,6 +411,22 @@ func TestParse(t *testing.T) {
 			parsed.Remote() != k.wantRemote {
 			t.Errorf("Expected values doesn't match on parsed object: %+v", parsed)
 		}
+	}
+}
+
+func TestParseUnknownRemoteFlagOnly(t *testing.T) {
+	defer resetDefaults()
+	remotesList = &remotes.List{}
+	parsed, err := Parse("", "", "", "cloud")
+
+	if parsed != nil {
+		t.Errorf("Expected parsed value to be nil, got %v instead", parsed)
+	}
+
+	var wantErr = "Remote cloud not found"
+
+	if err == nil || err.Error() != wantErr {
+		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
 	}
 }
 
