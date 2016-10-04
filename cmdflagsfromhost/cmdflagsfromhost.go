@@ -30,6 +30,7 @@ func SetLocal() {
 
 // Requires configuration for the host and flags
 type Requires struct {
+	NoHost    bool
 	Auth      bool
 	Remote    bool
 	Local     bool
@@ -105,6 +106,10 @@ func (s *SetupHost) Init(cmd *cobra.Command) {
 
 // Process host and flags
 func (s *SetupHost) Process(args []string) error {
+	if s.Requires.NoHost && len(args) != 0 {
+		return errors.New("Values by host style is disabled for this command")
+	}
+
 	switch len(args) {
 	case 0:
 		return s.process("")
