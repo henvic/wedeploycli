@@ -17,14 +17,26 @@ var LoginCmd = &cobra.Command{
 }
 
 func loginRun(cmd *cobra.Command, args []string) error {
+	var (
+		username string
+		password string
+		err      error
+	)
+
 	fmt.Println(`Your email and password are your credentials.
 
 Have you signed up with an authentication provider such as Google or GitHub?
 Please, set up a WeDeploy password first at
 ` + color.Format(color.FgHiRed, "http://dashboard.wedeploy.com/password/reset") +
 		"\nor you won't be able to continue.\n")
-	var username = prompt.Prompt("Username")
-	var password = prompt.Prompt("Password")
+	if username, err = prompt.Prompt("Username"); err != nil {
+		return err
+	}
+
+	if password, err = prompt.Hidden("Password"); err != nil {
+		return err
+	}
+
 	var g = config.Global
 
 	g.Username = username

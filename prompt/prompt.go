@@ -2,60 +2,82 @@ package prompt
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"os"
-	"regexp"
+	"strconv"
 	"strings"
 
+	"golang.org/x/crypto/ssh/terminal"
+
+	"github.com/hashicorp/errwrap"
 	"github.com/howeyc/gopass"
 )
-
-var secretKeys = []string{
-	"password",
-	"token",
-	"secret",
-}
 
 var (
 	inStream  io.Reader = os.Stdin
 	outStream io.Writer = os.Stdout
 	errStream io.Writer = os.Stderr
+
+	isTerminal = terminal.IsTerminal(int(os.Stdin.Fd()))
 )
 
-func isSecretKey(key string) bool {
-	var match, _ = regexp.MatchString(
-		"("+strings.Join(secretKeys, "|")+")",
-		strings.ToLower(key))
-	return match
+// SelectOption prompts for an option from a list
+func SelectOption(indexLength int) (index int, err error) {
+	if indexLength == 0 {
+		return -1, errors.New("No options available.")
+	}
+
+	var option string
+	option, err = Prompt(fmt.Sprintf("\nSelect from 1..%d", indexLength))
+
+	if err != nil {
+		return -1, err
+	}
+
+	index, err = strconv.Atoi(strings.TrimSpace(option))
+	index--
+
+	if err != nil || index < 0 || index > indexLength {
+		return -1, errors.New("Invalid option.")
+	}
+
+	return index, nil
 }
 
 // Prompt returns a prompt to receive the value of a parameter.
 // If the key is on a secret keys list it suppresses the feedback.
-func Prompt(param string) string {
-	if isSecretKey(param) {
-		fmt.Printf(param + ": ")
-		value, err := gopass.GetPasswd()
-
-		// if user cancels with ^c, the ErrInterrupted error is returned
-		if err != nil && err != gopass.ErrInterrupted {
-			panic(err)
-		}
-
-		return string(value)
+func Prompt(param string) (string, error) {
+	if !isTerminal {
+		return "", errors.New("Input device is not a terminal. " +
+			`Can't read "` + param + `"`)
 	}
 
-	reader := bufio.NewReader(inStream)
 	fmt.Fprintf(outStream, param+": ")
-
-	var value, err = reader.ReadString('\n')
+	reader := bufio.NewReader(inStream)
+	value, err := reader.ReadString('\n')
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Can't read prompt input for %v.\n", param)
-		panic(err)
+		return "", errwrap.Wrapf("Can't read stdin for "+param+": {{err}}", err)
 	}
 
-	value = strings.TrimSpace(value)
+	return value[:len(value)-1], nil
+}
 
-	return value
+// Hidden provides a prompt without echoing the value entered
+func Hidden(param string) (string, error) {
+	if !isTerminal {
+		return "", errors.New("Input device is not a terminal. " +
+			`Can't read "` + param + `"`)
+	}
+
+	fmt.Fprintf(outStream, param+": ")
+	var b, err = gopass.GetPasswd()
+
+	if err != nil {
+		return "", errwrap.Wrapf("Can't read stdin for "+param+": {{err}}", err)
+	}
+
+	return string(b), nil
 }

@@ -117,7 +117,11 @@ func StopOutdatedImage(nextImage string) error {
 		println("Notice: Updating to latest always requires WeDeploy infrastructure to be turned off.")
 	}
 
-	var q = prompt.Prompt("Stop WeDeploy to allow update [yes]")
+	var q, err = prompt.Prompt("Stop WeDeploy to allow update [yes]")
+
+	if err != nil {
+		return err
+	}
 
 	if q != "" && q != "y" && q != "yes" {
 		return errors.New("Can't update image while running an old version of the infrastructure.")
