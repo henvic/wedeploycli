@@ -31,7 +31,7 @@ func TestLoggedOut(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stderr:   "Error: Please run \"we login\" before using \"we list\".\n",
+		Stderr:   "Error: Remote foo not found\n",
 		ExitCode: 1,
 	}
 
