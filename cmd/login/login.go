@@ -41,11 +41,10 @@ Please, set up a WeDeploy password first at
 
 	g.Username = username
 	g.Password = password
-	var err = g.Save()
-
-	if err == nil {
-		fmt.Println("Authentication information saved.")
+	if err = g.Save(); err != nil {
+		return err
 	}
 
-	return err
+	fmt.Println("Authentication information saved.")
+	return nil
 }
