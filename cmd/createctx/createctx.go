@@ -1,12 +1,15 @@
 package cmdcreate
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -21,6 +24,7 @@ import (
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/prompt"
+	"github.com/wedeploy/cli/verbose"
 )
 
 var (
@@ -78,6 +82,12 @@ func init() {
 		"container-type",
 		"",
 		containerTypeMessage)
+
+	CreateCmd.Flags().BoolVar(
+		&createRunner.boilerplate,
+		"container-boilerplate",
+		true,
+		"Create container boilerplate")
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
@@ -167,6 +177,7 @@ type runner struct {
 	container       string
 	askWithPrompt   bool
 	createContainer bool
+	boilerplate     bool
 	cmd             *cobra.Command
 }
 
@@ -275,19 +286,26 @@ func (r *runner) handleCreateContainer() error {
 		Container: &containers.Container{
 			ID: r.container,
 		},
+		boilerplate:            r.boilerplate,
+		boilerplateFlagChanged: r.cmd.Flags().Changed("container-boilerplate"),
 	}
 
 	return cc.run()
 }
 
 type containerCreator struct {
-	Container        *containers.Container
-	Register         containers.Register
-	ProjectDirectory string
+	Container              *containers.Container
+	Registry               []containers.Register
+	Register               containers.Register
+	ProjectDirectory       string
+	ContainerDirectory     string
+	boilerplate            bool
+	boilerplateFlagChanged bool
+	boilerplateCreated     bool
 }
 
 func (cc *containerCreator) run() error {
-	if err := cc.chooseContainerType(); err != nil {
+	if err := cc.handleContainerType(); err != nil {
 		return err
 	}
 
@@ -295,18 +313,59 @@ func (cc *containerCreator) run() error {
 		return err
 	}
 
+	cc.ContainerDirectory = filepath.Join(cc.ProjectDirectory, cc.Container.ID)
+
+	if err := cc.handleBoilerplate(); err != nil {
+		return err
+	}
+
+	// 1. mkdir repo; 2. git clone u@h:/p or git scheme://404 repo =>
+	// On error git clone actually removes the existing directory. Odd. Weird.
+	if !cc.boilerplateCreated {
+		if err := tryCreateDirectory(cc.ContainerDirectory); err != nil {
+			return err
+		}
+	}
+
 	return cc.saveContainer()
 }
 
-func (cc *containerCreator) chooseContainerType() error {
-	fmt.Println(containerTypeMessage + ":")
+func (cc *containerCreator) handleContainerType() error {
 	registry, err := containers.GetRegistry(context.Background())
 
 	if err != nil {
 		return errwrap.Wrapf("Can't get the registry: {{err}}", err)
 	}
 
-	for pos, r := range registry {
+	cc.Registry = registry
+
+	if containerType == "" {
+		return cc.chooseContainerType()
+	}
+
+	for _, r := range cc.Registry {
+		if containerType == r.Type {
+			cc.Container.Type = r.Type
+			return nil
+		}
+	}
+
+	// if matching for the exact type is not possible, try to find it
+	// by getting only possible matches from WeDeploy, without versions
+	for _, r := range cc.Registry {
+		if containerType == getBoilerplateContainerType(r.Type) {
+			cc.Container.Type = r.Type
+			return nil
+		}
+	}
+
+	return errors.New("Container type not found on register")
+}
+
+func (cc *containerCreator) chooseContainerType() error {
+	fmt.Println(containerTypeMessage + ":")
+
+	for pos, r := range cc.Registry {
 		ne := fmt.Sprintf("%d) %v", pos+1, r.ID)
 
 		p := 80 - len(ne) - len(r.Type) + 1
@@ -319,13 +378,13 @@ func (cc *containerCreator) chooseContainerType() error {
 		fmt.Fprintf(os.Stdout, "%v\n\n", color.Format(color.FgHiBlack, wordwrap.WrapString(r.Description, 80)))
 	}
 
-	option, err := prompt.SelectOption(len(registry))
+	option, err := prompt.SelectOption(len(cc.Registry))
 
 	if err != nil {
 		return err
 	}
 
-	cc.Register = registry[option]
+	cc.Register = cc.Registry[option]
 	cc.Container.Type = cc.Register.Type
 	return nil
 }
@@ -356,27 +415,110 @@ func (cc *containerCreator) chooseContainerID() (err error) {
 	return nil
 }
 
-func (cc *containerCreator) saveContainer() error {
-	var containerDirectory = filepath.Join(cc.ProjectDirectory, cc.Container.ID)
+func getBoilerplateContainerType(cType string) string {
+	cType = strings.TrimPrefix(cType, "wedeploy/")
 
-	if err := tryCreateDirectory(containerDirectory); err != nil {
-		return err
+	if strings.Contains(cType, ":") {
+		ws := strings.SplitN(cType, ":", 2)
+
+		if len(ws) > 1 {
+			cType = ws[0]
+		}
 	}
 
+	return cType
+}
+
+func (cc *containerCreator) handleBoilerplate() (err error) {
+	if !cc.boilerplate {
+		return nil
+	}
+
+	var (
+		container = cc.Container.ID
+		cType     = cc.Container.Type
+	)
+
+	var boilerplateType = getBoilerplateContainerType(cType)
+	var boilerplateAddress = fmt.Sprintf(
+		"https://github.com/wedeploy/boilerplate-%v.git",
+		boilerplateType)
+
+	// There isn't a way to simply curl | unzip here.
+	// the separate-git-dir is used just as a safeguard against removing
+	// legit .git in case of an atypical failure.
+	// os.Remove is used to remove .git
+	// if it is a symlink to the separate set git-dir, it is going to remove
+	// if not, it is going to fail.
+	// This is a dirty / quick approach and should be replaced with a proper
+	// unzipping of a release whenever a reliable and tested solution, such as
+	// a library or a new UnzipPackage zip/archive method, is readily available.
+	// This would, at most, cause destruction of a link, instead of the data
+	// it points to, in the worst case.
+
+	var boilerplateDotGit = filepath.Join(cc.ContainerDirectory, ".boilerplate-git")
+
+	cmd := exec.Command("git",
+		"clone",
+		"--depth=1",
+		"--quiet",
+		"--separate-git-dir="+boilerplateDotGit,
+		boilerplateAddress,
+		cc.ContainerDirectory)
+
+	var cmdStderr = new(bytes.Buffer)
+
+	if verbose.Enabled {
+		cmd.Stderr = io.MultiWriter(cmdStderr, os.Stderr)
+	} else {
+		cmd.Stderr = cmdStderr
+	}
+
+	if err = cmd.Run(); err != nil {
+		if !cc.boilerplateFlagChanged {
+			fmt.Fprintf(os.Stderr, "Jumping boilerplate creation (not available).\n")
+			return nil
+		}
+
+		fmt.Fprintf(os.Stderr, "%v\n", cmdStderr.String())
+		return errwrap.Wrapf("Can't get boilerplate: {{err}}", err)
+	}
+
+	cc.boilerplateCreated = true
+
+	if err = os.RemoveAll(boilerplateDotGit); err != nil {
+		return errwrap.Wrapf("Can't remove boilerplate .git hidden dir: {{err}}", err)
+	}
+
+	// never use os.RemoveAll here, see block comment on createBoilerplate()
+	if err = os.Remove(filepath.Join(cc.ContainerDirectory, ".git")); err != nil {
+		return errwrap.Wrapf("Error removing .git directory for container: {{err}}", err)
+	}
+
+	if cc.Container, err = containers.Read(cc.ContainerDirectory); err != nil {
+		return errwrap.Wrapf("Can't read boilerplate's container file: {{err}}", err)
+	}
+
+	cc.Container.ID = container
+	cc.Container.Type = cType
+	return nil
+}
+
+func (cc *containerCreator) saveContainer() error {
 	bin, err := json.MarshalIndent(cc.Container, "", "    ")
 
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(containerDirectory, "container.json"),
+	err = ioutil.WriteFile(filepath.Join(cc.ContainerDirectory, "container.json"),
 		bin, 0644)
 
 	if err == nil {
-		abs, err := filepath.Abs(filepath.Join(containerDirectory))
+		abs, aerr := filepath.Abs(cc.ContainerDirectory)
 
-		if err != nil {
-			return err
+		if aerr != nil {
+			fmt.Fprintf(os.Stderr, "Error getting absolute path: %v\n", aerr)
 		}
 
 		fmt.Println("Container created at " + abs)
