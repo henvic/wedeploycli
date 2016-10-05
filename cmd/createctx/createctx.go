@@ -252,7 +252,7 @@ func (r *runner) handleProject() error {
 				color.Format(color.FgBlue, r.project), filepath.Join(r.base, r.project))
 		}
 
-		fmt.Fprintf(os.Stderr, "Jumping creating project %v (already exists)\n",
+		fmt.Fprintf(os.Stderr, "Jumping creation of project %v (already exists)\n",
 			color.Format(color.FgBlue, r.project))
 
 		return checkNoProjectFlagsWhenProjectAlreadyExists(r.cmd)
