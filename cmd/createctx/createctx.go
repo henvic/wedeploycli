@@ -59,6 +59,7 @@ func init() {
 	}
 
 	setupHost.Init(CreateCmd)
+	createRunner.cmd = CreateCmd
 
 	CreateCmd.Flags().StringVar(
 		&createRunner.base,
