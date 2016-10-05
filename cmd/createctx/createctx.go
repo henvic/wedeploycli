@@ -209,7 +209,6 @@ func (r *runner) Run(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	if r.createContainer {
-		fmt.Println("")
 		return r.handleCreateContainer()
 	}
 
