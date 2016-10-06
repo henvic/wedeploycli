@@ -429,9 +429,33 @@ func getBoilerplateContainerType(cType string) string {
 	return cType
 }
 
+func (cc *containerCreator) checkIfDirectoryEmptyForInstallingBoilerplate() (empty bool, err error) {
+	notEmpty, err := exists(cc.ContainerDirectory)
+
+	if err != nil {
+		return false, err
+	}
+
+	if notEmpty {
+		if !cc.boilerplateFlagChanged {
+			fmt.Fprintf(os.Stderr,
+				"Container directory already exists (bypassing installing boilerplate).\n")
+			return false, nil
+		}
+
+		return false, errors.New("Container directory already exists. Can't install boilerplate.")
+	}
+
+	return true, nil
+}
+
 func (cc *containerCreator) handleBoilerplate() (err error) {
 	if !cc.boilerplate {
 		return nil
+	}
+
+	if empty, err := cc.checkIfDirectoryEmptyForInstallingBoilerplate(); err != nil || !empty {
+		return err
 	}
 
 	var (
