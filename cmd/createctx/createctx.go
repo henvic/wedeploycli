@@ -545,7 +545,12 @@ func (cc *containerCreator) saveContainer() error {
 			fmt.Fprintf(os.Stderr, "Error getting absolute path: %v\n", aerr)
 		}
 
-		fmt.Println("Container created at " + abs)
+		fmt.Fprintf(os.Stdout, `Container created at %v
+Go to the container directory to keep hacking! :)
+Some tips:
+	Run the container on your local machine with: "we link"
+	Check container.json for additional configuration.
+`, abs)
 	}
 
 	return err
@@ -589,7 +594,13 @@ func (r *runner) saveProject(p *projects.Project, directory string) error {
 			return err
 		}
 
-		fmt.Println("Project created at " + abs)
+		fmt.Fprintf(os.Stdout, `Project created at %v
+Go to the project directory and happy hacking! :)
+Some tips:
+	Run the project on your local machine with: "we link"
+	Create a container there with: "we create"
+	Check project.json for additional configuration.
+`, abs)
 	}
 
 	return err
