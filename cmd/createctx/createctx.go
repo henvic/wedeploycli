@@ -492,7 +492,7 @@ func (cc *containerCreator) handleBoilerplate() (err error) {
 
 	// never use os.RemoveAll here, see block comment on createBoilerplate()
 	if err = os.Remove(filepath.Join(cc.ContainerDirectory, ".git")); err != nil {
-		return errwrap.Wrapf("Error removing .git directory for container: {{err}}", err)
+		return errwrap.Wrapf("Error removing .git ref file for container's boilerplate: {{err}}", err)
 	}
 
 	if cc.Container, err = containers.Read(cc.ContainerDirectory); err != nil {
