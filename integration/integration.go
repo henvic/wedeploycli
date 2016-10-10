@@ -270,3 +270,9 @@ func getIntegrationServerPort() int {
 
 	return num
 }
+
+func removeAll(path string) {
+	if err := os.RemoveAll(path); err != nil {
+		panic(err)
+	}
+}
