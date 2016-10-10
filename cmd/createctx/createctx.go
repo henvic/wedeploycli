@@ -273,12 +273,11 @@ func (r *runner) handleProject() error {
 }
 
 func (r *runner) handleCreateContainer() error {
-	if r.container == "" {
-		r.askWithPrompt = true
-	} else if err := checkContainerDirectory(
-		r.container,
-		filepath.Join(r.base, r.project, r.container)); err != nil {
-		return err
+	if r.container != "" {
+		if err := checkContainerDirectory(r.container,
+			filepath.Join(r.projectBase, r.container)); err != nil {
+			return err
+		}
 	}
 
 	var cc = &containerCreator{
