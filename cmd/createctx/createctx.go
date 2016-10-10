@@ -49,7 +49,7 @@ we create --project cinema --container projector room`,
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern: cmdflagsfromhost.FullHostPattern,
+	Pattern: cmdflagsfromhost.ProjectAndContainerPattern,
 }
 
 const (
