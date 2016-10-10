@@ -7,6 +7,7 @@ doc/*.1
 # Temporary mocks
 integration/mocks/login/.we
 integration/mocks/create/example
+integration/mocks/create/foo/data
 pod/mocks/res/package.tar.gz
 pod/mocks/benchmark/linux-4.6-rc2
 pod/mocks/benchmark/linux-4.6-rc2.tar.xz

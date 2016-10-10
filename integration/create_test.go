@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/projects"
 )
 
@@ -127,6 +128,37 @@ Error: --project-custom-domain: flags used when project already exists`
 	}
 }
 
+func TestCreateProjectAlreadyExistsInsideBase(t *testing.T) {
+	var cmd = &Command{
+		Args: []string{"create",
+			"--project",
+			"foo",
+			"--directory",
+			"mocks/create/foo",
+			"--project-custom-domain",
+			"example.com",
+			"--container",
+			"bar",
+			"--no-color"},
+	}
+
+	cmd.Run()
+
+	if cmd.Stdout.Len() != 0 {
+		t.Errorf("Expected stdout to be empty, got %v instead", cmd.Stdout)
+	}
+
+	var wantErr = `Error: Can't use project flag (value: "foo") from inside a project`
+
+	if !strings.Contains(cmd.Stderr.String(), wantErr) {
+		t.Errorf("Wanted stderr to have %v, got %v instead", wantErr, cmd.Stderr)
+	}
+
+	if cmd.ExitCode == 0 {
+		t.Errorf("Expected exit code to be not 0, got %v instead", cmd.ExitCode)
+	}
+}
+
 func TestCreateProject(t *testing.T) {
 	removeAll("mocks/create/example")
 	defer removeAll("mocks/create/example")
@@ -207,7 +239,7 @@ func TestCreateProjectWithCustomDomain(t *testing.T) {
 	}
 }
 
-func TestCreateProjectWithCustomDomainAndContainerWithoutBoilerplate(t *testing.T) {
+func TestCreateProjectWithCustomDomainAndContainerWithoutContainerBoilerplate(t *testing.T) {
 	removeAll("mocks/create/example")
 	defer removeAll("mocks/create/example")
 
@@ -258,5 +290,77 @@ func TestCreateProjectWithCustomDomainAndContainerWithoutBoilerplate(t *testing.
 
 	if p.CustomDomain != wantCustomDomain {
 		t.Errorf("Expected custom domain for project to bem %v, got %v instead", wantCustomDomain, p.CustomDomain)
+	}
+}
+
+func TestCreateContainerInsideAlreadyExistingProjectWithoutContainerBoilerplate(t *testing.T) {
+	removeAll("mocks/create/foo/data")
+	defer removeAll("mocks/create/foo/data")
+
+	var cmd = &Command{
+		Args: []string{"create",
+			"--container",
+			"data",
+			"--container-type",
+			"data",
+			"--container-boilerplate=false",
+			"--directory",
+			"mocks/create/foo",
+		},
+	}
+
+	cmd.Run()
+
+	var dontWantProject = "Project created at"
+	if strings.Contains(cmd.Stdout.String(), dontWantProject) {
+		t.Errorf("Wanted stdout to not have %v, got %v instead", dontWantProject, cmd.Stdout)
+	}
+
+	var wantContainer = "Container created at"
+	if !strings.Contains(cmd.Stdout.String(), wantContainer) {
+		t.Errorf("Wanted stdout to have %v, got %v instead", wantContainer, cmd.Stdout)
+	}
+
+	if cmd.Stderr.Len() != 0 {
+		t.Errorf("Expected stderr to be empty, got %v instead", cmd.Stderr)
+	}
+
+	if cmd.ExitCode != 0 {
+		t.Errorf("Expected exit code to be 0, got %v instead", cmd.ExitCode)
+	}
+
+	var c, err = containers.Read("mocks/create/foo/data")
+
+	if err != nil {
+		t.Errorf("Expected reading container file, got error %v instead", err)
+	}
+
+	if c.ID != "data" {
+		t.Errorf(`Expected container to be created with ID "data" got %v instead`, c.ID)
+	}
+}
+
+func TestCreateContainerWithoutProjectError(t *testing.T) {
+	removeAll("mocks/create/example")
+	defer removeAll("mocks/create/example")
+
+	var cmd = &Command{
+		Args: []string{"create", "--container", "foo", "--directory", "mocks/create"},
+	}
+
+	cmd.Run()
+
+	var wantErr = "Error: Incompatible use: --container requires --project unless on a project directory"
+
+	if !strings.Contains(cmd.Stderr.String(), wantErr) {
+		t.Errorf("Wanted stdout to have %v, got %v instead", wantErr, cmd.Stdout)
+	}
+
+	if cmd.Stdout.Len() != 0 {
+		t.Errorf("Expected stdout to be empty, got %v instead", cmd.Stdout)
+	}
+
+	if cmd.ExitCode == 0 {
+		t.Errorf("Expected exit code to be not 0, got %v instead", cmd.ExitCode)
 	}
 }

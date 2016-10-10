@@ -22,6 +22,7 @@ import (
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/flagsfromhost"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/prompt"
 	"github.com/wedeploy/cli/verbose"
@@ -41,8 +42,11 @@ var CreateCmd = &cobra.Command{
 	Long: `Use "we create" to create projects and containers.
 You can create a project anywhere on your machine and on the cloud.
 Containers can only be created from inside projects and
-are stored on the first subdirectory of its project.`,
-	PreRunE: preRun,
+are stored on the first subdirectory of its project.
+
+--directory should point to either the parent dir of a project directory to be
+created or to a existing project directory.`,
+	PreRunE: createRunner.PreRun,
 	RunE:    createRunner.Run,
 	Example: `we create projector.cinema.wedeploy.io
 we create --project cinema --container projector room`,
@@ -88,10 +92,6 @@ func init() {
 		"container-boilerplate",
 		true,
 		"Create container boilerplate")
-}
-
-func preRun(cmd *cobra.Command, args []string) error {
-	return setupHost.Process(args)
 }
 
 func shouldPromptToCreateContainer() (bool, error) {
@@ -174,14 +174,26 @@ func checkNoProjectFlagsWhenProjectAlreadyExists(cmd *cobra.Command) error {
 type runner struct {
 	base            string
 	project         string
+	projectBase     string
 	container       string
 	askWithPrompt   bool
 	createContainer bool
 	boilerplate     bool
 	cmd             *cobra.Command
+	baseIsProject   bool
+	flagsErr        error
 }
 
 func (r *runner) setBase() (err error) {
+	if err = r.setBaseDirectory(); err != nil {
+		return err
+	}
+
+	r.baseIsProject, err = exists(filepath.Join(r.base, "project.json"))
+	return err
+}
+
+func (r *runner) setBaseDirectory() (err error) {
 	if r.base, err = filepath.Abs(r.base); err != nil {
 		return errwrap.Wrapf("Can't get absolute path: {{err}}", err)
 	}
@@ -195,7 +207,20 @@ func (r *runner) setBase() (err error) {
 	return err
 }
 
-func (r *runner) setup() {
+func (r *runner) setup() error {
+	if r.flagsErr == nil {
+		r.setupProject()
+		return nil
+	}
+
+	if r.baseIsProject {
+		return r.setupContainerOnProject()
+	}
+
+	return errwrap.Wrapf("{{err}} unless on a project directory", r.flagsErr)
+}
+
+func (r *runner) setupProject() {
 	r.project = setupHost.Project()
 	r.container = setupHost.Container()
 
@@ -204,18 +229,57 @@ func (r *runner) setup() {
 	}
 }
 
+func (r *runner) setupContainerOnProject() error {
+	var ec error
+	r.container, ec = r.cmd.Flags().GetString("container")
+
+	if ec != nil {
+		return errwrap.Wrapf("Can't get container created within project: {{err}}", ec)
+	}
+
+	return nil
+}
+
+func (r *runner) PreRun(cmd *cobra.Command, args []string) (err error) {
+	r.flagsErr = setupHost.Process(args)
+
+	if !errwrap.ContainsType(err, flagsfromhost.ErrorContainerWithNoProject{}) {
+		return err
+	}
+
+	return nil
+}
+
+func (r *runner) selectProject() (err error) {
+	switch r.baseIsProject {
+	case true:
+		r.projectBase = r.base
+		if err = r.handleProjectBase(); err != nil {
+			return err
+		}
+	default:
+		if err = r.handleCreateWhatPrompts(); err != nil {
+			return err
+		}
+
+		if err = r.handleProject(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (r *runner) Run(cmd *cobra.Command, args []string) (err error) {
 	if err = r.setBase(); err != nil {
 		return err
 	}
 
-	r.setup()
-
-	if err = r.handlePrompts(); err != nil {
+	if err = r.setup(); err != nil {
 		return err
 	}
 
-	if err = r.handleProject(); err != nil {
+	if err = r.selectProject(); err != nil {
 		return err
 	}
 
@@ -226,7 +290,21 @@ func (r *runner) Run(cmd *cobra.Command, args []string) (err error) {
 	return nil
 }
 
-func (r *runner) handlePrompts() (err error) {
+func (r *runner) handleProjectBase() error {
+	if r.project != "" {
+		return fmt.Errorf("Can't use project flag (value: \"%v\") from inside a project:\n%v",
+			color.Format(color.FgBlue, r.project), r.base)
+	}
+
+	if err := checkNoProjectFlagsWhenProjectAlreadyExists(r.cmd); err != nil {
+		return err
+	}
+
+	r.createContainer = true
+	return nil
+}
+
+func (r *runner) handleCreateWhatPrompts() (err error) {
 	if r.container != "" {
 		r.createContainer = true
 	} else if r.project == "" && r.container == "" {
@@ -247,11 +325,12 @@ func (r *runner) handlePrompts() (err error) {
 		}
 	}
 
+	r.projectBase = filepath.Join(r.base, r.project)
 	return nil
 }
 
 func (r *runner) handleProject() error {
-	projectExists, err := exists(filepath.Join(r.base, r.project, "project.json"))
+	projectExists, err := exists(filepath.Join(r.projectBase, "project.json"))
 
 	if err != nil {
 		return err
@@ -260,7 +339,7 @@ func (r *runner) handleProject() error {
 	if projectExists {
 		if !r.createContainer {
 			return fmt.Errorf("Project %v already exists in:\n%v",
-				color.Format(color.FgBlue, r.project), filepath.Join(r.base, r.project))
+				color.Format(color.FgBlue, r.project), r.projectBase)
 		}
 
 		fmt.Fprintf(os.Stderr, "Jumping creation of project %v (already exists)\n",
@@ -281,7 +360,7 @@ func (r *runner) handleCreateContainer() error {
 	}
 
 	var cc = &containerCreator{
-		ProjectDirectory: filepath.Join(r.base, r.project),
+		ProjectDirectory: r.projectBase,
 		Container: &containers.Container{
 			ID: r.container,
 		},
@@ -562,7 +641,6 @@ func (r *runner) newProject() (err error) {
 		}
 	}
 
-	var directory = filepath.Join(r.base, r.project)
 	var p = &projects.Project{
 		ID:           r.project,
 		CustomDomain: projectCustomDomain,
@@ -570,11 +648,11 @@ func (r *runner) newProject() (err error) {
 
 	p.ID = r.project
 
-	return r.saveProject(p, directory)
+	return r.saveProject(p)
 }
 
-func (r *runner) saveProject(p *projects.Project, directory string) error {
-	if err := tryCreateDirectory(directory); err != nil {
+func (r *runner) saveProject(p *projects.Project) error {
+	if err := tryCreateDirectory(r.projectBase); err != nil {
 		return err
 	}
 
@@ -584,10 +662,10 @@ func (r *runner) saveProject(p *projects.Project, directory string) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(directory, "project.json"), bin, 0644)
+	err = ioutil.WriteFile(filepath.Join(r.projectBase, "project.json"), bin, 0644)
 
 	if err == nil {
-		abs, err := filepath.Abs(directory)
+		abs, err := filepath.Abs(r.projectBase)
 
 		if err != nil {
 			return err
