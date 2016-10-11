@@ -9,10 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"golang.org/x/crypto/ssh/terminal"
-
 	"github.com/hashicorp/errwrap"
-	"github.com/howeyc/gopass"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 var (
@@ -73,7 +71,7 @@ func Hidden(param string) (string, error) {
 	}
 
 	fmt.Fprintf(outStream, param+": ")
-	var b, err = gopass.GetPasswd()
+	var b, err = terminal.ReadPassword(0)
 
 	if err != nil {
 		return "", errwrap.Wrapf("Can't read stdin for "+param+": {{err}}", err)

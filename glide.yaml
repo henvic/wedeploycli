@@ -2,7 +2,6 @@ package: github.com/wedeploy/cli
 import:
 - package: github.com/equinox-io/equinox
 - package: github.com/henvic/uilive
-- package: github.com/howeyc/gopass
 - package: github.com/kylelemons/godebug
   subpackages:
   - diff
