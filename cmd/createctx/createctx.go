@@ -103,7 +103,7 @@ func shouldPromptToCreateContainer() (bool, error) {
 	fmt.Println("1) only project")
 	fmt.Println("2) container (or project and container)")
 
-	index, err := prompt.SelectOption(2)
+	index, err := prompt.SelectOption(2, nil)
 
 	if err != nil {
 		return false, err
@@ -443,7 +443,11 @@ func (cc *containerCreator) handleContainerType() error {
 func (cc *containerCreator) chooseContainerType() error {
 	fmt.Println(containerTypeMessage + ":")
 
+	var mapSelectOptions = map[string]int{}
+
 	for pos, r := range cc.Registry {
+		mapSelectOptions[r.ID] = pos + 1
+		mapSelectOptions[strings.TrimPrefix(r.ID, "wedeploy-")] = pos + 1
 		ne := fmt.Sprintf("%d) %v", pos+1, r.ID)
 
 		p := 80 - len(ne) - len(r.Type) + 1
@@ -456,7 +460,7 @@ func (cc *containerCreator) chooseContainerType() error {
 		fmt.Fprintf(os.Stdout, "%v\n\n", color.Format(color.FgHiBlack, wordwrap.WrapString(r.Description, 80)))
 	}
 
-	option, err := prompt.SelectOption(len(cc.Registry))
+	option, err := prompt.SelectOption(len(cc.Registry), mapSelectOptions)
 
 	if err != nil {
 		return err
