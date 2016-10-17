@@ -22,7 +22,7 @@ var (
 )
 
 // SelectOption prompts for an option from a list
-func SelectOption(indexLength int) (index int, err error) {
+func SelectOption(indexLength int, equivalents map[string]int) (index int, err error) {
 	if indexLength == 0 {
 		return -1, errors.New("No options available.")
 	}
@@ -34,9 +34,20 @@ func SelectOption(indexLength int) (index int, err error) {
 		return -1, err
 	}
 
-	index, err = strconv.Atoi(strings.TrimSpace(option))
-	index--
+	option = strings.TrimSpace(option)
 
+	if equivalents != nil {
+		if index, ok := equivalents[option]; ok {
+			return getSelectOptionIndex(index, indexLength, nil)
+		}
+	}
+
+	index, err = strconv.Atoi(option)
+	return getSelectOptionIndex(index, indexLength, err)
+}
+
+func getSelectOptionIndex(index, indexLength int, err error) (int, error) {
+	index--
 	if err != nil || index < 0 || index > indexLength {
 		return -1, errors.New("Invalid option.")
 	}
