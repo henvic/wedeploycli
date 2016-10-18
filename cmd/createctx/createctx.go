@@ -647,7 +647,7 @@ func (r *runner) newProject() (err error) {
 
 	var p = &projects.Project{
 		ID:           r.project,
-		CustomDomain: projectCustomDomain,
+		CustomDomain: []string{projectCustomDomain},
 	}
 
 	p.ID = r.project

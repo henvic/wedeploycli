@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 
@@ -232,10 +233,10 @@ func TestCreateProjectWithCustomDomain(t *testing.T) {
 		t.Errorf(`Expected project to be created with ID "example" got %v instead`, p.ID)
 	}
 
-	var wantCustomDomain = "example.com"
+	var wantCustomDomains = []string{"example.com"}
 
-	if p.CustomDomain != wantCustomDomain {
-		t.Errorf("Expected custom domain for project to bem %v, got %v instead", wantCustomDomain, p.CustomDomain)
+	if !reflect.DeepEqual(p.CustomDomain, wantCustomDomains) {
+		t.Errorf("Expected custom domain for project to be %v, got %v instead", wantCustomDomains, p.CustomDomain[0])
 	}
 }
 
@@ -286,10 +287,10 @@ func TestCreateProjectWithCustomDomainAndContainerWithoutContainerBoilerplate(t 
 		t.Errorf(`Expected project to be created with ID "example" got %v instead`, p.ID)
 	}
 
-	var wantCustomDomain = "example.com"
+	var wantCustomDomains = []string{"example.com"}
 
-	if p.CustomDomain != wantCustomDomain {
-		t.Errorf("Expected custom domain for project to bem %v, got %v instead", wantCustomDomain, p.CustomDomain)
+	if !reflect.DeepEqual(p.CustomDomain, wantCustomDomains) {
+		t.Errorf("Expected custom domain for project to be %v, got %v instead", wantCustomDomains, p.CustomDomain[0])
 	}
 }
 

@@ -19,7 +19,7 @@ import (
 // Project structure
 type Project struct {
 	ID           string                `json:"id"`
-	CustomDomain string                `json:"customDomain,omitempty"`
+	CustomDomain []string              `json:"customDomain,omitempty"`
 	Health       string                `json:"health,omitempty"`
 	Description  string                `json:"description,omitempty"`
 	Containers   containers.Containers `json:"containers,omitempty"`
