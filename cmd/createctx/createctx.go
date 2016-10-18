@@ -646,11 +646,12 @@ func (r *runner) newProject() (err error) {
 	}
 
 	var p = &projects.Project{
-		ID:           r.project,
-		CustomDomain: []string{projectCustomDomain},
+		ID: r.project,
 	}
 
-	p.ID = r.project
+	if projectCustomDomain != "" {
+		p.CustomDomain = []string{projectCustomDomain}
+	}
 
 	return r.saveProject(p)
 }

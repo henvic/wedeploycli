@@ -195,6 +195,10 @@ func TestCreateProject(t *testing.T) {
 	if p.ID != "example" {
 		t.Errorf(`Expected project to be created with ID "example" got %v instead`, p.ID)
 	}
+
+	if len(p.CustomDomain) != 0 {
+		t.Errorf("Expected no custom domain for project, got %v instead", p.CustomDomain)
+	}
 }
 
 func TestCreateProjectWithCustomDomain(t *testing.T) {
