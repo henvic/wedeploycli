@@ -196,8 +196,8 @@ func TestCreateProject(t *testing.T) {
 		t.Errorf(`Expected project to be created with ID "example" got %v instead`, p.ID)
 	}
 
-	if len(p.CustomDomain) != 0 {
-		t.Errorf("Expected no custom domain for project, got %v instead", p.CustomDomain)
+	if len(p.CustomDomains) != 0 {
+		t.Errorf("Expected no custom domain for project, got %v instead", p.CustomDomains)
 	}
 }
 
@@ -242,8 +242,8 @@ func TestCreateProjectWithCustomDomain(t *testing.T) {
 
 	var wantCustomDomains = []string{"example.com"}
 
-	if !reflect.DeepEqual(p.CustomDomain, wantCustomDomains) {
-		t.Errorf("Expected custom domain for project to be %v, got %v instead", wantCustomDomains, p.CustomDomain[0])
+	if !reflect.DeepEqual(p.CustomDomains, wantCustomDomains) {
+		t.Errorf("Expected custom domain for project to be %v, got %v instead", wantCustomDomains, p.CustomDomains[0])
 	}
 }
 
@@ -296,8 +296,8 @@ func TestCreateProjectWithCustomDomainAndContainerWithoutContainerBoilerplate(t 
 
 	var wantCustomDomains = []string{"example.com"}
 
-	if !reflect.DeepEqual(p.CustomDomain, wantCustomDomains) {
-		t.Errorf("Expected custom domain for project to be %v, got %v instead", wantCustomDomains, p.CustomDomain[0])
+	if !reflect.DeepEqual(p.CustomDomains, wantCustomDomains) {
+		t.Errorf("Expected custom domain for project to be %v, got %v instead", wantCustomDomains, p.CustomDomains[0])
 	}
 }
 

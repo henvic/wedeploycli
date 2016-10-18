@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/wedeploy/api-go/jsonlib"
@@ -18,17 +19,7 @@ import (
 	"github.com/wedeploy/cli/tdata"
 )
 
-var bufOutStream bytes.Buffer
-
-func TestMain(m *testing.M) {
-	var defaultOutStream = outStream
-	outStream = &bufOutStream
-
-	ec := m.Run()
-
-	outStream = defaultOutStream
-	os.Exit(ec)
-}
+var defaultErrStream = errStream
 
 func TestCreateFromJSON(t *testing.T) {
 	defer servertest.Teardown()
@@ -194,6 +185,54 @@ func TestRead(t *testing.T) {
 		c)
 }
 
+func TestReadLegacyCustomDomain(t *testing.T) {
+	var bufErrStream bytes.Buffer
+	errStream = &bufErrStream
+
+	var c, err = Read("mocks/little-legacy")
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	jsonlib.AssertJSONMarshal(t, tdata.FromFile(
+		"mocks/little-legacy/project_ref.json"),
+		c)
+
+	var wantDeprecation = `DEPRECATED: CustomDomain string is now CustomDomains []string
+Update your project.json to use:
+"customDomains": ["foo.com"] instead of "customDomain": "foo.com".`
+
+	if !strings.Contains(bufErrStream.String(), wantDeprecation) {
+		t.Errorf("Wanted deprecation info not available")
+	}
+
+	errStream = defaultErrStream
+}
+
+func TestReadLegacyCustomDomainError(t *testing.T) {
+	var bufErrStream bytes.Buffer
+	errStream = &bufErrStream
+
+	var _, err = Read("mocks/little-legacy-issue")
+
+	var wantErr = "Can't use both customDomains and deprecated customDomain on project.json"
+
+	if err == nil || err.Error() != wantErr {
+		t.Errorf("Expected error %v, got %v instead", wantErr, err)
+	}
+
+	var wantDeprecation = `DEPRECATED: CustomDomain string is now CustomDomains []string
+Update your project.json to use:
+"customDomains": ["foo.com"] instead of "customDomain": "foo.com".`
+
+	if !strings.Contains(bufErrStream.String(), wantDeprecation) {
+		t.Errorf("Wanted deprecation info not available")
+	}
+
+	errStream = defaultErrStream
+}
+
 func TestReadFileNotFound(t *testing.T) {
 	var _, err = Read("mocks/unknown")
 
@@ -222,7 +261,6 @@ func TestRestart(t *testing.T) {
 	defer servertest.Teardown()
 	servertest.Setup()
 	configmock.Setup()
-	bufOutStream.Reset()
 
 	servertest.Mux.HandleFunc("/restart/project", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.RawQuery != "projectId=foo" {
@@ -431,7 +469,6 @@ func TestValidateOrCreateFromJSONAlreadyExists(t *testing.T) {
 func TestValidateOrCreateFromJSONNotExists(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
-	bufOutStream.Reset()
 
 	servertest.Mux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {

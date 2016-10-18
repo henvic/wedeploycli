@@ -183,12 +183,12 @@ func (l *List) printProject(p projects.Project) {
 
 	switch {
 	// TestLink: custom domain should not be shown for local
-	case len(p.CustomDomain) == 0 || config.Context.Remote == "":
+	case len(p.CustomDomains) == 0 || config.Context.Remote == "":
 		word += fmt.Sprintf("%v", getProjectDomain(p.ID))
 	case !l.Detailed:
-		word += fmt.Sprintf("%v ", p.CustomDomain[0])
+		word += fmt.Sprintf("%v ", p.CustomDomains[0])
 	default:
-		word += fmt.Sprintf("%v ", p.CustomDomain[0])
+		word += fmt.Sprintf("%v ", p.CustomDomains[0])
 		word += fmt.Sprintf("(%v)", getProjectDomain(p.ID))
 	}
 

@@ -12,7 +12,7 @@
 	"source": null,
 	"homeContainer": "static",
 	"ownerId": null,
-	"customDomain": [],
+	"customDomains": [],
 	"users": [null],
 	"maxContainers": 10,
 	"invitations": {},

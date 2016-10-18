@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
@@ -18,11 +20,11 @@ import (
 
 // Project structure
 type Project struct {
-	ID           string                `json:"id"`
-	CustomDomain []string              `json:"customDomain,omitempty"`
-	Health       string                `json:"health,omitempty"`
-	Description  string                `json:"description,omitempty"`
-	Containers   containers.Containers `json:"containers,omitempty"`
+	ID            string                `json:"id"`
+	CustomDomains []string              `json:"customDomains,omitempty"`
+	Health        string                `json:"health,omitempty"`
+	Description   string                `json:"description,omitempty"`
+	Containers    containers.Containers `json:"containers,omitempty"`
 }
 
 var (
@@ -35,7 +37,7 @@ var (
 	// ErrInvalidProjectID happens when a Project ID is invalid
 	ErrInvalidProjectID = errors.New("Invalid project ID")
 
-	outStream io.Writer = os.Stdout
+	errStream io.Writer = os.Stderr
 )
 
 // CreateFromJSON a project on WeDeploy
@@ -95,9 +97,57 @@ func Read(path string) (*Project, error) {
 		return nil, readValidate(data, err)
 	}
 
-	err = json.Unmarshal(content, &data)
+	if err = readValidate(data, json.Unmarshal(content, &data)); err != nil {
+		return nil, err
+	}
 
-	return &data, readValidate(data, err)
+	err = fixDeprecatedCustomDomain(content, &data)
+
+	return &data, err
+}
+
+func fixDeprecatedCustomDomain(content []byte, p *Project) error {
+	if p == nil {
+		return nil
+	}
+
+	var mapProject map[string]interface{}
+
+	if err := json.Unmarshal(content, &mapProject); err != nil {
+		// silently bail
+		return nil
+	}
+
+	var deprecatedInterface, ok = mapProject["customDomain"]
+	var deprecated string
+
+	switch deprecatedInterface.(type) {
+	case nil:
+		return nil
+	case string:
+		deprecated = deprecatedInterface.(string)
+	default:
+		return errors.New("Invalid value for deprecated customDomain")
+	}
+
+	if !ok || deprecated == "" {
+		return nil
+	}
+
+	fmt.Fprintf(errStream, color.Format(color.FgRed, fmt.Sprintf(`DEPRECATED: CustomDomain string is now CustomDomains []string
+Update your project.json to use:
+"customDomains": ["%v"] instead of "customDomain": "%v".`,
+		deprecated,
+		deprecated)))
+
+	if len(p.CustomDomains) != 0 {
+		return errors.New(
+			"Can't use both customDomains and deprecated customDomain on project.json")
+	}
+
+	p.CustomDomains = []string{deprecated}
+
+	return nil
 }
 
 func readValidate(project Project, err error) error {

@@ -12,7 +12,7 @@
 	"source": null,
 	"homeContainer": "static",
 	"ownerId": null,
-	"customDomain": ["wechat.liferay.io"],
+	"customDomains": ["wechat.liferay.io"],
 	"users": [null],
 	"maxContainers": 10,
 	"invitations": {},

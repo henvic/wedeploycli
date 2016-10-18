@@ -650,7 +650,7 @@ func (r *runner) newProject() (err error) {
 	}
 
 	if projectCustomDomain != "" {
-		p.CustomDomain = []string{projectCustomDomain}
+		p.CustomDomains = []string{projectCustomDomain}
 	}
 
 	return r.saveProject(p)
