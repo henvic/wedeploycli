@@ -1,26 +1,67 @@
-hash: 03247b02b04591639b6abdc2f81e42ff645f0a52b8abdb0f0c2e32a56d015cb3
-updated: 2016-10-11T12:39:57.165310069-03:00
+hash: 9d173a9801130962a055b608626d3b6cc621e018e523d46eeda2d2037dafbd77
+updated: 2016-10-18T12:33:23.769761995-03:00
 imports:
+- name: github.com/cpuguy83/go-md2man
+  version: a65d4d2de4d5f7c74868dfa9b202a3c8be315aaa
+  subpackages:
+  - md2man
 - name: github.com/equinox-io/equinox
   version: 6f97d0d3970881d3e53dd6f547a41109eb055e54
+  subpackages:
+  - internal/go-update
+  - internal/go-update/internal/binarydist
+  - internal/go-update/internal/osext
+  - internal/osext
+  - proto
 - name: github.com/hashicorp/errwrap
   version: 7554cd9344cec97297fa6649b055a8c98c2a1e55
 - name: github.com/hashicorp/go-version
   version: deeb027c13a95d56c7585df3fe29207208c6706e
+- name: github.com/henvic/pseudoterm
+  version: 1e7fa843ce8fcc56d8c355a450cd952538ba48c7
 - name: github.com/henvic/uilive
   version: 5fa69abff5263544d2b7fd68e21ab36a3a381a1b
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/kylelemons/godebug
   version: eadb3ce320cbab8393bea5ca17bebac3f78a021b
   subpackages:
   - diff
+  - pretty
+- name: github.com/mattn/go-isatty
+  version: 66b8e73f3f5cda9f96b69efd03dd3d7fc4a5cdb8
 - name: github.com/mitchellh/go-wordwrap
   version: ad45545899c7b13c020ea92b2072220eefad42b8
+- name: github.com/russross/blackfriday
+  version: 35eb537633d9950afc8ae7bdf0edb6134584e9fc
+- name: github.com/shurcooL/sanitized_anchor_name
+  version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/spf13/cobra
   version: 9c28e4bbd74e5c3ed7aacbc552b2cab7cfdfe744
   subpackages:
   - doc
+- name: github.com/spf13/pflag
+  version: c7e63cf4530bcd3ba943729cee0efeff2ebea63f
 - name: github.com/wedeploy/api-go
   version: e4258f3d87609e819bd8a9f998ca31c5d538f19e
+  subpackages:
+  - aggregation
+  - filter
+  - geo
+  - jsonlib
+  - qrange
+  - query
+  - urilib
+- name: golang.org/x/crypto
+  version: 81372b2fc2f10bef2a7f338da115c315a56b2726
+  subpackages:
+  - ssh/terminal
+- name: golang.org/x/sys
+  version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
+  subpackages:
+  - unix
 - name: gopkg.in/ini.v1
   version: 6e4869b434bd001f6983749881c7ead3545887d8
-testImports: []
+testImports:
+- name: github.com/kr/pty
+  version: ce7fa45920dc37a92de8377972e52bc55ffa8d57
