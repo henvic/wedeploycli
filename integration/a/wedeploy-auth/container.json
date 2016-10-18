@@ -1,0 +1,4 @@
+{
+    "id": "wedeploy-auth",
+    "type": "wedeploy/auth:latest"
+}
