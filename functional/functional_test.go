@@ -52,7 +52,7 @@ func TestMain(m *testing.M) {
 
 	if !force {
 		println("Use: go test -tags=functional --channel <channel>")
-		println(`Empty ("") channel runs the test with a existing "we" command.`)
+		println(`Empty ("") channel runs the test with an existing "we" command.`)
 		println("Skipping all functional tests.\n" +
 			"Use of --force required to allow tests to run and destroy system data.")
 		os.Exit(1)
