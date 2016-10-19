@@ -140,14 +140,9 @@ func Watch(watcher *Watcher) {
 // Start for Watcher
 func (w *Watcher) Start() {
 	go func() {
-	w:
-		if !w.end {
+		for !w.end {
 			w.pool()
 			time.Sleep(w.PoolingInterval)
-		}
-
-		if !w.end {
-			goto w
 		}
 	}()
 }
