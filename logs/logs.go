@@ -161,7 +161,7 @@ func printList(list []Logs) {
 }
 
 func (w *Watcher) pool() {
-	var ctx, cancel = context.WithTimeout(context.Background(), 500*time.Millisecond)
+	var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	var list, err = GetList(ctx, w.Filter)
 
 	cancel()
