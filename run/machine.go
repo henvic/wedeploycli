@@ -212,7 +212,7 @@ func (dm *DockerMachine) waitReadyState() {
 	go dm.WaitLiveMsg.Wait()
 
 	// Starting WeDeploy
-	for tries <= 100 {
+	for tries <= 100 || dm.WaitLiveMsg.Duration() < 300 {
 		var ctx, cancel = context.WithTimeout(context.Background(), 500*time.Millisecond)
 		var _, err = projects.List(ctx)
 
