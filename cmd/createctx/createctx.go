@@ -22,7 +22,6 @@ import (
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/containers"
-	"github.com/wedeploy/cli/flagsfromhost"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/prompt"
 	"github.com/wedeploy/cli/verbose"
@@ -242,11 +241,6 @@ func (r *runner) setupContainerOnProject() error {
 
 func (r *runner) PreRun(cmd *cobra.Command, args []string) (err error) {
 	r.flagsErr = setupHost.Process(args)
-
-	if !errwrap.ContainsType(err, flagsfromhost.ErrorContainerWithNoProject{}) {
-		return err
-	}
-
 	return nil
 }
 
