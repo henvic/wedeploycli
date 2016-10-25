@@ -126,7 +126,9 @@ func Notify() {
 
 // Update this tool
 func Update(channel string) error {
-	fmt.Println("Trying to update using the", channel, "distribution channel")
+	fmt.Println("Trying to update using the",
+		color.Format(color.Bold, color.Underline, "%v", channel),
+		"distribution channel")
 	fmt.Println("Current installed version is " + defaults.Version)
 
 	var resp, err = check(channel)
