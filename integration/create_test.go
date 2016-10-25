@@ -392,7 +392,7 @@ func TestCreatePromptProjectAndContainerAtOnce(t *testing.T) {
 	}
 
 	var story = &pseudoterm.QueueStory{
-		Timeout: 15 * time.Second,
+		Timeout: 20 * time.Second,
 	}
 
 	story.Add(
@@ -544,7 +544,7 @@ func testCreatePromptContainer(t *testing.T) {
 	}
 
 	var story = &pseudoterm.QueueStory{
-		Timeout: 10 * time.Second,
+		Timeout: 20 * time.Second,
 	}
 
 	story.Add(
