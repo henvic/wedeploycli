@@ -158,6 +158,39 @@ func TestGetProjectOrContainerIDInvalidContainer(t *testing.T) {
 	config.Teardown()
 }
 
+func TestGetContainerID(t *testing.T) {
+	var workingDir, _ = os.Getwd()
+	chdir("./mocks/project/container")
+	if err := config.Setup(); err != nil {
+		panic(err)
+	}
+
+	container, err := GetContainerID()
+	want := "mycontainer"
+
+	if container != want {
+		t.Errorf("Wanted empty container %v, got %v instead", want, container)
+	}
+
+	if err != nil {
+		t.Errorf("Wanted error %v, got %v instead", nil, err)
+	}
+
+	chdir(workingDir)
+	config.Teardown()
+}
+
+func TestGetContainerIDInvalidContext(t *testing.T) {
+	container, err := GetContainerID()
+
+	if container != "" {
+		t.Errorf("Wanted empty container ID, got %v instead", container)
+	}
+
+	if err != ErrContextNotFound {
+		t.Errorf("Wanted error %v, got %v instead", ErrContextNotFound, err)
+	}
+}
 
 func chdir(dir string) {
 	if ech := os.Chdir(dir); ech != nil {

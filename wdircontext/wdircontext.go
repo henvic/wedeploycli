@@ -41,7 +41,7 @@ func GetProjectOrContainerID() (projectID, containerID string, err error) {
 
 	if err == nil {
 		var errc error
-		containerID, errc = getContainerID()
+		containerID, errc = GetContainerID()
 
 		if errc != containers.ErrContainerNotFound {
 			err = errc
@@ -51,8 +51,12 @@ func GetProjectOrContainerID() (projectID, containerID string, err error) {
 	return projectID, containerID, err
 }
 
-// getContainerID from current working directory container
-func getContainerID() (id string, err error) {
+// GetContainerID from current working directory container
+func GetContainerID() (id string, err error) {
+	if config.Context == nil {
+		return "", ErrContextNotFound
+	}
+
 	var path = config.Context.ContainerRoot
 	var container *containers.Container
 
