@@ -5,11 +5,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/flagsfromhost"
+	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/remoteuriparser"
+	"github.com/wedeploy/cli/wdircontext"
 )
 
 // ListRemoteFlags hides the globals non used --remote
@@ -40,14 +44,17 @@ type Requires struct {
 
 // SetupHost is the structure for host and flags parsing
 type SetupHost struct {
-	Pattern       Pattern
-	Requires      Requires
-	project       string
-	container     string
-	remote        string
-	remoteAddress string
-	cmdName       string
-	parsed        *flagsfromhost.FlagsFromHost
+	Pattern                         Pattern
+	Requires                        Requires
+	UseProjectDirectory             bool
+	UseProjectDirectoryForContainer bool
+	UseContainerDirectory           bool
+	project                         string
+	container                       string
+	remote                          string
+	remoteAddress                   string
+	cmdName                         string
+	parsed                          *flagsfromhost.FlagsFromHost
 }
 
 // Pattern for the host and flags
@@ -120,8 +127,21 @@ func (s *SetupHost) Process(args []string) error {
 	}
 }
 
+func (s *SetupHost) parseFlags(host string) (f *flagsfromhost.FlagsFromHost, err error) {
+	f, err = flagsfromhost.Parse(host, s.project, s.container, s.remote)
+
+	if (s.UseProjectDirectory || s.UseProjectDirectoryForContainer) && err != nil {
+		switch err.(type) {
+		case flagsfromhost.ErrorContainerWithNoProject:
+			err = nil
+		}
+	}
+
+	return f, err
+}
+
 func (s *SetupHost) process(host string) (err error) {
-	s.parsed, err = flagsfromhost.Parse(host, s.project, s.container, s.remote)
+	s.parsed, err = s.parseFlags(host)
 
 	if err != nil {
 		return err
@@ -153,10 +173,59 @@ func (s *SetupHost) addProjectAndContainerFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&s.container, "container", "", "Container ID")
 }
 
-func (s *SetupHost) loadValues() error {
+func (s *SetupHost) getContainerFromCurrentWorkingDirectory() (container string, err error) {
+	if s.Pattern != ProjectPattern && s.Pattern != ProjectAndContainerPattern && s.Pattern != FullHostPattern {
+		return "", nil
+	}
+
+	container, err = wdircontext.GetContainerID()
+
+	switch {
+	case err != nil && err != containers.ErrContainerNotFound:
+		return "", errwrap.Wrapf("Error extracting container ID from current directory's context: {{err}}", err)
+	case err == containers.ErrContainerNotFound:
+		return "", nil
+	}
+
+	return container, nil
+}
+
+func (s *SetupHost) getProjectFromCurrentWorkingDirectory() (project string, err error) {
+	if s.Pattern != ProjectPattern && s.Pattern != ProjectAndContainerPattern && s.Pattern != FullHostPattern {
+		return "", nil
+	}
+
+	project, err = wdircontext.GetProjectID()
+
+	switch {
+	case err != nil && err != projects.ErrProjectNotFound:
+		return "", errwrap.Wrapf("Error extracting project ID from current directory's context: {{err}}", err)
+	case err == projects.ErrProjectNotFound:
+		return "", errwrap.Wrapf("{{err}} or local project.json context",
+			flagsfromhost.ErrorContainerWithNoProject{})
+	}
+
+	return project, nil
+}
+
+func (s *SetupHost) loadValues() (err error) {
 	var container = s.parsed.Container()
 	var project = s.parsed.Project()
 	var remote = s.parsed.Remote()
+
+	if container == "" && s.UseContainerDirectory {
+		container, err = s.getContainerFromCurrentWorkingDirectory()
+		if err != nil {
+			return err
+		}
+	}
+
+	if project == "" && (s.UseProjectDirectory || (s.UseProjectDirectoryForContainer && container != "")) {
+		project, err = s.getProjectFromCurrentWorkingDirectory()
+		if err != nil {
+			return err
+		}
+	}
 
 	if s.Requires.Container && container == "" {
 		return errors.New("Container and project are required")
