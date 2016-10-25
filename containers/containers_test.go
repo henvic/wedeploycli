@@ -41,7 +41,7 @@ func TestGetListFromDirectory(t *testing.T) {
 		t.Errorf("Expected %v, got %v instead", nil, err)
 	}
 
-	var wantContainers = []string{"email", "landing"}
+	var wantContainers = []string{"email", "landing", "speaker"}
 
 	if !reflect.DeepEqual(containers, wantContainers) {
 		t.Errorf("Want %v, got %v instead", wantContainers, containers)
@@ -197,12 +197,7 @@ func TestLink(t *testing.T) {
 				data)
 		})
 
-	var c = &Container{
-		ID:   "speaker",
-		Type: "nodejs",
-	}
-
-	var err = Link(context.Background(), "sound", "", c)
+	var err = Link(context.Background(), "sound", "speaker", "mocks/app/speaker")
 
 	if err != nil {
 		t.Errorf("Unexpected error on Install: %v", err)

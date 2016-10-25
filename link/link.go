@@ -154,9 +154,7 @@ func (m *Machine) doLink(cl *Link) {
 
 func (m *Machine) link(l *Link) error {
 	m.dirMutex.Lock()
-	var err = containers.Link(context.Background(), m.ProjectID,
-		l.ContainerPath,
-		l.Container)
+	var err = containers.Link(context.Background(), m.ProjectID, l.Container.ID, l.ContainerPath)
 	m.dirMutex.Unlock()
 	runtime.Gosched()
 

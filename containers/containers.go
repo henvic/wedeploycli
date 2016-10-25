@@ -1,6 +1,7 @@
 package containers
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -79,21 +80,23 @@ func Get(ctx context.Context, projectID, containerID string) (Container, error) 
 }
 
 // Link container to project
-func Link(ctx context.Context, projectID, containerPath string, container *Container) error {
+func Link(ctx context.Context, projectID, containerID, containerPath string) error {
 	verbose.Debug("Installing container from definition")
 
 	var req = apihelper.URL(ctx, "/deploy")
 	apihelper.Auth(req)
 
 	req.Param("projectId", projectID)
-	req.Param("containerId", container.ID)
+	req.Param("containerId", containerID)
 	req.Param("source", normalizePath(containerPath))
 
-	var err = apihelper.SetBody(req, &container)
+	var c, err = ioutil.ReadFile(filepath.Join(containerPath, "container.json"))
 
 	if err != nil {
 		return err
 	}
+
+	req.Body(bytes.NewReader(c))
 
 	return apihelper.Validate(req, req.Put())
 }
