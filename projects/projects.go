@@ -1,6 +1,7 @@
 package projects
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -42,8 +43,7 @@ var (
 
 // CreateFromJSON a project on WeDeploy
 func CreateFromJSON(ctx context.Context, filename string) error {
-	var file, err = os.Open(filename)
-	defer file.Close()
+	var p, err = ioutil.ReadFile(filename)
 
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func CreateFromJSON(ctx context.Context, filename string) error {
 
 	var req = apihelper.URL(ctx, "/projects")
 	apihelper.Auth(req)
-	req.Body(file)
+	req.Body(bytes.NewReader(p))
 
 	return apihelper.Validate(req, req.Post())
 }
