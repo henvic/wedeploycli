@@ -3,6 +3,7 @@ package integration
 import (
 	"os"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -391,7 +392,7 @@ func TestCreatePromptProjectAndContainerAtOnce(t *testing.T) {
 	}
 
 	var story = &pseudoterm.QueueStory{
-		Timeout: 10 * time.Second,
+		Timeout: 15 * time.Second,
 	}
 
 	story.Add(
@@ -420,8 +421,8 @@ func TestCreatePromptProjectAndContainerAtOnce(t *testing.T) {
 			SkipWrite: true,
 		},
 		pseudoterm.Step{
-			Read:  "Select from 1..9:",
-			Write: "auth",
+			ReadRegex: regexp.MustCompile("Select from 1..([0-9]+):"),
+			Write:     "auth",
 		},
 		pseudoterm.Step{
 			Read:  "Container ID [default: wedeploy-auth]:",
