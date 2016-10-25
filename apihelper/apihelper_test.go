@@ -559,6 +559,7 @@ func TestRequestVerboseFeedbackUpload(t *testing.T) {
 	var request = URL(context.Background(), "/foo")
 
 	var file, err = os.Open("mocks/config.json")
+	defer file.Close()
 
 	if err != nil {
 		panic(err)

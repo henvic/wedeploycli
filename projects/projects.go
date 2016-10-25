@@ -43,6 +43,7 @@ var (
 // CreateFromJSON a project on WeDeploy
 func CreateFromJSON(ctx context.Context, filename string) error {
 	var file, err = os.Open(filename)
+	defer file.Close()
 
 	if err != nil {
 		return err
