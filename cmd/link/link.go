@@ -1,7 +1,6 @@
 package cmdlink
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -14,7 +13,6 @@ import (
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/link"
 	"github.com/wedeploy/cli/projects"
-	"github.com/wedeploy/cli/wdircontext"
 )
 
 // LinkCmd links the given project or container locally
@@ -30,7 +28,8 @@ we link <project>`,
 var quiet bool
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern: cmdflagsfromhost.ProjectPattern,
+	Pattern:             cmdflagsfromhost.ProjectPattern,
+	UseProjectDirectory: true,
 }
 
 func init() {
@@ -86,19 +85,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 func linkRun(cmd *cobra.Command, args []string) error {
 	var projectID = setupHost.Project()
-
-	if config.Context.Scope == "project" && projectID != "" {
-		return errors.New("Can't use we link arguments when inside a project")
-	}
-
-	if projectID == "" {
-		var err error
-		projectID, err = wdircontext.GetProjectID()
-
-		if err != nil {
-			return err
-		}
-	}
 
 	csDirs, err := getContainersDirectoriesFromScope()
 

@@ -4,14 +4,12 @@ import (
 	"context"
 	"sync"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/verbose"
-	"github.com/wedeploy/cli/wdircontext"
 )
 
 // RestartCmd is used for getting restart
@@ -34,6 +32,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 		Auth: true,
 	},
 	Pattern: cmdflagsfromhost.FullHostPattern,
+	UseProjectDirectoryForContainer: true,
 }
 
 func init() {
@@ -105,20 +104,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func restartRun(cmd *cobra.Command, args []string) error {
-	var project = setupHost.Project()
-	var container = setupHost.Container()
-	if setupHost.Project() == "" && setupHost.Container() == "" {
-		var err error
-		project, container, err = wdircontext.GetProjectOrContainerID()
-
-		if err != nil {
-			return errwrap.Wrapf("No flags or local files: {{err}}", err)
-		}
-	}
-
 	var r = &restart{
-		project:   project,
-		container: container,
+		project:   setupHost.Project(),
+		container: setupHost.Container(),
 	}
 
 	if err := r.checkProjectOrContainerExists(); err != nil {

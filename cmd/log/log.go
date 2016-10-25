@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/logs"
-	"github.com/wedeploy/cli/wdircontext"
 )
 
 var (
@@ -25,6 +24,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 		Auth: true,
 	},
 	Pattern: cmdflagsfromhost.FullHostPattern,
+	UseProjectDirectoryForContainer: true,
 }
 
 func init() {
@@ -51,14 +51,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 func logRun(cmd *cobra.Command, args []string) error {
 	var project = setupHost.Project()
 	var container = setupHost.Container()
-	if setupHost.Project() == "" && setupHost.Container() == "" {
-		var err error
-		project, container, err = wdircontext.GetProjectOrContainerID()
-
-		if err != nil {
-			return err
-		}
-	}
 
 	level, levelErr := logs.GetLevel(severityArg)
 

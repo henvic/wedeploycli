@@ -13,7 +13,6 @@ import (
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
-	"github.com/wedeploy/cli/wdircontext"
 )
 
 // UnlinkCmd unlinks the given project or container locally
@@ -31,6 +30,7 @@ var quiet bool
 
 var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern: cmdflagsfromhost.ProjectAndContainerPattern,
+	UseProjectDirectoryForContainer: true,
 	Requires: cmdflagsfromhost.Requires{
 		Local: true,
 	},
@@ -143,15 +143,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 func unlinkRun(cmd *cobra.Command, args []string) error {
 	var project = setupHost.Project()
 	var container = setupHost.Container()
-
-	if project == "" {
-		var err error
-		project, container, err = wdircontext.GetProjectOrContainerID()
-
-		if err != nil {
-			return err
-		}
-	}
 
 	var u = &unlink{
 		project:   project,
