@@ -67,9 +67,10 @@ func (e ErrorFoundMultipleRemote) Error() string {
 
 // FlagsFromHost holds the project, container, and remote parsed
 type FlagsFromHost struct {
-	project   string
-	container string
-	remote    string
+	project          string
+	container        string
+	remote           string
+	isRemoteFromHost bool
 }
 
 // Project of the parsed flags or host
@@ -85,6 +86,11 @@ func (f *FlagsFromHost) Container() string {
 // Remote of the parsed flags or host
 func (f *FlagsFromHost) Remote() string {
 	return f.remote
+}
+
+// IsRemoteFromHost tells if the Remote was parsed from a host or not
+func (f *FlagsFromHost) IsRemoteFromHost() bool {
+	return f.isRemoteFromHost
 }
 
 var remotesList *remotes.List
@@ -104,7 +110,7 @@ func Parse(host, project, container, remote string) (*FlagsFromHost, error) {
 	}
 
 	if container != "" && project == "" {
-		return nil, ErrorContainerWithNoProject{}
+		err = ErrorContainerWithNoProject{}
 	}
 
 	return flagsFromHost, err
@@ -135,7 +141,8 @@ func parse(host, project, container, remote string) (*FlagsFromHost, error) {
 func parseWithHost(host, remoteFromFlag string) (*FlagsFromHost, error) {
 	if remote, err := ParseRemoteAddress(host); err == nil {
 		return &FlagsFromHost{
-			remote: remote,
+			remote:           remote,
+			isRemoteFromHost: true,
 		}, nil
 	}
 
@@ -208,11 +215,17 @@ func parseHost(host string) (*FlagsFromHost, error) {
 		return nil, err
 	}
 
-	return &FlagsFromHost{
+	var flagsFromHost = &FlagsFromHost{
 		project:   project,
 		container: container,
 		remote:    remote,
-	}, nil
+	}
+
+	if remote != "" {
+		flagsFromHost.isRemoteFromHost = true
+	}
+
+	return flagsFromHost, nil
 }
 
 // ParseRemoteAddress to get related remote

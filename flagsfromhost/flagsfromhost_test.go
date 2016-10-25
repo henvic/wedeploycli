@@ -1,6 +1,7 @@
 package flagsfromhost
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/wedeploy/cli/remotes"
@@ -157,16 +158,37 @@ func TestParseByFlagsOnly(t *testing.T) {
 			parsed.Remote() != k.remote {
 			t.Errorf("Expected values doesn't match on parsed object: %+v", parsed)
 		}
+
+		if parsed.IsRemoteFromHost() != false {
+			t.Errorf("Expected remote to not be parsed from host")
+		}
 	}
 }
 
 func TestContainerWithMissingProject(t *testing.T) {
 	defer resetDefaults()
+	remotesList = &remotes.List{
+		"hollywood": remotes.Entry{
+			URL: "example.com",
+		},
+	}
 
-	var parsed, err = Parse("", "", "foo", "")
+	var parsed, err = Parse("", "", "foo", "hollywood")
 
-	if parsed != nil {
-		t.Errorf("Expected parsed to be nil, got %v instead", parsed)
+	var expected = &FlagsFromHost{
+		project:   "",
+		container: "foo",
+		remote:    "hollywood",
+	}
+
+	if !reflect.DeepEqual(parsed, expected) {
+		t.Errorf("Expected parsed values to be %+v, got %+v instead", parsed, expected)
+	}
+
+	switch err.(type) {
+	case ErrorContainerWithNoProject:
+	default:
+		t.Errorf("Expected error type ErrorContainerWithNoProject, got error %v instead", err)
 	}
 
 	if err == nil || err.Error() != "Incompatible use: --container requires --project" {
@@ -259,126 +281,138 @@ func TestParseNoMatchFromExternalHost(t *testing.T) {
 }
 
 type parseHostOnlyMockStruct struct {
-	host          string
-	project       string
-	container     string
-	remote        string
-	wantProject   string
-	wantContainer string
-	wantRemote    string
-	wantErr       error
+	host                 string
+	project              string
+	container            string
+	remote               string
+	wantProject          string
+	wantContainer        string
+	wantRemote           string
+	wantIsRemoteFromHost bool
+	wantErr              error
 }
 
 var parseHostOnlyMocks = []parseHostOnlyMockStruct{
 	parseHostOnlyMockStruct{
-		host:          "cinema.example.com",
-		project:       "",
-		container:     "",
-		remote:        "",
-		wantProject:   "cinema",
-		wantContainer: "",
-		wantRemote:    "foo",
-		wantErr:       nil,
+		host:                 "cinema.example.com",
+		project:              "",
+		container:            "",
+		remote:               "",
+		wantProject:          "cinema",
+		wantContainer:        "",
+		wantRemote:           "foo",
+		wantIsRemoteFromHost: true,
+		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:          "projector.cinema.example.com",
-		project:       "",
-		container:     "",
-		remote:        "",
-		wantProject:   "cinema",
-		wantContainer: "projector",
-		wantRemote:    "foo",
-		wantErr:       nil,
+		host:                 "projector.cinema.example.com",
+		project:              "",
+		container:            "",
+		remote:               "",
+		wantProject:          "cinema",
+		wantContainer:        "projector",
+		wantRemote:           "foo",
+		wantIsRemoteFromHost: true,
+		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:          "projector.cinema",
-		project:       "",
-		container:     "",
-		remote:        "foo",
-		wantProject:   "cinema",
-		wantContainer: "projector",
-		wantRemote:    "foo",
-		wantErr:       nil,
+		host:                 "projector.cinema",
+		project:              "",
+		container:            "",
+		remote:               "foo",
+		wantProject:          "cinema",
+		wantContainer:        "projector",
+		wantRemote:           "foo",
+		wantIsRemoteFromHost: false,
+		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:          "cinema",
-		project:       "",
-		container:     "",
-		remote:        "foo",
-		wantProject:   "cinema",
-		wantContainer: "",
-		wantRemote:    "foo",
-		wantErr:       nil,
+		host:                 "cinema",
+		project:              "",
+		container:            "",
+		remote:               "foo",
+		wantProject:          "cinema",
+		wantContainer:        "",
+		wantRemote:           "foo",
+		wantIsRemoteFromHost: false,
+		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:          "abc.def.ghi.jkl.mnn.opq.rst.uvw.xyz",
-		project:       "",
-		container:     "",
-		remote:        "",
-		wantProject:   "abc",
-		wantContainer: "",
-		wantRemote:    "alphabet",
-		wantErr:       nil,
+		host:                 "abc.def.ghi.jkl.mnn.opq.rst.uvw.xyz",
+		project:              "",
+		container:            "",
+		remote:               "",
+		wantProject:          "abc",
+		wantContainer:        "",
+		wantRemote:           "alphabet",
+		wantIsRemoteFromHost: true,
+		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:          "abc.11.22.33.44:5555",
-		project:       "",
-		container:     "",
-		remote:        "",
-		wantProject:   "abc",
-		wantContainer: "",
-		wantRemote:    "ip",
-		wantErr:       nil,
+		host:                 "abc.11.22.33.44:5555",
+		project:              "",
+		container:            "",
+		remote:               "",
+		wantProject:          "abc",
+		wantContainer:        "",
+		wantRemote:           "ip",
+		wantIsRemoteFromHost: true,
+		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:          "def.abc.11.22.33.44:5555",
-		project:       "",
-		container:     "",
-		remote:        "",
-		wantProject:   "abc",
-		wantContainer: "def",
-		wantRemote:    "ip",
-		wantErr:       nil,
+		host:                 "def.abc.11.22.33.44:5555",
+		project:              "",
+		container:            "",
+		remote:               "",
+		wantProject:          "abc",
+		wantContainer:        "def",
+		wantRemote:           "ip",
+		wantIsRemoteFromHost: true,
+		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:          "",
-		project:       "",
-		container:     "",
-		remote:        "",
-		wantProject:   "",
-		wantContainer: "",
-		wantRemote:    "",
-		wantErr:       nil,
+		host:                 "",
+		project:              "",
+		container:            "",
+		remote:               "",
+		wantProject:          "",
+		wantContainer:        "",
+		wantRemote:           "",
+		wantIsRemoteFromHost: false,
+		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:          "wedeploy.io",
-		project:       "",
-		container:     "",
-		remote:        "",
-		wantProject:   "",
-		wantContainer: "",
-		wantRemote:    "wedeploy",
-		wantErr:       nil,
+		host:                 "wedeploy.io",
+		project:              "",
+		container:            "",
+		remote:               "",
+		wantProject:          "",
+		wantContainer:        "",
+		wantRemote:           "wedeploy",
+		wantIsRemoteFromHost: true,
+		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:          "wedeploy.me",
-		project:       "",
-		container:     "",
-		remote:        "",
-		wantProject:   "",
-		wantContainer: "",
-		wantRemote:    "",
-		wantErr:       nil,
+		host:                 "wedeploy.me",
+		project:              "",
+		container:            "",
+		remote:               "",
+		wantProject:          "",
+		wantContainer:        "",
+		wantRemote:           "",
+		wantIsRemoteFromHost: true,
+		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:          "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
-		project:       "",
-		container:     "",
-		remote:        "",
-		wantProject:   "",
-		wantContainer: "",
-		wantRemote:    "alphabet",
-		wantErr:       nil,
+		host:                 "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
+		project:              "",
+		container:            "",
+		remote:               "",
+		wantProject:          "",
+		wantContainer:        "",
+		wantRemote:           "alphabet",
+		wantIsRemoteFromHost: true,
+		wantErr:              nil,
 	},
 }
 
@@ -408,7 +442,8 @@ func TestParse(t *testing.T) {
 
 		if parsed.Project() != k.wantProject ||
 			parsed.Container() != k.wantContainer ||
-			parsed.Remote() != k.wantRemote {
+			parsed.Remote() != k.wantRemote ||
+			parsed.IsRemoteFromHost() != k.wantIsRemoteFromHost {
 			t.Errorf("Expected values doesn't match on parsed object: %+v", parsed)
 		}
 	}
