@@ -396,11 +396,11 @@ func TestCreatePromptProjectAndContainerAtOnce(t *testing.T) {
 
 	story.Add(
 		pseudoterm.Step{
-			Read:      "Do you want to create:",
+			Read:      "Create: ",
 			SkipWrite: true,
 		},
 		pseudoterm.Step{
-			Read:      "2) container (or project and container)",
+			Read:      "2) a project and a container inside it",
 			SkipWrite: true,
 		},
 		pseudoterm.Step{
@@ -486,11 +486,11 @@ func testCreatePromptProject(t *testing.T) {
 
 	story.Add(
 		pseudoterm.Step{
-			Read:      "Do you want to create:",
+			Read:      "Create: ",
 			SkipWrite: true,
 		},
 		pseudoterm.Step{
-			Read:      "2) container (or project and container)",
+			Read:      "2) a project and a container inside it",
 			SkipWrite: true,
 		},
 		pseudoterm.Step{

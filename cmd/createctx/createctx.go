@@ -99,9 +99,9 @@ func shouldPromptToCreateContainer() (bool, error) {
 		return false, errors.New("Project is required when detached from terminal")
 	}
 
-	fmt.Println("Do you want to create:")
-	fmt.Println("1) only project")
-	fmt.Println("2) container (or project and container)")
+	fmt.Println("Create:")
+	fmt.Println("1) a project")
+	fmt.Println("2) a project and a container inside it")
 
 	index, err := prompt.SelectOption(2, nil)
 
