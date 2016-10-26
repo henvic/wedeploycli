@@ -14,7 +14,7 @@ func TestRestartProjectQuiet(t *testing.T) {
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc("/projects/foo",
-		tdata.ServerJSONFileHandler("mocks/restart/project_foo_response.json"))
+		tdata.ServerJSONFileHandler("mocks/restart/foo/project_response.json"))
 
 	servertest.IntegrationMux.HandleFunc("/restart/project",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -44,13 +44,50 @@ func TestRestartProjectQuiet(t *testing.T) {
 	}
 }
 
+func TestRestartProjectQuietFromCurrentWorkingDirectoryContext(t *testing.T) {
+	var handled bool
+	defer Teardown()
+	Setup()
+
+	servertest.IntegrationMux.HandleFunc("/projects/foo",
+		tdata.ServerJSONFileHandler("mocks/restart/foo/project_response.json"))
+
+	servertest.IntegrationMux.HandleFunc("/restart/project",
+		func(w http.ResponseWriter, r *http.Request) {
+			handled = true
+
+			var wantQS = "projectId=foo"
+
+			if r.URL.RawQuery != wantQS {
+				t.Errorf("Wanted %v, got %v instead", wantQS, r.URL.RawQuery)
+			}
+		})
+
+	var cmd = &Command{
+		Args: []string{"restart", "--quiet"},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir:  "mocks/restart/foo",
+	}
+
+	var e = &Expect{
+		ExitCode: 0,
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+
+	if !handled {
+		t.Errorf("Restart request not handled.")
+	}
+}
+
 func TestRestartContainerQuiet(t *testing.T) {
 	var handled bool
 	defer Teardown()
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc("/projects/foo/containers/bar",
-		tdata.ServerJSONFileHandler("mocks/restart/container_foo_bar_response.json"))
+		tdata.ServerJSONFileHandler("mocks/restart/foo/bar/container_response.json"))
 
 	servertest.IntegrationMux.HandleFunc("/restart/container",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -66,6 +103,43 @@ func TestRestartContainerQuiet(t *testing.T) {
 	var cmd = &Command{
 		Args: []string{"restart", "bar.foo.wedeploy.me", "-q"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+	}
+
+	var e = &Expect{
+		ExitCode: 0,
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+
+	if !handled {
+		t.Errorf("Restart request not handled.")
+	}
+}
+
+func TestRestartContainerQuietFromCurrentWorkingDirectoryContext(t *testing.T) {
+	var handled bool
+	defer Teardown()
+	Setup()
+
+	servertest.IntegrationMux.HandleFunc("/projects/foo/containers/bar",
+		tdata.ServerJSONFileHandler("mocks/restart/foo/bar/container_response.json"))
+
+	servertest.IntegrationMux.HandleFunc("/restart/container",
+		func(w http.ResponseWriter, r *http.Request) {
+			handled = true
+
+			var wantQS = "projectId=foo&containerId=bar"
+
+			if r.URL.RawQuery != wantQS {
+				t.Errorf("Wanted %v, got %v instead", wantQS, r.URL.RawQuery)
+			}
+		})
+
+	var cmd = &Command{
+		Args: []string{"restart", "-q"},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir:  "mocks/restart/foo/bar",
 	}
 
 	var e = &Expect{
