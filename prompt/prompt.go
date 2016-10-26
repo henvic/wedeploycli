@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/hashicorp/errwrap"
 	"golang.org/x/crypto/ssh/terminal"
@@ -82,7 +83,7 @@ func Hidden(param string) (string, error) {
 	}
 
 	fmt.Fprintf(outStream, param+": ")
-	var b, err = terminal.ReadPassword(0)
+	var b, err = terminal.ReadPassword(syscall.Stdin)
 
 	if err != nil {
 		return "", errwrap.Wrapf("Can't read stdin for "+param+": {{err}}", err)
