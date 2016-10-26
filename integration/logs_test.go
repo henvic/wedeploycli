@@ -44,6 +44,100 @@ func TestLogs(t *testing.T) {
 	e.Assert(t, cmd)
 }
 
+func TestLogsFromCurrentWorkingOnProjectDirectoryContext(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	servertest.IntegrationMux.HandleFunc("/logs/foo",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Query().Get("containerId") != "" {
+				t.Errorf("Wrong value for containerId")
+			}
+
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, tdata.FromFile("../logs/mocks/logs_response.json"))
+		})
+
+	var cmd = &Command{
+		Args: []string{
+			"log",
+			"--no-color"},
+		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir: "mocks/home/bucket/foo",
+	}
+
+	var e = &Expect{
+		Stdout:   tdata.FromFile("../logs/mocks/logs_response_print"),
+		ExitCode: 0,
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+}
+
+func TestLogsFromCurrentWorkingOnProjectDirectoryContextFilteringByContainer(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	servertest.IntegrationMux.HandleFunc("/logs/foo",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Query().Get("containerId") != "nodejs5143" {
+				t.Errorf("Wrong value for containerId")
+			}
+
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, tdata.FromFile("../logs/mocks/logs_response.json"))
+		})
+
+	var cmd = &Command{
+		Args: []string{
+			"log",
+			"--container=nodejs5143",
+			"--no-color"},
+		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir: "mocks/home/bucket/foo",
+	}
+
+	var e = &Expect{
+		Stdout:   tdata.FromFile("../logs/mocks/logs_response_print"),
+		ExitCode: 0,
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+}
+
+func TestLogsFromCurrentWorkingOnContainerDirectoryContext(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	servertest.IntegrationMux.HandleFunc("/logs/foo",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Query().Get("containerId") != "nodejs5143" {
+				t.Errorf("Wrong value for containerId")
+			}
+
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, tdata.FromFile("../logs/mocks/logs_response.json"))
+		})
+
+	var cmd = &Command{
+		Args: []string{
+			"log",
+			"--no-color"},
+		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir: "mocks/home/bucket/foo/nodejs5143",
+	}
+
+	var e = &Expect{
+		Stdout:   tdata.FromFile("../logs/mocks/logs_response_print"),
+		ExitCode: 0,
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+}
+
 func TestLogsWithWeDeployDotMeAddress(t *testing.T) {
 	defer Teardown()
 	Setup()
