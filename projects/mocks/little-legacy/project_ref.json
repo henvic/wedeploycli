@@ -1,6 +1,3 @@
 {
-    "id": "little",
-    "customDomains": [
-        "foo.com"
-    ]
+    "id": "little"
 }

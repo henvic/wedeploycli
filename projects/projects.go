@@ -6,14 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
@@ -37,8 +35,6 @@ var (
 
 	// ErrInvalidProjectID happens when a Project ID is invalid
 	ErrInvalidProjectID = errors.New("Invalid project ID")
-
-	errStream io.Writer = os.Stderr
 )
 
 // CreateFromJSON a project on WeDeploy
@@ -102,16 +98,12 @@ func Read(path string) (*Project, error) {
 		return nil, err
 	}
 
-	err = fixDeprecatedCustomDomain(content, &data)
+	err = checkRemovedCustomDomain(path, content)
 
 	return &data, err
 }
 
-func fixDeprecatedCustomDomain(content []byte, p *Project) error {
-	if p == nil {
-		return nil
-	}
-
+func checkRemovedCustomDomain(path string, content []byte) error {
 	var mapProject map[string]interface{}
 
 	if err := json.Unmarshal(content, &mapProject); err != nil {
@@ -119,36 +111,28 @@ func fixDeprecatedCustomDomain(content []byte, p *Project) error {
 		return nil
 	}
 
-	var deprecatedInterface, ok = mapProject["customDomain"]
-	var deprecated string
+	var removedInterface, ok = mapProject["customDomain"]
+	var removed string
 
-	switch deprecatedInterface.(type) {
+	switch removedInterface.(type) {
 	case nil:
 		return nil
 	case string:
-		deprecated = deprecatedInterface.(string)
+		removed = removedInterface.(string)
 	default:
-		return errors.New("Invalid value for deprecated customDomain")
+		return errors.New("Invalid value for removed customDomain")
 	}
 
-	if !ok || deprecated == "" {
+	if !ok || removed == "" {
 		return nil
 	}
 
-	fmt.Fprintf(errStream, color.Format(color.FgRed, fmt.Sprintf(`DEPRECATED: CustomDomain string is now CustomDomains []string
-Update your project.json to use:
+	return fmt.Errorf(`CustomDomain string support was removed in favor of CustomDomains []string
+Update your %v/project.json file to use:
 "customDomains": ["%v"] instead of "customDomain": "%v".`,
-		deprecated,
-		deprecated)))
-
-	if len(p.CustomDomains) != 0 {
-		return errors.New(
-			"Can't use both customDomains and deprecated customDomain on project.json")
-	}
-
-	p.CustomDomains = []string{deprecated}
-
-	return nil
+		path,
+		removed,
+		removed)
 }
 
 func readValidate(project Project, err error) error {

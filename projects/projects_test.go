@@ -1,7 +1,6 @@
 package projects
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -9,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/wedeploy/api-go/jsonlib"
@@ -18,8 +16,6 @@ import (
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/tdata"
 )
-
-var defaultErrStream = errStream
 
 func TestCreateFromJSON(t *testing.T) {
 	defer servertest.Teardown()
@@ -186,51 +182,23 @@ func TestRead(t *testing.T) {
 }
 
 func TestReadLegacyCustomDomain(t *testing.T) {
-	var bufErrStream bytes.Buffer
-	errStream = &bufErrStream
-
 	var c, err = Read("mocks/little-legacy")
-
-	if err != nil {
-		t.Errorf("Expected no error, got %v instead", err)
-	}
 
 	jsonlib.AssertJSONMarshal(t, tdata.FromFile(
 		"mocks/little-legacy/project_ref.json"),
 		c)
 
-	var wantDeprecation = `DEPRECATED: CustomDomain string is now CustomDomains []string
-Update your project.json to use:
+	if err == nil {
+		t.Fatalf("Expected error not to be null")
+	}
+
+	var wantErr = `CustomDomain string support was removed in favor of CustomDomains []string
+Update your mocks/little-legacy/project.json file to use:
 "customDomains": ["foo.com"] instead of "customDomain": "foo.com".`
 
-	if !strings.Contains(bufErrStream.String(), wantDeprecation) {
-		t.Errorf("Wanted deprecation info not available")
+	if err.Error() != wantErr {
+		t.Errorf("Wanted err to be %v, got %v instead", wantErr, err)
 	}
-
-	errStream = defaultErrStream
-}
-
-func TestReadLegacyCustomDomainError(t *testing.T) {
-	var bufErrStream bytes.Buffer
-	errStream = &bufErrStream
-
-	var _, err = Read("mocks/little-legacy-issue")
-
-	var wantErr = "Can't use both customDomains and deprecated customDomain on project.json"
-
-	if err == nil || err.Error() != wantErr {
-		t.Errorf("Expected error %v, got %v instead", wantErr, err)
-	}
-
-	var wantDeprecation = `DEPRECATED: CustomDomain string is now CustomDomains []string
-Update your project.json to use:
-"customDomains": ["foo.com"] instead of "customDomain": "foo.com".`
-
-	if !strings.Contains(bufErrStream.String(), wantDeprecation) {
-		t.Errorf("Wanted deprecation info not available")
-	}
-
-	errStream = defaultErrStream
 }
 
 func TestReadFileNotFound(t *testing.T) {
