@@ -83,7 +83,7 @@ func Hidden(param string) (string, error) {
 	}
 
 	fmt.Fprintf(outStream, param+": ")
-	var b, err = terminal.ReadPassword(syscall.Stdin)
+	var b, err = terminal.ReadPassword(int(syscall.Stdin))
 
 	if err != nil {
 		return "", errwrap.Wrapf("Can't read stdin for "+param+": {{err}}", err)
