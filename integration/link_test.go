@@ -46,6 +46,43 @@ func TestLink(t *testing.T) {
 	e.Assert(t, cmd)
 }
 
+func TestLinkToProject(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	servertest.IntegrationMux.HandleFunc("/projects",
+		func(w http.ResponseWriter, r *http.Request) {
+		})
+
+	servertest.IntegrationMux.HandleFunc("/deploy",
+		func(w http.ResponseWriter, r *http.Request) {
+		})
+
+	servertest.IntegrationMux.HandleFunc("/projects/bar",
+		func(w http.ResponseWriter, r *http.Request) {
+			// this is a hack to make the link test more robust
+			// a nicer approach would be to clear the strings and match, though
+			time.Sleep(5 * time.Millisecond)
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, tdata.FromFile("mocks/link/list.json"))
+		})
+
+	var cmd = &Command{
+		Args: []string{"link", "bar", "--no-color"},
+		Env: []string{
+			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir: "mocks/home/bucket/project/container",
+	}
+
+	var e = &Expect{
+		ExitCode: 0,
+		Stdout:   tdata.FromFile("mocks/link/link"),
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+}
+
 func TestLinkRemoteError(t *testing.T) {
 	defer Teardown()
 	Setup()
