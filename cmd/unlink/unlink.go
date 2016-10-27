@@ -29,8 +29,9 @@ we unlink <project> <container>`,
 var quiet bool
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern: cmdflagsfromhost.ProjectAndContainerPattern,
-	UseProjectDirectoryForContainer: true,
+	Pattern:               cmdflagsfromhost.ProjectAndContainerPattern,
+	UseProjectDirectory:   true,
+	UseContainerDirectory: true,
 	Requires: cmdflagsfromhost.Requires{
 		Local: true,
 	},
