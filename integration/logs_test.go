@@ -12,6 +12,25 @@ import (
 	"github.com/wedeploy/cli/tdata"
 )
 
+func TestLogsIncompatibleUse(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	var cmd = &Command{
+		Args: []string{"log"},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir:  "mocks/home/",
+	}
+
+	var e = &Expect{
+		Stderr:   "Error: Incompatible use: --container requires --project or local project.json context",
+		ExitCode: 1,
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+}
+
 func TestLogs(t *testing.T) {
 	defer Teardown()
 	Setup()
