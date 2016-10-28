@@ -20,9 +20,6 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-// ErrHostNotFound is used when host is not found
-var ErrHostNotFound = errors.New("You need to be connected to a network.")
-
 // WeDeployImage is the docker image for the WeDeploy infrastructure
 var WeDeployImage = "wedeploy/local:" + defaults.WeDeployImageTag
 
@@ -69,21 +66,23 @@ func (t tcpPortsStruct) expose() []string {
 // GetWeDeployHost gets the WeDeploy infrastructure host
 // This is a temporary solution and it is NOT reliable
 func GetWeDeployHost() (string, error) {
-	var addrs, err = net.InterfaceAddrs()
-
-	if err != nil {
-		return "", err
+	var params = []string{
+		"network", "inspect", "bridge", "--format", `{{(index (index .IPAM.Config 0) "Gateway")}}`,
 	}
 
-	for _, addr := range addrs {
-		var ip = addr.(*net.IPNet)
+	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
+	var gatewayBuf bytes.Buffer
+	var gateway = exec.Command(bin, params...)
+	gateway.Stderr = os.Stderr
+	gateway.Stdout = &gatewayBuf
 
-		if !ip.IP.IsLoopback() && ip.IP.To4() != nil {
-			return strings.SplitN(ip.String(), "/", 2)[0], nil
-		}
+	if err := gateway.Run(); err != nil {
+		return "", errwrap.Wrapf("Can't get docker network bridge gateway: {{err}}", err)
 	}
 
-	return "", ErrHostNotFound
+	var address = gatewayBuf.String()
+	verbose.Debug("docker network bridge gateway address:", address)
+	return strings.TrimSpace(address), nil
 }
 
 // StopOutdatedImage stops the WeDeploy infrastructure if outdated
