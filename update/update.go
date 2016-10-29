@@ -206,7 +206,7 @@ func notify() {
 
 func updateApply(channel string, resp *equinox.Response) error {
 	if err := run.StopOutdatedImage(""); err != nil {
-		return err
+		verbose.Debug("Ignoring error while trying to check if outdated WeDeploy infrastructure is running:", err)
 	}
 
 	if err := resp.Apply(); err != nil {

@@ -94,7 +94,9 @@ func StopOutdatedImage(nextImage string) error {
 
 	var dm = &DockerMachine{}
 
-	dm.LoadDockerInfo()
+	if err := dm.LoadDockerInfo(); err != nil {
+		return err
+	}
 
 	if dm.Container == "" {
 		return nil

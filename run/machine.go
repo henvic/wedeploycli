@@ -68,7 +68,10 @@ func Stop() error {
 
 // Run executes the WeDeploy infraestruture
 func (dm *DockerMachine) Run() (err error) {
-	dm.LoadDockerInfo()
+	if err = dm.LoadDockerInfo(); err != nil {
+		return err
+	}
+
 	dm.setupPorts()
 
 	if !dm.Flags.DryRun && dm.Container != "" {
@@ -110,7 +113,10 @@ func (dm *DockerMachine) Stop() error {
 	}
 
 	go stopMsg.Wait()
-	dm.LoadDockerInfo()
+
+	if err := dm.LoadDockerInfo(); err != nil {
+		return err
+	}
 
 	if dm.Container == "" {
 		verbose.Debug("No infrastructure container detected.")
@@ -370,7 +376,7 @@ func (dm *DockerMachine) ready() {
 }
 
 // LoadDockerInfo loads the docker info on the DockerMachine object
-func (dm *DockerMachine) LoadDockerInfo() {
+func (dm *DockerMachine) LoadDockerInfo() error {
 	var args = []string{
 		"ps",
 		"--filter",
@@ -387,8 +393,7 @@ func (dm *DockerMachine) LoadDockerInfo() {
 	docker.Stdout = &buf
 
 	if err := docker.Run(); err != nil {
-		println("docker ps error:", err.Error())
-		os.Exit(1)
+		return errwrap.Wrapf("docker ps error: {{err}}", err)
 	}
 
 	var ps = buf.String()
@@ -404,6 +409,8 @@ func (dm *DockerMachine) LoadDockerInfo() {
 	default:
 		verbose.Debug("Running docker not found on docker ps")
 	}
+
+	return nil
 }
 
 func (dm *DockerMachine) checkImage() {
