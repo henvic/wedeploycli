@@ -20,6 +20,7 @@ ARCH=$(uname -m | sed 's/x86_64/amd64/' | sed 's/i686/386/')
 UNAME_ARCH=$(echo ${UNAME}_${ARCH} | tr '[:upper:]' '[:lower:]' | tr '_' '-')
 FILE=cli-$RELEASE_CHANNEL-$UNAME_ARCH
 PACKAGE_FORMAT=""
+TEMPDEST=`mktemp`
 DESTDIR=${2:-"/usr/local/bin"}
 
 function setupAlternateDir() {
@@ -68,10 +69,10 @@ function setupReleaseChannelAddress() {
 function extractPackage() {
   case $PACKAGE_FORMAT in
     "zip")
-    unzip -o $FILE.zip -d $DESTDIR we >/dev/null
+    unzip -o $TEMPDEST -d $DESTDIR we >/dev/null
     ;;
     "tgz")
-    tar -xzf $FILE.$PACKAGE_FORMAT -C $DESTDIR we
+    tar -xzf $TEMPDEST -C $DESTDIR we
     ;;
     *)
     echo "Error trying to extract binary from package."
@@ -91,7 +92,7 @@ function run() {
     echo "Downloading from $URL."
   fi
 
-  curl -L -O $URL -f --progress-bar
+  curl -L -o $TEMPDEST $URL -f --progress-bar
   extractPackage
   chmod +x $DESTDIR/we
   info
@@ -111,6 +112,7 @@ function info() {
 
 function cleanup() {
   rm $FILE.$PACKAGE_FORMAT 2>/dev/null
+  rm $TEMPDEST 2>/dev/null
 }
 
 trap cleanup EXIT
