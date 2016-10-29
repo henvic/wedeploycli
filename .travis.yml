@@ -11,4 +11,4 @@ install:
 script:
   - go test -v $(go list ./... | grep -v /vendor/)
 after_success:
-  - sh `pwd`/scripts/coverage --coveralls
+  - sh `pwd`/scripts/coverage.sh --coveralls
