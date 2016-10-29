@@ -18,7 +18,16 @@ The availability of dependencies are tested just before its immediate use. If a 
 ## Contributing
 You can get the latest CLI source code with `go get -u github.com/wedeploy/cli`
 
-**Important:** To use the locked dependencies you should install [glide](https://github.com/Masterminds/glide) and then run `glide install` first. `go list ./...` lists vendor/ dependencies, so you can use `go list ./... | grep -v /vendor/` (or `glide nv`) to list the subpackages without the vendors. This is necessary for a few cases, such as testing all code: `go test ./...` becomes `go test $(go list ./... | grep -v /vendor/)`.
+The following commands are available and requires no arguments:
+
+* **make get-dependencies**: get versioned Go dependencies
+* **make list-packages**: list all Go packages of the project
+* **make build**
+* **make test**: run all tests
+* **make release**: tag, build, and publish new version of the app
+* **make promote**: publish version already released to a given distribution channel
+
+**Important:** always install dependencies by running `make get-dependencies` to make sure the current dependency versioning constraints apply.
 
 In lieu of a formal style guide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Integration tests should be written as well.
 
@@ -29,7 +38,7 @@ The master branch of this repository on GitHub is protected:
 
 Keep your commits neat. Try to always rebase your changes before publishing them.
 
-[goreportcard](https://goreportcard.com/report/github.com/wedeploy/cli) can be used online or locally to detect defects and static analysis results from tools such as go vet, go lint, gocyclo, and more. Run [errcheck](https://github.com/kisielk/errcheck) to fix ignored error returns.
+[goreportcard](https://goreportcard.com/report/github.com/wedeploy/cli) can be used online or locally to detect defects and static analysis results from tools such as go vet, go lint, gocyclo, and more.
 
 Using go test and go cover are essential to make sure your code is covered with unit tests.
 
