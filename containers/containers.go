@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -50,8 +49,6 @@ var (
 
 	// ErrInvalidContainerID happens when a container ID is invalid
 	ErrInvalidContainerID = errors.New("Invalid container ID")
-
-	outStream io.Writer = os.Stdout
 )
 
 // GetListFromDirectory returns a list of containers on the given diretory

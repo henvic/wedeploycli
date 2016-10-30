@@ -1,7 +1,6 @@
 package containers
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -21,18 +20,6 @@ import (
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/tdata"
 )
-
-var bufOutStream bytes.Buffer
-
-func TestMain(m *testing.M) {
-	var defaultOutStream = outStream
-	outStream = &bufOutStream
-
-	ec := m.Run()
-
-	outStream = defaultOutStream
-	os.Exit(ec)
-}
 
 func TestGetListFromDirectory(t *testing.T) {
 	var containers, err = GetListFromDirectory("mocks/app")
@@ -159,7 +146,6 @@ func TestList(t *testing.T) {
 func TestLink(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
-	bufOutStream.Reset()
 
 	servertest.Mux.HandleFunc(
 		"/deploy",
@@ -210,7 +196,6 @@ func TestLink(t *testing.T) {
 func TestRegistry(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
-	bufOutStream.Reset()
 
 	servertest.Mux.HandleFunc(
 		"/registry",
@@ -269,7 +254,6 @@ func TestReadCorrupted(t *testing.T) {
 func TestRestart(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
-	bufOutStream.Reset()
 
 	servertest.Mux.HandleFunc("/restart/container",
 		func(w http.ResponseWriter, r *http.Request) {
