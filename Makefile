@@ -1,8 +1,8 @@
-.SILENT: main get-dependencies list-packages build test release promote check-go check-cli-release-config-path
-.PHONY: get-dependencies list-packages build test release promote
+.SILENT: main get-dependencies list-packages build test build-functional-tests release promote check-go check-cli-release-config-path
+.PHONY: get-dependencies list-packages build test build-functional-tests release promote
 main:
 	echo "WeDeploy CLI build tool commands:"
-	echo "get-dependencies, list-packages, build, test, release, promote"
+	echo "get-dependencies, list-packages, build, test, build-functional-tests, release, promote"
 get-dependencies: check-go
 	if ! which glide &> /dev/null; \
 	then >&2 echo "Missing dependency: Glide is required https://glide.sh/"; \
@@ -15,6 +15,8 @@ build:
 	go build
 test:
 	./scripts/release.sh --pre-release
+build-functional-tests:
+	./scripts/build-functional-tests.sh
 release: check-cli-release-config-path
 	./scripts/release.sh $$WEDEPLOY_CLI_RELEASE_CONFIG_PATH
 promote: check-cli-release-config-path
