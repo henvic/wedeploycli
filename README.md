@@ -66,7 +66,7 @@ linux...	wedeploy-cli-functional-linux.test
 windows...	wedeploy-cli-functional-windows.test.exe
 
 Functional test suites are saved in:
-/vm-shared-network-volume/wedeploy-functional-tests
+/vm-shared-network-volume/wedeploy-cli-functional-tests
 ```
 
 And run it as a regular executable on each target system. Several options (including some required) are available both for automated and for manual testing.
