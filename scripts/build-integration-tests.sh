@@ -56,7 +56,7 @@ echo
 echo "Integration test suites and its related mocks are saved in:"
 echo `pwd`
 
-if [ ! $WEDEPLOY_CLI_INTEGRATION_TESTS_PATH -ef $INTEGRATION_TESTS_DIR ]; then
+if [ $WEDEPLOY_CLI_INTEGRATION_TESTS_PATH -ef $INTEGRATION_TESTS_DIR ]; then
   echo
   echo "Set the \$WEDEPLOY_CLI_INTEGRATION_TESTS_PATH environment variable to save somewhere else."
 fi

@@ -30,7 +30,7 @@ echo
 echo "Functional test suites are saved in:"
 echo `pwd`
 
-if [ ! $WEDEPLOY_CLI_FUNCTIONAL_TESTS_PATH -ef $FUNCTIONAL_TESTS_DIR ]; then
+if [ $WEDEPLOY_CLI_FUNCTIONAL_TESTS_PATH -ef $FUNCTIONAL_TESTS_DIR ]; then
   echo
   echo "Set the \$WEDEPLOY_CLI_FUNCTIONAL_TESTS_PATH environment variable to save somewhere else."
 fi
