@@ -21,7 +21,7 @@ for platform in ${PLATFORMS[@]}; do
   fi
 
   echo -ne "${platform}...\t"
-  env GOOS=${platform} go test -c -tags=integration -o ${WEDEPLOY_CLI_INTEGRATION_TESTS_PATH}/$out
+  env GOOS=${platform} go test -c -tags=nocompile -o ${WEDEPLOY_CLI_INTEGRATION_TESTS_PATH}/$out
   echo $out
 done
 
