@@ -42,7 +42,7 @@ func TestLogs(t *testing.T) {
 			}
 
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
-			fmt.Fprintf(w, tdata.FromFile("../logs/mocks/logs_response.json"))
+			fmt.Fprintf(w, tdata.FromFile("mocks/logs/logs_response.json"))
 		})
 
 	var cmd = &Command{
@@ -55,7 +55,7 @@ func TestLogs(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stdout:   tdata.FromFile("../logs/mocks/logs_response_print"),
+		Stdout:   tdata.FromFile("mocks/logs/logs_response_print"),
 		ExitCode: 0,
 	}
 
@@ -74,7 +74,7 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContext(t *testing.T) {
 			}
 
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
-			fmt.Fprintf(w, tdata.FromFile("../logs/mocks/logs_response.json"))
+			fmt.Fprintf(w, tdata.FromFile("mocks/logs/logs_response.json"))
 		})
 
 	var cmd = &Command{
@@ -86,7 +86,7 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContext(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stdout:   tdata.FromFile("../logs/mocks/logs_response_print"),
+		Stdout:   tdata.FromFile("mocks/logs/logs_response_print"),
 		ExitCode: 0,
 	}
 
@@ -105,7 +105,7 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContextFilteringByContainer(t *
 			}
 
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
-			fmt.Fprintf(w, tdata.FromFile("../logs/mocks/logs_response.json"))
+			fmt.Fprintf(w, tdata.FromFile("mocks/logs/logs_response.json"))
 		})
 
 	var cmd = &Command{
@@ -118,7 +118,7 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContextFilteringByContainer(t *
 	}
 
 	var e = &Expect{
-		Stdout:   tdata.FromFile("../logs/mocks/logs_response_print"),
+		Stdout:   tdata.FromFile("mocks/logs/logs_response_print"),
 		ExitCode: 0,
 	}
 
@@ -137,7 +137,7 @@ func TestLogsFromCurrentWorkingOnContainerDirectoryContext(t *testing.T) {
 			}
 
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
-			fmt.Fprintf(w, tdata.FromFile("../logs/mocks/logs_response.json"))
+			fmt.Fprintf(w, tdata.FromFile("mocks/logs/logs_response.json"))
 		})
 
 	var cmd = &Command{
@@ -149,7 +149,7 @@ func TestLogsFromCurrentWorkingOnContainerDirectoryContext(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stdout:   tdata.FromFile("../logs/mocks/logs_response_print"),
+		Stdout:   tdata.FromFile("mocks/logs/logs_response_print"),
 		ExitCode: 0,
 	}
 
@@ -168,7 +168,7 @@ func TestLogsWithWeDeployDotMeAddress(t *testing.T) {
 			}
 
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
-			fmt.Fprintf(w, tdata.FromFile("../logs/mocks/logs_response.json"))
+			fmt.Fprintf(w, tdata.FromFile("mocks/logs/logs_response.json"))
 		})
 
 	var cmd = &Command{
@@ -181,7 +181,7 @@ func TestLogsWithWeDeployDotMeAddress(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stdout:   tdata.FromFile("../logs/mocks/logs_response_print"),
+		Stdout:   tdata.FromFile("mocks/logs/logs_response_print"),
 		ExitCode: 0,
 	}
 
@@ -229,7 +229,7 @@ func TestWatch(t *testing.T) {
 	go func() {
 		time.Sleep(100 * time.Millisecond)
 
-		if err := syscall.Kill(c.Process.Pid, syscall.SIGINT); err != nil {
+		if err := c.Process.Signal(syscall.SIGINT); err != nil {
 			panic(err)
 		}
 
