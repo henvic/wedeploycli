@@ -111,8 +111,8 @@ function info() {
 }
 
 function cleanup() {
-  rm $FILE.$PACKAGE_FORMAT 2>/dev/null
-  rm $TEMPDEST 2>/dev/null
+  rm $FILE.$PACKAGE_FORMAT 2>/dev/null || true
+  rm $TEMPDEST 2>/dev/null || true
 }
 
 trap cleanup EXIT
