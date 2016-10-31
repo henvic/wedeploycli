@@ -8,6 +8,7 @@ IFS=$'\n\t'
 PLATFORMS=(darwin linux windows)
 
 cd `dirname $0`/../integration
+INTEGRATION_TESTS_DIR=$PWD
 
 echo "Building integration test suites for multiple platforms:"
 WEDEPLOY_CLI_INTEGRATION_TESTS_PATH=${WEDEPLOY_CLI_INTEGRATION_TESTS_PATH:-"."}
@@ -29,7 +30,7 @@ echo
 echo "Integration test suites are saved in:"
 echo `pwd`
 
-if [ $WEDEPLOY_CLI_INTEGRATION_TESTS_PATH == "." ]; then
+if [ ! $WEDEPLOY_CLI_INTEGRATION_TESTS_PATH -ef $INTEGRATION_TESTS_DIR ]; then
   echo
   echo "Set the \$WEDEPLOY_CLI_INTEGRATION_TESTS_PATH environment variable to save somewhere else."
 fi
