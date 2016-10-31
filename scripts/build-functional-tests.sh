@@ -20,7 +20,7 @@ for platform in ${PLATFORMS[@]}; do
   fi
 
   echo -ne "${platform}...\t"
-  env GOOS=${platform} go test -c -o ${WEDEPLOY_CLI_FUNCTIONAL_TESTS_PATH}/$out
+  env GOOS=${platform} go test -c -tags=functional -o ${WEDEPLOY_CLI_FUNCTIONAL_TESTS_PATH}/$out
   echo $out
 done
 
@@ -29,7 +29,7 @@ echo
 echo "Functional test suites are saved in:"
 echo `pwd`
 
-if [ ! -z $WEDEPLOY_CLI_FUNCTIONAL_TESTS_PATH ]; then
+if [ $WEDEPLOY_CLI_FUNCTIONAL_TESTS_PATH == "." ]; then
   echo
   echo "Set the \$WEDEPLOY_CLI_FUNCTIONAL_TESTS_PATH environment variable to save somewhere else."
 fi
