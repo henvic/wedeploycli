@@ -1,5 +1,5 @@
-.SILENT: main get-dependencies list-packages build test build-functional-tests release promote check-go check-cli-release-config-path
-.PHONY: get-dependencies list-packages build test build-functional-tests release promote
+.SILENT: main get-dependencies list-packages build test build-integration-tests build-functional-tests release promote check-go check-cli-release-config-path
+.PHONY: get-dependencies list-packages build test build-integration-tests build-functional-tests release promote
 main:
 	echo "WeDeploy CLI build tool commands:"
 	echo "get-dependencies, list-packages, build, test, build-functional-tests, release, promote"
@@ -15,6 +15,8 @@ build:
 	go build
 test:
 	./scripts/release.sh --pre-release
+build-integration-tests:
+	./scripts/build-integration-tests.sh
 build-functional-tests:
 	./scripts/build-functional-tests.sh
 release: check-cli-release-config-path
