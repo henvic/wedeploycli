@@ -41,9 +41,7 @@ var (
 	// ErrExitCodeNotAvailable is used for exit code retrieval failure
 	ErrExitCodeNotAvailable = errors.New("Exit code not available")
 
-	binaryDir string
 	binary    string
-
 	errStream io.Writer = os.Stderr
 )
 
@@ -162,37 +160,9 @@ func (cmd *Command) setEnv() {
 	cmd.Env = append(cmd.Env, os.Environ()...)
 }
 
-func build() {
-	var cmd = exec.Command("go", "build")
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-
-	if err := cmd.Run(); err != nil {
-		panic(err)
-	}
-}
-
 func chdir(dir string) {
 	if ech := os.Chdir(dir); ech != nil {
 		panic(ech)
-	}
-}
-
-func compile() {
-	var err error
-	binaryDir, err = filepath.Abs(filepath.Join(binaryDir, ".."))
-
-	if err != nil {
-		panic(err)
-	}
-
-	chdir(binaryDir)
-	build()
-
-	binary, err = filepath.Abs(filepath.Join(binaryDir, "cli"))
-
-	if err != nil {
-		panic(err)
 	}
 }
 
@@ -204,18 +174,6 @@ func getHomePath(home string) string {
 	}
 
 	return path
-}
-
-func init() {
-	var workingDir, err = os.Getwd()
-
-	if err != nil {
-		panic(err)
-	}
-
-	compile()
-
-	chdir(workingDir)
 }
 
 func removeLoginHomeMock() {
