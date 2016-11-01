@@ -5,14 +5,35 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-config=${1-}
+helpFlag=true
+config=""
 
-if [ -z $config ] || [ $config == "help" ] || [ $config == "--help" ]; then
+function helpmenu() {
   echo "WeDeploy CLI Tool version promoting script:
 
-Use ./promote.sh <equinox config> to promote version"
+Use ./promote.sh --config <file> to promote version"
   exit 1
+}
+
+if [ "$#" -eq 0 ] || [ $1 == "help" ]; then
+  helpmenu
 fi
+
+while [ ! $# -eq 0 ]
+do
+    case "$1" in
+        --help | -h)
+            helpmenu
+            ;;
+        --config)
+            helpFlag=false
+            config=${2-}
+            shift
+            break
+            ;;
+    esac
+    shift
+done
 
 read -p "Version: " NEW_RELEASE_VERSION < /dev/tty;
 NEW_RELEASE_VERSION=`echo $NEW_RELEASE_VERSION | sed 's/^v//'`

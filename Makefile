@@ -20,9 +20,9 @@ build-integration-tests:
 build-functional-tests:
 	./scripts/build-functional-tests.sh
 release: check-cli-release-config-path
-	./scripts/release.sh $$WEDEPLOY_CLI_RELEASE_CONFIG_PATH
+	./scripts/release.sh --config $$WEDEPLOY_CLI_RELEASE_CONFIG_PATH
 promote: check-cli-release-config-path
-	./scripts/promote.sh $$WEDEPLOY_CLI_RELEASE_CONFIG_PATH
+	./scripts/promote.sh --config $$WEDEPLOY_CLI_RELEASE_CONFIG_PATH
 check-go:
 	if ! which go &> /dev/null; \
 	then >&2 echo "Missing dependency: Go is required https://golang.org/"; \

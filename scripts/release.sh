@@ -5,9 +5,14 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-config=${1-}
+cd `dirname $0`/..
 
-if [ -z $config ] || [ $config == "help" ] || [ $config == "--help" ]; then
+skipIntegrationTests=false
+helpFlag=true
+prereleaseFlag=false
+config=""
+
+function helpmenu() {
   echo "WeDeploy CLI Tool publishing script:
 
 1) check if all changes are commited
@@ -17,8 +22,44 @@ if [ -z $config ] || [ $config == "help" ] || [ $config == "--help" ]; then
 
 Check Semantic Versioning rules on semver.org
 
-Use ./release.sh <equinox config> to release
-Use ./release.sh --pre-release to run release tests only"
+Use ./release.sh [flags]
+
+Flags:
+--config: release configuration file (not needed for pre-release tests)
+--pre-release: to run release tests only, without releasing a new version
+--skip-integration-tests: skip integration tests (not recommended)"
+  exit 1
+}
+
+if [ "$#" -eq 0 ] || [ $1 == "help" ]; then
+  helpmenu
+fi
+
+while [ ! $# -eq 0 ]
+do
+    case "$1" in
+        --help | -h)
+            helpmenu
+            ;;
+        --pre-release)
+            helpFlag=false
+            prereleaseFlag=true
+            ;;
+        --skip-integration-tests)
+            skipIntegrationTests=true
+            ;;
+        --config)
+            helpFlag=false
+            config=${2-}
+            shift
+            break
+            ;;
+    esac
+    shift
+done
+
+if [[ $config == "" ]] && [[ $prereleaseFlag == false ]]; then
+  >&2 echo "--pre-release and --config command flags are mutually exclusive."
   exit 1
 fi
 
@@ -48,7 +89,7 @@ function checkWeDeployImageTag() {
   if [ $ec -eq 0 ] ; then
     >&2 echo -e "\x1B[101m\x1B[1mWarning: you MUST NOT use docker image tag \"latest\" for releases.\x1B[0m"
 
-    if [ $config != "--pre-release" ]; then
+    if [ ! $prereleaseFlag ]; then
       read -p "Continue? [no]: " CONT < /dev/tty;
       checkCONT
     fi
@@ -60,7 +101,7 @@ function checkWorkingDir() {
     echo "You have uncommited changes."
     git status --short
 
-    if [ $config != "--pre-release" ]; then
+    if [ ! $prereleaseFlag ]; then
       echo -e "\x1B[101m\x1B[1mBy continuing you might generate a release tag with incorrect content.\x1B[0m"
       read -p "Continue? [no]: " CONT < /dev/tty;
       checkCONT
@@ -99,7 +140,12 @@ function runTests() {
   echo "Examining source code against code defect."
   go vet $(go list ./... | grep -v /vendor/)
   echo "Running tests (may take a while)."
-  go test $(go list ./... | grep -v /vendor/)
+
+  if [ $skipIntegrationTests ] ; then
+    go test $(go list ./... | grep -v /vendor/ | grep -v /integration$)
+  else
+    go test $(go list ./... | grep -v /vendor/)
+  fi
 }
 
 function runTestsOnDrone() {
@@ -178,7 +224,7 @@ function prerelease() {
   testHuman
   checkWeDeployImageTag
 
-  if [ $config != "--pre-release" ]; then
+  if [ ! $prereleaseFlag ]; then
     checkBranch
   fi
 
@@ -214,7 +260,7 @@ function run() {
   CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
   LAST_TAG="$(git describe HEAD --tags --abbrev=0 2> /dev/null)" || true
 
-  if [ $config == "--pre-release" ]; then
+  if [ $prereleaseFlag ]; then
     prerelease
   else
     prerelease
