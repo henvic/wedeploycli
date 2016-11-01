@@ -260,7 +260,7 @@ function run() {
   CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
   LAST_TAG="$(git describe HEAD --tags --abbrev=0 2> /dev/null)" || true
 
-  if [ $prereleaseFlag ]; then
+  if [ $prereleaseFlag == true ]; then
     prerelease
   else
     prerelease
