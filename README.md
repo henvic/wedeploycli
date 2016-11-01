@@ -23,6 +23,7 @@ The following commands are available and requires no arguments:
 * **make get-dependencies**: get versioned Go dependencies
 * **make list-packages**: list all Go packages of the project
 * **make build**: compiles the program
+* **make fast-test**: run all unit tests
 * **make test**: run all unit and integration tests
 * **make build-functional-tests**: generate functional tests suites
 * **make release**: tag, build, and publish new version of the app
