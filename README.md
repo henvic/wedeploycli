@@ -25,6 +25,7 @@ The following commands are available and requires no arguments:
 * **make build**: compiles the program
 * **make fast-test**: run all unit tests
 * **make test**: run all unit and integration tests
+* **make build-integration-tests**: generate integration tests suites
 * **make build-functional-tests**: generate functional tests suites
 * **make release**: tag, build, and publish new version of the app
 * **make promote**: publish version already released to a given distribution channel
@@ -49,6 +50,29 @@ Using go test and go cover are essential to make sure your code is covered with 
 Check [scripts/aliases.sh](https://github.com/wedeploy/cli/tree/master/scripts/aliases.sh) for a list of aliases you might find useful for development / testing.
 
 Always run `make test` before submitting changes.
+
+## Integration testing
+`make test` already runs the integration tests.
+
+You can generate a test suite to run integration tests outside of your development environment (say, on a virtual machine).
+
+Set the `$WEDEPLOY_CLI_INTEGRATION_TESTS_PATH` environment variable to save the functional test suites on a shared network volume you can access from each test machine to speed up development and debugging.
+
+Build and distribute test suites for the supported systems:
+
+```
+$ make build-integration-tests
+Building integration test suites for multiple platforms:
+darwin...	wedeploy-cli-integration-darwin.test
+linux...	wedeploy-cli-integration-linux.test
+windows...	wedeploy-cli-integration-windows.test.exe
+Warning: mocks directory placed on trash and recreated.
+
+Integration test suites and its related mocks are saved in:
+/vm-shared-network-volume/wedeploy-cli-integration-tests
+```
+
+And run it as a regular executable on each target system.
 
 ## Functional testing
 Test if the WeDeploy CLI tool and local infra-structure are running together correctly on different platforms and no breaking change has occurred.
