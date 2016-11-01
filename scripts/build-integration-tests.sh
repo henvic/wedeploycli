@@ -24,7 +24,7 @@ function removeAndCopyMocks() {
 
   if [ $ec -eq 0 ] ; then
     (trash mocks 2>/dev/null &&
-      >&2 echo -e "\x1B[101m\x1B[1mWarning: old mocks directory on target saving location was placed on trash.\x1B[0m") || true
+      >&2 echo -e "\x1B[101m\x1B[1mWarning: mocks directory placed on trash and recreated.\x1B[0m") || true
   else
     read -p "Continue removing mocks to copy them back? [no]: " CONT < /dev/tty;
     checkCONT
