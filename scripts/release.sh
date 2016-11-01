@@ -149,6 +149,15 @@ function runTests() {
 }
 
 function runTestsOnDrone() {
+  (which drone >> /dev/null) && ec=$? || ec=$?
+
+  if [ ! $ec -eq 0 ] ; then
+    >&2 echo "Error trying to run tests on drone."
+    read -p "drone not found on your system: Release anyway? [no]: " CONT < /dev/tty
+    checkCONT
+    return
+  fi
+
   echo "Running tests isolated on drone (docker based CI) locally."
   drone exec && ec=$? || ec=$?
 
