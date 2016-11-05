@@ -3,9 +3,6 @@
     "hooks": {
         "before_build": "echo before",
         "build": "true",
-        "after_build": "echo after",
-        "before_deploy": "",
-        "deploy": "",
-        "after_deploy": ""
+        "after_build": "echo after"
     }
 }

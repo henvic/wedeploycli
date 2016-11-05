@@ -12,12 +12,9 @@ import (
 
 // Hooks (after / deploy / main action)
 type Hooks struct {
-	BeforeBuild  string `json:"before_build"`
-	Build        string `json:"build"`
-	AfterBuild   string `json:"after_build"`
-	BeforeDeploy string `json:"before_deploy"`
-	Deploy       string `json:"deploy"`
-	AfterDeploy  string `json:"after_deploy"`
+	BeforeBuild string `json:"before_build"`
+	Build       string `json:"build"`
+	AfterBuild  string `json:"after_build"`
 }
 
 // HookError struct

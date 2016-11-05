@@ -8,9 +8,6 @@
     "hooks": {
         "before_build": "",
         "build": "ls -la",
-        "after_build": "",
-        "before_deploy": "pwd",
-        "deploy": "ls",
-        "after_deploy": "date"
+        "after_build": ""
     }
 }

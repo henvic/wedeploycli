@@ -3,10 +3,7 @@
     "hooks": {
         "before_build": "",
         "build": "",
-        "after_build": "",
-        "before_deploy": "",
-        "deploy": "",
-        "after_deploy": ""
+        "after_build": ""
     },
     "scale": 1
 }
