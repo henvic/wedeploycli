@@ -15,6 +15,9 @@ type Hooks struct {
 	BeforeBuild string `json:"before_build"`
 	Build       string `json:"build"`
 	AfterBuild  string `json:"after_build"`
+	BeforeStart string `json:"before_start"`
+	Start       string `json:"start"`
+	AfterStart  string `json:"after_start"`
 }
 
 // HookError struct
@@ -29,6 +32,9 @@ func (he HookError) Error() string {
 
 // Build is 'build' hook
 const Build = "build"
+
+// Start is 'start' hook
+const Start = "start"
 
 var (
 	// ErrMissingHook is used when the hook is missing
@@ -55,6 +61,8 @@ func (h *Hooks) Run(hookType string, wdir string, notes ...string) error {
 	switch hookType {
 	case "build":
 		err = h.runBuild(notes...)
+	case "start":
+		err = h.runStart(notes...)
 	default:
 		err = ErrMissingHook
 	}
@@ -78,6 +86,18 @@ func (h *Hooks) runBuild(notes ...string) error {
 		step{"before_build", h.BeforeBuild},
 		step{"build", h.Build},
 		step{"after_build", h.AfterBuild},
+	}, notes)
+}
+
+func (h *Hooks) runStart(notes ...string) error {
+	if h.Start == "" && (h.BeforeStart != "" || h.AfterStart != "") {
+		fmt.Fprintf(errStream, "Error: no start hook main action\n")
+	}
+
+	return runHook([]step{
+		step{"before_start", h.BeforeStart},
+		step{"start", h.Start},
+		step{"after_start", h.AfterStart},
 	}, notes)
 }
 

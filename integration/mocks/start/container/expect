@@ -1,0 +1,7 @@
+> [container] before_start : echo before
+before
+> [container] start : echo during
+during
+> [container] after_start : echo after
+after
+

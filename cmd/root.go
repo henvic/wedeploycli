@@ -15,6 +15,7 @@ import (
 	"github.com/wedeploy/cli/cmd/remote"
 	"github.com/wedeploy/cli/cmd/restart"
 	"github.com/wedeploy/cli/cmd/run"
+	"github.com/wedeploy/cli/cmd/start"
 	"github.com/wedeploy/cli/cmd/stop"
 	"github.com/wedeploy/cli/cmd/unlink"
 	"github.com/wedeploy/cli/cmd/update"
@@ -63,6 +64,7 @@ var commands = []*cobra.Command{
 	cmdrestart.RestartCmd,
 	cmdbuild.BuildCmd,
 	cmdrun.RunCmd,
+	cmdstart.StartCmd,
 	cmdstop.StopCmd,
 	cmdlink.LinkCmd,
 	cmdunlink.UnlinkCmd,

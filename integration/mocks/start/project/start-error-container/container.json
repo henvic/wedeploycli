@@ -1,0 +1,8 @@
+{
+    "id": "start-error-container",
+    "hooks": {
+        "before_start": "echo before",
+        "start": "false",
+        "after_start": "echo after"
+    }
+}

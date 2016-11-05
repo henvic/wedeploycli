@@ -60,6 +60,22 @@ after build
 		WantError: nil,
 	},
 	HooksProvider{
+		Type: "start",
+		Hook: &Hooks{
+			BeforeStart: "echo before start",
+			Start:       "echo during start",
+			AfterStart:  "echo after start",
+		},
+		WantOutput: `> before_start : echo before start
+before start
+> start : echo during start
+during start
+> after_start : echo after start
+after start
+`,
+		WantError: nil,
+	},
+	HooksProvider{
 		Type: Build,
 		Hook: &Hooks{
 			BeforeBuild: "echo a",
@@ -67,6 +83,16 @@ after build
 		},
 		WantOutput: "> before_build : echo a\na\n> after_build : echo b\nb\n",
 		WantErr:    "Error: no build hook main action\n",
+		WantError:  nil,
+	},
+	HooksProvider{
+		Type: Start,
+		Hook: &Hooks{
+			BeforeStart: "echo a",
+			AfterStart:  "echo b",
+		},
+		WantOutput: "> before_start : echo a\na\n> after_start : echo b\nb\n",
+		WantErr:    "Error: no start hook main action\n",
 		WantError:  nil,
 	},
 	HooksProvider{
