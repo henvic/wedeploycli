@@ -1,0 +1,1 @@
+Error: Incompatible use: --container requires --project or local project.json context

@@ -17,12 +17,12 @@ import (
 
 // LinkCmd links the given project or container locally
 var LinkCmd = &cobra.Command{
-	Use:     "link",
+	Use:     "link <host> or --project <project>",
 	Short:   "Links the given project or container locally",
 	PreRunE: preRun,
 	RunE:    linkRun,
 	Example: `we link
-we link <project>`,
+	we link data`,
 }
 
 var quiet bool

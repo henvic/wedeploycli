@@ -40,7 +40,7 @@ var LogCmd = &cobra.Command{
 	PreRunE: preRun,
 	RunE:    logRun,
 	Example: `we log --project chat --container data
-we log chat
+we log data
 we log data.chat
 we log data.chat.wedeploy.me
 we log data.chat.wedeploy.io --instance abc`,

@@ -19,7 +19,7 @@ var RestartCmd = &cobra.Command{
 	PreRunE: preRun,
 	RunE:    restartRun,
 	Example: `we restart --project chat --container data
-we restart chat
+we restart data
 we restart data.chat
 we restart data.chat --remote cloud
 we restart data.chat.wedeploy.me`,

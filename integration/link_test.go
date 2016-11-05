@@ -68,7 +68,7 @@ func TestLinkToProject(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"link", "bar", "--no-color"},
+		Args: []string{"link", "--project", "bar", "--no-color"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",

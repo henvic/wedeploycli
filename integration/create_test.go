@@ -204,6 +204,7 @@ func TestCreateProjectWithCustomDomain(t *testing.T) {
 
 	var cmd = &Command{
 		Args: []string{"create",
+			"--project",
 			"example",
 			"--project-custom-domain",
 			"example.com",

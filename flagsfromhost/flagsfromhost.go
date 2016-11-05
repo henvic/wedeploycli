@@ -109,7 +109,7 @@ func Parse(host, project, container, remote string) (*FlagsFromHost, error) {
 		return nil, err
 	}
 
-	if container != "" && project == "" {
+	if flagsFromHost.Container() != "" && flagsFromHost.Project() == "" {
 		err = ErrorContainerWithNoProject{}
 	}
 
@@ -164,38 +164,38 @@ func parseWithHost(host, remoteFromFlag string) (*FlagsFromHost, error) {
 		flagsFromHost.remote = remoteFromFlag
 	}
 
-	return flagsFromHost, nil
+	return flagsFromHost, err
 }
 
 func parseHost(host string) (*FlagsFromHost, error) {
-	var parseWithoutContainer = strings.SplitN(host, ".", 2)
-	var parseWithContainer = strings.SplitN(host, ".", 3)
+	var parseWithoutProject = strings.SplitN(host, ".", 2)
+	var parseWithProject = strings.SplitN(host, ".", 3)
 
-	switch len(parseWithContainer) {
+	switch len(parseWithProject) {
 	case 1:
 		return &FlagsFromHost{
-			project: parseWithContainer[0],
+			container: parseWithProject[0],
 		}, nil
 	case 2:
 		return &FlagsFromHost{
-			project:   parseWithContainer[1],
-			container: parseWithContainer[0],
+			project:   parseWithProject[1],
+			container: parseWithProject[0],
 		}, nil
 	}
 
 	// a host "a.b.c.d" might translate into either
 	// project: "a", container: "" (empty), remote address: "b.c.d"
 	var (
-		project     = parseWithContainer[0]
+		project     = parseWithProject[0]
 		container   = ""
-		remote, err = ParseRemoteAddress(parseWithoutContainer[1])
+		remote, err = ParseRemoteAddress(parseWithoutProject[1])
 	)
 
 	// or project: "a", container: "b", remote address: "c.d"
 	if err != nil {
-		project = parseWithContainer[1]
-		container = parseWithContainer[0]
-		remote, err = ParseRemoteAddress(parseWithContainer[2])
+		project = parseWithProject[1]
+		container = parseWithProject[0]
+		remote, err = ParseRemoteAddress(parseWithProject[2])
 	}
 
 	// notice that the logic above implies we MUST NOT

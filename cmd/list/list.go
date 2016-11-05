@@ -11,7 +11,7 @@ import (
 var ListCmd = &cobra.Command{
 	Use: "list <host> or --project <project> --container <container>",
 	Example: `we list --project chat --container data
-we list chat
+we list data
 we list data.chat
 we list data.chat.wedeploy.me
 we list data.chat.wedeploy.io`,

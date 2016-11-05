@@ -28,7 +28,7 @@ func TestRestartProjectQuiet(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"restart", "foo", "--quiet"},
+		Args: []string{"restart", "--project", "foo", "--quiet"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 

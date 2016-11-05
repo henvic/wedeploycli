@@ -17,13 +17,13 @@ import (
 
 // UnlinkCmd unlinks the given project or container locally
 var UnlinkCmd = &cobra.Command{
-	Use:     "unlink",
+	Use:     "unlink <host> or --project <project> --container <container>",
 	Short:   "Unlinks the given project or container locally",
 	PreRunE: preRun,
 	RunE:    unlinkRun,
 	Example: `we unlink
-we unlink <project>
-we unlink <project> <container>`,
+we unlink data
+we unlink data.chat`,
 }
 
 var quiet bool
