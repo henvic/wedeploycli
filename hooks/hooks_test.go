@@ -17,6 +17,7 @@ import (
 
 type HooksProvider struct {
 	Type        string
+	Notes       []string
 	Hook        *Hooks
 	WantOutput  string
 	WantErr     string

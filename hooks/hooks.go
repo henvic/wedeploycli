@@ -74,22 +74,21 @@ func (h *Hooks) runBuild(notes ...string) error {
 		fmt.Fprintf(errStream, "Error: no build hook main action\n")
 	}
 
-	var steps = []string{
-		"before_build",
-		"build",
-		"after_build",
-	}
+	return runHook([]step{
+		step{"before_build", h.BeforeBuild},
+		step{"build", h.Build},
+		step{"after_build", h.AfterBuild},
+	}, notes)
+}
 
-	var stepAction = map[string]string{
-		"before_build": h.BeforeBuild,
-		"build":        h.Build,
-		"after_build":  h.AfterBuild,
-	}
+type step struct {
+	name string
+	cmd  string
+}
 
-	for _, eachStep := range steps {
-		var cmd = stepAction[eachStep]
-
-		if cmd == "" {
+func runHook(steps []step, notes []string) (err error) {
+	for _, step := range steps {
+		if step.cmd == "" {
 			continue
 		}
 
@@ -99,14 +98,12 @@ func (h *Hooks) runBuild(notes ...string) error {
 			feedback += fmt.Sprintf("%v ", notes)
 		}
 
-		feedback += eachStep + " : " + cmd
+		feedback += step.name + " : " + step.cmd
 		fmt.Println(feedback)
 
-		var err = Run(cmd)
-
-		if err != nil {
+		if err = Run(step.cmd); err != nil {
 			return HookError{
-				Command: cmd,
+				Command: step.cmd,
 				Err:     err,
 			}
 		}
