@@ -43,6 +43,23 @@ after build
 		WantError: nil,
 	},
 	HooksProvider{
+		Type:  "build",
+		Notes: []string{"note", "foo"},
+		Hook: &Hooks{
+			BeforeBuild: "echo before build",
+			Build:       "echo during build",
+			AfterBuild:  "echo after build",
+		},
+		WantOutput: `> [note foo] before_build : echo before build
+before build
+> [note foo] build : echo during build
+during build
+> [note foo] after_build : echo after build
+after build
+`,
+		WantError: nil,
+	},
+	HooksProvider{
 		Type: Build,
 		Hook: &Hooks{
 			BeforeBuild: "echo a",
@@ -109,7 +126,7 @@ func TestRunHooks(t *testing.T) {
 		bufErrStream.Reset()
 		bufOutStream.Reset()
 
-		err := c.Hook.Run(c.Type, "")
+		err := c.Hook.Run(c.Type, "", c.Notes...)
 
 		// get the error message + err type or the actual error
 		switch c.WantErrType {
