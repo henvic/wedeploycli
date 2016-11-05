@@ -33,8 +33,14 @@ var HooksCases = []HooksProvider{
 			Build:       "echo during build",
 			AfterBuild:  "echo after build",
 		},
-		WantOutput: "before build\nduring build\nafter build\n",
-		WantError:  nil,
+		WantOutput: `> before_build : echo before build
+before build
+> build : echo during build
+during build
+> after_build : echo after build
+after build
+`,
+		WantError: nil,
 	},
 	HooksProvider{
 		Type: Build,
@@ -42,7 +48,7 @@ var HooksCases = []HooksProvider{
 			BeforeBuild: "echo a",
 			AfterBuild:  "echo b",
 		},
-		WantOutput: "a\nb\n",
+		WantOutput: "> before_build : echo a\na\n> after_build : echo b\nb\n",
 		WantErr:    "Error: no build hook main action\n",
 		WantError:  nil,
 	},
@@ -55,6 +61,7 @@ var HooksCases = []HooksProvider{
 		Hook: &Hooks{
 			Build: "test",
 		},
+		WantOutput: "> build : test\n",
 		WantError: HookError{
 			Command: "test",
 			Err:     errors.New("exit status 1"),

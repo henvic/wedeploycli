@@ -99,7 +99,7 @@ func runHook(steps []step, notes []string) (err error) {
 		}
 
 		feedback += step.name + " : " + step.cmd
-		fmt.Println(feedback)
+		fmt.Fprintf(outStream, "%v\n", feedback)
 
 		if err = Run(step.cmd); err != nil {
 			return HookError{
