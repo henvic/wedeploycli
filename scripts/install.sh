@@ -15,7 +15,10 @@ Use install.sh to install the stable version on your system."
   exit 1
 fi
 
-UNAME=$(uname)
+if [[ $UNAME == *"windows"* ]] || [[ $UNAME == *"mingw"* ]] ; then
+  $UNAME="windows"
+fi
+
 ARCH=$(uname -m | sed 's/x86_64/amd64/' | sed 's/i686/386/')
 UNAME_ARCH=$(echo ${UNAME}_${ARCH} | tr '[:upper:]' '[:lower:]' | tr '_' '-')
 FILE=cli-$RELEASE_CHANNEL-$UNAME_ARCH
