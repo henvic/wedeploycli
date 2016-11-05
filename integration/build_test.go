@@ -34,7 +34,7 @@ func TestBuild(t *testing.T) {
 	Teardown()
 }
 
-func TestBuildFromProjectDirectory(t *testing.T) {
+func TestBuildFromContainerDirectory(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("Not testing hooks.Build() on Windows")
 	}
