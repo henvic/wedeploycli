@@ -15,8 +15,10 @@ Use install.sh to install the stable version on your system."
   exit 1
 fi
 
+UNAME=$(uname | tr '[:upper:]' '[:lower:]')
+
 if [[ $UNAME == *"windows"* ]] || [[ $UNAME == *"mingw"* ]] ; then
-  $UNAME="windows"
+  UNAME="windows"
 fi
 
 ARCH=$(uname -m | sed 's/x86_64/amd64/' | sed 's/i686/386/')
@@ -24,7 +26,19 @@ UNAME_ARCH=$(echo ${UNAME}_${ARCH} | tr '[:upper:]' '[:lower:]' | tr '_' '-')
 FILE=cli-$RELEASE_CHANNEL-$UNAME_ARCH
 PACKAGE_FORMAT=""
 TEMPDEST=`mktemp`
-DESTDIR=${2:-"/usr/local/bin"}
+
+if [ ! -d "/usr/local/bin" ] && [[ $UNAME == "windows" ]] ; then
+  if [[ $HOMEDRIVE$HOMEPATH != "" ]] ; then
+    DESTDIR="$HOMEDRIVE$HOMEPATH"
+  else
+    DESTDIR="$USERPROFILE"
+  fi
+  DESTDIR="$DESTDIR\AppData\Local\Programs\we\bin"
+else
+  DESTDIR="/usr/local/bin"
+fi
+
+DESTDIR=${2:-$DESTDIR}
 
 function setupAlternateDir() {
   if [ ! -t 1 ] ; then
@@ -102,7 +116,7 @@ function run() {
 }
 
 function info() {
-  wepath=`which we`
+  wepath=`which we 2>/dev/null`
   if [[ ! $wepath -ef "$DESTDIR/we" ]]; then
     echo "Installed, but not on your \$PATH"
     echo "Run with $DESTDIR/we"
