@@ -118,7 +118,7 @@ func linkMachineSetup(projectID string, csDirs []string) error {
 
 	if quiet {
 		m.Run()
-		return nil
+		return getLinkMachineErrors(m)
 	}
 
 	var queue sync.WaitGroup
@@ -135,7 +135,10 @@ func linkMachineSetup(projectID string, csDirs []string) error {
 	}()
 
 	queue.Wait()
+	return getLinkMachineErrors(m)
+}
 
+func getLinkMachineErrors(m *link.Machine) error {
 	if len(m.Errors.List) != 0 {
 		return m.Errors
 	}
