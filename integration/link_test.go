@@ -127,6 +127,49 @@ func TestLinkToProjectServerFailure(t *testing.T) {
 	}
 }
 
+func TestLinkToProjectServerFailureQuiet(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	servertest.IntegrationMux.HandleFunc("/projects",
+		func(w http.ResponseWriter, r *http.Request) {
+		})
+
+	servertest.IntegrationMux.HandleFunc("/deploy",
+		func(w http.ResponseWriter, r *http.Request) {
+			// this is a hack to make the link test more robust
+			// a nicer approach would be to clear the strings and match, though
+			time.Sleep(5 * time.Millisecond)
+			w.WriteHeader(500)
+		})
+
+	var cmd = &Command{
+		Args: []string{"link", "--project", "bar", "--no-color", "--quiet"},
+		Env: []string{
+			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir: "mocks/home/bucket/project/container",
+	}
+
+	cmd.Run()
+
+	if cmd.ExitCode != 1 {
+		t.Errorf("Unexpected exit code: %v", cmd.ExitCode)
+	}
+
+	var wantErrsContains = []string{
+		`Error: Linking errors`,
+		`mocks/home/bucket/project/container: WeDeploy API error: 500 Internal Server Error`,
+	}
+
+	var got = cmd.Stderr.String()
+
+	for _, we := range wantErrsContains {
+		if !strings.Contains(got, we) {
+			t.Errorf("Expected stderr to contain %v, but not found it", we)
+		}
+	}
+}
+
 func TestLinkRemoteError(t *testing.T) {
 	defer Teardown()
 	Setup()
