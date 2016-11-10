@@ -3,6 +3,7 @@ package cmdinspect
 import (
 	"errors"
 	"fmt"
+	"os"
 	"reflect"
 
 	"github.com/hashicorp/errwrap"
@@ -11,6 +12,7 @@ import (
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/templates"
+	"github.com/wedeploy/cli/usercontext"
 )
 
 // InspectCmd returns information about current environment
@@ -91,17 +93,36 @@ func inspectProject() error {
 	return nil
 }
 
+func getContainerPath() (string, error) {
+	if config.Context.ContainerRoot != "" {
+		return config.Context.ContainerRoot, nil
+	}
+
+	var container, err = usercontext.GetContainerRootDirectory(".")
+
+	switch {
+	case err == nil:
+		return container, nil
+	case os.IsNotExist(err):
+		return "", errors.New("Inspection failure: can't find container.")
+	default:
+		return "", err
+	}
+}
+
 func inspectContainer() error {
 	if showTypeFields {
 		printTypeFieldNames(containers.Container{})
 		return nil
 	}
 
-	if config.Context.ContainerRoot == "" {
-		return errors.New("Inspection failure: not inside container context.")
+	var containerPath, cerr = getContainerPath()
+
+	if cerr != nil {
+		return cerr
 	}
 
-	var container, err = containers.Read(config.Context.ContainerRoot)
+	var container, err = containers.Read(containerPath)
 
 	if err != nil {
 		return errwrap.Wrapf("Inspection failure: {{err}}", err)
