@@ -53,7 +53,7 @@ func Execute(format string, data interface{}) (string, error) {
 	tmpl, ok := cachedTmpl[format]
 
 	if !ok {
-		tmpl, err = Parse(format)
+		tmpl, err = parse(format)
 
 		if err != nil {
 			return "", errwrap.Wrapf("Template parsing error: {{err}}", err)
@@ -76,13 +76,13 @@ func execute(format string, data interface{}, tmpl *template.Template) (string, 
 
 // Parse creates a new annonymous template with the basic functions
 // and parses the given format.
-func Parse(format string) (*template.Template, error) {
-	return NewParse("", format)
+func parse(format string) (*template.Template, error) {
+	return newParse("", format)
 }
 
 // NewParse creates a new tagged template with the basic functions
 // and parses the given format.
-func NewParse(tag, format string) (*template.Template, error) {
+func newParse(tag, format string) (*template.Template, error) {
 	return template.New(tag).Funcs(basicFunctions).Parse(format)
 }
 

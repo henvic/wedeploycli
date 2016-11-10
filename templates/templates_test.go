@@ -12,7 +12,7 @@ import (
 )
 
 func TestParseStringFunctions(t *testing.T) {
-	tm, err := Parse(`{{join (split . ":") "/"}}`)
+	tm, err := parse(`{{join (split . ":") "/"}}`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,7 +28,7 @@ func TestParseStringFunctions(t *testing.T) {
 }
 
 func TestNewParse(t *testing.T) {
-	tm, err := NewParse("foo", "this is a {{ . }}")
+	tm, err := newParse("foo", "this is a {{ . }}")
 	if err != nil {
 		t.Fatal(err)
 	}
