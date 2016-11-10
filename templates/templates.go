@@ -9,10 +9,9 @@ package templates
 import (
 	"bytes"
 	"encoding/json"
-	"html"
-	"html/template"
 	"io"
 	"strings"
+	"text/template"
 
 	"github.com/hashicorp/errwrap"
 )
@@ -72,7 +71,7 @@ func execute(format string, data interface{}, tmpl *template.Template) (string, 
 		return "", errwrap.Wrapf("Can't execute template: {{err}}", err)
 	}
 
-	return html.UnescapeString(buf.String()), nil
+	return buf.String(), nil
 }
 
 // Parse creates a new annonymous template with the basic functions
