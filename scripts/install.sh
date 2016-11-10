@@ -17,7 +17,7 @@ fi
 
 UNAME=$(uname | tr '[:upper:]' '[:lower:]')
 
-if [[ $UNAME == *"windows"* ]] || [[ $UNAME == *"mingw"* ]] ; then
+if [[ $UNAME == *"windows"* ]] || [[ $UNAME == *"mingw"* ]] || [ $UNAME == *"cygwin"* ] ; then
   UNAME="windows"
 fi
 
