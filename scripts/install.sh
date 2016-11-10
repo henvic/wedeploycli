@@ -27,7 +27,7 @@ FILE=cli-$RELEASE_CHANNEL-$UNAME_ARCH
 PACKAGE_FORMAT=""
 
 # Hacking mktemp's incompatible parameters on BSD and Linux
-TEMPDEST=`mktemp -d 2>/dev/null || mktemp -d -t 'wedeploy-cli'`
+TEMPDEST=`mktemp 2>/dev/null || mktemp -t 'wedeploy-cli'`
 
 if [ ! -d "/usr/local/bin" ] && [[ $UNAME == "windows" ]] ; then
   if [[ $HOMEDRIVE$HOMEPATH != "" ]] ; then
