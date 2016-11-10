@@ -59,7 +59,7 @@ func inspectRun(cmd *cobra.Command, args []string) error {
 
 func printTypeFieldNames(t interface{}) {
 	val := reflect.ValueOf(t)
-	for i := 0; i < val.NumField(); i += 1 {
+	for i := 0; i < val.NumField(); i++ {
 		field := val.Type().Field(i)
 		fmt.Println(field.Name + " " + field.Type.String())
 	}
