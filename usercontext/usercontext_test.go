@@ -76,6 +76,42 @@ func TestGetTargetFileDirectoryFailure(t *testing.T) {
 	setSysRoot("/")
 }
 
+func TestGetProjectRootDirectory(t *testing.T) {
+	chdir(filepath.Join(workingDir, "mocks/project/container"))
+
+	var dir, err = GetProjectRootDirectory(".")
+
+	if err != nil {
+		t.Errorf("Wanted err to be nil, got %v instead", err)
+	}
+
+	var wantDir = filepath.Join(workingDir, "mocks/project")
+
+	if dir != wantDir {
+		t.Errorf("Wanted dir to be %v, got %v instead", wantDir, dir)
+	}
+
+	chdir(workingDir)
+}
+
+func TestGetContainerRootDirectory(t *testing.T) {
+	chdir(filepath.Join(workingDir, "mocks/project/container"))
+
+	var dir, err = GetContainerRootDirectory(".")
+
+	if err != nil {
+		t.Errorf("Wanted err to be nil, got %v instead", err)
+	}
+
+	var wantDir = filepath.Join(workingDir, "mocks/project/container")
+
+	if dir != wantDir {
+		t.Errorf("Wanted dir to be %v, got %v instead", wantDir, dir)
+	}
+
+	chdir(workingDir)
+}
+
 func TestGlobalContext(t *testing.T) {
 	setSysRoot("./mocks")
 	chdir(filepath.Join(workingDir, "mocks/list/basic"))

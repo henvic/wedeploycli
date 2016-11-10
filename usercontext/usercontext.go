@@ -34,7 +34,7 @@ func init() {
 func Get() (*Context, error) {
 	cx := &Context{}
 
-	var project, errProject = getRootDirectory(sysRoot, "project.json")
+	var project, errProject = GetProjectRootDirectory(sysRoot)
 
 	cx.ProjectRoot = project
 
@@ -43,7 +43,7 @@ func Get() (*Context, error) {
 		return cx, nil
 	}
 
-	var container, errContainer = getRootDirectory(project, "container.json")
+	var container, errContainer = GetContainerRootDirectory(project)
 
 	if errContainer != nil {
 		cx.Scope = "project"
@@ -54,6 +54,16 @@ func Get() (*Context, error) {
 	cx.ContainerRoot = container
 
 	return cx, nil
+}
+
+// GetProjectRootDirectory returns project dir for the current scope
+func GetProjectRootDirectory(delimiter string) (string, error) {
+	return getRootDirectory(delimiter, "project.json")
+}
+
+// GetContainerRootDirectory returns container dir for the current scope
+func GetContainerRootDirectory(delimiter string) (string, error) {
+	return getRootDirectory(delimiter, "container.json")
 }
 
 func checkContainerNotInProjectRoot(projectRoot string) error {
