@@ -29,7 +29,12 @@ var basicFunctions = template.FuncMap{
 	"pad":   padWithSpace,
 }
 
-var cachedTmpl = map[string]*template.Template{}
+type compiledTemplate struct {
+	template *template.Template
+	err      error
+}
+
+var cachedTmpl = map[string]compiledTemplate{}
 
 // ExecuteOrList executes the Execute function if format is not empty,
 // otherwise, it returns all as a JSON
@@ -49,23 +54,27 @@ func ExecuteOrList(format string, data interface{}) (string, error) {
 
 // Execute template with format and data values
 func Execute(format string, data interface{}) (string, error) {
-	var err error
-	tmpl, ok := cachedTmpl[format]
-
-	if !ok {
-		tmpl, err = parse(format)
-
-		if err != nil {
-			return "", errwrap.Wrapf("Template parsing error: {{err}}", err)
-		}
+	if _, ok := cachedTmpl[format]; !ok {
+		tmpl, tmplErr := parse(format)
+		cachedTmpl[format] = compiledTemplate{tmpl, tmplErr}
 	}
 
-	return execute(format, data, tmpl)
+	return execute(format, data)
 }
 
-func execute(format string, data interface{}, tmpl *template.Template) (string, error) {
-	var buf bytes.Buffer
-	var wr io.Writer = &buf
+func execute(format string, data interface{}) (string, error) {
+	var (
+		buf bytes.Buffer
+		wr  io.Writer = &buf
+
+		cached = cachedTmpl[format]
+		tmpl   = cached.template
+		err    = cached.err
+	)
+
+	if err != nil {
+		return "", errwrap.Wrapf("Template parsing error: {{err}}", err)
+	}
 
 	if err := tmpl.Execute(wr, data); err != nil {
 		return "", errwrap.Wrapf("Can't execute template: {{err}}", err)

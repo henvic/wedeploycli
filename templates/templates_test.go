@@ -7,38 +7,118 @@ package templates
 // https://github.com/docker/docker/blob/master/LICENSE
 
 import (
-	"bytes"
 	"testing"
+
+	"github.com/wedeploy/api-go/jsonlib"
 )
 
-func TestParseStringFunctions(t *testing.T) {
-	tm, err := parse(`{{join (split . ":") "/"}}`)
+type mock struct {
+	ID         int
+	Name       string
+	unexported string
+}
+
+func TestExecuteOrListExecute(t *testing.T) {
+	var want = `"Hello"`
+	var got, err = ExecuteOrList(`{{json .Name}}`, mock{104, "Hello", "bar"})
+
 	if err != nil {
-		t.Fatal(err)
+		t.Errorf("Expected no error, got %v instead", err)
 	}
 
-	var b bytes.Buffer
-	if err := tm.Execute(&b, "text:with:colon"); err != nil {
-		t.Fatal(err)
-	}
-	want := "text/with/colon"
-	if b.String() != want {
-		t.Fatalf("expected %s, got %s", want, b.String())
+	if want != got {
+		t.Errorf("Wanted %v, got %v instead", want, got)
 	}
 }
 
-func TestNewParse(t *testing.T) {
-	tm, err := newParse("foo", "this is a {{ . }}")
+func TestExecuteOrListList(t *testing.T) {
+	var want = mock{104, "Hello", "not exported; doesn't matter"}
+
+	var got, err = ExecuteOrList("", mock{104, "Hello", "bar"})
+
 	if err != nil {
-		t.Fatal(err)
+		t.Errorf("Expected no error, got %v instead", err)
 	}
 
-	var b bytes.Buffer
-	if err := tm.Execute(&b, "string"); err != nil {
-		t.Fatal(err)
+	jsonlib.AssertJSONMarshal(t, got, want)
+}
+
+func TestExecuteOrListFailure(t *testing.T) {
+	var _, err = ExecuteOrList("", map[interface{}]string{})
+
+	var wantErr = `json: unsupported type: map[interface {}]string`
+
+	if err == nil || err.Error() != wantErr {
+		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
 	}
-	want := "this is a string"
-	if b.String() != want {
-		t.Fatalf("expected %s, got %s", want, b.String())
+}
+
+func TestExecuteStringFunction(t *testing.T) {
+	var want = "text/with/colon"
+	var got, err = Execute(`{{join (split . ":") "/"}}`, "text:with:colon")
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	if want != got {
+		t.Errorf("Wanted %v, got %v instead", want, got)
+	}
+}
+
+func TestExecutePadWithSpaceFunction(t *testing.T) {
+	var want = "   Test       "
+	var got, err = Execute(`{{- pad . 3 7}}`, "Test")
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	if want != got {
+		t.Errorf("Wanted %v, got %v instead", want, got)
+	}
+}
+
+func TestExecutePadWithSpaceFunctionEmpty(t *testing.T) {
+	var want = ""
+	var got, err = Execute(`{{- pad . 3 7}}`, "")
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	if want != got {
+		t.Errorf("Wanted %v, got %v instead", want, got)
+	}
+}
+
+func TestExecuteStringFunctionJSON(t *testing.T) {
+	var want = `"Hello"`
+	var got, err = Execute(`{{json .Name}}`, mock{104, "Hello", "bar"})
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	if want != got {
+		t.Errorf("Wanted %v, got %v instead", want, got)
+	}
+}
+
+func TestExecuteCompileError(t *testing.T) {
+	var wantErr = `Template parsing error: template: :1: unexpected "\\" in command`
+	var _, err = Execute("this is a {{ \\ }}", "string")
+
+	if err == nil || err.Error() != wantErr {
+		t.Errorf("Wanted err to be %v, got %v instead", wantErr, err)
+	}
+}
+
+func TestExecuteRunError(t *testing.T) {
+	var wantErr = `Can't execute template: template: :1:13: executing "" at <.>: can't give argument to non-function .`
+	var _, err = Execute("this is a {{ . . }}", 1)
+
+	if err == nil || err.Error() != wantErr {
+		t.Errorf("Wanted err to be %v, got %v instead", wantErr, err)
 	}
 }
