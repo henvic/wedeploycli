@@ -4,77 +4,11 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/wedeploy/cli/findresource"
 )
 
 var workingDir, _ = os.Getwd()
-
-type rootDirectoryProvider struct {
-	file, dir, want string
-}
-
-type rootDirectoryFailureProvider struct {
-	file, dir string
-	want      error
-}
-
-var rootDirectoryCases = []rootDirectoryProvider{
-	{"file", "mocks/list/basic", "mocks/list/basic"},
-	{"file", "mocks/list/basic/level/", "mocks/list/basic"},
-	{"file", "mocks/list/basic/level/2", "mocks/list/basic"},
-	{"file", "mocks/list/basic/level/2/4", "mocks/list/basic"},
-	{"file", "mocks/list/basic/level/3", "mocks/list/basic"},
-}
-
-var rootDirectoryFailureCases = []rootDirectoryFailureProvider{
-	{"file", "mocks/list", os.ErrNotExist},
-	{"file", "mocks/list/nothing", os.ErrNotExist},
-	{"file", "mocks/list/nothing/here", os.ErrNotExist},
-}
-
-func TestGetTargetFileDirectory(t *testing.T) {
-	setSysRoot("./mocks")
-
-	for _, each := range rootDirectoryCases {
-		if err := os.Chdir(filepath.Join(workingDir, each.dir)); err != nil {
-			t.Error(err)
-		}
-
-		var directory, err = getRootDirectory(sysRoot, each.file)
-
-		if err != nil {
-			t.Error(err)
-		}
-
-		var want = filepath.Join(workingDir, each.want)
-		want, _ = filepath.Abs(want)
-
-		if directory != want {
-			t.Errorf("Wanted to find config at %s, got %s instead", want, directory)
-		}
-	}
-
-	chdir(workingDir)
-	setSysRoot("/")
-}
-
-func TestGetTargetFileDirectoryFailure(t *testing.T) {
-	setSysRoot("./mocks")
-
-	for _, each := range rootDirectoryFailureCases {
-		if err := os.Chdir(filepath.Join(workingDir, each.dir)); err != nil {
-			t.Error(err)
-		}
-
-		var _, err = getRootDirectory(sysRoot, each.file)
-
-		if each.want != err {
-			t.Errorf("Expected error %s, got %s instead", each.want, err)
-		}
-	}
-
-	chdir(workingDir)
-	setSysRoot("/")
-}
 
 func TestGetProjectRootDirectory(t *testing.T) {
 	chdir(filepath.Join(workingDir, "mocks/project/container"))
@@ -111,10 +45,10 @@ func TestGetContainerRootDirectory(t *testing.T) {
 }
 
 func TestGlobalContext(t *testing.T) {
-	setSysRoot("./mocks")
-	chdir(filepath.Join(workingDir, "mocks/list/basic"))
+	findresource.SetSysRoot(abs("./mocks"))
+	chdir(filepath.Join(workingDir, "mocks/"))
 	defer chdir(workingDir)
-	defer setSysRoot("/")
+	defer findresource.SetSysRoot(abs("/"))
 
 	var usercontext, configurations = Get()
 	var wantContext = "global"
@@ -129,10 +63,10 @@ func TestGlobalContext(t *testing.T) {
 }
 
 func TestProjectAndContainerInvalidContext(t *testing.T) {
-	setSysRoot("./mocks")
+	findresource.SetSysRoot(abs("./mocks"))
 	chdir(filepath.Join(workingDir, "mocks/schizophrenic"))
 	defer chdir(workingDir)
-	defer setSysRoot("/")
+	defer findresource.SetSysRoot(abs("/"))
 
 	var _, configurations = Get()
 
@@ -143,9 +77,9 @@ func TestProjectAndContainerInvalidContext(t *testing.T) {
 
 func TestProjectContext(t *testing.T) {
 	var projectDir = filepath.Join(workingDir, "mocks/project")
-	setSysRoot("./mocks")
+	findresource.SetSysRoot(abs("./mocks"))
 	chdir(projectDir)
-	defer setSysRoot("./mocks")
+	defer findresource.SetSysRoot(abs("./mocks"))
 	defer chdir(workingDir)
 
 	var usercontext, err = Get()
@@ -170,9 +104,10 @@ func TestProjectContext(t *testing.T) {
 func TestContainerContext(t *testing.T) {
 	var projectDir = filepath.Join(workingDir, "mocks/project")
 	var containerDir = filepath.Join(projectDir, "container")
-	setSysRoot("./mocks")
+
+	findresource.SetSysRoot(abs("./mocks"))
 	chdir(containerDir)
-	defer setSysRoot("./mocks")
+	defer findresource.SetSysRoot(abs("./mocks"))
 	defer chdir(workingDir)
 
 	var usercontext, err = Get()
@@ -195,9 +130,9 @@ func TestContainerContext(t *testing.T) {
 }
 
 func TestOrphanContainerContext(t *testing.T) {
-	setSysRoot("./mocks")
+	findresource.SetSysRoot(abs("./mocks"))
 	chdir(filepath.Join(workingDir, "mocks/orphan_container"))
-	defer setSysRoot("/")
+	defer findresource.SetSysRoot(abs("/"))
 	defer chdir(workingDir)
 
 	var usercontext, err = Get()
@@ -220,9 +155,9 @@ func TestOrphanContainerContext(t *testing.T) {
 }
 
 func TestInvalidContext(t *testing.T) {
-	setSysRoot("./mocks")
+	findresource.SetSysRoot(abs("./mocks"))
 	chdir(filepath.Join(workingDir, "mocks/schizophrenic"))
-	defer setSysRoot("/")
+	defer findresource.SetSysRoot(abs("/"))
 	defer chdir(workingDir)
 
 	var usercontext, err = Get()
@@ -250,12 +185,12 @@ func chdir(dir string) {
 	}
 }
 
-func setSysRoot(dir string) {
-	var err error
-
-	sysRoot, err = filepath.Abs(dir)
+func abs(path string) string {
+	var abs, err = filepath.Abs(path)
 
 	if err != nil {
 		panic(err)
 	}
+
+	return abs
 }

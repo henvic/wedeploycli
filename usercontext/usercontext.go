@@ -4,6 +4,8 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+
+	"github.com/wedeploy/cli/findresource"
 )
 
 // Context structure
@@ -19,22 +21,14 @@ type Context struct {
 	Token         string
 }
 
-var (
-	// ErrContainerInProjectRoot happens when a project.json and container.json is found at the same directory level
-	ErrContainerInProjectRoot = errors.New("Container and project definition files at the same directory level")
-
-	sysRoot string
-)
-
-func init() {
-	setupOSRoot()
-}
+// ErrContainerInProjectRoot happens when a project.json and container.json is found at the same directory level
+var ErrContainerInProjectRoot = errors.New("Container and project definition files at the same directory level")
 
 // Get returns a Context object with the current scope
 func Get() (*Context, error) {
 	cx := &Context{}
 
-	var project, errProject = GetProjectRootDirectory(sysRoot)
+	var project, errProject = GetProjectRootDirectory(findresource.GetSysRoot())
 
 	cx.ProjectRoot = project
 
@@ -58,12 +52,12 @@ func Get() (*Context, error) {
 
 // GetProjectRootDirectory returns project dir for the current scope
 func GetProjectRootDirectory(delimiter string) (string, error) {
-	return getRootDirectory(delimiter, "project.json")
+	return findresource.GetRootDirectory(delimiter, "project.json")
 }
 
 // GetContainerRootDirectory returns container dir for the current scope
 func GetContainerRootDirectory(delimiter string) (string, error) {
-	return getRootDirectory(delimiter, "container.json")
+	return findresource.GetRootDirectory(delimiter, "container.json")
 }
 
 func checkContainerNotInProjectRoot(projectRoot string) error {
@@ -74,36 +68,4 @@ func checkContainerNotInProjectRoot(projectRoot string) error {
 	}
 
 	return nil
-}
-
-func walkToRootDirectory(dir, delimiter, file string) (string, error) {
-	// sysRoot = / = upper-bound / The Power of Ten rule 2
-	for !isRootDelimiter(dir) && dir != delimiter {
-		stat, err := os.Stat(filepath.Join(dir, file))
-
-		if stat == nil {
-			dir = filepath.Join(dir, "..")
-			continue
-		}
-
-		return dir, err
-	}
-
-	return "", os.ErrNotExist
-}
-
-func getRootDirectory(delimiter, file string) (dir string, err error) {
-	dir, err = os.Getwd()
-
-	if err != nil {
-		return "", err
-	}
-
-	stat, err := os.Stat(delimiter)
-
-	if err != nil || !stat.IsDir() {
-		return "", os.ErrNotExist
-	}
-
-	return walkToRootDirectory(dir, delimiter, file)
 }
