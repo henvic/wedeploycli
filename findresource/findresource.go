@@ -1,8 +1,11 @@
 package findresource
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
+
+	"github.com/hashicorp/errwrap"
 )
 
 var sysRoot string
@@ -22,13 +25,7 @@ func GetSysRoot() string {
 }
 
 // GetRootDirectory for a given file source
-func GetRootDirectory(delimiter, file string) (dir string, err error) {
-	dir, err = os.Getwd()
-
-	if err != nil {
-		return "", err
-	}
-
+func GetRootDirectory(dir, delimiter, file string) (string, error) {
 	stat, err := os.Stat(delimiter)
 
 	if err != nil || !stat.IsDir() {
@@ -38,14 +35,25 @@ func GetRootDirectory(delimiter, file string) (dir string, err error) {
 	return walkToRootDirectory(dir, delimiter, file)
 }
 
+var errReachedDirectoryTreeRoot = errors.New("Reached directory tree root")
+
 func walkToRootDirectory(dir, delimiter, file string) (string, error) {
 	// sysRoot = / = upper-bound / The Power of Ten rule 2
 	for !isRootDelimiter(dir) && dir != delimiter {
-		stat, err := os.Stat(filepath.Join(dir, file))
+		_, err := os.Stat(filepath.Join(dir, file))
 
-		if stat == nil {
-			dir = filepath.Join(dir, "..")
+		switch {
+		case os.IsNotExist(err):
+			newDir := filepath.Join(dir, "..")
+
+			if dir == newDir {
+				return "", errReachedDirectoryTreeRoot
+			}
+
+			dir = newDir
 			continue
+		case err != nil:
+			return "", errwrap.Wrapf("Error walking filesystem trying to find resouce "+file+": {{err}}", err)
 		}
 
 		return dir, err

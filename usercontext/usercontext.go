@@ -52,12 +52,22 @@ func Get() (*Context, error) {
 
 // GetProjectRootDirectory returns project dir for the current scope
 func GetProjectRootDirectory(delimiter string) (string, error) {
-	return findresource.GetRootDirectory(delimiter, "project.json")
+	return getRootDirectory(delimiter, "project.json")
 }
 
 // GetContainerRootDirectory returns container dir for the current scope
 func GetContainerRootDirectory(delimiter string) (string, error) {
-	return findresource.GetRootDirectory(delimiter, "container.json")
+	return getRootDirectory(delimiter, "container.json")
+}
+
+func getRootDirectory(delimiter, file string) (dir string, err error) {
+	dir, err = os.Getwd()
+
+	if err != nil {
+		return "", err
+	}
+
+	return findresource.GetRootDirectory(dir, delimiter, file)
 }
 
 func checkContainerNotInProjectRoot(projectRoot string) error {

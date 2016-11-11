@@ -29,6 +29,7 @@ var rootDirectoryFailureCases = []rootDirectoryFailureProvider{
 	{"file", "mocks/list", os.ErrNotExist},
 	{"file", "mocks/list/nothing", os.ErrNotExist},
 	{"file", "mocks/list/nothing/here", os.ErrNotExist},
+	{"file", "", errReachedDirectoryTreeRoot},
 }
 
 func TestGetTargetFileDirectory(t *testing.T) {
@@ -41,7 +42,7 @@ func TestGetTargetFileDirectory(t *testing.T) {
 			t.Error(err)
 		}
 
-		var directory, err = GetRootDirectory(sysRoot, each.file)
+		var directory, err = GetRootDirectory(abs("."), sysRoot, each.file)
 
 		if err != nil {
 			t.Error(err)
@@ -66,7 +67,7 @@ func TestGetTargetFileDirectoryFailure(t *testing.T) {
 			t.Error(err)
 		}
 
-		var _, err = GetRootDirectory(sysRoot, each.file)
+		var _, err = GetRootDirectory(abs("."), sysRoot, each.file)
 
 		if each.want != err {
 			t.Errorf("Expected error %s, got %s instead", each.want, err)
@@ -103,4 +104,14 @@ func setSysRoot(dir string) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func abs(path string) string {
+	var abs, err = filepath.Abs(path)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return abs
 }
