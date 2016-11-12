@@ -2,7 +2,7 @@
 .PHONY: get-dependencies list-packages build fast-test test build-integration-tests build-functional-tests release promote
 main:
 	echo "WeDeploy CLI build tool commands:"
-	echo "get-dependencies, list-packages, build, test, build-functional-tests, release, promote"
+	echo "get-dependencies, list-packages, build, fast-test, test, build-functional-tests, release, promote"
 get-dependencies: check-go
 	if ! which glide &> /dev/null; \
 	then >&2 echo "Missing dependency: Glide is required https://glide.sh/"; \
