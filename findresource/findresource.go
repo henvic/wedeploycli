@@ -39,15 +39,11 @@ var errReachedDirectoryTreeRoot = errors.New("Reached directory tree root")
 
 func walkToRootDirectory(dir, delimiter, file string) (string, error) {
 	// sysRoot = / = upper-bound / The Power of Ten rule 2
-	for {
+	for !isRootDelimiter(dir) && dir != delimiter {
 		_, err := os.Stat(filepath.Join(dir, file))
 
 		switch {
 		case os.IsNotExist(err):
-			if dir == delimiter {
-				return "", os.ErrNotExist
-			}
-
 			newDir := filepath.Join(dir, "..")
 
 			if dir == newDir {
@@ -55,16 +51,13 @@ func walkToRootDirectory(dir, delimiter, file string) (string, error) {
 			}
 
 			dir = newDir
-
-			if !isRootDelimiter(dir) && dir != delimiter {
-				continue
-			}
-
-			return "", os.ErrNotExist
+			continue
 		case err != nil:
 			return "", errwrap.Wrapf("Error walking filesystem trying to find resouce "+file+": {{err}}", err)
 		}
 
 		return dir, err
 	}
+
+	return "", os.ErrNotExist
 }
