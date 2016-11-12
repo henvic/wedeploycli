@@ -3,16 +3,9 @@ package cmdinspect
 import (
 	"errors"
 	"fmt"
-	"os"
-	"reflect"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/containers"
-	"github.com/wedeploy/cli/projects"
-	"github.com/wedeploy/cli/templates"
-	"github.com/wedeploy/cli/usercontext"
+	"github.com/wedeploy/cli/inspector"
 )
 
 // InspectCmd returns information about current environment
@@ -49,91 +42,33 @@ func inspectRun(cmd *cobra.Command, args []string) error {
 		return errors.New("Incompatible use: --fields and --format can't be used together")
 	}
 
-	switch args[0] {
+	if showTypeFields {
+		return printTypeFieldsSpec(args[0])
+	}
+
+	return inspect(args[0])
+}
+
+func inspect(field string) error {
+	switch field {
 	case "project":
-		return inspectProject()
+		return inspector.InspectProject(format, ".")
 	case "container":
-		return inspectContainer()
+		return inspector.InspectContainer(format, ".")
 	default:
-		return fmt.Errorf(`Inspecting "%v" is not implemented.`, args[0])
+		return fmt.Errorf(`Inspecting "%v" is not implemented.`, field)
 	}
 }
 
-func printTypeFieldNames(t interface{}) {
-	val := reflect.ValueOf(t)
-	for i := 0; i < val.NumField(); i++ {
-		field := val.Type().Field(i)
-		fmt.Println(field.Name + " " + field.Type.String())
-	}
-}
-
-func inspectProject() error {
-	if showTypeFields {
-		printTypeFieldNames(projects.Project{})
+func printTypeFieldsSpec(field string) error {
+	switch field {
+	case "project":
+		inspector.PrintProjectSpec()
 		return nil
-	}
-
-	if config.Context.ProjectRoot == "" {
-		return errors.New("Inspection failure: not inside project context.")
-	}
-
-	var project, err = projects.Read(config.Context.ProjectRoot)
-
-	if err != nil {
-		return errwrap.Wrapf("Inspection failure: {{err}}", err)
-	}
-
-	var content, eerr = templates.ExecuteOrList(format, project)
-
-	if eerr != nil {
-		return eerr
-	}
-
-	fmt.Println(content)
-	return nil
-}
-
-func getContainerPath() (string, error) {
-	if config.Context.ContainerRoot != "" {
-		return config.Context.ContainerRoot, nil
-	}
-
-	var container, err = usercontext.GetContainerRootDirectory(".")
-
-	switch {
-	case err == nil:
-		return container, nil
-	case os.IsNotExist(err):
-		return "", errors.New("Inspection failure: can't find container.")
+	case "container":
+		inspector.PrintContainerSpec()
+		return nil
 	default:
-		return "", err
+		return fmt.Errorf(`Spec for "%v" is not implemented.`, field)
 	}
-}
-
-func inspectContainer() error {
-	if showTypeFields {
-		printTypeFieldNames(containers.Container{})
-		return nil
-	}
-
-	var containerPath, cerr = getContainerPath()
-
-	if cerr != nil {
-		return cerr
-	}
-
-	var container, err = containers.Read(containerPath)
-
-	if err != nil {
-		return errwrap.Wrapf("Inspection failure: {{err}}", err)
-	}
-
-	var content, eerr = templates.ExecuteOrList(format, container)
-
-	if eerr != nil {
-		return eerr
-	}
-
-	fmt.Println(content)
-	return nil
 }
