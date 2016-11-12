@@ -8,9 +8,9 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/findresource"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/templates"
-	"github.com/wedeploy/cli/usercontext"
 )
 
 func printTypeFieldNames(t interface{}) {
@@ -51,7 +51,7 @@ func InspectProject(format, directory string) error {
 }
 
 func getProjectPath(directory string) (string, error) {
-	var project, err = usercontext.GetProjectRootDirectory(directory)
+	var project, err = getProjectRootDirectory(directory)
 
 	switch {
 	case err == nil:
@@ -64,7 +64,7 @@ func getProjectPath(directory string) (string, error) {
 }
 
 func getContainerPath(directory string) (string, error) {
-	var container, err = usercontext.GetContainerRootDirectory(directory)
+	var container, err = getContainerRootDirectory(directory)
 
 	switch {
 	case err == nil:
@@ -103,4 +103,16 @@ func InspectContainer(format, directory string) error {
 
 	fmt.Println(content)
 	return nil
+}
+
+func getProjectRootDirectory(dir string) (string, error) {
+	return getRootDirectory(dir, "project.json")
+}
+
+func getContainerRootDirectory(dir string) (string, error) {
+	return getRootDirectory(dir, "container.json")
+}
+
+func getRootDirectory(dir, file string) (string, error) {
+	return findresource.GetRootDirectory(dir, findresource.GetSysRoot(), file)
 }
