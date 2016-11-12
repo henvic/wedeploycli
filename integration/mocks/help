@@ -10,6 +10,7 @@ Usage:
 Available Commands:
   build        Build container(s) (current or all containers of a project)
   create       Creates a project or container
+  inspect      Inspect environment info
   link         Links the given project or container locally
   list         List projects and containers running on WeDeploy
   log          See logs of what is running on WeDeploy
