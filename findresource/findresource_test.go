@@ -29,6 +29,7 @@ var rootDirectoryFailureCases = []rootDirectoryFailureProvider{
 	{"file", "mocks/list", os.ErrNotExist},
 	{"file", "mocks/list/nothing", os.ErrNotExist},
 	{"file", "mocks/list/nothing/here", os.ErrNotExist},
+	{"file", "mocks/", os.ErrNotExist},
 	{"file", "", errReachedDirectoryTreeRoot},
 }
 
