@@ -141,7 +141,7 @@ function runTests() {
   go vet $(go list ./... | grep -v /vendor/)
   echo "Running tests (may take a while)."
 
-  if [ $skipIntegrationTests ] ; then
+  if [[ $skipIntegrationTests == true ]] ; then
     go test $(go list ./... | grep -v /vendor/ | grep -v /integration$)
   else
     go test $(go list ./... | grep -v /vendor/)
