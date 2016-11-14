@@ -4,6 +4,9 @@ import (
 	"errors"
 	"fmt"
 
+	"path/filepath"
+
+	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/inspector"
 )
@@ -38,6 +41,11 @@ func init() {
 func inspectRun(cmd *cobra.Command, args []string) error {
 	if directory == "" {
 		directory = "."
+	}
+
+	var err error
+	if directory, err = filepath.Abs(directory); err != nil {
+		return errwrap.Wrapf("Can't resolve directory: {{err}}", err)
 	}
 
 	if len(args) != 1 {
