@@ -16,10 +16,37 @@ func TestLink(t *testing.T) {
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc("/projects",
-		func(w http.ResponseWriter, r *http.Request) {})
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != "POST" {
+				t.Errorf("Expected method to be POST, got %v instead", r.Method)
+			}
+
+			var wantRequestURI = "/projects?id=app"
+			if r.RequestURI != wantRequestURI {
+				t.Errorf("Expected RequestURI %v, got %v instead", wantRequestURI, r.RequestURI)
+			}
+
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, "%v", tdata.FromFile("mocks/home/bucket/project/projects_post_response.json"))
+		})
 
 	servertest.IntegrationMux.HandleFunc("/deploy",
-		func(w http.ResponseWriter, r *http.Request) {})
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != "PUT" {
+				t.Errorf("Expected method to be PUT, got %v instead", r.Method)
+			}
+
+			var wantRequestURI = "containerId=container&projectId=app"
+			if !strings.Contains(r.RequestURI, wantRequestURI) {
+				t.Errorf("Expected RequestURI %v, got %v instead", wantRequestURI, r.RequestURI)
+			}
+
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, "%v", `{
+    "id": "public",
+    "type": "wedeploy/hosting"
+}`)
+		})
 
 	servertest.IntegrationMux.HandleFunc("/projects/app",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -52,10 +79,35 @@ func TestLinkToProject(t *testing.T) {
 
 	servertest.IntegrationMux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != "POST" {
+				t.Errorf("Expected method to be POST, got %v instead", r.Method)
+			}
+
+			var wantRequestURI = "/projects?id=bar"
+			if r.RequestURI != wantRequestURI {
+				t.Errorf("Expected RequestURI %v, got %v instead", wantRequestURI, r.RequestURI)
+			}
+
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, "%v", tdata.FromFile("mocks/home/bucket/project/container/projects_post_response_alt_id.json"))
 		})
 
 	servertest.IntegrationMux.HandleFunc("/deploy",
 		func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != "PUT" {
+				t.Errorf("Expected method to be PUT, got %v instead", r.Method)
+			}
+
+			var wantRequestURI = "containerId=container&projectId=bar"
+			if !strings.Contains(r.RequestURI, wantRequestURI) {
+				t.Errorf("Expected RequestURI %v, got %v instead", wantRequestURI, r.RequestURI)
+			}
+
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, "%v", `{
+    "id": "public",
+    "type": "wedeploy/hosting"
+}`)
 		})
 
 	servertest.IntegrationMux.HandleFunc("/projects/bar",
@@ -89,6 +141,17 @@ func TestLinkToProjectServerFailure(t *testing.T) {
 
 	servertest.IntegrationMux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != "POST" {
+				t.Errorf("Expected method to be POST, got %v instead", r.Method)
+			}
+
+			var wantRequestURI = "/projects?id=bar"
+			if r.RequestURI != wantRequestURI {
+				t.Errorf("Expected RequestURI %v, got %v instead", wantRequestURI, r.RequestURI)
+			}
+
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, "%v", tdata.FromFile("mocks/home/bucket/project/container/projects_post_response_alt_id.json"))
 		})
 
 	servertest.IntegrationMux.HandleFunc("/deploy",
@@ -133,6 +196,17 @@ func TestLinkToProjectServerFailureQuiet(t *testing.T) {
 
 	servertest.IntegrationMux.HandleFunc("/projects",
 		func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != "POST" {
+				t.Errorf("Expected method to be POST, got %v instead", r.Method)
+			}
+
+			var wantRequestURI = "/projects?id=bar"
+			if r.RequestURI != wantRequestURI {
+				t.Errorf("Expected RequestURI %v, got %v instead", wantRequestURI, r.RequestURI)
+			}
+
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, "%v", tdata.FromFile("mocks/home/bucket/project/container/projects_post_response_alt_id.json"))
 		})
 
 	servertest.IntegrationMux.HandleFunc("/deploy",
@@ -165,7 +239,7 @@ func TestLinkToProjectServerFailureQuiet(t *testing.T) {
 
 	for _, we := range wantErrsContains {
 		if !strings.Contains(got, we) {
-			t.Errorf("Expected stderr to contain %v, but not found it", we)
+			t.Errorf("Expected stderr to contain %v, but not found it; got %v instead", we, got)
 		}
 	}
 }
