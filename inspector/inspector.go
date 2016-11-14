@@ -3,6 +3,7 @@ package inspector
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"reflect"
 
@@ -11,13 +12,16 @@ import (
 	"github.com/wedeploy/cli/findresource"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/templates"
+	"github.com/wedeploy/cli/verbose"
 )
+
+var outStream io.Writer = os.Stdout
 
 func printTypeFieldNames(t interface{}) {
 	val := reflect.ValueOf(t)
 	for i := 0; i < val.NumField(); i++ {
 		field := val.Type().Field(i)
-		fmt.Println(field.Name + " " + field.Type.String())
+		fmt.Fprintf(outStream, "%v %v\n", field.Name, field.Type.String())
 	}
 }
 
@@ -37,8 +41,10 @@ func InspectProject(format, directory string) error {
 	var project, err = projects.Read(projectPath)
 
 	if err != nil {
-		return errwrap.Wrapf("Inspection failure: {{err}}", err)
+		return errwrap.Wrapf("Inspection failure on project: {{err}}", err)
 	}
+
+	verbose.Debug("Reading project at " + projectPath)
 
 	var content, eerr = templates.ExecuteOrList(format, project)
 
@@ -46,7 +52,7 @@ func InspectProject(format, directory string) error {
 		return eerr
 	}
 
-	fmt.Println(content)
+	fmt.Fprintf(outStream, "%v\n", content)
 	return nil
 }
 
@@ -57,7 +63,7 @@ func getProjectPath(directory string) (string, error) {
 	case err == nil:
 		return project, nil
 	case os.IsNotExist(err):
-		return "", errors.New("Inspection failure: can't find project.")
+		return "", errors.New("Inspection failure: can't find project")
 	default:
 		return "", err
 	}
@@ -70,7 +76,7 @@ func getContainerPath(directory string) (string, error) {
 	case err == nil:
 		return container, nil
 	case os.IsNotExist(err):
-		return "", errors.New("Inspection failure: can't find container.")
+		return "", errors.New("Inspection failure: can't find container")
 	default:
 		return "", err
 	}
@@ -92,8 +98,10 @@ func InspectContainer(format, directory string) error {
 	var container, err = containers.Read(containerPath)
 
 	if err != nil {
-		return errwrap.Wrapf("Inspection failure: {{err}}", err)
+		return errwrap.Wrapf("Inspection failure on container: {{err}}", err)
 	}
+
+	verbose.Debug("Reading container at " + containerPath)
 
 	var content, eerr = templates.ExecuteOrList(format, container)
 
@@ -101,7 +109,7 @@ func InspectContainer(format, directory string) error {
 		return eerr
 	}
 
-	fmt.Println(content)
+	fmt.Fprintf(outStream, "%v\n", content)
 	return nil
 }
 
