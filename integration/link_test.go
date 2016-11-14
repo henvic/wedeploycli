@@ -219,3 +219,28 @@ func TestLinkRemoteShortcutError(t *testing.T) {
 		t.Errorf("Error message doesn't contain expected value %v, got %v instead", want, got)
 	}
 }
+
+func TestLinkHostWithContainerError(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	var cmd = &Command{
+		Args: []string{"link", "foo.bar"},
+		Env: []string{
+			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir: "mocks/home/bucket/project/container",
+	}
+
+	cmd.Run()
+
+	if cmd.ExitCode != 1 {
+		t.Errorf("Unexpected exit code %v", cmd.ExitCode)
+	}
+
+	var got = cmd.Stderr.String()
+	var want = "Error: Container parameter is not allowed for this command"
+
+	if !strings.Contains(got, want) {
+		t.Errorf("Error message doesn't contain expected value %v, got %v instead", want, got)
+	}
+}
