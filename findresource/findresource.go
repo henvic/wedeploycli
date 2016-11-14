@@ -26,10 +26,11 @@ func GetSysRoot() string {
 
 // GetRootDirectory for a given file source
 func GetRootDirectory(dir, delimiter, file string) (string, error) {
-	stat, err := os.Stat(delimiter)
-
-	if err != nil || !stat.IsDir() {
+	switch stat, err := os.Stat(delimiter); {
+	case os.IsNotExist(err) || !stat.IsDir():
 		return "", os.ErrNotExist
+	case err != nil:
+		return "", errwrap.Wrapf("Can't read delimiter "+delimiter+"directory: {{err}}", err)
 	}
 
 	return walkToRootDirectory(dir, delimiter, file)
@@ -39,11 +40,22 @@ var errReachedDirectoryTreeRoot = errors.New("Reached directory tree root")
 
 func walkToRootDirectory(dir, delimiter, file string) (string, error) {
 	// sysRoot = / = upper-bound / The Power of Ten rule 2
-	for !isRootDelimiter(dir) && dir != delimiter {
-		_, err := os.Stat(filepath.Join(dir, file))
+	for {
+		stat, err := os.Stat(dir)
 
 		switch {
+		case os.IsNotExist(err) || !stat.IsDir():
+			return "", os.ErrNotExist
+		case err != nil:
+			return "", errwrap.Wrapf("Error reading directory "+dir+": {{err}}", err)
+		}
+
+		switch _, err := os.Stat(filepath.Join(dir, file)); {
 		case os.IsNotExist(err):
+			if dir == delimiter {
+				return "", os.ErrNotExist
+			}
+
 			newDir := filepath.Join(dir, "..")
 
 			if dir == newDir {
@@ -51,13 +63,16 @@ func walkToRootDirectory(dir, delimiter, file string) (string, error) {
 			}
 
 			dir = newDir
-			continue
+
+			if !isRootDelimiter(dir) && dir != delimiter {
+				continue
+			}
+
+			return "", os.ErrNotExist
 		case err != nil:
 			return "", errwrap.Wrapf("Error walking filesystem trying to find resouce "+file+": {{err}}", err)
 		}
 
 		return dir, err
 	}
-
-	return "", os.ErrNotExist
 }

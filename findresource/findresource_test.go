@@ -29,6 +29,7 @@ var rootDirectoryFailureCases = []rootDirectoryFailureProvider{
 	{"file", "mocks/list", os.ErrNotExist},
 	{"file", "mocks/list/nothing", os.ErrNotExist},
 	{"file", "mocks/list/nothing/here", os.ErrNotExist},
+	{"file", "mocks/", os.ErrNotExist},
 	{"file", "", errReachedDirectoryTreeRoot},
 }
 
@@ -72,6 +73,54 @@ func TestGetTargetFileDirectoryFailure(t *testing.T) {
 		if each.want != err {
 			t.Errorf("Expected error %s, got %s instead", each.want, err)
 		}
+	}
+}
+
+func TestGetTargetFileDelimiterDirectoryNotFoundFailure(t *testing.T) {
+	setSysRoot("./mocks")
+	defer chdir(workingDir)
+	defer setSysRoot("/")
+
+	var _, err = GetRootDirectory(abs("./mocks/list/"), "./mocks/not", "basic")
+
+	if !os.IsNotExist(err) {
+		t.Errorf("Expected not exist error, got %v instead", err)
+	}
+}
+
+func TestGetTargetFileDelimiterDirectoryNotDirectoryFailure(t *testing.T) {
+	setSysRoot("./mocks")
+	defer chdir(workingDir)
+	defer setSysRoot("/")
+
+	var _, err = GetRootDirectory(abs("./mocks/list/"), "./mocks/list/basic", "foo")
+
+	if !os.IsNotExist(err) {
+		t.Errorf("Expected not exist error, got %v instead", err)
+	}
+}
+
+func TestGetTargetFileDirectoryNotFoundFailure(t *testing.T) {
+	setSysRoot("./mocks")
+	defer chdir(workingDir)
+	defer setSysRoot("/")
+
+	var _, err = GetRootDirectory(abs("./mocks/list/subdir/not/there"), sysRoot, "basic")
+
+	if !os.IsNotExist(err) {
+		t.Errorf("Expected not exist error, got %v instead", err)
+	}
+}
+
+func TestGetTargetFileDirectoryNotDirectoryFailure(t *testing.T) {
+	setSysRoot("./mocks")
+	defer chdir(workingDir)
+	defer setSysRoot("/")
+
+	var _, err = GetRootDirectory(abs("./mocks/list/basic"), sysRoot, "foo")
+
+	if !os.IsNotExist(err) {
+		t.Errorf("Expected not exist error, got %v instead", err)
 	}
 }
 
