@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/findresource"
 )
 
@@ -31,17 +32,30 @@ func Get() (*Context, error) {
 	var project, errProject = GetProjectRootDirectory(findresource.GetSysRoot())
 
 	cx.ProjectRoot = project
+	cx.Scope = "global"
 
-	if errProject != nil {
-		cx.Scope = "global"
+	if errProject != nil && os.IsNotExist(errProject) {
 		return cx, nil
 	}
 
+	if errProject != nil {
+		return cx, errwrap.Wrapf("Error trying to read project: {{err}}", errProject)
+	}
+
+	cx.Scope = "project"
+
 	var container, errContainer = GetContainerRootDirectory(project)
 
+	if errContainer != nil && os.IsNotExist(errContainer) {
+		return cx, nil
+	}
+
 	if errContainer != nil {
-		cx.Scope = "project"
-		return cx, checkContainerNotInProjectRoot(cx.ProjectRoot)
+		return cx, errwrap.Wrapf("Error trying to read container: {{err}}", errContainer)
+	}
+
+	if filepath.Dir(container) == filepath.Dir(project) {
+		return cx, ErrContainerInProjectRoot
 	}
 
 	cx.Scope = "container"
@@ -68,14 +82,4 @@ func getRootDirectory(delimiter, file string) (dir string, err error) {
 	}
 
 	return findresource.GetRootDirectory(dir, delimiter, file)
-}
-
-func checkContainerNotInProjectRoot(projectRoot string) error {
-	stat, err := os.Stat(filepath.Join(projectRoot, "container.json"))
-
-	if err == nil && !stat.IsDir() {
-		return ErrContainerInProjectRoot
-	}
-
-	return nil
 }
