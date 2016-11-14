@@ -92,7 +92,7 @@ func linkRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if projectID != "" && config.Context.ProjectRoot != "" {
+	if projectID == "" && config.Context.ProjectRoot != "" {
 		if err = setupLocallyExistingProject(config.Context.ProjectRoot); err != nil {
 			return err
 		}
