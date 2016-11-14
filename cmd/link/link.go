@@ -117,6 +117,7 @@ func linkMachineSetup(projectID string, csDirs []string) error {
 	}
 
 	if quiet {
+		m.ErrStream = os.Stderr
 		m.Run()
 		return getLinkMachineErrors(m)
 	}

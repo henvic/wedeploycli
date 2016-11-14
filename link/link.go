@@ -7,6 +7,8 @@ import (
 	"strings"
 	"sync"
 
+	"io"
+
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/list"
@@ -17,6 +19,7 @@ import (
 type Machine struct {
 	ProjectID   string
 	Links       []*Link
+	ErrStream   io.Writer
 	Errors      *Errors
 	ErrorsMutex sync.Mutex
 	dirMutex    sync.Mutex
@@ -145,7 +148,12 @@ func (m *Machine) linkAll() {
 func (m *Machine) doLink(cl *Link) {
 	var err = m.link(cl)
 
-	if err != nil {
+	switch err {
+	case nil:
+		if m.ErrStream != nil {
+			fmt.Fprintf(m.ErrStream, "Container %v linked.\n", cl.Container.ID)
+		}
+	default:
 		m.logError(cl.ContainerPath, err)
 	}
 

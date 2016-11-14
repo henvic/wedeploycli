@@ -1,6 +1,7 @@
 package link
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"os"
@@ -67,6 +68,47 @@ func TestAll(t *testing.T) {
 	}
 
 	m.Run()
+
+	if len(m.Errors.List) != 0 {
+		t.Errorf("Wanted list of errors to contain zero errors, got %v errors instead", m.Errors)
+	}
+
+	if wantSource != gotSource {
+		t.Errorf("Wanted source %v, got %v instead", wantSource, gotSource)
+	}
+
+	configmock.Teardown()
+	servertest.Teardown()
+}
+
+func TestAllQuiet(t *testing.T) {
+	servertest.Setup()
+	configmock.Setup()
+
+	var wantSource = "mocks/myproject/mycontainer"
+	var gotSource string
+
+	servertest.Mux.HandleFunc("/deploy",
+		func(w http.ResponseWriter, r *http.Request) {
+			gotSource = r.URL.Query().Get("source")
+		})
+
+	var m Machine
+	var bufErrStream bytes.Buffer
+	m.ErrStream = &bufErrStream
+
+	var err = m.Setup([]string{"mocks/myproject/mycontainer"})
+
+	if err != nil {
+		t.Errorf("Unexpected error %v on linking", err)
+	}
+
+	m.Run()
+
+	var wantContainerLinkedMessage = "Container container linked.\n"
+	if bufErrStream.String() != wantContainerLinkedMessage {
+		t.Errorf("Wanted container linked message not, got %v instead.", bufErrStream.String())
+	}
 
 	if len(m.Errors.List) != 0 {
 		t.Errorf("Wanted list of errors to contain zero errors, got %v errors instead", m.Errors)
