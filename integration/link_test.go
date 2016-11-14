@@ -187,10 +187,10 @@ func TestLinkRemoteError(t *testing.T) {
 		t.Errorf("Unexpected exit code %v", cmd.ExitCode)
 	}
 
-	var got = cmd.Stdout.String()
+	var got = cmd.Stderr.String()
 	var want = "Error: unknown flag: --remote"
 
-	if strings.Contains(got, want) {
+	if !strings.Contains(got, want) {
 		t.Errorf("Error message doesn't contain expected value %v, got %v instead", want, got)
 	}
 }
@@ -212,10 +212,10 @@ func TestLinkRemoteShortcutError(t *testing.T) {
 		t.Errorf("Unexpected exit code %v", cmd.ExitCode)
 	}
 
-	var got = cmd.Stdout.String()
-	var want = "Error: unknown flag: --remote"
+	var got = cmd.Stderr.String()
+	var want = "Error: unknown shorthand flag: 'r' in -r=foo"
 
-	if strings.Contains(got, want) {
+	if !strings.Contains(got, want) {
 		t.Errorf("Error message doesn't contain expected value %v, got %v instead", want, got)
 	}
 }
