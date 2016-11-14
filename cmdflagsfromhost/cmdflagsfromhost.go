@@ -227,6 +227,10 @@ func (s *SetupHost) loadValues() (err error) {
 		}
 	}
 
+	if (s.Pattern != ProjectAndContainerPattern && s.Pattern != FullHostPattern) && container != "" {
+		return errors.New("Container parameter is not allowed for this command")
+	}
+
 	if s.Requires.Container && container == "" {
 		return errors.New("Container and project are required")
 	}
@@ -240,7 +244,7 @@ func (s *SetupHost) loadValues() (err error) {
 	}
 
 	if s.Requires.Local && remote != "" {
-		return errors.New("Remote is not allowed")
+		return errors.New("Remote parameter is not allowed for this command")
 	}
 
 	s.container = container
