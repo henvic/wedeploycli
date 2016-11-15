@@ -16,9 +16,12 @@ var InspectCmd = &cobra.Command{
 	Use:   "inspect <type> --format <format>",
 	Short: "Inspect environment info",
 	Long: `Use "we inspect" to peek inside a project or a container on your file system.
-<type> = project | container`,
+<type> = context | project | container`,
 	RunE: inspectRun,
-	Example: `we inspect project
+	Example: `we inspect context
+we inspect context --fields
+we inspect context --format "{{.Scope}}"
+we inspect project
 we inspect project --fields
 we inspect project --format "{{.ID}}"
 we inspect container
@@ -65,6 +68,8 @@ func inspectRun(cmd *cobra.Command, args []string) error {
 
 func inspect(field string) error {
 	switch field {
+	case "context":
+		return inspector.InspectContext(format, directory)
 	case "project":
 		return inspector.InspectProject(format, directory)
 	case "container":
@@ -76,6 +81,9 @@ func inspect(field string) error {
 
 func printTypeFieldsSpec(field string) error {
 	switch field {
+	case "context":
+		inspector.PrintContextSpec()
+		return nil
 	case "project":
 		inspector.PrintProjectSpec()
 		return nil

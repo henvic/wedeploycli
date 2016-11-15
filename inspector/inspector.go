@@ -24,6 +24,87 @@ func printTypeFieldNames(t interface{}) {
 	}
 }
 
+// ContextOverview for the context visualization
+type ContextOverview struct {
+	Scope         string
+	ProjectRoot   string
+	ContainerRoot string
+	ProjectID     string
+	ContainerID   string
+}
+
+// PrintContextSpec for the ContextOverview type
+func PrintContextSpec() {
+	printTypeFieldNames(ContextOverview{})
+}
+
+func (overview *ContextOverview) loadProject(directory string) error {
+	var projectPath, project, perr = getProject(directory)
+
+	switch {
+	case os.IsNotExist(perr):
+	case perr != nil:
+		return errwrap.Wrapf("Can't load project context on "+projectPath+": {{err}}", perr)
+	default:
+		overview.Scope = "project"
+		overview.ProjectRoot = projectPath
+		overview.ProjectID = project.ID
+	}
+
+	return nil
+}
+
+func (overview *ContextOverview) loadContainer(directory string) error {
+	var containerPath, container, cerr = getContainer(directory)
+
+	switch {
+	case os.IsNotExist(cerr):
+	case cerr != nil:
+		return errwrap.Wrapf("Can't load container context on "+containerPath+": {{err}}", cerr)
+	default:
+		overview.Scope = "container"
+		overview.ContainerRoot = containerPath
+		overview.ContainerID = container.ID
+	}
+
+	return nil
+}
+
+// Load the context overview for a given directory
+func (overview *ContextOverview) Load(directory string) error {
+	overview.Scope = "Global"
+
+	if err := overview.loadProject(directory); err != nil {
+		return err
+	}
+
+	if err := overview.loadContainer(directory); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// InspectContext on a given directory, filtering by format
+func InspectContext(format, directory string) error {
+	// Can't rely on values on usercontext.Context given that
+	// they are global and we accept the directory parameter
+	var overview = ContextOverview{}
+
+	if err := overview.Load(directory); err != nil {
+		return err
+	}
+
+	var content, eerr = templates.ExecuteOrList(format, overview)
+
+	if eerr != nil {
+		return eerr
+	}
+
+	fmt.Fprintf(outStream, "%v\n", content)
+	return nil
+}
+
 // PrintProjectSpec for the Project type
 func PrintProjectSpec() {
 	printTypeFieldNames(projects.Project{})
