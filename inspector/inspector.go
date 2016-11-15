@@ -1,7 +1,6 @@
 package inspector
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -32,16 +31,13 @@ func PrintProjectSpec() {
 
 // InspectProject on a given directory, filtering by format
 func InspectProject(format, directory string) error {
-	var projectPath, cerr = getProjectPath(directory)
+	var projectPath, project, perr = getProject(directory)
 
-	if cerr != nil {
-		return cerr
-	}
-
-	var project, err = projects.Read(projectPath)
-
-	if err != nil {
-		return errwrap.Wrapf("Inspection failure on project: {{err}}", err)
+	switch {
+	case os.IsNotExist(perr):
+		return errwrap.Wrapf("Inspection failure: can't find project", perr)
+	case perr != nil:
+		return perr
 	}
 
 	verbose.Debug("Reading project at " + projectPath)
@@ -56,30 +52,36 @@ func InspectProject(format, directory string) error {
 	return nil
 }
 
-func getProjectPath(directory string) (string, error) {
-	var project, err = getProjectRootDirectory(directory)
+func getProject(directory string) (path string, project *projects.Project, err error) {
+	var projectPath, cerr = getProjectRootDirectory(directory)
 
-	switch {
-	case err == nil:
-		return project, nil
-	case os.IsNotExist(err):
-		return "", errors.New("Inspection failure: can't find project")
-	default:
-		return "", err
+	if cerr != nil {
+		return "", nil, cerr
 	}
+
+	project, err = projects.Read(projectPath)
+
+	if err != nil {
+		return projectPath, nil, errwrap.Wrapf("Inspection failure on project: {{err}}", err)
+	}
+
+	return projectPath, project, nil
 }
 
-func getContainerPath(directory string) (string, error) {
-	var container, err = getContainerRootDirectory(directory)
+func getContainer(directory string) (path string, container *containers.Container, err error) {
+	var containerPath, cerr = getContainerRootDirectory(directory)
 
-	switch {
-	case err == nil:
-		return container, nil
-	case os.IsNotExist(err):
-		return "", errors.New("Inspection failure: can't find container")
-	default:
-		return "", err
+	if cerr != nil {
+		return "", nil, cerr
 	}
+
+	container, err = containers.Read(containerPath)
+
+	if err != nil {
+		return "", nil, errwrap.Wrapf("Inspection failure on container: {{err}}", err)
+	}
+
+	return containerPath, container, nil
 }
 
 // PrintContainerSpec for the Container type
@@ -89,16 +91,13 @@ func PrintContainerSpec() {
 
 // InspectContainer on a given directory, filtering by format
 func InspectContainer(format, directory string) error {
-	var containerPath, cerr = getContainerPath(directory)
+	var containerPath, container, cerr = getContainer(directory)
 
-	if cerr != nil {
+	switch {
+	case os.IsNotExist(cerr):
+		return errwrap.Wrapf("Inspection failure: can't find container", cerr)
+	case cerr != nil:
 		return cerr
-	}
-
-	var container, err = containers.Read(containerPath)
-
-	if err != nil {
-		return errwrap.Wrapf("Inspection failure on container: {{err}}", err)
 	}
 
 	verbose.Debug("Reading container at " + containerPath)
