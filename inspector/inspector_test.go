@@ -1,96 +1,88 @@
 package inspector
 
 import (
-	"bytes"
+	"encoding/json"
 	"testing"
 
-	"encoding/json"
-
 	"github.com/wedeploy/api-go/jsonlib"
-	"github.com/wedeploy/cli/stringlib"
+	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/tdata"
+
+	"reflect"
 )
 
-var defaultOutStream = outStream
+func TestGetSpecContextOverview(t *testing.T) {
+	var got = GetSpec(projects.Project{})
+	var want = []string{`ID string`,
+		`CustomDomains []string`,
+		`Health string`,
+		`Description string`,
+		`Containers containers.Containers`}
 
-func TestPrintProjectSpec(t *testing.T) {
-	var bufOutStream = bytes.Buffer{}
-	outStream = &bufOutStream
-
-	PrintProjectSpec()
-	var want = `ID string
-CustomDomains []string
-Health string
-Description string
-Containers containers.Containers`
-
-	stringlib.AssertSimilar(t, want, bufOutStream.String())
-
-	outStream = defaultOutStream
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("Wanted spec %v, got %v instead", want, got)
+	}
 }
 
 func TestPrintContainerSpec(t *testing.T) {
-	var bufOutStream = bytes.Buffer{}
-	outStream = &bufOutStream
+	var got = GetSpec(containers.Container{})
+	var want = []string{`ID string`,
+		`Health string`,
+		`Type string`,
+		`Hooks *hooks.Hooks`,
+		`Env map[string]string`,
+		`Scale int`}
 
-	PrintContainerSpec()
-	var want = `ID string
-Health string
-Type string
-Hooks *hooks.Hooks
-Env map[string]string
-Scale int`
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("Wanted spec %v, got %v instead", want, got)
+	}
+}
 
-	stringlib.AssertSimilar(t, want, bufOutStream.String())
+func TestPrintContextSpec(t *testing.T) {
+	var got = GetSpec(ContextOverview{})
+	var want = []string{`Scope string`,
+		`ProjectRoot string`,
+		`ContainerRoot string`,
+		`ProjectID string`,
+		`ContainerID string`}
 
-	outStream = defaultOutStream
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("Wanted spec %v, got %v instead", want, got)
+	}
 }
 
 func TestInspectProjectList(t *testing.T) {
-	var bufOutStream = bytes.Buffer{}
-	outStream = &bufOutStream
-
-	var err = InspectProject("", "./mocks/my-project")
+	var got, err = InspectProject("", "./mocks/my-project")
 
 	if err != nil {
 		t.Errorf("Expected error to be nil, got %v instead", err)
 	}
 
 	var m map[string]interface{}
-	if err = json.Unmarshal([]byte(bufOutStream.String()), &m); err != nil {
+	if err = json.Unmarshal([]byte(got), &m); err != nil {
 		t.Errorf("Expected error to be nil, got %v instead", err)
 	}
 
 	jsonlib.AssertJSONMarshal(t, tdata.FromFile("./mocks/my-project/expect.json"), m)
-
-	outStream = defaultOutStream
 }
 
 func TestInspectProjectCustomDomain(t *testing.T) {
-	var bufOutStream = bytes.Buffer{}
-	outStream = &bufOutStream
-
-	var err = InspectProject("{{(index .CustomDomains 0)}}", "./mocks/my-project")
+	var got, err = InspectProject("{{(index .CustomDomains 0)}}", "./mocks/my-project")
 
 	if err != nil {
 		t.Errorf("Expected error to be nil, got %v instead", err)
 	}
 
-	var want = "example.net\n"
-	var got = bufOutStream.String()
+	var want = "example.net"
 
 	if want != got {
 		t.Errorf("Wanted custom domain to be %v, got %v instead", want, got)
 	}
-
-	outStream = defaultOutStream
 }
 
 func TestInspectProjectFormatError(t *testing.T) {
-	var bufOutStream = bytes.Buffer{}
-	outStream = &bufOutStream
-
-	var err = InspectProject("{{.", "./mocks/my-project")
+	var got, err = InspectProject("{{.", "./mocks/my-project")
 	var wantErr = `Template parsing error: template: :1: illegal number syntax: "."`
 
 	if err == nil || err.Error() != wantErr {
@@ -98,17 +90,14 @@ func TestInspectProjectFormatError(t *testing.T) {
 	}
 
 	var want = ""
-	var got = bufOutStream.String()
 
 	if want != got {
 		t.Errorf("Wanted custom domain to be %v, got %v instead", want, got)
 	}
-
-	outStream = defaultOutStream
 }
 
 func TestInspectProjectNotFound(t *testing.T) {
-	var err = InspectProject("", "./mocks/foo")
+	var _, err = InspectProject("", "./mocks/foo")
 	var wantErr = `Inspection failure: can't find project`
 
 	if err == nil || err.Error() != wantErr {
@@ -117,7 +106,7 @@ func TestInspectProjectNotFound(t *testing.T) {
 }
 
 func TestInspectProjectCorrupted(t *testing.T) {
-	var err = InspectProject("", "./mocks/corrupted-project")
+	var _, err = InspectProject("", "./mocks/corrupted-project")
 	var wantErr = `Inspection failure on project: invalid character 'c' looking for beginning of object key string`
 
 	if err == nil || err.Error() != wantErr {
@@ -126,50 +115,36 @@ func TestInspectProjectCorrupted(t *testing.T) {
 }
 
 func TestInspectContainerList(t *testing.T) {
-	var bufOutStream = bytes.Buffer{}
-	outStream = &bufOutStream
-
-	var err = InspectContainer("", "./mocks/my-project/email")
+	var got, err = InspectContainer("", "./mocks/my-project/email")
 
 	if err != nil {
 		t.Errorf("Expected error to be nil, got %v instead", err)
 	}
 
 	var m map[string]interface{}
-	if err = json.Unmarshal([]byte(bufOutStream.String()), &m); err != nil {
+	if err = json.Unmarshal([]byte(got), &m); err != nil {
 		t.Errorf("Expected error to be nil, got %v instead", err)
 	}
 
 	jsonlib.AssertJSONMarshal(t, tdata.FromFile("./mocks/my-project/email/expect.json"), m)
-
-	outStream = defaultOutStream
 }
 
 func TestInspectContainerType(t *testing.T) {
-	var bufOutStream = bytes.Buffer{}
-	outStream = &bufOutStream
-
-	var err = InspectContainer("{{.Type}}", "./mocks/my-project/email")
+	var got, err = InspectContainer("{{.Type}}", "./mocks/my-project/email")
 
 	if err != nil {
 		t.Errorf("Expected error to be nil, got %v instead", err)
 	}
 
-	var want = "wedeploy/email:latest\n"
-	var got = bufOutStream.String()
+	var want = "wedeploy/email:latest"
 
 	if want != got {
 		t.Errorf("Wanted custom domain to be %v, got %v instead", want, got)
 	}
-
-	outStream = defaultOutStream
 }
 
 func TestInspectContainerFormatError(t *testing.T) {
-	var bufOutStream = bytes.Buffer{}
-	outStream = &bufOutStream
-
-	var err = InspectContainer("{{.", "./mocks/my-project/email")
+	var got, err = InspectContainer("{{.", "./mocks/my-project/email")
 	var wantErr = `Template parsing error: template: :1: illegal number syntax: "."`
 
 	if err == nil || err.Error() != wantErr {
@@ -177,17 +152,14 @@ func TestInspectContainerFormatError(t *testing.T) {
 	}
 
 	var want = ""
-	var got = bufOutStream.String()
 
 	if want != got {
 		t.Errorf("Wanted custom domain to be %v, got %v instead", want, got)
 	}
-
-	outStream = defaultOutStream
 }
 
 func TestInspectContainerNotFound(t *testing.T) {
-	var err = InspectContainer("", "./mocks/my-project/container-not-found")
+	var _, err = InspectContainer("", "./mocks/my-project/container-not-found")
 	var wantErr = `Inspection failure: can't find container`
 
 	if err == nil || err.Error() != wantErr {
@@ -196,7 +168,7 @@ func TestInspectContainerNotFound(t *testing.T) {
 }
 
 func TestInspectContainerCorrupted(t *testing.T) {
-	var err = InspectContainer("", "./mocks/my-project/container-corrupted")
+	var _, err = InspectContainer("", "./mocks/my-project/container-corrupted")
 	var wantErr = `Inspection failure on container: unexpected end of JSON input`
 
 	if err == nil || err.Error() != wantErr {

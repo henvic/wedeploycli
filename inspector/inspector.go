@@ -2,7 +2,6 @@ package inspector
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"reflect"
 
@@ -14,14 +13,16 @@ import (
 	"github.com/wedeploy/cli/verbose"
 )
 
-var outStream io.Writer = os.Stdout
-
-func printTypeFieldNames(t interface{}) {
+// GetSpec of the passed type
+func GetSpec(t interface{}) []string {
+	var fields []string
 	val := reflect.ValueOf(t)
 	for i := 0; i < val.NumField(); i++ {
 		field := val.Type().Field(i)
-		fmt.Fprintf(outStream, "%v %v\n", field.Name, field.Type.String())
+		fields = append(fields, fmt.Sprintf("%v %v", field.Name, field.Type))
 	}
+
+	return fields
 }
 
 // ContextOverview for the context visualization
@@ -31,11 +32,6 @@ type ContextOverview struct {
 	ContainerRoot string
 	ProjectID     string
 	ContainerID   string
-}
-
-// PrintContextSpec for the ContextOverview type
-func PrintContextSpec() {
-	printTypeFieldNames(ContextOverview{})
 }
 
 func (overview *ContextOverview) loadProject(directory string) error {
@@ -86,51 +82,31 @@ func (overview *ContextOverview) Load(directory string) error {
 }
 
 // InspectContext on a given directory, filtering by format
-func InspectContext(format, directory string) error {
+func InspectContext(format, directory string) (string, error) {
 	// Can't rely on values on usercontext.Context given that
 	// they are global and we accept the directory parameter
 	var overview = ContextOverview{}
 
 	if err := overview.Load(directory); err != nil {
-		return err
+		return "", err
 	}
 
-	var content, eerr = templates.ExecuteOrList(format, overview)
-
-	if eerr != nil {
-		return eerr
-	}
-
-	fmt.Fprintf(outStream, "%v\n", content)
-	return nil
-}
-
-// PrintProjectSpec for the Project type
-func PrintProjectSpec() {
-	printTypeFieldNames(projects.Project{})
+	return templates.ExecuteOrList(format, overview)
 }
 
 // InspectProject on a given directory, filtering by format
-func InspectProject(format, directory string) error {
+func InspectProject(format, directory string) (string, error) {
 	var projectPath, project, perr = getProject(directory)
 
 	switch {
 	case os.IsNotExist(perr):
-		return errwrap.Wrapf("Inspection failure: can't find project", perr)
+		return "", errwrap.Wrapf("Inspection failure: can't find project", perr)
 	case perr != nil:
-		return perr
+		return "", perr
 	}
 
 	verbose.Debug("Reading project at " + projectPath)
-
-	var content, eerr = templates.ExecuteOrList(format, project)
-
-	if eerr != nil {
-		return eerr
-	}
-
-	fmt.Fprintf(outStream, "%v\n", content)
-	return nil
+	return templates.ExecuteOrList(format, project)
 }
 
 func getProject(directory string) (path string, project *projects.Project, err error) {
@@ -165,32 +141,19 @@ func getContainer(directory string) (path string, container *containers.Containe
 	return containerPath, container, nil
 }
 
-// PrintContainerSpec for the Container type
-func PrintContainerSpec() {
-	printTypeFieldNames(containers.Container{})
-}
-
 // InspectContainer on a given directory, filtering by format
-func InspectContainer(format, directory string) error {
+func InspectContainer(format, directory string) (string, error) {
 	var containerPath, container, cerr = getContainer(directory)
 
 	switch {
 	case os.IsNotExist(cerr):
-		return errwrap.Wrapf("Inspection failure: can't find container", cerr)
+		return "", errwrap.Wrapf("Inspection failure: can't find container", cerr)
 	case cerr != nil:
-		return cerr
+		return "", cerr
 	}
 
 	verbose.Debug("Reading container at " + containerPath)
-
-	var content, eerr = templates.ExecuteOrList(format, container)
-
-	if eerr != nil {
-		return eerr
-	}
-
-	fmt.Fprintf(outStream, "%v\n", content)
-	return nil
+	return templates.ExecuteOrList(format, container)
 }
 
 func getProjectRootDirectory(dir string) (string, error) {

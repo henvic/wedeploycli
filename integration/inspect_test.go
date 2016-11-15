@@ -60,6 +60,31 @@ func TestInspectPrintContainerStructure(t *testing.T) {
 	e.Assert(t, cmd)
 }
 
+func TestInspectPrintContextStructure(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	var cmd = &Command{
+		Args: []string{"inspect", "context", "--fields"},
+		Env: []string{
+			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+	}
+
+	var want = `Scope string
+ProjectRoot string
+ContainerRoot string
+ProjectID string
+ContainerID string`
+
+	var e = &Expect{
+		ExitCode: 0,
+		Stdout:   want,
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+}
+
 func TestInspectProjectFormat(t *testing.T) {
 	defer Teardown()
 	Setup()

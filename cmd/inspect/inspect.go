@@ -3,12 +3,16 @@ package cmdinspect
 import (
 	"errors"
 	"fmt"
+	"os"
+	"strings"
 
 	"path/filepath"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/inspector"
+	"github.com/wedeploy/cli/projects"
 )
 
 // InspectCmd returns information about current environment
@@ -63,10 +67,17 @@ func inspectRun(cmd *cobra.Command, args []string) error {
 		return printTypeFieldsSpec(args[0])
 	}
 
-	return inspect(args[0])
+	var inspectMsg, inspectErr = inspect(args[0])
+
+	if inspectErr != nil {
+		return inspectErr
+	}
+
+	fmt.Fprintf(os.Stdout, "%v\n", inspectMsg)
+	return nil
 }
 
-func inspect(field string) error {
+func inspect(field string) (string, error) {
 	switch field {
 	case "context":
 		return inspector.InspectContext(format, directory)
@@ -75,22 +86,25 @@ func inspect(field string) error {
 	case "container":
 		return inspector.InspectContainer(format, directory)
 	default:
-		return fmt.Errorf(`Inspecting "%v" is not implemented.`, field)
+		return "", fmt.Errorf(`Inspecting "%v" is not implemented.`, field)
 	}
 }
 
 func printTypeFieldsSpec(field string) error {
+	var i interface{}
 	switch field {
 	case "context":
-		inspector.PrintContextSpec()
-		return nil
+		i = inspector.ContextOverview{}
 	case "project":
-		inspector.PrintProjectSpec()
-		return nil
+		i = projects.Project{}
 	case "container":
-		inspector.PrintContainerSpec()
-		return nil
-	default:
+		i = containers.Container{}
+	}
+
+	if i == nil {
 		return fmt.Errorf(`Spec for "%v" is not implemented.`, field)
 	}
+
+	fmt.Println(strings.Join(inspector.GetSpec(i), "\n"))
+	return nil
 }
