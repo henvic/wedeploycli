@@ -41,6 +41,12 @@ func GetRootDirectory(dir, delimiter, file string) (string, error) {
 var errReachedDirectoryTreeRoot = errors.New("Reached directory tree root")
 
 func walkToRootDirectory(dir, delimiter, file string) (string, error) {
+	var err error
+
+	if dir, err = filepath.Abs(dir); err != nil {
+		return "", err
+	}
+
 	// sysRoot = / = upper-bound / The Power of Ten rule 2
 	for {
 		stat, err := os.Stat(dir)

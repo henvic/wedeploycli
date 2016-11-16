@@ -186,6 +186,14 @@ func TestSetAndGetSysRoot(t *testing.T) {
 	}
 }
 
+func TestGetRootDirStopOnFileNotFound(t *testing.T) {
+	switch _, err := GetRootDirectory(".", sysRoot, "not-found"); {
+	case os.IsNotExist(err):
+	default:
+		t.Errorf("Expected error to be due to file not found, got %v instead", err)
+	}
+}
+
 func chdir(dir string) {
 	if ech := os.Chdir(dir); ech != nil {
 		panic(ech)
