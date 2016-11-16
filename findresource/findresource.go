@@ -15,8 +15,10 @@ func init() {
 }
 
 // SetSysRoot sets the delimiter to stop searching for a resource
-func SetSysRoot(sr string) {
-	sysRoot = sr
+func SetSysRoot(sr string) error {
+	var err error
+	sysRoot, err = filepath.Abs(sr)
+	return err
 }
 
 // GetSysRoot returns the delimiter to stop searching for a resource

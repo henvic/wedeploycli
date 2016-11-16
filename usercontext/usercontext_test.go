@@ -45,10 +45,10 @@ func TestGetContainerRootDirectory(t *testing.T) {
 }
 
 func TestGlobalContext(t *testing.T) {
-	findresource.SetSysRoot(abs("./mocks"))
+	setSysRootOrPanic(abs("./mocks"))
 	chdir(filepath.Join(workingDir, "mocks/"))
 	defer chdir(workingDir)
-	defer findresource.SetSysRoot(abs("/"))
+	defer setSysRootOrPanic(abs("/"))
 
 	var usercontext, configurations = Get()
 	var wantContext = "global"
@@ -63,10 +63,10 @@ func TestGlobalContext(t *testing.T) {
 }
 
 func TestProjectAndContainerInvalidContext(t *testing.T) {
-	findresource.SetSysRoot(abs("./mocks"))
+	setSysRootOrPanic(abs("./mocks"))
 	chdir(filepath.Join(workingDir, "mocks/schizophrenic"))
 	defer chdir(workingDir)
-	defer findresource.SetSysRoot(abs("/"))
+	defer setSysRootOrPanic(abs("/"))
 
 	var _, configurations = Get()
 
@@ -77,9 +77,9 @@ func TestProjectAndContainerInvalidContext(t *testing.T) {
 
 func TestProjectContext(t *testing.T) {
 	var projectDir = filepath.Join(workingDir, "mocks/project")
-	findresource.SetSysRoot(abs("./mocks"))
+	setSysRootOrPanic(abs("./mocks"))
 	chdir(projectDir)
-	defer findresource.SetSysRoot(abs("./mocks"))
+	defer setSysRootOrPanic(abs("./mocks"))
 	defer chdir(workingDir)
 
 	var usercontext, err = Get()
@@ -105,9 +105,9 @@ func TestContainerContext(t *testing.T) {
 	var projectDir = filepath.Join(workingDir, "mocks/project")
 	var containerDir = filepath.Join(projectDir, "container")
 
-	findresource.SetSysRoot(abs("./mocks"))
+	setSysRootOrPanic(abs("./mocks"))
 	chdir(containerDir)
-	defer findresource.SetSysRoot(abs("./mocks"))
+	defer setSysRootOrPanic(abs("./mocks"))
 	defer chdir(workingDir)
 
 	var usercontext, err = Get()
@@ -130,9 +130,9 @@ func TestContainerContext(t *testing.T) {
 }
 
 func TestOrphanContainerContext(t *testing.T) {
-	findresource.SetSysRoot(abs("./mocks"))
+	setSysRootOrPanic(abs("./mocks"))
 	chdir(filepath.Join(workingDir, "mocks/orphan_container"))
-	defer findresource.SetSysRoot(abs("/"))
+	defer setSysRootOrPanic(abs("/"))
 	defer chdir(workingDir)
 
 	var usercontext, err = Get()
@@ -155,9 +155,9 @@ func TestOrphanContainerContext(t *testing.T) {
 }
 
 func TestInvalidContext(t *testing.T) {
-	findresource.SetSysRoot(abs("./mocks"))
+	setSysRootOrPanic(abs("./mocks"))
 	chdir(filepath.Join(workingDir, "mocks/schizophrenic"))
-	defer findresource.SetSysRoot(abs("/"))
+	defer setSysRootOrPanic(abs("/"))
 	defer chdir(workingDir)
 
 	var usercontext, err = Get()
@@ -176,6 +176,12 @@ func TestInvalidContext(t *testing.T) {
 
 	if err != ErrContainerInProjectRoot {
 		t.Errorf("Expected error to be "+ErrContainerInProjectRoot.Error()+", got %s instead", err)
+	}
+}
+
+func setSysRootOrPanic(dir string) {
+	if err := findresource.SetSysRoot(dir); err != nil {
+		panic(err)
 	}
 }
 

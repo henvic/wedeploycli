@@ -33,10 +33,26 @@ var rootDirectoryFailureCases = []rootDirectoryFailureProvider{
 	{"file", "", errReachedDirectoryTreeRoot},
 }
 
+func TestMain(m *testing.M) {
+	var (
+		defaultSysRoot string
+		ec             int
+	)
+
+	defer func() {
+		setSysRootOrPanic(defaultSysRoot)
+		os.Exit(ec)
+	}()
+
+	defaultSysRoot = GetSysRoot()
+	setSysRootOrPanic("./mocks")
+	ec = m.Run()
+}
+
 func TestGetTargetFileDirectory(t *testing.T) {
-	setSysRoot("./mocks")
+	setSysRootOrPanic("./mocks")
 	defer chdir(workingDir)
-	defer setSysRoot("/")
+	defer setSysRootOrPanic("/")
 
 	for _, each := range rootDirectoryCases {
 		if err := os.Chdir(filepath.Join(workingDir, each.dir)); err != nil {
@@ -58,10 +74,35 @@ func TestGetTargetFileDirectory(t *testing.T) {
 	}
 }
 
-func TestGetTargetFileDirectoryFailure(t *testing.T) {
-	setSysRoot("./mocks")
+func TestGetTargetFileDirectoryWithRelativePathSearch(t *testing.T) {
+	setSysRootOrPanic("./mocks")
 	defer chdir(workingDir)
-	defer setSysRoot("/")
+	defer setSysRootOrPanic("/")
+
+	for _, each := range rootDirectoryCases {
+		if err := os.Chdir(filepath.Join(workingDir, each.dir)); err != nil {
+			t.Error(err)
+		}
+
+		var directory, err = GetRootDirectory(".", sysRoot, each.file)
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		var want = filepath.Join(workingDir, each.want)
+		want, _ = filepath.Abs(want)
+
+		if directory != want {
+			t.Errorf("Wanted to find config at %s, got %s instead", want, directory)
+		}
+	}
+}
+
+func TestGetTargetFileDirectoryFailure(t *testing.T) {
+	setSysRootOrPanic("./mocks")
+	defer chdir(workingDir)
+	defer setSysRootOrPanic("/")
 
 	for _, each := range rootDirectoryFailureCases {
 		if err := os.Chdir(filepath.Join(workingDir, each.dir)); err != nil {
@@ -77,9 +118,9 @@ func TestGetTargetFileDirectoryFailure(t *testing.T) {
 }
 
 func TestGetTargetFileDelimiterDirectoryNotFoundFailure(t *testing.T) {
-	setSysRoot("./mocks")
+	setSysRootOrPanic("./mocks")
 	defer chdir(workingDir)
-	defer setSysRoot("/")
+	defer setSysRootOrPanic("/")
 
 	var _, err = GetRootDirectory(abs("./mocks/list/"), "./mocks/not", "basic")
 
@@ -89,9 +130,9 @@ func TestGetTargetFileDelimiterDirectoryNotFoundFailure(t *testing.T) {
 }
 
 func TestGetTargetFileDelimiterDirectoryNotDirectoryFailure(t *testing.T) {
-	setSysRoot("./mocks")
+	setSysRootOrPanic("./mocks")
 	defer chdir(workingDir)
-	defer setSysRoot("/")
+	defer setSysRootOrPanic("/")
 
 	var _, err = GetRootDirectory(abs("./mocks/list/"), "./mocks/list/basic", "foo")
 
@@ -101,9 +142,9 @@ func TestGetTargetFileDelimiterDirectoryNotDirectoryFailure(t *testing.T) {
 }
 
 func TestGetTargetFileDirectoryNotFoundFailure(t *testing.T) {
-	setSysRoot("./mocks")
+	setSysRootOrPanic("./mocks")
 	defer chdir(workingDir)
-	defer setSysRoot("/")
+	defer setSysRootOrPanic("/")
 
 	var _, err = GetRootDirectory(abs("./mocks/list/subdir/not/there"), sysRoot, "basic")
 
@@ -113,9 +154,9 @@ func TestGetTargetFileDirectoryNotFoundFailure(t *testing.T) {
 }
 
 func TestGetTargetFileDirectoryNotDirectoryFailure(t *testing.T) {
-	setSysRoot("./mocks")
+	setSysRootOrPanic("./mocks")
 	defer chdir(workingDir)
-	defer setSysRoot("/")
+	defer setSysRootOrPanic("/")
 
 	var _, err = GetRootDirectory(abs("./mocks/list/basic"), sysRoot, "foo")
 
@@ -127,14 +168,20 @@ func TestGetTargetFileDirectoryNotDirectoryFailure(t *testing.T) {
 func TestSetAndGetSysRoot(t *testing.T) {
 	var old = sysRoot
 	var want = "/foo/bar"
-	SetSysRoot("/foo/bar")
-	defer SetSysRoot(old)
+	setSysRootOrPanic("/foo/bar")
+	defer setSysRootOrPanic(old)
+
+	var got = GetSysRoot()
+
+	if !filepath.IsAbs(got) {
+		t.Errorf("SetSysRoot should be absolute, got %v instead", got)
+	}
 
 	if sysRoot != want {
 		t.Errorf("Wanted sysRoot to be %v, got %v instead", want, sysRoot)
 	}
 
-	if GetSysRoot() != want {
+	if got != want {
 		t.Errorf("Wanted sysRoot to be %v, got %v instead", want, sysRoot)
 	}
 }
@@ -145,12 +192,8 @@ func chdir(dir string) {
 	}
 }
 
-func setSysRoot(dir string) {
-	var err error
-
-	sysRoot, err = filepath.Abs(dir)
-
-	if err != nil {
+func setSysRootOrPanic(dir string) {
+	if err := SetSysRoot(dir); err != nil {
 		panic(err)
 	}
 }
