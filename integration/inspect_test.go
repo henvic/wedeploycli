@@ -70,7 +70,7 @@ func TestInspectPrintContextStructure(t *testing.T) {
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
-	var want = `Scope string
+	var want = `Scope usercontext.Scope
 ProjectRoot string
 ContainerRoot string
 ProjectID string

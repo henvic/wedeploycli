@@ -11,6 +11,7 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/hooks"
+	"github.com/wedeploy/cli/usercontext"
 	"github.com/wedeploy/cli/wdircontext"
 )
 
@@ -35,7 +36,7 @@ func buildRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if config.Context.Scope == "global" {
+	if config.Context.Scope == usercontext.GlobalScope {
 		return buildContainer(".")
 	}
 

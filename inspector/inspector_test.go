@@ -41,7 +41,7 @@ func TestPrintContainerSpec(t *testing.T) {
 
 func TestPrintContextSpec(t *testing.T) {
 	var got = GetSpec(ContextOverview{})
-	var want = []string{`Scope string`,
+	var want = []string{`Scope usercontext.Scope`,
 		`ProjectRoot string`,
 		`ContainerRoot string`,
 		`ProjectID string`,

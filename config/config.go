@@ -252,9 +252,9 @@ func (c *Config) banner() {
 }
 
 func setupContext() (err error) {
-	Context, err = usercontext.Get()
+	Context = &usercontext.Context{}
 
-	if err != nil {
+	if err = Context.Load(); err != nil {
 		err = errwrap.Wrapf("Fatal context setup failure: {{err}}", err)
 	}
 

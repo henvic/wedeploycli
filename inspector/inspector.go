@@ -10,6 +10,7 @@ import (
 	"github.com/wedeploy/cli/findresource"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/templates"
+	"github.com/wedeploy/cli/usercontext"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -27,7 +28,7 @@ func GetSpec(t interface{}) []string {
 
 // ContextOverview for the context visualization
 type ContextOverview struct {
-	Scope         string
+	Scope         usercontext.Scope
 	ProjectRoot   string
 	ContainerRoot string
 	ProjectID     string
@@ -42,7 +43,7 @@ func (overview *ContextOverview) loadProject(directory string) error {
 	case perr != nil:
 		return errwrap.Wrapf("Can't load project context on "+projectPath+": {{err}}", perr)
 	default:
-		overview.Scope = "project"
+		overview.Scope = usercontext.ProjectScope
 		overview.ProjectRoot = projectPath
 		overview.ProjectID = project.ID
 	}
@@ -58,7 +59,7 @@ func (overview *ContextOverview) loadContainer(directory string) error {
 	case cerr != nil:
 		return errwrap.Wrapf("Can't load container context on "+containerPath+": {{err}}", cerr)
 	default:
-		overview.Scope = "container"
+		overview.Scope = usercontext.ContainerScope
 		overview.ContainerRoot = containerPath
 		overview.ContainerID = container.ID
 	}
@@ -68,7 +69,7 @@ func (overview *ContextOverview) loadContainer(directory string) error {
 
 // Load the context overview for a given directory
 func (overview *ContextOverview) Load(directory string) error {
-	overview.Scope = "Global"
+	overview.Scope = usercontext.GlobalScope
 
 	if err := overview.loadProject(directory); err != nil {
 		return err

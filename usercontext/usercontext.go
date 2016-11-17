@@ -11,7 +11,7 @@ import (
 
 // Context structure
 type Context struct {
-	Scope         string
+	Scope         Scope
 	ProjectRoot   string
 	ContainerRoot string
 	Remote        string
@@ -22,46 +22,59 @@ type Context struct {
 	Token         string
 }
 
+// Scope is the type for the current mode of the CLI tool (based on current working directory)
+type Scope string
+
+const (
+	// GlobalScope is the scope when no container on project or project is active
+	GlobalScope Scope = "global"
+
+	// ProjectScope is the scope for when a project is active, but no container is active
+	ProjectScope Scope = "project"
+
+	// ContainerScope is the scope for when a container on a project is active
+	ContainerScope Scope = "container"
+)
+
 // ErrContainerInProjectRoot happens when a project.json and container.json is found at the same directory level
 var ErrContainerInProjectRoot = errors.New("Container and project definition files at the same directory level")
 
-// Get returns a Context object with the current scope
-func Get() (*Context, error) {
-	cx := &Context{}
+// Load a Context object with the current scope
+func (cx *Context) Load() error {
+	cx.Scope = GlobalScope
 
 	var project, errProject = GetProjectRootDirectory(findresource.GetSysRoot())
 
-	cx.ProjectRoot = project
-	cx.Scope = "global"
-
 	if errProject != nil && os.IsNotExist(errProject) {
-		return cx, nil
+		return nil
 	}
+
+	cx.ProjectRoot = project
 
 	if errProject != nil {
-		return cx, errwrap.Wrapf("Error trying to read project: {{err}}", errProject)
+		return errwrap.Wrapf("Error trying to read project: {{err}}", errProject)
 	}
 
-	cx.Scope = "project"
+	cx.Scope = ProjectScope
 
 	var container, errContainer = GetContainerRootDirectory(project)
 
 	if errContainer != nil && os.IsNotExist(errContainer) {
-		return cx, nil
+		return nil
 	}
 
 	if errContainer != nil {
-		return cx, errwrap.Wrapf("Error trying to read container: {{err}}", errContainer)
+		return errwrap.Wrapf("Error trying to read container: {{err}}", errContainer)
 	}
 
 	if filepath.Dir(container) == filepath.Dir(project) {
-		return cx, ErrContainerInProjectRoot
+		return ErrContainerInProjectRoot
 	}
 
-	cx.Scope = "container"
+	cx.Scope = ContainerScope
 	cx.ContainerRoot = container
 
-	return cx, nil
+	return nil
 }
 
 // GetProjectRootDirectory returns project dir for the current scope
