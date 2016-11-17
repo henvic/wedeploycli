@@ -136,7 +136,7 @@ func getContainer(directory string) (path string, container *containers.Containe
 	container, err = containers.Read(containerPath)
 
 	if err != nil {
-		return "", nil, errwrap.Wrapf("Inspection failure on container: {{err}}", err)
+		return containerPath, nil, errwrap.Wrapf("Inspection failure on container: {{err}}", err)
 	}
 
 	return containerPath, container, nil
