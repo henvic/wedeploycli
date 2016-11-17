@@ -223,9 +223,9 @@ function publish() {
   --channel=$RELEASE_CHANNEL \
   --config=$config \
   -- \
-  -ldflags="-X github.com/wedeploy/cli/defaults.Version=$NEW_RELEASE_VERSION \
-  -X github.com/wedeploy/cli/defaults.Build=$BUILD_COMMIT \
-  -X github.com/wedeploy/cli/defaults.BuildTime=$BUILD_TIME" \
+  -ldflags="-X 'github.com/wedeploy/cli/defaults.Version=$NEW_RELEASE_VERSION' \
+  -X 'github.com/wedeploy/cli/defaults.Build=$BUILD_COMMIT' \
+  -X 'github.com/wedeploy/cli/defaults.BuildTime=$BUILD_TIME'" \
   -gcflags=-trimpath=$GOPATH \
   -asmflags=-trimpath=$GOPATH \
   github.com/wedeploy/cli
