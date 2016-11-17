@@ -39,25 +39,24 @@ const (
 // ErrContainerInProjectRoot happens when a project.json and container.json is found at the same directory level
 var ErrContainerInProjectRoot = errors.New("Container and project definition files at the same directory level")
 
-// Load a Context object with the current scope
-func (cx *Context) Load() error {
-	cx.Scope = GlobalScope
-
+func (cx *Context) loadProject() error {
 	var project, errProject = GetProjectRootDirectory(findresource.GetSysRoot())
 
 	if errProject != nil && os.IsNotExist(errProject) {
 		return nil
 	}
 
-	cx.ProjectRoot = project
-
 	if errProject != nil {
 		return errwrap.Wrapf("Error trying to read project: {{err}}", errProject)
 	}
 
 	cx.Scope = ProjectScope
+	cx.ProjectRoot = project
+	return nil
+}
 
-	var container, errContainer = GetContainerRootDirectory(project)
+func (cx *Context) loadContainer() error {
+	var container, errContainer = GetContainerRootDirectory(cx.ProjectRoot)
 
 	if errContainer != nil && os.IsNotExist(errContainer) {
 		return nil
@@ -67,12 +66,26 @@ func (cx *Context) Load() error {
 		return errwrap.Wrapf("Error trying to read container: {{err}}", errContainer)
 	}
 
-	if filepath.Dir(container) == filepath.Dir(project) {
+	if filepath.Dir(container) == filepath.Dir(cx.ProjectRoot) {
 		return ErrContainerInProjectRoot
 	}
 
 	cx.Scope = ContainerScope
 	cx.ContainerRoot = container
+	return nil
+}
+
+// Load a Context object with the current scope
+func (cx *Context) Load() error {
+	cx.Scope = GlobalScope
+
+	if err := cx.loadProject(); err != nil {
+		return err
+	}
+
+	if err := cx.loadContainer(); err != nil {
+		return err
+	}
 
 	return nil
 }
