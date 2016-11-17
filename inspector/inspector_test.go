@@ -2,6 +2,9 @@ package inspector
 
 import (
 	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/wedeploy/api-go/jsonlib"
@@ -10,7 +13,32 @@ import (
 	"github.com/wedeploy/cli/tdata"
 
 	"reflect"
+
+	"github.com/wedeploy/cli/findresource"
 )
+
+func TestMain(m *testing.M) {
+	var (
+		defaultSysRoot string
+		ec             int
+	)
+
+	defer func() {
+		if err := findresource.SetSysRoot(defaultSysRoot); err != nil {
+			panic(err)
+		}
+
+		os.Exit(ec)
+	}()
+
+	defaultSysRoot = findresource.GetSysRoot()
+
+	if err := findresource.SetSysRoot("./mocks"); err != nil {
+		panic(err)
+	}
+
+	ec = m.Run()
+}
 
 func TestGetSpecContextOverview(t *testing.T) {
 	var got = GetSpec(projects.Project{})
@@ -114,6 +142,17 @@ func TestInspectProjectCorrupted(t *testing.T) {
 	}
 }
 
+func TestInspectProjectCorruptedOnContextOverview(t *testing.T) {
+	var _, err = InspectContext("", "./mocks/corrupted-project")
+	var wantErr = fmt.Sprintf(`Can't load project context on %v:`+
+		` Inspection failure on project: invalid character 'c' looking for beginning of object key string`,
+		abs("mocks/corrupted-project"))
+
+	if err == nil || err.Error() != wantErr {
+		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
+	}
+}
+
 func TestInspectContainerList(t *testing.T) {
 	var got, err = InspectContainer("", "./mocks/my-project/email")
 
@@ -174,4 +213,130 @@ func TestInspectContainerCorrupted(t *testing.T) {
 	if err == nil || err.Error() != wantErr {
 		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
 	}
+}
+
+func TestInspectContainerCorruptedOnContextOverview(t *testing.T) {
+	var _, err = InspectContext("", "./mocks/my-project/corrupted-container")
+	var wantErr = fmt.Sprintf(`Can't load container context on %v:`+
+		` Inspection failure on container: unexpected end of JSON input`, abs("mocks/my-project/corrupted-container"))
+
+	if err == nil || err.Error() != wantErr {
+		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
+	}
+}
+
+func TestInspectContextOverviewTypeGlobal(t *testing.T) {
+	var overview = ContextOverview{}
+	var err = overview.Load("./mocks/")
+
+	if err != nil {
+		t.Errorf("Expected error to be nil, got %v instead", err)
+	}
+
+	var want = ContextOverview{
+		Scope:         "global",
+		ProjectRoot:   "",
+		ContainerRoot: "",
+		ProjectID:     "",
+		ContainerID:   "",
+	}
+
+	if !reflect.DeepEqual(want, overview) {
+		t.Errorf("Wanted ContextOverview %+v, got %+v instead", want, overview)
+	}
+}
+
+func TestInspectContextOverviewTypeProject(t *testing.T) {
+	var overview = ContextOverview{}
+	var err = overview.Load("./mocks/my-project/")
+
+	if err != nil {
+		t.Errorf("Expected error to be nil, got %v instead", err)
+	}
+
+	var want = ContextOverview{
+		Scope:         "project",
+		ProjectRoot:   abs("./mocks/my-project"),
+		ContainerRoot: "",
+		ProjectID:     "my-project",
+		ContainerID:   "",
+	}
+
+	if !reflect.DeepEqual(want, overview) {
+		t.Errorf("Wanted ContextOverview %+v, got %+v instead", want, overview)
+	}
+}
+
+func TestInspectContextOverviewTypeContainer(t *testing.T) {
+	var overview = ContextOverview{}
+	var err = overview.Load("./mocks/my-project/email")
+
+	if err != nil {
+		t.Errorf("Expected error to be nil, got %v instead", err)
+	}
+
+	var want = ContextOverview{
+		Scope:         "container",
+		ProjectRoot:   abs("./mocks/my-project"),
+		ContainerRoot: abs("./mocks/my-project/email"),
+		ProjectID:     "my-project",
+		ContainerID:   "email",
+	}
+
+	if !reflect.DeepEqual(want, overview) {
+		t.Errorf("Wanted ContextOverview %+v, got %+v instead", want, overview)
+	}
+}
+
+func TestInspectContextOverviewProject(t *testing.T) {
+	var got, err = InspectContext("", "./mocks/my-project")
+
+	if err != nil {
+		t.Errorf("Expected error to be nil, got %v instead", err)
+	}
+
+	var want = fmt.Sprintf(`{
+    "Scope": "project",
+    "ProjectRoot": "%v",
+    "ContainerRoot": "",
+    "ProjectID": "my-project",
+    "ContainerID": ""
+}`,
+		abs("mocks/my-project"))
+
+	if got != want {
+		t.Errorf("Wanted %v, got %v instead", want, got)
+	}
+}
+
+func TestInspectContextOverviewContainer(t *testing.T) {
+	var got, err = InspectContext("", "./mocks/my-project/email")
+
+	if err != nil {
+		t.Errorf("Expected error to be nil, got %v instead", err)
+	}
+
+	var want = fmt.Sprintf(`{
+    "Scope": "container",
+    "ProjectRoot": "%v",
+    "ContainerRoot": "%v",
+    "ProjectID": "my-project",
+    "ContainerID": "email"
+}`,
+		abs("mocks/my-project"),
+		abs("mocks/my-project/email"))
+
+	if got != want {
+		t.Errorf("Wanted %v, got %v instead", want, got)
+	}
+}
+
+func abs(path string) string {
+	var abs, err = filepath.Abs(path)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return abs
 }
