@@ -168,7 +168,7 @@ func TestInspectContainerNotFound(t *testing.T) {
 }
 
 func TestInspectContainerCorrupted(t *testing.T) {
-	var _, err = InspectContainer("", "./mocks/my-project/container-corrupted")
+	var _, err = InspectContainer("", "./mocks/my-project/corrupted-container")
 	var wantErr = `Inspection failure on container: unexpected end of JSON input`
 
 	if err == nil || err.Error() != wantErr {
