@@ -7,6 +7,9 @@ var (
 	// Build commit
 	Build = ""
 
+	// BuildTime is the time when the build was generated
+	BuildTime = ""
+
 	// Hub for the system
 	Hub = "http://api.dashboard.wedeploy.io"
 

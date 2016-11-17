@@ -200,8 +200,12 @@ function tag() {
     git log $LAST_TAG..HEAD --pretty="format:%h %s" --abbrev=10 || true
     echo ""
     echo ""
+    echo "Go version:"
+    go version | awk '{print $3}'
     echo "Build commit:"
     echo $BUILD_COMMIT
+    echo "Build time:"
+    echo $BUILD_TIME
     echo ""
   ) > .git/TAG_EDITMSG
 
@@ -220,7 +224,8 @@ function publish() {
   --config=$config \
   -- \
   -ldflags="-X github.com/wedeploy/cli/defaults.Version=$NEW_RELEASE_VERSION \
-  -X github.com/wedeploy/cli/defaults.Build=$BUILD_COMMIT" \
+  -X github.com/wedeploy/cli/defaults.Build=$BUILD_COMMIT \
+  -X github.com/wedeploy/cli/defaults.BuildTime=$BUILD_TIME" \
   -gcflags=-trimpath=$GOPATH \
   -asmflags=-trimpath=$GOPATH \
   github.com/wedeploy/cli
@@ -256,8 +261,9 @@ function release() {
   # normalize by removing leading v (i.e., v0.0.1)
   NEW_RELEASE_VERSION=`echo $NEW_RELEASE_VERSION | sed 's/^v//'`
   BUILD_COMMIT=`git rev-list -n 1 HEAD`
+  BUILD_TIME=`date -u`
 
-  echo "build commit $BUILD_COMMIT"
+  echo "build commit $BUILD_COMMIT at $BUILD_TIME"
 
   runTestsOnDrone
   checkPublishedTag

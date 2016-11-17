@@ -5,6 +5,8 @@ import (
 	"runtime"
 	"testing"
 
+	"strings"
+
 	"github.com/wedeploy/cli/defaults"
 )
 
@@ -21,11 +23,13 @@ func TestVersion(t *testing.T) {
 		os,
 		arch)
 
-	var e = &Expect{
-		Stdout:   version,
-		ExitCode: 0,
+	cmd.Run()
+
+	if cmd.ExitCode != 0 {
+		t.Errorf("Wanted exit code 0, got %v instead", cmd.ExitCode)
 	}
 
-	cmd.Run()
-	e.Assert(t, cmd)
+	if !strings.Contains(cmd.Stdout.String(), version) {
+		t.Errorf("Wanted version message doesn't contain %v, got %v instead", version, cmd.Stdout)
+	}
 }
