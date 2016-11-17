@@ -200,13 +200,9 @@ function tag() {
     git log $LAST_TAG..HEAD --pretty="format:%h %s" --abbrev=10 || true
     echo ""
     echo ""
-    echo "Go version:"
-    go version | awk '{print $3}'
-    echo "Build commit:"
-    echo $BUILD_COMMIT
-    echo "Build time:"
-    echo $BUILD_TIME
-    echo ""
+    echo "Build commit: $BUILD_COMMIT"
+    echo "Build time: $BUILD_TIME"
+    echo "Go version: `go version | awk '{print $3}'`"
   ) > .git/TAG_EDITMSG
 
   bash -c "$editor .git/TAG_EDITMSG"
