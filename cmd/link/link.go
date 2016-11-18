@@ -75,7 +75,7 @@ func getContainersDirectoriesFromScope() ([]string, error) {
 	var absList = []string{}
 
 	for _, item := range list {
-		absList = append(absList, filepath.Join(config.Context.ProjectRoot, item))
+		absList = append(absList, filepath.Join(config.Context.ProjectRoot, item.Location))
 	}
 
 	return absList, err

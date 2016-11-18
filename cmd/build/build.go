@@ -28,7 +28,13 @@ func getContainersFromScope() ([]string, error) {
 		return []string{container}, nil
 	}
 
-	return containers.GetListFromDirectory(config.Context.ProjectRoot)
+	var list, listErr = containers.GetListFromDirectory(config.Context.ProjectRoot)
+
+	if listErr != nil {
+		return []string{}, listErr
+	}
+
+	return list.GetLocations(), nil
 }
 
 func buildRun(cmd *cobra.Command, args []string) error {

@@ -28,10 +28,35 @@ func TestGetListFromDirectory(t *testing.T) {
 		t.Errorf("Expected %v, got %v instead", nil, err)
 	}
 
-	var wantContainers = []string{"email", "landing", "speaker"}
+	var wantIDs = []string{"email", "landing", "speaker"}
 
-	if !reflect.DeepEqual(containers, wantContainers) {
-		t.Errorf("Want %v, got %v instead", wantContainers, containers)
+	if !reflect.DeepEqual(containers.GetIDs(), wantIDs) {
+		t.Errorf("Want %v, got %v instead", wantIDs, containers)
+	}
+
+	var wantLocations = []string{"email", "landing", "speaker"}
+
+	if !reflect.DeepEqual(containers.GetLocations(), wantLocations) {
+		t.Errorf("Want %v, got %v instead", wantLocations, containers)
+	}
+
+	var want = ContainerInfoList{
+		ContainerInfo{
+			"email",
+			"email",
+		},
+		ContainerInfo{
+			"landing",
+			"landing",
+		},
+		ContainerInfo{
+			"speaker",
+			"speaker",
+		},
+	}
+
+	if !reflect.DeepEqual(containers, want) {
+		t.Errorf("Want %v, got %v instead", want, containers)
 	}
 }
 

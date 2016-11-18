@@ -51,8 +51,39 @@ var (
 	ErrInvalidContainerID = errors.New("Invalid container ID")
 )
 
+// ContainerInfo is for a tuple of container ID and Location.
+type ContainerInfo struct {
+	ID       string
+	Location string
+}
+
+// ContainerInfoList is a list of ContainerInfo
+type ContainerInfoList []ContainerInfo
+
+// GetLocations returns the locations of a given ContainerInfoList.
+func (c ContainerInfoList) GetLocations() []string {
+	var locations = []string{}
+
+	for _, ci := range c {
+		locations = append(locations, ci.Location)
+	}
+
+	return locations
+}
+
+// GetIDs returns the containers ids of a given ContainerInfoList.
+func (c ContainerInfoList) GetIDs() []string {
+	var ids = []string{}
+
+	for _, ci := range c {
+		ids = append(ids, ci.ID)
+	}
+
+	return ids
+}
+
 // GetListFromDirectory returns a list of containers on the given diretory
-func GetListFromDirectory(root string) ([]string, error) {
+func GetListFromDirectory(root string) (ContainerInfoList, error) {
 	var files, err = ioutil.ReadDir(root)
 
 	if err != nil {
@@ -200,8 +231,8 @@ func getValidateAPIFaultError(errDoc apihelper.APIFault) error {
 	return errDoc
 }
 
-func getListFromDirectory(dir string, files []os.FileInfo) ([]string, error) {
-	var list []string
+func getListFromDirectory(dir string, files []os.FileInfo) (ContainerInfoList, error) {
+	var list = ContainerInfoList{}
 	var idToPathMap = map[string]string{}
 
 	for _, file := range files {
@@ -217,7 +248,10 @@ func getListFromDirectory(dir string, files []os.FileInfo) ([]string, error) {
 			}
 
 			idToPathMap[container.ID] = file.Name()
-			list = append(list, file.Name())
+			list = append(list, ContainerInfo{
+				ID:       container.ID,
+				Location: file.Name(),
+			})
 			continue
 		}
 
