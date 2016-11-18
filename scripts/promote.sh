@@ -41,4 +41,4 @@ NEW_RELEASE_VERSION=`echo $NEW_RELEASE_VERSION | sed 's/^v//'`
 read -p "Promote version to release channel [stable]: " RELEASE_CHANNEL < /dev/tty;
 RELEASE_CHANNEL=${RELEASE_CHANNEL:-"stable"}
 
-equinox publish --channel $RELEASE_CHANNEL --config $config --release $VERSION
+equinox publish --channel $RELEASE_CHANNEL --config $config --release $NEW_RELEASE_VERSION
