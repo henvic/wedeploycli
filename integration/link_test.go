@@ -2,6 +2,7 @@ package integration
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
@@ -21,9 +22,22 @@ func TestLink(t *testing.T) {
 				t.Errorf("Expected method to be POST, got %v instead", r.Method)
 			}
 
-			var wantRequestURI = "/projects?id=app"
+			var wantRequestURI = "/projects"
 			if r.RequestURI != wantRequestURI {
 				t.Errorf("Expected RequestURI %v, got %v instead", wantRequestURI, r.RequestURI)
+			}
+
+			var body, err = ioutil.ReadAll(r.Body)
+
+			if err != nil {
+				t.Errorf("Wanted err to be nil, got %v instead", err)
+			}
+
+			var want = tdata.FromFile("mocks/home/bucket/project/project.json")
+			var got = string(body)
+
+			if want != got {
+				t.Errorf("Wanted sent file to have contents %v, got %v instead", want, got)
 			}
 
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
@@ -66,7 +80,7 @@ func TestLink(t *testing.T) {
 
 	var e = &Expect{
 		ExitCode: 0,
-		Stdout:   tdata.FromFile("mocks/link/link"),
+		Stdout:   tdata.FromFile("mocks/link/link_new_project"),
 	}
 
 	cmd.Run()
@@ -89,7 +103,7 @@ func TestLinkToProject(t *testing.T) {
 			}
 
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
-			fmt.Fprintf(w, "%v", tdata.FromFile("mocks/home/bucket/project/container/projects_post_response_alt_id.json"))
+			fmt.Fprintf(w, "%v", tdata.FromFile("mocks/home/bucket/container-outside-project/projects_post_response_alt_id.json"))
 		})
 
 	servertest.IntegrationMux.HandleFunc("/deploy",
@@ -123,7 +137,7 @@ func TestLinkToProject(t *testing.T) {
 		Args: []string{"link", "--project", "bar", "--no-color"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
-		Dir: "mocks/home/bucket/project/container",
+		Dir: "mocks/home/bucket/container-outside-project",
 	}
 
 	var e = &Expect{
@@ -133,6 +147,56 @@ func TestLinkToProject(t *testing.T) {
 
 	cmd.Run()
 	e.Assert(t, cmd)
+}
+
+func TestLinkToProjectErrorProjectContextAndProjectFlag(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	var cmd = &Command{
+		Args: []string{"link", "--project", "bar", "--no-color"},
+		Env: []string{
+			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir: "mocks/home/bucket/project",
+	}
+
+	cmd.Run()
+
+	if cmd.ExitCode != 1 {
+		t.Errorf("Unexpected exit code: %v", cmd.ExitCode)
+	}
+
+	var want = "Error: Can't use we link arguments when inside a project\n"
+	var got = cmd.Stderr.String()
+
+	if want != got {
+		t.Errorf("Expected stderr to be %v, got %v instead", want, got)
+	}
+}
+
+func TestLinkToProjectOnContainerErrorProjectContextAndProjectFlag(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	var cmd = &Command{
+		Args: []string{"link", "--project", "bar", "--no-color"},
+		Env: []string{
+			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir: "mocks/home/bucket/project/container",
+	}
+
+	cmd.Run()
+
+	if cmd.ExitCode != 1 {
+		t.Errorf("Unexpected exit code: %v", cmd.ExitCode)
+	}
+
+	var want = "Error: Can't use we link arguments when inside a project\n"
+	var got = cmd.Stderr.String()
+
+	if want != got {
+		t.Errorf("Expected stderr to be %v, got %v instead", want, got)
+	}
 }
 
 func TestLinkToProjectServerFailure(t *testing.T) {
@@ -145,7 +209,7 @@ func TestLinkToProjectServerFailure(t *testing.T) {
 				t.Errorf("Expected method to be POST, got %v instead", r.Method)
 			}
 
-			var wantRequestURI = "/projects?id=bar"
+			var wantRequestURI = "/projects"
 			if r.RequestURI != wantRequestURI {
 				t.Errorf("Expected RequestURI %v, got %v instead", wantRequestURI, r.RequestURI)
 			}
@@ -163,7 +227,7 @@ func TestLinkToProjectServerFailure(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"link", "--project", "bar", "--no-color"},
+		Args: []string{"link", "--no-color"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
@@ -200,7 +264,7 @@ func TestLinkToProjectServerFailureQuiet(t *testing.T) {
 				t.Errorf("Expected method to be POST, got %v instead", r.Method)
 			}
 
-			var wantRequestURI = "/projects?id=bar"
+			var wantRequestURI = "/projects"
 			if r.RequestURI != wantRequestURI {
 				t.Errorf("Expected RequestURI %v, got %v instead", wantRequestURI, r.RequestURI)
 			}
@@ -218,7 +282,7 @@ func TestLinkToProjectServerFailureQuiet(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"link", "--project", "bar", "--no-color", "--quiet"},
+		Args: []string{"link", "--no-color", "--quiet"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",

@@ -1,0 +1,20 @@
+{
+    "health": "unknown",
+    "source": null,
+    "homeContainer": null,
+    "ownerId": null,
+    "users": [
+        null
+    ],
+    "createdAt": "1479149707886",
+    "githubToken": null,
+    "maxContainers": 5,
+    "githubRepository": null,
+    "customDomains": null,
+    "githubHookId": null,
+    "invitations": {},
+    "containers": {},
+    "id": "bar",
+    "masterToken": "88cb3ed8-7513-4639-a354-0ebd4e84d45f",
+    "githubBranch": null
+}
