@@ -45,6 +45,7 @@ func TestGetSpecContextOverview(t *testing.T) {
 	var want = []string{`ID string`,
 		`CustomDomains []string`,
 		`Health string`,
+		`HomeContainer string`,
 		`Description string`,
 		`Containers containers.Containers`}
 

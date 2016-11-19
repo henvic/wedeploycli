@@ -24,6 +24,7 @@ func TestInspectPrintProjectStructure(t *testing.T) {
 	var want = `ID string
 CustomDomains []string
 Health string
+HomeContainer string
 Description string
 Containers containers.Containers`
 
@@ -49,6 +50,7 @@ func TestInspectPrintContainerStructure(t *testing.T) {
 	var want = `ID string
 		CustomDomains []string
 		Health string
+		HomeContainer string
 		Description string
 		Containers containers.Containers`
 

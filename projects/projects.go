@@ -22,6 +22,7 @@ type Project struct {
 	ID            string                `json:"id"`
 	CustomDomains []string              `json:"customDomains,omitempty"`
 	Health        string                `json:"health,omitempty"`
+	HomeContainer string                `json:"homeContainer,omitempty"`
 	Description   string                `json:"description,omitempty"`
 	Containers    containers.Containers `json:"containers,omitempty"`
 }
