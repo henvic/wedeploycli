@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -244,7 +245,10 @@ func getListFromDirectory(dir string, files []os.FileInfo) (ContainerInfoList, e
 
 		if err == nil {
 			if cp, ok := idToPathMap[container.ID]; ok {
-				return nil, errors.New("Can't list containers: ID \"" + container.ID + "\" was found duplicated on containers ./" + cp + " and ./" + file.Name())
+				return nil, fmt.Errorf(`Can't list containers: ID "%v" was found duplicated on containers %v and %v`,
+					container.ID,
+					"./"+cp,
+					"./"+file.Name())
 			}
 
 			idToPathMap[container.ID] = file.Name()
