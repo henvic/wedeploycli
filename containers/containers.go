@@ -85,13 +85,81 @@ func (c ContainerInfoList) GetIDs() []string {
 
 // GetListFromDirectory returns a list of containers on the given diretory
 func GetListFromDirectory(root string) (ContainerInfoList, error) {
-	var files, err = ioutil.ReadDir(root)
+	return (&listFromDirectoryGetter{}).Walk(root)
+}
 
-	if err != nil {
+type listFromDirectoryGetter struct {
+	list     ContainerInfoList
+	idDirMap map[string]string
+	root     string
+}
+
+func (l *listFromDirectoryGetter) Walk(root string) (ContainerInfoList, error) {
+	var err error
+
+	if len(root) != 0 {
+		if l.root, err = filepath.Abs(root); err != nil {
+			return nil, err
+		}
+	}
+
+	l.list = ContainerInfoList{}
+	l.idDirMap = map[string]string{}
+
+	if err = filepath.Walk(l.root, l.walkFunc); err != nil {
 		return nil, err
 	}
 
-	return getListFromDirectory(root, files)
+	return l.list, nil
+}
+
+func (l *listFromDirectoryGetter) walkFunc(path string, info os.FileInfo, err error) error {
+	if err != nil {
+		return err
+	}
+
+	if info.Name() == ".nocontainer" {
+		return filepath.SkipDir
+	}
+
+	if info.IsDir() || info.Name() != "container.json" {
+		return nil
+	}
+
+	return l.readFunc(path)
+}
+
+func (l *listFromDirectoryGetter) readFunc(path string) error {
+	var dir = strings.TrimSuffix(path, "/container.json")
+	var container, errRead = Read(dir)
+
+	switch {
+	case errRead == nil:
+		return l.addFunc(container, dir)
+	case errRead == ErrContainerNotFound:
+		return nil
+	default:
+		return errwrap.Wrapf("Can't list containers: error reading "+
+			path+
+			": {{err}}", errRead)
+	}
+}
+
+func (l *listFromDirectoryGetter) addFunc(container *Container, dir string) error {
+	if cp, ok := l.idDirMap[container.ID]; ok {
+		return fmt.Errorf(`Can't list containers: ID "%v" was found duplicated on containers %v and %v`,
+			container.ID,
+			cp,
+			dir)
+	}
+
+	l.idDirMap[container.ID] = dir
+	l.list = append(l.list, ContainerInfo{
+		ID:       container.ID,
+		Location: strings.TrimPrefix(dir, l.root+"/"),
+	})
+
+	return filepath.SkipDir
 }
 
 // List containers of a given project
@@ -230,43 +298,6 @@ func getValidateAPIFaultError(errDoc apihelper.APIFault) error {
 	}
 
 	return errDoc
-}
-
-func getListFromDirectory(dir string, files []os.FileInfo) (ContainerInfoList, error) {
-	var list = ContainerInfoList{}
-	var idToPathMap = map[string]string{}
-
-	for _, file := range files {
-		if !file.IsDir() {
-			continue
-		}
-
-		var container, err = Read(filepath.Join(dir, file.Name()))
-
-		if err == nil {
-			if cp, ok := idToPathMap[container.ID]; ok {
-				return nil, fmt.Errorf(`Can't list containers: ID "%v" was found duplicated on containers %v and %v`,
-					container.ID,
-					"./"+cp,
-					"./"+file.Name())
-			}
-
-			idToPathMap[container.ID] = file.Name()
-			list = append(list, ContainerInfo{
-				ID:       container.ID,
-				Location: file.Name(),
-			})
-			continue
-		}
-
-		if err != ErrContainerNotFound {
-			return nil, errwrap.Wrapf("Can't list containers: error reading "+
-				filepath.Join(dir, file.Name(), "container.json")+
-				": {{err}}", err)
-		}
-	}
-
-	return list, nil
 }
 
 // normalizePathToUnix is a filter for normalizing Windows paths to Unix-style

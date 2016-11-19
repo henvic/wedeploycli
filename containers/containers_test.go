@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -60,6 +61,70 @@ func TestGetListFromDirectory(t *testing.T) {
 	}
 }
 
+func TestGetListFromDirectoryOnProjectWithContainersInsideSubdirectories(t *testing.T) {
+	var containers, err = GetListFromDirectory("mocks/project-with-containers-inside-subdirs")
+
+	if err != nil {
+		t.Errorf("Expected %v, got %v instead", nil, err)
+	}
+
+	var wantIDs = []string{"level-1", "level-2", "level-2-2", "level-3"}
+
+	if !reflect.DeepEqual(containers.GetIDs(), wantIDs) {
+		t.Errorf("Want %v, got %v instead", wantIDs, containers)
+	}
+
+	for _, id := range containers.GetIDs() {
+		if id == "unreachable-container" ||
+			id == "skipped-unreachable-container" ||
+			id == "same-dir-skipped-unreachable-container" {
+			t.Errorf("%v should be unreachable", id)
+		}
+	}
+
+	var wantLocations = []string{
+		"container-level-1",
+		"sub-dir/container-level-2",
+		"sub-dir-2/container-level-2-2",
+		"sub-dir-2/sub-dir/container-level-3",
+	}
+
+	if !reflect.DeepEqual(containers.GetLocations(), wantLocations) {
+		t.Errorf("Want %v, got %v instead", wantLocations, containers)
+	}
+
+	var want = ContainerInfoList{
+		ContainerInfo{
+			"level-1",
+			"container-level-1",
+		},
+		ContainerInfo{
+			"level-2",
+			"sub-dir/container-level-2",
+		},
+		ContainerInfo{
+			"level-2-2",
+			"sub-dir-2/container-level-2-2",
+		},
+		ContainerInfo{
+			"level-3",
+			"sub-dir-2/sub-dir/container-level-3",
+		},
+	}
+
+	if !reflect.DeepEqual(containers, want) {
+		t.Errorf("Want %v, got %v instead", want, containers)
+	}
+
+	// noWhat variable just to avoid a replace all messing things up
+	// mocks/project-with-containers-inside-subdirs/sub-dir-2/same-dir-skipped-unreachable-container
+	// also tries to fail if that happens
+	var noWhat = "container"
+	if _, err = os.Stat("mocks/project-with-containers-inside-subdirs/sub-dir-2/skip/.no" + noWhat); err != nil {
+		t.Fatalf(`.nocontainer not found: filepath.Walk might fail given that we are counting on its lexical order walk`)
+	}
+}
+
 func TestGetListFromDirectoryDuplicateID(t *testing.T) {
 	var containers, err = GetListFromDirectory("mocks/project-with-duplicate-containers-ids")
 
@@ -71,7 +136,9 @@ func TestGetListFromDirectoryDuplicateID(t *testing.T) {
 		t.Errorf("Expected error, got %v instead.", err)
 	}
 
-	var wantErr = `Can't list containers: ID "email" was found duplicated on containers ./one and ./two`
+	var wantErr = fmt.Sprintf(`Can't list containers: ID "email" was found duplicated on containers %v and %v`,
+		abs("./mocks/project-with-duplicate-containers-ids/one"),
+		abs("./mocks/project-with-duplicate-containers-ids/two"))
 
 	if err.Error() != wantErr {
 		t.Errorf("Expected error message to be %v, got %v instead", wantErr, err)
@@ -449,4 +516,14 @@ func TestNormalizePathToUnix(t *testing.T) {
 			t.Errorf("Expected %v, got %v instead", c.want, got)
 		}
 	}
+}
+
+func abs(path string) string {
+	var abs, err = filepath.Abs(path)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return abs
 }

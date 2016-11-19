@@ -341,6 +341,31 @@ func TestInspectContextOnContainerContextList(t *testing.T) {
 	e.Assert(t, cmd)
 }
 
+func TestInspectContextListOnContainerOnProjectWithContainersInsideSubdirectories(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	var mock = "./mocks/inspect/project-with-containers-inside-subdirs/sub-dir-2/sub-dir/container-level-3"
+
+	var cmd = &Command{
+		Args: []string{"inspect", "context"},
+		Env: []string{
+			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir: mock,
+	}
+
+	var path = abs("./mocks/inspect/project-with-containers-inside-subdirs")
+	var want = strings.Replace(tdata.FromFile(mock+"/context-list.json"), "{{PATH}}", path, -1)
+
+	var e = &Expect{
+		ExitCode: 0,
+		Stdout:   want,
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+}
+
 func TestInspectContextOnContainerContextFormat(t *testing.T) {
 	defer Teardown()
 	Setup()
