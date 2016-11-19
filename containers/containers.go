@@ -256,7 +256,9 @@ func getListFromDirectory(dir string, files []os.FileInfo) (ContainerInfoList, e
 		}
 
 		if err != ErrContainerNotFound {
-			return nil, errwrap.Wrapf("Can't list containers: error reading "+file.Name()+": {{err}}", err)
+			return nil, errwrap.Wrapf("Can't list containers: error reading "+
+				filepath.Join(dir, file.Name(), "container.json")+
+				": {{err}}", err)
 		}
 	}
 
