@@ -1,0 +1,13 @@
+{
+    "Scope": "project",
+    "ProjectRoot": "%v/mocks/inspect/my-project",
+    "ContainerRoot": "",
+    "ProjectID": "my-project",
+    "ContainerID": "",
+    "ProjectContainers": [
+        {
+            "ID": "email",
+            "Location": "%v/mocks/inspect/my-project/email"
+        }
+    ]
+}

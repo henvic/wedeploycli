@@ -1,0 +1,8 @@
+{
+    "Scope": "global",
+    "ProjectRoot": "",
+    "ContainerRoot": "%v/mocks/inspect/container-outside-project",
+    "ProjectID": "",
+    "ContainerID": "alone",
+    "ProjectContainers": null
+}

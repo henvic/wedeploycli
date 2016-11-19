@@ -73,7 +73,8 @@ func TestPrintContextSpec(t *testing.T) {
 		`ProjectRoot string`,
 		`ContainerRoot string`,
 		`ProjectID string`,
-		`ContainerID string`}
+		`ContainerID string`,
+		`ProjectContainers []containers.ContainerInfo`}
 
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("Wanted spec %v, got %v instead", want, got)
@@ -207,7 +208,7 @@ func TestInspectContainerNotFound(t *testing.T) {
 }
 
 func TestInspectContainerCorrupted(t *testing.T) {
-	var _, err = InspectContainer("", "./mocks/my-project/corrupted-container")
+	var _, err = InspectContainer("", "./mocks/project-with-corrupted-container/corrupted-container")
 	var wantErr = `Inspection failure on container: unexpected end of JSON input`
 
 	if err == nil || err.Error() != wantErr {
@@ -215,10 +216,11 @@ func TestInspectContainerCorrupted(t *testing.T) {
 	}
 }
 
-func TestInspectContainerCorruptedOnContextOverview(t *testing.T) {
-	var _, err = InspectContext("", "./mocks/my-project/corrupted-container")
-	var wantErr = fmt.Sprintf(`Can't load container context on %v:`+
-		` Inspection failure on container: unexpected end of JSON input`, abs("mocks/my-project/corrupted-container"))
+func TestInspectProjectWithCorruptedContainerOnContextOverview(t *testing.T) {
+	var _, err = InspectContext("", "./mocks/project-with-corrupted-container")
+	var wantErr = fmt.Sprintf(`Error while trying to read list of containers on project: `+
+		`Can't list containers: error reading %v: unexpected end of JSON input`,
+		abs("mocks/project-with-corrupted-container/corrupted-container/container.json"))
 
 	if err == nil || err.Error() != wantErr {
 		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
@@ -260,6 +262,16 @@ func TestInspectContextOverviewTypeProject(t *testing.T) {
 		ContainerRoot: "",
 		ProjectID:     "my-project",
 		ContainerID:   "",
+		ProjectContainers: containers.ContainerInfoList{
+			containers.ContainerInfo{
+				ID:       "email",
+				Location: abs("./mocks/my-project/email"),
+			},
+			containers.ContainerInfo{
+				ID:       "other",
+				Location: abs("./mocks/my-project/other"),
+			},
+		},
 	}
 
 	if !reflect.DeepEqual(want, overview) {
@@ -281,10 +293,52 @@ func TestInspectContextOverviewTypeContainer(t *testing.T) {
 		ContainerRoot: abs("./mocks/my-project/email"),
 		ProjectID:     "my-project",
 		ContainerID:   "email",
+		ProjectContainers: containers.ContainerInfoList{
+			containers.ContainerInfo{
+				ID:       "email",
+				Location: abs("./mocks/my-project/email"),
+			},
+			containers.ContainerInfo{
+				ID:       "other",
+				Location: abs("./mocks/my-project/other"),
+			},
+		},
 	}
 
 	if !reflect.DeepEqual(want, overview) {
 		t.Errorf("Wanted ContextOverview %+v, got %+v instead", want, overview)
+	}
+}
+
+func TestInspectContextOverviewTypeContainerOutsideProject(t *testing.T) {
+	var overview = ContextOverview{}
+	var err = overview.Load("./mocks/container-outside-project")
+
+	if err != nil {
+		t.Errorf("Expected error to be nil, got %v instead", err)
+	}
+
+	var want = ContextOverview{
+		Scope:             "global",
+		ContainerRoot:     abs("./mocks/container-outside-project"),
+		ProjectID:         "",
+		ContainerID:       "alone",
+		ProjectContainers: nil,
+	}
+
+	if !reflect.DeepEqual(want, overview) {
+		t.Errorf("Wanted ContextOverview %+v, got %+v instead", want, overview)
+	}
+}
+
+func TestInspectContainerCorruptedOnContextOverview(t *testing.T) {
+	var _, err = InspectContext("", "./mocks/corrupted-container-outside-project")
+	var wantErr = fmt.Sprintf(`Can't load container context on %v: `+
+		`Inspection failure on container: invalid character ':' after top-level value`,
+		abs("./mocks/corrupted-container-outside-project"))
+
+	if err == nil || err.Error() != wantErr {
+		t.Errorf("Error should be %v, got %v instead", wantErr, err)
 	}
 }
 
@@ -300,9 +354,21 @@ func TestInspectContextOverviewProject(t *testing.T) {
     "ProjectRoot": "%v",
     "ContainerRoot": "",
     "ProjectID": "my-project",
-    "ContainerID": ""
+    "ContainerID": "",
+    "ProjectContainers": [
+        {
+            "ID": "email",
+            "Location": "%v"
+        },
+        {
+            "ID": "other",
+            "Location": "%v"
+        }
+    ]
 }`,
-		abs("mocks/my-project"))
+		abs("mocks/my-project"),
+		abs("mocks/my-project/email"),
+		abs("mocks/my-project/other"))
 
 	if got != want {
 		t.Errorf("Wanted %v, got %v instead", want, got)
@@ -321,10 +387,22 @@ func TestInspectContextOverviewContainer(t *testing.T) {
     "ProjectRoot": "%v",
     "ContainerRoot": "%v",
     "ProjectID": "my-project",
-    "ContainerID": "email"
+    "ContainerID": "email",
+    "ProjectContainers": [
+        {
+            "ID": "email",
+            "Location": "%v"
+        },
+        {
+            "ID": "other",
+            "Location": "%v"
+        }
+    ]
 }`,
 		abs("mocks/my-project"),
-		abs("mocks/my-project/email"))
+		abs("mocks/my-project/email"),
+		abs("mocks/my-project/email"),
+		abs("mocks/my-project/other"))
 
 	if got != want {
 		t.Errorf("Wanted %v, got %v instead", want, got)

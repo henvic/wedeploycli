@@ -3,6 +3,7 @@ package inspector
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"reflect"
 
 	"github.com/hashicorp/errwrap"
@@ -28,11 +29,12 @@ func GetSpec(t interface{}) []string {
 
 // ContextOverview for the context visualization
 type ContextOverview struct {
-	Scope         usercontext.Scope
-	ProjectRoot   string
-	ContainerRoot string
-	ProjectID     string
-	ContainerID   string
+	Scope             usercontext.Scope
+	ProjectRoot       string
+	ContainerRoot     string
+	ProjectID         string
+	ContainerID       string
+	ProjectContainers []containers.ContainerInfo
 }
 
 func (overview *ContextOverview) loadProject(directory string) error {
@@ -40,14 +42,30 @@ func (overview *ContextOverview) loadProject(directory string) error {
 
 	switch {
 	case os.IsNotExist(perr):
+		return nil
 	case perr != nil:
 		return errwrap.Wrapf("Can't load project context on "+projectPath+": {{err}}", perr)
-	default:
-		overview.Scope = usercontext.ProjectScope
-		overview.ProjectRoot = projectPath
-		overview.ProjectID = project.ID
 	}
 
+	overview.Scope = usercontext.ProjectScope
+	overview.ProjectRoot = projectPath
+	overview.ProjectID = project.ID
+
+	return overview.loadProjectContainersList()
+}
+
+func (overview *ContextOverview) loadProjectContainersList() error {
+	var list, err = containers.GetListFromDirectory(overview.ProjectRoot)
+
+	if err != nil {
+		return errwrap.Wrapf("Error while trying to read list of containers on project: {{err}}", err)
+	}
+
+	for i, l := range list {
+		list[i].Location = filepath.Join(overview.ProjectRoot, l.Location)
+	}
+
+	overview.ProjectContainers = list
 	return nil
 }
 

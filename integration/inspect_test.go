@@ -2,6 +2,7 @@ package integration
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"strings"
@@ -74,7 +75,8 @@ func TestInspectPrintContextStructure(t *testing.T) {
 ProjectRoot string
 ContainerRoot string
 ProjectID string
-ContainerID string`
+ContainerID string
+ProjectContainers []containers.ContainerInfo`
 
 	var e = &Expect{
 		ExitCode: 0,
@@ -245,4 +247,116 @@ func TestInspectContainerList(t *testing.T) {
 	if cmd.ExitCode != 0 {
 		t.Errorf("Wanted exit code to be 0, got %v instead", cmd.ExitCode)
 	}
+}
+
+func TestInspectContextOnGlobalContextList(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	var cmd = &Command{
+		Args: []string{"inspect", "context"},
+		Env: []string{
+			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir: "./mocks",
+	}
+
+	var want = tdata.FromFile("./mocks/inspect/context-list.json")
+
+	var e = &Expect{
+		ExitCode: 0,
+		Stdout:   want,
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+}
+
+func TestInspectContextOnGlobalOnContainerOutsideProjectContextList(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	var cmd = &Command{
+		Args: []string{"inspect", "context"},
+		Env: []string{
+			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir: "./mocks/inspect/container-outside-project",
+	}
+
+	var want = fmt.Sprintf(tdata.FromFile("./mocks/inspect/container-outside-project/context-list.json"), abs("."))
+
+	var e = &Expect{
+		ExitCode: 0,
+		Stdout:   want,
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+}
+
+func TestInspectContextOnProjectContextList(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	var cmd = &Command{
+		Args: []string{"inspect", "context"},
+		Env: []string{
+			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir: "./mocks/inspect/my-project",
+	}
+
+	var path = abs("./")
+	var want = fmt.Sprintf(tdata.FromFile("./mocks/inspect/my-project/context-list.json"), path, path)
+
+	var e = &Expect{
+		ExitCode: 0,
+		Stdout:   want,
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+}
+
+func TestInspectContextOnContainerContextList(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	var cmd = &Command{
+		Args: []string{"inspect", "context"},
+		Env: []string{
+			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir: "./mocks/inspect/my-project/email",
+	}
+
+	var path = abs("./")
+	var want = fmt.Sprintf(tdata.FromFile("./mocks/inspect/my-project/email/context-list.json"), path, path, path)
+
+	var e = &Expect{
+		ExitCode: 0,
+		Stdout:   want,
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+}
+
+func TestInspectContextOnContainerContextFormat(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	var cmd = &Command{
+		Args: []string{"inspect", "context", "--format", "{{.ContainerID}}"},
+		Env: []string{
+			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir: "./mocks/inspect/my-project/email",
+	}
+
+	var want = "email\n"
+
+	var e = &Expect{
+		ExitCode: 0,
+		Stdout:   want,
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
 }
