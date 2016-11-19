@@ -59,7 +59,10 @@ func (overview *ContextOverview) loadContainer(directory string) error {
 	case cerr != nil:
 		return errwrap.Wrapf("Can't load container context on "+containerPath+": {{err}}", cerr)
 	default:
-		overview.Scope = usercontext.ContainerScope
+		if overview.Scope == usercontext.ProjectScope {
+			overview.Scope = usercontext.ContainerScope
+		}
+
 		overview.ContainerRoot = containerPath
 		overview.ContainerID = container.ID
 	}
