@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -30,6 +31,7 @@ type Config struct {
 	LastUpdateCheck string       `ini:"last_update_check"`
 	PastVersion     string       `ini:"past_version"`
 	NextVersion     string       `ini:"next_version"`
+	LocalEndpoint   string       `ini:"-"`
 	Path            string       `ini:"-"`
 	Remotes         remotes.List `ini:"-"`
 	file            *ini.File    `ini:"-"`
@@ -266,7 +268,12 @@ func setupGlobal() error {
 		Path: filepath.Join(user.GetHomeDir(), ".we"),
 	}
 
-	return Global.Load()
+	if err := Global.Load(); err != nil {
+		return err
+	}
+
+	Global.LocalEndpoint = fmt.Sprintf("http://localhost:%d/", Global.LocalPort)
+	return nil
 }
 
 // Teardown resets the configuration environment

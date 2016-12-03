@@ -56,6 +56,10 @@ func TestSetupAndTeardown(t *testing.T) {
 		t.Errorf("Wrong ReleaseChannel value")
 	}
 
+	if Global.LocalEndpoint != "http://localhost:8080/" {
+		t.Errorf("Wrong LocalEndpoint value")
+	}
+
 	if Context.Scope != "global" {
 		t.Errorf("Exected global scope")
 	}

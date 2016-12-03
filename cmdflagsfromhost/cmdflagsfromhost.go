@@ -2,7 +2,6 @@ package cmdflagsfromhost
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/hashicorp/errwrap"
@@ -28,7 +27,7 @@ var ListRemoteFlags = map[string]bool{
 // SetLocal the context
 func SetLocal() {
 	config.Context.Token = apihelper.DefaultToken
-	config.Context.Endpoint = fmt.Sprintf("http://localhost:%d/", config.Global.LocalPort)
+	config.Context.Endpoint = config.Global.LocalEndpoint
 	config.Context.RemoteAddress = "wedeploy.me"
 }
 
