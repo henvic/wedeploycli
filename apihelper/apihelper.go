@@ -247,17 +247,20 @@ func Validate(request *wedeploy.WeDeploy, err error) error {
 }
 
 func handleURLError(ue *url.Error) error {
+	if config.Context == nil || config.Global == nil {
+		return ue
+	}
+
 	var s = "WeDeploy platform error:"
 
-	if verbose.Enabled {
+	switch {
+	case verbose.Enabled:
 		s += "\n{{err}}"
-	} else {
-		if config.Context.Remote == "" {
-			s += " local infrastructure is not running\n"
-			s += `tip: try running "we run" and then run this command again`
-		} else {
-			s += " could not connect to remote infrastructure"
-		}
+	case config.Context.Remote == "":
+		s += " local infrastructure is not running\n"
+		s += `tip: try running "we run" and then run this command again`
+	default:
+		s += " could not connect to remote infrastructure"
 	}
 
 	return errwrap.Wrapf(s, ue)

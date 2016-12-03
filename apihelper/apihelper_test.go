@@ -947,6 +947,25 @@ func TestValidate(t *testing.T) {
 	}
 }
 
+func TestValidateOnNoContext(t *testing.T) {
+	var originalCtx = config.Context
+	config.Context = nil
+
+	defer func() {
+		config.Context = originalCtx
+	}()
+
+	var want = `Get x://localhost: unsupported protocol scheme "x"`
+
+	r := wedeploy.URL("x://localhost/")
+
+	err := Validate(r, r.Get())
+
+	if err.Error() != want {
+		t.Errorf("Wanted error to be %v, got %v instead", want, err)
+	}
+}
+
 func TestValidateNoError(t *testing.T) {
 	r := wedeploy.URL("x://localhost/")
 
