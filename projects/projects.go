@@ -121,7 +121,7 @@ func checkRemovedCustomDomain(path string, content []byte) error {
 	case string:
 		removed = removedInterface.(string)
 	default:
-		return errors.New("Invalid value for removed customDomain")
+		return fmt.Errorf("Invalid value for removed customDomain on %v", path)
 	}
 
 	if !ok || removed == "" {
