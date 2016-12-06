@@ -87,6 +87,25 @@ func TestLink(t *testing.T) {
 	e.Assert(t, cmd)
 }
 
+func TestLinkEmptyJSON(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	var cmd = &Command{
+		Args: []string{"link", "--project", "foo", "--no-color"},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir:  "mocks/link/empty-json",
+	}
+
+	var e = &Expect{
+		ExitCode: 1,
+		Stderr:   "Error: Can't find project-orphan container: unexpected end of JSON input",
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+}
+
 func TestLinkToProject(t *testing.T) {
 	defer Teardown()
 	Setup()
