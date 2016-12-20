@@ -16,3 +16,5 @@ import:
 - package: github.com/hashicorp/errwrap
 - package: github.com/hashicorp/go-version
 - package: github.com/henvic/pseudoterm
+- package: github.com/satori/go.uuid
+  version: ~1.1.0

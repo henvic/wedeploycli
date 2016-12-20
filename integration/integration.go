@@ -187,12 +187,17 @@ func getHomePath(home string) string {
 }
 
 func removeLoginHomeMock() {
-	var file = filepath.Join(GetLoginHome(), ".we")
-
-	var err = os.Remove(file)
+	var weHomePath = GetLoginHome()
+	var err = os.Remove(filepath.Join(weHomePath, ".we"))
 
 	if err != nil && !os.IsNotExist(err) {
 		panic(err)
+	}
+
+	var errMetrics = os.Remove(filepath.Join(weHomePath, ".we_metrics"))
+
+	if errMetrics != nil && !os.IsNotExist(errMetrics) {
+		panic(errMetrics)
 	}
 }
 
@@ -212,6 +217,7 @@ func setupLoginHome() {
 	mock.Username = "foo"
 	mock.Password = "bar"
 	mock.Local = false
+	mock.AnalyticsOption = "Sat Dec  5 01:23:45 PST 2016"
 	if err := mock.Save(); err != nil {
 		panic(err)
 	}

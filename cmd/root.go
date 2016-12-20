@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/autocomplete"
+	"github.com/wedeploy/cli/cmd/analyticsreport"
 	"github.com/wedeploy/cli/cmd/autocomplete"
 	"github.com/wedeploy/cli/cmd/build"
 	"github.com/wedeploy/cli/cmd/cmdmanager"
@@ -56,6 +57,7 @@ var (
 )
 
 var commands = []*cobra.Command{
+	cmdanalyticsreport.AnalyticsReportCmd,
 	cmdautocomplete.AutocompleteCmd,
 	cmdlogin.LoginCmd,
 	cmdlogout.LogoutCmd,

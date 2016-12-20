@@ -5,7 +5,10 @@ doc/*.md
 doc/*.1
 
 # Temporary mocks
+metrics/mocks/.we
+metrics/mocks/.we_metrics
 integration/mocks/login/.we
+integration/mocks/login/.we_metrics
 integration/mocks/create/example
 integration/mocks/create/foo/data
 pod/mocks/res/package.tar.gz

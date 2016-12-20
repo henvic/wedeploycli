@@ -18,4 +18,7 @@ var (
 
 	// RequiresDockerConstraint semver version constraint
 	RequiresDockerConstraint = ">= 1.12.0"
+
+	// AnalyticsEndpoint for posting analytics events in bulk
+	AnalyticsEndpoint = "https://cli-metrics.wedeploy.com/"
 )

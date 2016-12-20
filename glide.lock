@@ -1,5 +1,5 @@
-hash: 9d173a9801130962a055b608626d3b6cc621e018e523d46eeda2d2037dafbd77
-updated: 2016-10-18T12:33:23.769761995-03:00
+hash: a6895b07f3e095a75838e0e48593425d613c82f0d5d48400025fbd462624544d
+updated: 2016-11-25T14:20:03.944584614-03:00
 imports:
 - name: github.com/cpuguy83/go-md2man
   version: a65d4d2de4d5f7c74868dfa9b202a3c8be315aaa
@@ -34,6 +34,8 @@ imports:
   version: ad45545899c7b13c020ea92b2072220eefad42b8
 - name: github.com/russross/blackfriday
   version: 35eb537633d9950afc8ae7bdf0edb6134584e9fc
+- name: github.com/satori/go.uuid
+  version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/spf13/cobra

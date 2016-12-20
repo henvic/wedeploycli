@@ -31,6 +31,9 @@ type Config struct {
 	LastUpdateCheck string       `ini:"last_update_check"`
 	PastVersion     string       `ini:"past_version"`
 	NextVersion     string       `ini:"next_version"`
+	EnableAnalytics bool         `ini:"enable_analytics"`
+	AnalyticsOption string       `ini:"analytics_option_date"`
+	AnalyticsID     string       `ini:"analytics_id"`
 	LocalEndpoint   string       `ini:"-"`
 	Path            string       `ini:"-"`
 	Remotes         remotes.List `ini:"-"`
@@ -87,6 +90,22 @@ func (c *Config) Save() error {
 	}
 
 	return nil
+}
+
+// IsEndpoint returns a boolean telling whether the URL is within a WeDeploy endpoint or not
+func (c *Config) IsEndpoint(host string) bool {
+	if host == c.LocalEndpoint {
+		return true
+	}
+
+	for _, remote := range c.Remotes {
+		// this could be improved
+		if len(remote.URL) != 0 && strings.Contains(remote.URL, host) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Setup the environment

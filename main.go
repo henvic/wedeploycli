@@ -10,7 +10,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
+	"time"
 
 	"reflect"
 
@@ -18,10 +20,14 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/wedeploy/cli/autocomplete"
 	"github.com/wedeploy/cli/cmd"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/flagsfromhost"
+	"github.com/wedeploy/cli/metrics"
 	"github.com/wedeploy/cli/update"
+	"github.com/wedeploy/cli/user"
+	"github.com/wedeploy/cli/verbose"
 )
 
 func main() {
@@ -40,11 +46,18 @@ type mainProgram struct {
 }
 
 func (m *mainProgram) run() {
+	m.setupMetrics()
 	(&configLoader{}).load()
 	m.checkUpdate()
 	m.executeCommand()
 	m.updateFeedback()
 	autocomplete.AutoInstall()
+	m.maybeSubmitAnalyticsReport()
+}
+
+func (m *mainProgram) setupMetrics() {
+	metrics.SetPID(os.Getpid())
+	metrics.SetPath(filepath.Join(user.GetHomeDir(), ".we_metrics"))
 }
 
 func (m *mainProgram) executeCommand() {
@@ -54,6 +67,8 @@ func (m *mainProgram) executeCommand() {
 	if m.cmdErr != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", m.cmdFriendlyErr)
 	}
+
+	m.reportCommand()
 
 	if m.cmdErr != nil {
 		m.commandErrorConditionalUsage()
@@ -90,6 +105,33 @@ func (m *mainProgram) getCommandErrorDetails() map[string]string {
 	return extra
 }
 
+func (m *mainProgram) reportCommand() {
+	var commandPath = m.cmd.CommandPath()
+
+	if commandPath == "we analytics-report reset" {
+		// Skip storing "we analytics-report reset" on the analytics log
+		// otherwise this would recreate the file just after removal
+		return
+	}
+
+	metrics.Rec(metrics.Event{
+		Type:  "command_exec",
+		Text:  commandPath,
+		Tags:  m.getCommandFlags(),
+		Extra: m.getCommandErrorDetails(),
+	})
+}
+
+func (m *mainProgram) maybeSubmitAnalyticsReport() {
+	if !isCommand("analytics-report") {
+		if err := metrics.SubmitEventuallyOnBackground(); err != nil {
+			fmt.Fprintf(os.Stderr,
+				"Error trying to submit analytics on background: %v\n",
+				errorhandling.Handle(err))
+		}
+	}
+}
+
 type configLoader struct {
 	reload bool
 }
@@ -111,6 +153,29 @@ func (cl *configLoader) checkPastVersion() {
 	}
 }
 
+func (cl *configLoader) checkAnalytics() {
+	if isCommand("analytics-report") {
+		return
+	}
+
+	if config.Global.EnableAnalytics && config.Global.AnalyticsID == "" {
+		if err := metrics.Enable(); err != nil {
+			verbose.Debug("Error trying to fix enabled metrics without analytics ID: " + err.Error())
+		}
+		return
+	}
+
+	switch toEnabled, err := metrics.TryAskEnable(); {
+	case err != nil:
+		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
+	case toEnabled:
+		fmt.Println(color.Format(color.FgCyan,
+			`Thanks. If you change your mind, use "we analytics-report disable" to stop reporting metrics.
+`))
+		time.Sleep(time.Second)
+	}
+}
+
 func (cl *configLoader) applyChanges() {
 	if !cl.reload {
 		return
@@ -126,6 +191,7 @@ func (cl *configLoader) applyChanges() {
 
 func (cl *configLoader) load() {
 	cl.loadConfig()
+	cl.checkAnalytics()
 	cl.checkPastVersion()
 	cl.applyChanges()
 }
