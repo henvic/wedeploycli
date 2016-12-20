@@ -1,0 +1,38 @@
+{
+  "took": 107,
+  "errors": false,
+  "items": [
+    {
+      "create": {
+        "_index": "events",
+        "_type": "log",
+        "_id": "aasxdasdabc",
+        "_version": 1,
+        "result": "created",
+        "_shards": {
+          "total": 2,
+          "successful": 1,
+          "failed": 0
+        },
+        "created": true,
+        "status": 201
+      }
+    },
+    {
+      "create": {
+        "_index": "events",
+        "_type": "log",
+        "_id": "axxbcd",
+        "_version": 1,
+        "result": "created",
+        "_shards": {
+          "total": 2,
+          "successful": 1,
+          "failed": 0
+        },
+        "created": true,
+        "status": 201
+      }
+    }
+  ]
+}
