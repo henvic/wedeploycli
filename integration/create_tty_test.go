@@ -14,6 +14,8 @@ import (
 )
 
 func TestCreatePromptProjectThenContainer(t *testing.T) {
+	Setup()
+	defer Teardown()
 	removeAll("mocks/create/example")
 	defer removeAll("mocks/create/example")
 
@@ -23,11 +25,14 @@ func TestCreatePromptProjectThenContainer(t *testing.T) {
 }
 
 func TestCreatePromptProjectAndContainerAtOnce(t *testing.T) {
+	Setup()
+	defer Teardown()
 	removeAll("mocks/create/example")
 	defer removeAll("mocks/create/example")
 
 	var cmd = (&Command{
 		Args: []string{"create"},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/create",
 	}).Prepare()
 
@@ -118,6 +123,7 @@ func TestCreatePromptProjectAndContainerAtOnce(t *testing.T) {
 func testCreatePromptProject(t *testing.T) {
 	var cmd = (&Command{
 		Args: []string{"create"},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/create",
 	}).Prepare()
 
@@ -180,6 +186,7 @@ func testCreatePromptProject(t *testing.T) {
 func testCreatePromptContainer(t *testing.T) {
 	var cmd = (&Command{
 		Args: []string{"create"},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/create/example",
 	}).Prepare()
 
