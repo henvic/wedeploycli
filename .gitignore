@@ -20,7 +20,7 @@ cli
 cli_*_386
 cli_*_amd64
 cli_*_arm
-collector/collect/collect
+collector/collector
 *.o
 *.a
 *.so
