@@ -35,6 +35,7 @@ func Setup() {
 	config.Global = global
 
 	config.Context = &usercontext.Context{
+		Scope:    usercontext.GlobalScope,
 		Username: global.Username,
 		Password: global.Password,
 		Token:    global.Token,
