@@ -14,6 +14,7 @@ import (
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/link"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/pullimages"
 	"github.com/wedeploy/cli/usercontext"
 	"github.com/wedeploy/cli/wdircontext"
 )
@@ -110,6 +111,10 @@ func linkRun(cmd *cobra.Command, args []string) error {
 	csDirs, err := getContainersDirectoriesFromScope()
 
 	if err != nil {
+		return err
+	}
+
+	if err = pullimages.PullMissingContainersImages(csDirs); err != nil {
 		return err
 	}
 
