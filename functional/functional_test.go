@@ -327,16 +327,6 @@ func assertReadyState(cmd *cmdrunner.Command, t *testing.T) bool {
 }
 
 func (s *scenario) linkContainer(t *testing.T) {
-	log("Pulling wedeploy/data and wedeploy/hosting (temporarily)")
-
-	if err := cmdrunner.Run("docker pull wedeploy/data"); err != nil {
-		t.Fatalf("Error trying to pull wedeploy/data: %v", err)
-	}
-
-	if err := cmdrunner.Run("docker pull wedeploy/hosting"); err != nil {
-		t.Fatalf("Error trying to pull wedeploy/hosting: %v", err)
-	}
-
 	chdir("tmp")
 
 	if err := cmdrunner.Run("git clone https://github.com/wedeploy/sample-wechat.git"); err != nil {
