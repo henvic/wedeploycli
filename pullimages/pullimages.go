@@ -131,7 +131,7 @@ func PullMissingContainersImages(csDirs []string) (err error) {
 	fmt.Println("Pulling required missing docker containers:")
 
 	for _, needed := range missing {
-		fmt.Printf("\t%v\n", needed)
+		fmt.Printf("\t%v\n", strings.TrimSuffix(needed, ":latest"))
 	}
 
 	fmt.Println("")
