@@ -89,6 +89,10 @@ func getMissingContainersTypes(typesFromContainers map[string]string, locallyAva
 	var inMissingList = map[string]bool{}
 
 	for c, i := range typesFromContainers {
+		if i == "" || i == "scratch" {
+			continue
+		}
+
 		if !strings.Contains(i, ":") {
 			i = i + ":latest"
 		}
