@@ -1,13 +1,14 @@
 // +build !windows
 
-package run
+package exechelper
 
 import (
 	"os/exec"
 	"syscall"
 )
 
-func tryAddCommandToNewProcessGroup(cmd *exec.Cmd) {
+// AddCommandToNewProcessGroup adds a command to a new process group
+func AddCommandToNewProcessGroup(cmd *exec.Cmd) {
 	if cmd.SysProcAttr == nil {
 		cmd.SysProcAttr = &syscall.SysProcAttr{}
 	}

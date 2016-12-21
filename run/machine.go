@@ -16,6 +16,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/henvic/uilive"
+	"github.com/wedeploy/cli/exechelper"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/waitlivemsg"
@@ -387,7 +388,7 @@ func (dm *DockerMachine) LoadDockerInfo() error {
 	}
 
 	var docker = exec.Command(bin, args...)
-	tryAddCommandToNewProcessGroup(docker)
+	exechelper.AddCommandToNewProcessGroup(docker)
 	var buf bytes.Buffer
 	docker.Stderr = os.Stderr
 	docker.Stdout = &buf
@@ -423,7 +424,7 @@ func (dm *DockerMachine) checkImage() {
 	}
 
 	var docker = exec.Command(bin, args...)
-	tryAddCommandToNewProcessGroup(docker)
+	exechelper.AddCommandToNewProcessGroup(docker)
 	var buf bytes.Buffer
 	docker.Stderr = os.Stderr
 	docker.Stdout = &buf

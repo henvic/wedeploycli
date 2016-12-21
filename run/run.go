@@ -14,6 +14,7 @@ import (
 	semver "github.com/hashicorp/go-version"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/exechelper"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/prompt"
 	"github.com/wedeploy/cli/verbose"
@@ -197,7 +198,7 @@ func getWeDeployHost() string {
 
 func runWait(container string) (*os.Process, error) {
 	var c = exec.Command(bin, "wait", container)
-	tryAddCommandToNewProcessGroup(c)
+	exechelper.AddCommandToNewProcessGroup(c)
 	var err = c.Start()
 
 	return c.Process, err
@@ -280,7 +281,7 @@ func stopContainers() error {
 	params = append(params, ids...)
 	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
 	var stop = exec.Command(bin, params...)
-	tryAddCommandToNewProcessGroup(stop)
+	exechelper.AddCommandToNewProcessGroup(stop)
 	stop.Stderr = os.Stderr
 
 	switch err = stop.Run(); err.(type) {
@@ -308,7 +309,7 @@ func rmContainers() error {
 	params = append(params, ids...)
 	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
 	var rm = exec.Command(bin, params...)
-	tryAddCommandToNewProcessGroup(rm)
+	exechelper.AddCommandToNewProcessGroup(rm)
 	rm.Stderr = os.Stderr
 
 	if err = rm.Run(); err != nil {
@@ -333,7 +334,7 @@ func rmOldInfrastructureImages() error {
 	params = append(params, ids...)
 	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
 	var rm = exec.Command(bin, params...)
-	tryAddCommandToNewProcessGroup(rm)
+	exechelper.AddCommandToNewProcessGroup(rm)
 	rm.Stderr = os.Stderr
 
 	if err = rm.Run(); err != nil {
@@ -370,7 +371,7 @@ func getContainersByLabel(label string, onlyRunning bool) (cs []string, err erro
 
 	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
 	var list = exec.Command(bin, params...)
-	tryAddCommandToNewProcessGroup(list)
+	exechelper.AddCommandToNewProcessGroup(list)
 	var buf bytes.Buffer
 	list.Stderr = os.Stderr
 	list.Stdout = &buf
@@ -393,7 +394,7 @@ func getOldInfrastructureImages() ([]string, error) {
 
 	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
 	var list = exec.Command(bin, params...)
-	tryAddCommandToNewProcessGroup(list)
+	exechelper.AddCommandToNewProcessGroup(list)
 	var buf bytes.Buffer
 	list.Stderr = os.Stderr
 	list.Stdout = &buf
