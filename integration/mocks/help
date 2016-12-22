@@ -8,7 +8,6 @@ Usage:
   we [command]
 
 Available Commands:
-  analytics-report Analytics report control and sender for error and usage metrics
   build        Build container(s) (current or all containers of a project)
   create       Creates a project or container
   inspect      Inspect environment info
@@ -17,6 +16,7 @@ Available Commands:
   log          See logs of what is running on WeDeploy
   login        Using Basic Authentication with your credentials
   logout       Revoke credentials
+  metrics      Analytics reporting and settings
   remote       Configure WeDeploy remotes
   restart      Restart project or container running on WeDeploy
   run          Run WeDeploy infrastructure for development locally

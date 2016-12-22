@@ -9,7 +9,7 @@ import (
 
 func testAnalyticsReportStatus(status string, t *testing.T) {
 	var cmd = &Command{
-		Args: []string{"analytics-report", "status"},
+		Args: []string{"metrics", "usage", "status"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
@@ -26,7 +26,7 @@ func testAnalyticsReportStatus(status string, t *testing.T) {
 
 func testAnalyticsReportEnable(t *testing.T) {
 	var cmd = &Command{
-		Args: []string{"analytics-report", "enable"},
+		Args: []string{"metrics", "usage", "enable"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
@@ -39,7 +39,7 @@ func testAnalyticsReportEnable(t *testing.T) {
 
 func testAnalyticsReportDisable(t *testing.T) {
 	var cmd = &Command{
-		Args: []string{"analytics-report", "disable"},
+		Args: []string{"metrics", "usage", "disable"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
@@ -52,7 +52,7 @@ func testAnalyticsReportDisable(t *testing.T) {
 
 func testAnalyticsReportReset(t *testing.T) {
 	var cmd = &Command{
-		Args: []string{"analytics-report", "reset"},
+		Args: []string{"metrics", "usage", "reset"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",

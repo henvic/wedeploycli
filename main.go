@@ -108,8 +108,8 @@ func (m *mainProgram) getCommandErrorDetails() map[string]string {
 func (m *mainProgram) reportCommand() {
 	var commandPath = m.cmd.CommandPath()
 
-	if commandPath == "we analytics-report reset" {
-		// Skip storing "we analytics-report reset" on the analytics log
+	if commandPath == "we metrics usage reset" {
+		// Skip storing "we metrics usage reset" on the analytics log
 		// otherwise this would recreate the file just after removal
 		return
 	}
@@ -123,7 +123,7 @@ func (m *mainProgram) reportCommand() {
 }
 
 func (m *mainProgram) maybeSubmitAnalyticsReport() {
-	if !isCommand("analytics-report") {
+	if !isCommand("metrics") {
 		if err := metrics.SubmitEventuallyOnBackground(); err != nil {
 			fmt.Fprintf(os.Stderr,
 				"Error trying to submit analytics on background: %v\n",
@@ -154,7 +154,7 @@ func (cl *configLoader) checkPastVersion() {
 }
 
 func (cl *configLoader) checkAnalytics() {
-	if isCommand("analytics-report") {
+	if isCommand("usage") {
 		return
 	}
 
@@ -242,7 +242,7 @@ func (m *mainProgram) commandErrorConditionalUsage() {
 }
 
 func (m *mainProgram) checkUpdate() {
-	if !isCommand("autocomplete") && !isCommand("analytics-report") && !isCommand("build") {
+	if !isCommand("autocomplete") && !isCommand("metrics") && !isCommand("build") {
 		m.cue = make(chan error, 1)
 		go func() {
 			m.cue <- update.NotifierCheck()

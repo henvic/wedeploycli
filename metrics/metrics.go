@@ -129,7 +129,7 @@ func TryAskEnable() (ok bool, err error) {
 func tryAskEnable() (bool, error) {
 	var answer, err = prompt.Prompt(
 		color.Format(color.FgCyan,
-			`You can use "we analytics-report" to control your analytics reporting preferences.`) +
+			`You can use "we metrics usage" to control your usage reporting preferences.`) +
 			"\nPress [Enter] or type \"yes\" to allow WeDeploy to collect metrics or type \"no\" to decline")
 
 	answer = strings.ToLower(answer)
@@ -340,7 +340,7 @@ func (s *Sender) maybeSubmitOnBackground() error {
 }
 
 func (s *Sender) submitOnBackground() error {
-	var cmd = exec.Command(os.Args[0], "analytics-report", "submit")
+	var cmd = exec.Command(os.Args[0], "metrics", "usage", "submit")
 
 	if err := cmd.Start(); err != nil {
 		return errwrap.Wrapf("Error trying to submit metrics on background: {{err}}", err)

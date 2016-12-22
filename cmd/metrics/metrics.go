@@ -1,4 +1,4 @@
-package cmdanalyticsreport
+package cmdmetrics
 
 import (
 	"fmt"
@@ -11,24 +11,31 @@ import (
 var noPurge bool
 
 func init() {
-	AnalyticsReportCmd.AddCommand(statusCmd)
-	AnalyticsReportCmd.AddCommand(enableCmd)
-	AnalyticsReportCmd.AddCommand(disableCmd)
-	AnalyticsReportCmd.AddCommand(resetCmd)
-	AnalyticsReportCmd.AddCommand(purgeCmd)
-	AnalyticsReportCmd.AddCommand(submitCmd)
+	MetricsCmd.AddCommand(UsageCmd)
+	UsageCmd.AddCommand(statusCmd)
+	UsageCmd.AddCommand(enableCmd)
+	UsageCmd.AddCommand(disableCmd)
+	UsageCmd.AddCommand(resetCmd)
+	UsageCmd.AddCommand(purgeCmd)
+	UsageCmd.AddCommand(submitCmd)
 
 	submitCmd.Flags().BoolVar(
 		&noPurge,
 		"no-purge",
 		false,
-		"Don't purge analytics file after submission")
+		"Don't purge usage log after submission")
 }
 
-// AnalyticsReportCmd unsets the user credential
-var AnalyticsReportCmd = &cobra.Command{
-	Use:   "analytics-report",
-	Short: "Analytics report control and sender for error and usage metrics",
+// MetricsCmd controls the metrics for the WeDeploy CLI
+var MetricsCmd = &cobra.Command{
+	Use:   "metrics",
+	Short: "Analytics reporting and settings",
+}
+
+// UsageCmd unsets the user credential
+var UsageCmd = &cobra.Command{
+	Use:   "usage",
+	Short: "Usage preferences and submit tool",
 }
 
 var statusCmd = &cobra.Command{
@@ -50,7 +57,7 @@ func statusRun(cmd *cobra.Command, args []string) error {
 
 var enableCmd = &cobra.Command{
 	Use:   "enable",
-	Short: "Enable analytics report to WeDeploy",
+	Short: "Enable usage reporting to WeDeploy",
 	RunE:  enableRun,
 }
 
@@ -60,7 +67,7 @@ func enableRun(cmd *cobra.Command, args []string) error {
 
 var disableCmd = &cobra.Command{
 	Use:   "disable",
-	Short: "Disable analytics report to WeDeploy",
+	Short: "Disable usage reporting to WeDeploy",
 	RunE:  disableRun,
 }
 
@@ -70,7 +77,7 @@ func disableRun(cmd *cobra.Command, args []string) error {
 
 var resetCmd = &cobra.Command{
 	Use:   "reset",
-	Short: "Purge existing analytics file and reset analytics report session ID (SID)",
+	Short: "Purge existing analytics usage file and reset usage log session ID (SID)",
 	RunE:  resetRun,
 }
 
