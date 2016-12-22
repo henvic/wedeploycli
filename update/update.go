@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"os/exec"
+
 	"github.com/equinox-io/equinox"
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/color"
@@ -204,8 +206,21 @@ func notify() {
 		`WARNING: WeDeploy CLI tool is outdated. Run "`+cmd+`".`))
 }
 
+func stopOutdatedImage(nextImage string) (err error) {
+	// Only invoke run.StopOutdatedImage if docker is up
+	var docker = exec.Command("docker", "ps", "--filter", "label=wedeploy/local")
+	err = docker.Run()
+
+	switch {
+	case err != nil:
+		return nil
+	default:
+		return run.StopOutdatedImage(nextImage)
+	}
+}
+
 func updateApply(channel string, resp *equinox.Response) error {
-	if err := run.StopOutdatedImage(""); err != nil {
+	if err := stopOutdatedImage(""); err != nil {
 		verbose.Debug("Ignoring error while trying to check if outdated WeDeploy infrastructure is running:", err)
 	}
 
