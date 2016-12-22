@@ -130,7 +130,7 @@ func (l *listFromDirectoryGetter) walkFunc(path string, info os.FileInfo, err er
 }
 
 func (l *listFromDirectoryGetter) readFunc(path string) error {
-	var dir = strings.TrimSuffix(path, "/container.json")
+	var dir = strings.TrimSuffix(path, string(os.PathSeparator)+"container.json")
 	var container, errRead = Read(dir)
 
 	switch {
