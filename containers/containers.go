@@ -156,7 +156,7 @@ func (l *listFromDirectoryGetter) addFunc(container *Container, dir string) erro
 	l.idDirMap[container.ID] = dir
 	l.list = append(l.list, ContainerInfo{
 		ID:       container.ID,
-		Location: strings.TrimPrefix(dir, l.root+"/"),
+		Location: strings.TrimPrefix(dir, l.root+string(os.PathSeparator)),
 	})
 
 	return filepath.SkipDir
