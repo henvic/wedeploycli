@@ -142,13 +142,20 @@ func checkDockerAvailable() error {
 	}
 
 	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
+	var versionErrBuf bytes.Buffer
 	var versionBuf bytes.Buffer
 	var version = exec.Command(bin, params...)
-	version.Stderr = os.Stderr
+	version.Stderr = &versionErrBuf
 	version.Stdout = &versionBuf
 
-	if err := version.Run(); err != nil {
-		return errwrap.Wrapf("Can't get docker version: {{err}}", err)
+	err := version.Run()
+
+	switch {
+	case err != nil && strings.Contains(versionErrBuf.String(),
+		"Is the docker daemon running on this host?"):
+		return errors.New(versionErrBuf.String())
+	case err != nil:
+		return errwrap.Wrapf("Can't check docker version: {{err}}", err)
 	}
 
 	v := strings.TrimSpace(versionBuf.String())
