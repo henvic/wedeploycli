@@ -39,6 +39,7 @@ type APIFault struct {
 var DefaultToken = "1"
 
 var errJSONDecodeFailure = errors.New("Can't decode JSON, fallback to body content")
+var errMissingResponse = errors.New("Request is not fulfilled by a response")
 
 func (a APIFault) Error() string {
 	return fmt.Sprintf("WeDeploy API error:%s%s%s",
@@ -152,6 +153,11 @@ func AuthGet(ctx context.Context, path string, data interface{}) error {
 // DecodeJSON decodes a JSON response
 func DecodeJSON(request *wedeploy.WeDeploy, data interface{}) error {
 	var response = request.Response
+
+	if response == nil {
+		return errMissingResponse
+	}
+
 	var contentType = response.Header.Get("Content-Type")
 
 	if !strings.Contains(contentType, "application/json") {

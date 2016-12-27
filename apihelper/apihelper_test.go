@@ -334,6 +334,18 @@ func TestDecodeJSONInvalidContentType(t *testing.T) {
 	}
 }
 
+func TestDecodeJSONWithoutRequestResponse(t *testing.T) {
+	var post postMock
+
+	r := URL(context.Background(), "/posts/1/comments")
+
+	var err = DecodeJSON(r, &post)
+
+	if err != errMissingResponse {
+		t.Errorf("Wanted err to be %v, got %v instead", errMissingResponse, err)
+	}
+}
+
 func TestDecodeJSONFailure(t *testing.T) {
 	servertest.Setup()
 	defer servertest.Teardown()
