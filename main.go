@@ -197,7 +197,7 @@ func (cl *configLoader) checkAnalytics() {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
 	case toEnabled:
 		fmt.Println(color.Format(color.FgCyan,
-			`Thanks. If you change your mind, use "we analytics-report disable" to stop reporting metrics.
+			`Thanks. If you change your mind, use "we metrics usage disable" to stop reporting metrics.
 `))
 		time.Sleep(time.Second)
 	}
