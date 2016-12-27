@@ -1,5 +1,5 @@
 hash: a6895b07f3e095a75838e0e48593425d613c82f0d5d48400025fbd462624544d
-updated: 2016-11-25T14:20:03.944584614-03:00
+updated: 2016-12-27T08:47:49.783274987-08:00
 imports:
 - name: github.com/cpuguy83/go-md2man
   version: a65d4d2de4d5f7c74868dfa9b202a3c8be315aaa
@@ -39,11 +39,11 @@ imports:
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/spf13/cobra
-  version: 9c28e4bbd74e5c3ed7aacbc552b2cab7cfdfe744
+  version: de09d9ce07d0d8a74442cfeaa91628cf9492cc23
   subpackages:
   - doc
 - name: github.com/spf13/pflag
-  version: c7e63cf4530bcd3ba943729cee0efeff2ebea63f
+  version: 25f8b5b07aece3207895bf19f7ab517eb3b22a40
 - name: github.com/wedeploy/api-go
   version: e4258f3d87609e819bd8a9f998ca31c5d538f19e
   subpackages:
