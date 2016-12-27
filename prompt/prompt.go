@@ -67,6 +67,9 @@ func Prompt(param string) (string, error) {
 	fmt.Fprintf(outStream, param+": ")
 	reader := bufio.NewReader(inStream)
 	value, err := reader.ReadString('\n')
+
+	// on Windows the line break is \r\n
+	// let's trim \r
 	value = strings.TrimPrefix(value, "\r")
 
 	if err != nil {
