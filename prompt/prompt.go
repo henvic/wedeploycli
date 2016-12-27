@@ -67,6 +67,7 @@ func Prompt(param string) (string, error) {
 	fmt.Fprintf(outStream, param+": ")
 	reader := bufio.NewReader(inStream)
 	value, err := reader.ReadString('\n')
+	value = strings.TrimPrefix(value, "\r")
 
 	if err != nil {
 		return "", errwrap.Wrapf("Can't read stdin for "+param+": {{err}}", err)
