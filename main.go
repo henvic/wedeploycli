@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -30,9 +31,26 @@ import (
 	"github.com/wedeploy/cli/verbose"
 )
 
+// Windows users using Prompt should see no color
+// Issue #51.
+// https://github.com/wedeploy/cli/issues/51
+func turnColorsOffOnWindows() bool {
+	if runtime.GOOS != "windows" {
+		return false
+	}
+
+	_, windowsPrompt := os.LookupEnv("PROMPT")
+	return windowsPrompt
+}
+
 func main() {
 	var panickingFlag = true
 	defer panickingListener(&panickingFlag)
+
+	if isCommand("--no-color") || turnColorsOffOnWindows() {
+		color.NoColorFlag = true
+	}
+
 	setErrorHandlingCommandName()
 	(&mainProgram{}).run()
 	panickingFlag = false
@@ -145,6 +163,10 @@ func (cl *configLoader) loadConfig() {
 	if err := config.Setup(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
 		os.Exit(1)
+	}
+
+	if config.Global.NoColor {
+		color.NoColor = true
 	}
 
 	flagsfromhost.InjectRemotes(&(config.Global.Remotes))

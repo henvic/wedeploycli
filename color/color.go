@@ -7,16 +7,17 @@ package color
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
-
-	"golang.org/x/crypto/ssh/terminal"
 )
 
-// NoColor defines if the output is colorized or not.
-// It is set based on the stdout's file descriptor by default.
-var NoColor = !terminal.IsTerminal(int(os.Stdout.Fd()))
+var (
+	// NoColor defines if the output is colorized or not.
+	NoColor = false
+
+	// NoColorFlag is set by the global --no-color
+	NoColorFlag = false
+)
 
 // Attribute defines a single SGR Code
 type Attribute int
@@ -155,7 +156,7 @@ func sequence(params []Attribute) string {
 
 // wrap wraps the s string with the colors attributes.
 func wrap(params []Attribute, s string) string {
-	if NoColor {
+	if NoColor || NoColorFlag {
 		return s
 	}
 
