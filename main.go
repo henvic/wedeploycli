@@ -39,7 +39,6 @@ func main() {
 }
 
 type mainProgram struct {
-	cue            chan error
 	cmd            *cobra.Command
 	cmdErr         error
 	cmdFriendlyErr error
@@ -48,9 +47,15 @@ type mainProgram struct {
 func (m *mainProgram) run() {
 	m.setupMetrics()
 	(&configLoader{}).load()
-	m.checkUpdate()
+	var uc update.Checker
+
+	if !isCommand("autocomplete") && !isCommand("metrics") && !isCommand("build") {
+		uc.Check()
+	}
+
 	m.executeCommand()
-	m.updateFeedback()
+	uc.Feedback()
+
 	autocomplete.AutoInstall()
 	m.maybeSubmitAnalyticsReport()
 }
@@ -238,28 +243,5 @@ func (m *mainProgram) commandErrorConditionalUsage() {
 		}
 	} else if strings.HasPrefix(emsg, "unknown command ") {
 		println("Run 'we --help' for usage.")
-	}
-}
-
-func (m *mainProgram) checkUpdate() {
-	if !isCommand("autocomplete") && !isCommand("metrics") && !isCommand("build") {
-		m.cue = make(chan error, 1)
-		go func() {
-			m.cue <- update.NotifierCheck()
-		}()
-	}
-}
-
-func (m *mainProgram) updateFeedback() {
-	if m.cue == nil {
-		return
-	}
-
-	var err = <-m.cue
-	switch err {
-	case nil:
-		update.Notify()
-	default:
-		println("Update notification error:", err.Error())
 	}
 }
