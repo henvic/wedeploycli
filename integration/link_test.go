@@ -1,9 +1,11 @@
 package integration
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os/exec"
 	"strings"
 	"testing"
 	"time"
@@ -13,6 +15,10 @@ import (
 )
 
 func TestLink(t *testing.T) {
+	if !checkDockerIsUp() {
+		t.Skipf("Docker is not up")
+	}
+
 	defer Teardown()
 	Setup()
 
@@ -88,6 +94,10 @@ func TestLink(t *testing.T) {
 }
 
 func TestLinkEmptyJSON(t *testing.T) {
+	if !checkDockerIsUp() {
+		t.Skipf("Docker is not up")
+	}
+
 	defer Teardown()
 	Setup()
 
@@ -107,6 +117,10 @@ func TestLinkEmptyJSON(t *testing.T) {
 }
 
 func TestLinkToProject(t *testing.T) {
+	if !checkDockerIsUp() {
+		t.Skipf("Docker is not up")
+	}
+
 	defer Teardown()
 	Setup()
 
@@ -219,6 +233,10 @@ func TestLinkToProjectOnContainerErrorProjectContextAndProjectFlag(t *testing.T)
 }
 
 func TestLinkToProjectServerFailure(t *testing.T) {
+	if !checkDockerIsUp() {
+		t.Skipf("Docker is not up")
+	}
+
 	defer Teardown()
 	Setup()
 
@@ -274,6 +292,10 @@ func TestLinkToProjectServerFailure(t *testing.T) {
 }
 
 func TestLinkToProjectServerFailureQuiet(t *testing.T) {
+	if !checkDockerIsUp() {
+		t.Skipf("Docker is not up")
+	}
+
 	defer Teardown()
 	Setup()
 
@@ -400,4 +422,16 @@ func TestLinkHostWithContainerError(t *testing.T) {
 	if !strings.Contains(got, want) {
 		t.Errorf("Error message doesn't contain expected value %v, got %v instead", want, got)
 	}
+}
+
+func checkDockerIsUp() bool {
+	var params = []string{
+		"version", "--format", "{{.Client.Version}}",
+	}
+
+	var versionErrBuf bytes.Buffer
+	var version = exec.Command("docker", params...)
+	version.Stderr = &versionErrBuf
+
+	return version.Run() == nil
 }
