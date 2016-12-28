@@ -178,7 +178,7 @@ func Get(ctx context.Context, projectID, containerID string) (Container, error) 
 
 // Link container to project
 func Link(ctx context.Context, projectID, containerID, containerPath string) error {
-	verbose.Debug("Installing container from definition")
+	verbose.Debug("Linking container " + containerID + " to project " + projectID)
 
 	var req = apihelper.URL(ctx, "/deploy")
 	apihelper.Auth(req)
