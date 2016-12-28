@@ -141,7 +141,11 @@ func (m *Machine) Run() {
 
 func (m *Machine) linkAll() {
 	for _, cl := range m.Links {
-		go m.doLink(cl)
+		// this might be in parallel (with a goroutine call)
+		// but currently there is an issue on the backend
+		// that makes things fail randomly
+		// see https://github.com/wedeploy/cli/issues/170
+		m.doLink(cl)
 	}
 }
 
