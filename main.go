@@ -247,6 +247,12 @@ func panickingListener(panicking *bool) {
 	}
 
 	errorhandling.Info()
+	// don't recover from panic to get more context
+	// to avoid having to handle it
+	// unless we find out it is really useful later
+	metrics.Rec(metrics.Event{
+		Type: "panic",
+	})
 }
 
 func (m *mainProgram) commandErrorConditionalUsage() {
