@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"reflect"
 	"runtime"
 	"strings"
 	"time"
@@ -104,6 +105,18 @@ func (h *handler) handleAPIFaultError() error {
 	}
 
 	return errors.New(strings.Join(msgs, "\n"))
+}
+
+// GetTypes get a list of error types separated by ":"
+func GetTypes(err error) string {
+	var types []string
+
+	errwrap.Walk(err, func(err error) {
+		r := reflect.TypeOf(err)
+		types = append(types, r.String())
+	})
+
+	return strings.Join(types, ":")
 }
 
 // Info prints useful system information for debugging

@@ -15,9 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"reflect"
-
-	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/wedeploy/cli/autocomplete"
@@ -116,7 +113,7 @@ func (m *mainProgram) getCommandErrorDetails() map[string]string {
 	}
 
 	var extra = map[string]string{
-		"error_type": getTypeOfError(m.cmdErr),
+		"error_type": errorhandling.GetTypes(m.cmdErr),
 	}
 
 	if m.cmdErr.Error() != m.cmdFriendlyErr.Error() {
@@ -154,17 +151,6 @@ func (m *mainProgram) maybeSubmitAnalyticsReport() {
 				errorhandling.Handle(err))
 		}
 	}
-}
-
-func getTypeOfError(err error) string {
-	var result []string
-
-	errwrap.Walk(err, func(err error) {
-		r := reflect.TypeOf(err)
-		result = append(result, r.String())
-	})
-
-	return strings.Join(result, ":")
 }
 
 type configLoader struct {
