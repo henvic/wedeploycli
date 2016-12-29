@@ -204,14 +204,6 @@ func getWeDeployHost() string {
 	return address
 }
 
-func runWait(container string) (*os.Process, error) {
-	var c = exec.Command(bin, "wait", container)
-	exechelper.AddCommandToNewProcessGroup(c)
-	var err = c.Start()
-
-	return c.Process, err
-}
-
 func startCmd(args ...string) (dockerContainer string, err error) {
 	var docker = exec.Command(bin, args...)
 	var dockerContainerBuf bytes.Buffer

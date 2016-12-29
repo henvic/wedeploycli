@@ -25,18 +25,15 @@ import (
 // Flags modifiers
 type Flags struct {
 	Debug  bool
-	Detach bool
 	DryRun bool
 }
 
 // DockerMachine for the run command
 type DockerMachine struct {
-	Container   string
-	Image       string
-	Flags       Flags
-	WaitLiveMsg *waitlivemsg.WaitLiveMsg
-	// waitProcess is the "docker wait" PID
-	waitProcess    *os.Process
+	Container      string
+	Image          string
+	Flags          Flags
+	WaitLiveMsg    *waitlivemsg.WaitLiveMsg
 	livew          *uilive.Writer
 	end            chan bool
 	started        chan bool
@@ -97,7 +94,6 @@ func (dm *DockerMachine) Run() (err error) {
 		return err
 	}
 
-	dm.maybeWaitEnd()
 	dm.started <- true
 	go dm.waitReadyState()
 	<-dm.end
@@ -130,13 +126,6 @@ func (dm *DockerMachine) Stop() error {
 
 	if err := cleanupEnvironment(); err != nil {
 		return err
-	}
-
-	// try to terminate wait process child by sending a SIGTERM
-	if dm.waitProcess != nil {
-		if err := dm.waitProcess.Signal(syscall.SIGTERM); err != nil {
-			return errwrap.Wrapf("Can't terminate docker wait process: {{err}}", err)
-		}
 	}
 
 	stopMsg.Stop()
@@ -183,32 +172,6 @@ func (dm *DockerMachine) checkPortsAreAvailable() error {
 	return errors.New(s)
 }
 
-func (dm *DockerMachine) waitEnd() {
-	var p, err = runWait(dm.Container)
-
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Running wait error: %v", err)
-	}
-
-	verbose.Debug("docker wait process pid:", p.Pid)
-	dm.waitProcess = p
-
-	if _, err = p.Wait(); err != nil {
-		fmt.Fprintf(os.Stderr, "WeDeploy exit listener error: %v. Containers might still be running.\n", err)
-		os.Exit(1)
-	}
-
-	if !dm.selfStopSignal {
-		dm.endRun()
-	}
-}
-
-func (dm *DockerMachine) maybeWaitEnd() {
-	if !dm.Flags.Detach {
-		go dm.waitEnd()
-	}
-}
-
 func (dm *DockerMachine) waitReadyState() {
 	var tries = 1
 	dm.WaitLiveMsg = &waitlivemsg.WaitLiveMsg{
@@ -229,9 +192,7 @@ func (dm *DockerMachine) waitReadyState() {
 			dm.WaitLiveMsg.Stop()
 			fmt.Fprintf(dm.livew, "WeDeploy is ready! %vs\n", dm.WaitLiveMsg.Duration())
 			dm.ready()
-			if dm.Flags.Detach {
-				dm.end <- true
-			}
+			dm.end <- true
 			return
 		}
 
@@ -243,9 +204,7 @@ func (dm *DockerMachine) waitReadyState() {
 	dm.WaitLiveMsg.Stop()
 
 	println("Failed to verify if WeDeploy is working correctly.")
-	if dm.Flags.Detach {
-		dm.end <- true
-	}
+	dm.end <- true
 }
 
 func (dm *DockerMachine) endRun() {
@@ -363,13 +322,7 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 }
 
 func (dm *DockerMachine) ready() {
-	fmt.Fprintf(dm.livew, "You can now test your apps locally.")
-
-	if !dm.Flags.Detach {
-		fmt.Fprintf(dm.livew, " Press Ctrl+C to shut it down when you are done.")
-	}
-
-	fmt.Fprintf(dm.livew, "\n")
+	fmt.Fprintf(dm.livew, "You can now test your apps locally.\n")
 
 	if err := dm.livew.Flush(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error flushing startup ready message: %v\n", err)

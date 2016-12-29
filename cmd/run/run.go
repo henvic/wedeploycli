@@ -17,7 +17,6 @@ var RunCmd = &cobra.Command{
 var (
 	image  string
 	debug  bool
-	detach bool
 	dryRun bool
 )
 
@@ -33,7 +32,6 @@ func runRun(cmd *cobra.Command, args []string) error {
 
 	return run.Run(run.Flags{
 		Debug:  debug,
-		Detach: detach,
 		DryRun: dryRun,
 	})
 }
@@ -41,9 +39,6 @@ func runRun(cmd *cobra.Command, args []string) error {
 func init() {
 	// debug can only run on the first time
 	RunCmd.Flags().BoolVar(&debug, "debug", false, "Open debug ports")
-
-	RunCmd.Flags().BoolVarP(&detach, "detach", "d", false,
-		"Run in background")
 
 	RunCmd.Flags().BoolVar(&dryRun, "dry-run", false,
 		"Obtain a summary of what docker command is invoked")
