@@ -1,4 +1,4 @@
-package cmdlink
+package cmddev
 
 import (
 	"errors"
@@ -19,34 +19,59 @@ import (
 	"github.com/wedeploy/cli/wdircontext"
 )
 
-// LinkCmd links the given project or container locally
-var LinkCmd = &cobra.Command{
-	Use:     "link <host> or --project <project>",
-	Short:   "Links the given project or container locally",
-	PreRunE: preRun,
-	RunE:    linkRun,
-	Example: `we link
-	we link data`,
+type linker struct {
+	Machine link.Machine
 }
 
-var quiet bool
+func (l *linker) Init() {
+	setupHost = cmdflagsfromhost.SetupHost{
+		Pattern: cmdflagsfromhost.ProjectPattern,
+	}
 
-var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern: cmdflagsfromhost.ProjectPattern,
+	setupHost.Init(DevCmd)
 }
 
-func init() {
-	LinkCmd.Flags().BoolVarP(
-		&quiet,
-		"quiet",
-		"q",
-		false,
-		"Link without watching status.")
+func (l *linker) PreRun(cmd *cobra.Command, args []string) error {
+	if cmd.Flags().Changed("infra") && infra {
+		return nil
+	}
 
-	setupHost.Init(LinkCmd)
+	return setupHost.Process(args)
 }
 
-func getContainersDirectoriesFromScope() ([]string, error) {
+func (l *linker) Run(cmd *cobra.Command, args []string) error {
+	var projectID, errProjectID = l.getProject()
+
+	if errProjectID != nil {
+		return errProjectID
+	}
+
+	csDirs, err := l.getContainersDirectoriesFromScope()
+
+	if err != nil {
+		return err
+	}
+
+	if err = pullimages.PullMissingContainersImages(csDirs); err != nil {
+		return err
+	}
+
+	if config.Context.ProjectRoot != "" {
+		if err = l.setupLocallyExistingProject(config.Context.ProjectRoot); err != nil {
+			return err
+		}
+	} else {
+		projectID, err = projects.ValidateOrCreate(projectID)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return l.linkMachineSetup(projectID, csDirs)
+}
+
+func (l *linker) getContainersDirectoriesFromScope() ([]string, error) {
 	if config.Context.ProjectRoot == "" {
 		wd, err := os.Getwd()
 
@@ -82,11 +107,7 @@ func getContainersDirectoriesFromScope() ([]string, error) {
 	return absList, err
 }
 
-func preRun(cmd *cobra.Command, args []string) error {
-	return setupHost.Process(args)
-}
-
-func getProject() (string, error) {
+func (l *linker) getProject() (string, error) {
 	var projectID = setupHost.Project()
 
 	if (config.Context.Scope == usercontext.ProjectScope ||
@@ -101,51 +122,17 @@ func getProject() (string, error) {
 	return wdircontext.GetProjectID()
 }
 
-func linkRun(cmd *cobra.Command, args []string) error {
-	var projectID, errProjectID = getProject()
+func (l *linker) linkMachineSetup(projectID string, csDirs []string) error {
+	l.Machine.ProjectID = projectID
 
-	if errProjectID != nil {
-		return errProjectID
-	}
-
-	csDirs, err := getContainersDirectoriesFromScope()
-
-	if err != nil {
-		return err
-	}
-
-	if err = pullimages.PullMissingContainersImages(csDirs); err != nil {
-		return err
-	}
-
-	if config.Context.ProjectRoot != "" {
-		if err = setupLocallyExistingProject(config.Context.ProjectRoot); err != nil {
-			return err
-		}
-	} else {
-		projectID, err = projects.ValidateOrCreate(projectID)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return linkMachineSetup(projectID, csDirs)
-}
-
-func linkMachineSetup(projectID string, csDirs []string) error {
-	var m = &link.Machine{
-		ProjectID: projectID,
-	}
-
-	if err := m.Setup(csDirs); err != nil {
+	if err := l.Machine.Setup(csDirs); err != nil {
 		return err
 	}
 
 	if quiet {
-		m.ErrStream = os.Stderr
-		m.Run()
-		return getLinkMachineErrors(m)
+		l.Machine.ErrStream = os.Stderr
+		l.Machine.Run()
+		return l.getLinkMachineErrors()
 	}
 
 	var queue sync.WaitGroup
@@ -153,27 +140,27 @@ func linkMachineSetup(projectID string, csDirs []string) error {
 	queue.Add(1)
 
 	go func() {
-		m.Run()
+		l.Machine.Run()
 	}()
 
 	go func() {
-		m.Watch()
+		l.Machine.Watch()
 		queue.Done()
 	}()
 
 	queue.Wait()
-	return getLinkMachineErrors(m)
+	return l.getLinkMachineErrors()
 }
 
-func getLinkMachineErrors(m *link.Machine) error {
-	if len(m.Errors.List) != 0 {
-		return m.Errors
+func (l *linker) getLinkMachineErrors() error {
+	if len(l.Machine.Errors.List) != 0 {
+		return l.Machine.Errors
 	}
 
 	return nil
 }
 
-func setupLocallyExistingProject(projectPath string) error {
+func (l *linker) setupLocallyExistingProject(projectPath string) error {
 	project, err := projects.Read(projectPath)
 
 	if err != nil {
