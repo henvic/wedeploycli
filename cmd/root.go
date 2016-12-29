@@ -29,14 +29,6 @@ import (
 	"github.com/wedeploy/cli/verbosereq"
 )
 
-// LocalOnlyCommands for local-only commands
-var LocalOnlyCommands = map[string]bool{
-	"we link":   true,
-	"we unlink": true,
-	"we run":    true,
-	"we stop":   true,
-}
-
 // RootCmd is the main command for the CLI
 var RootCmd = &cobra.Command{
 	Use:   "we",
