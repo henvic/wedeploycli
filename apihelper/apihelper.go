@@ -264,7 +264,7 @@ func handleURLError(ue *url.Error) error {
 		s += "\n{{err}}"
 	case config.Context.Remote == "":
 		s += " local infrastructure is not running\n"
-		s += `tip: try running "we run" and then run this command again`
+		s += `tip: try running "we dev" and then run this command again`
 	default:
 		s += " could not connect to remote infrastructure"
 	}

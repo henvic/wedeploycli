@@ -7,6 +7,7 @@ import (
 	"github.com/wedeploy/cli/cmd/build"
 	"github.com/wedeploy/cli/cmd/cmdmanager"
 	"github.com/wedeploy/cli/cmd/createctx"
+	"github.com/wedeploy/cli/cmd/dev"
 	"github.com/wedeploy/cli/cmd/inspect"
 	"github.com/wedeploy/cli/cmd/link"
 	"github.com/wedeploy/cli/cmd/list"
@@ -16,9 +17,7 @@ import (
 	"github.com/wedeploy/cli/cmd/metrics"
 	"github.com/wedeploy/cli/cmd/remote"
 	"github.com/wedeploy/cli/cmd/restart"
-	"github.com/wedeploy/cli/cmd/run"
 	"github.com/wedeploy/cli/cmd/start"
-	"github.com/wedeploy/cli/cmd/stop"
 	"github.com/wedeploy/cli/cmd/unlink"
 	"github.com/wedeploy/cli/cmd/update"
 	"github.com/wedeploy/cli/cmd/version"
@@ -53,13 +52,12 @@ var commands = []*cobra.Command{
 	cmdlogin.LoginCmd,
 	cmdlogout.LogoutCmd,
 	cmdcreate.CreateCmd,
+	cmddev.DevCmd,
 	cmdlog.LogCmd,
 	cmdlist.ListCmd,
 	cmdrestart.RestartCmd,
 	cmdbuild.BuildCmd,
-	cmdrun.RunCmd,
 	cmdstart.StartCmd,
-	cmdstop.StopCmd,
 	cmdlink.LinkCmd,
 	cmdunlink.UnlinkCmd,
 	cmdinspect.InspectCmd,

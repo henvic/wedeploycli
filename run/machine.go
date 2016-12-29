@@ -73,9 +73,8 @@ func (dm *DockerMachine) Run() (err error) {
 	dm.setupPorts()
 
 	if !dm.Flags.DryRun && dm.Container != "" {
-		println(`Infrastructure already running.`)
-		println(`Use "we stop" to stop it.`)
-		os.Exit(0)
+		println(`Infrastructure is on.`)
+		return nil
 	}
 
 	dm.livew = uilive.New()
@@ -191,7 +190,7 @@ func (dm *DockerMachine) waitReadyState() {
 		if err == nil {
 			dm.WaitLiveMsg.Stop()
 			fmt.Fprintf(dm.livew, "WeDeploy is ready! %vs\n", dm.WaitLiveMsg.Duration())
-			dm.ready()
+			_ = dm.livew.Flush()
 			dm.end <- true
 			return
 		}
@@ -300,7 +299,7 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 		<-sigs
 
 		if time.Now().After(gracefulExitLoopTimeout) {
-			println("\n\"we run\" killed awkwardly. Use \"we stop\" to kill ghosts.")
+			println("\n\"we dev\" killed awkwardly. Use \"we dev --no-infra\" to kill ghosts.")
 			os.Exit(1)
 		}
 
@@ -319,14 +318,6 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 
 	stopMsg.Stop()
 	dm.endRun()
-}
-
-func (dm *DockerMachine) ready() {
-	fmt.Fprintf(dm.livew, "You can now test your apps locally.\n")
-
-	if err := dm.livew.Flush(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error flushing startup ready message: %v\n", err)
-	}
 }
 
 // LoadDockerInfo loads the docker info on the DockerMachine object
