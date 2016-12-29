@@ -123,20 +123,6 @@ func (u *unlink) checkProjectOrContainerExists() error {
 	return err
 }
 
-func handleCheckProjectOrContainerError(err error) error {
-	switch err.(type) {
-	case *apihelper.APIFault:
-		var ae = err.(*apihelper.APIFault)
-
-		if ae.Has("documentNotFound") {
-			println("Successfully unlinked")
-			return nil
-		}
-	}
-
-	return err
-}
-
 func preRun(cmd *cobra.Command, args []string) error {
 	return setupHost.Process(args)
 }
