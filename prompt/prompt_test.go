@@ -157,7 +157,7 @@ func TestSelectOptionIsNotTerminal(t *testing.T) {
 		t.Errorf("Expected option to be -1, got %v instead", option)
 	}
 
-	var wantErr = "Input device is not a terminal. Can't read \"\nSelect from 1..5\""
+	var wantErr = "Input device is not a terminal. Can not read \"\nSelect from 1..5\""
 
 	if errt == nil || errt.Error() != wantErr {
 		t.Errorf("Expected option error to be %v, got %v instead", wantErr, errt)
@@ -401,7 +401,7 @@ func TestPromptIsNotterminal(t *testing.T) {
 		t.Errorf("Expected prompt error to be not nil, got %v instead", errt)
 	}
 
-	var wantErr = `Input device is not a terminal. Can't read "question"`
+	var wantErr = `Input device is not a terminal. Can not read "question"`
 
 	if errt.Error() != wantErr {
 		t.Errorf("Expected error message %v, got %v instead", wantErr, errt)
@@ -440,7 +440,7 @@ func TestHiddenIsNotterminal(t *testing.T) {
 		t.Errorf("Expected prompt error to be not nil, got %v instead", errt)
 	}
 
-	var wantErr = `Input device is not a terminal. Can't read "question"`
+	var wantErr = `Input device is not a terminal. Can not read "question"`
 
 	if errt.Error() != wantErr {
 		t.Errorf("Expected error message %v, got %v instead", wantErr, errt)

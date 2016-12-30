@@ -78,7 +78,7 @@ func GetLevel(severityOrLevel string) (int, error) {
 	var i, err = strconv.Atoi(severityOrLevel)
 
 	if err != nil {
-		err = errwrap.Wrapf("Can't translate log severity param to level: {{err}}", err)
+		err = errwrap.Wrapf("Can not translate log severity param to level: {{err}}", err)
 	}
 
 	return i, err
@@ -95,13 +95,13 @@ func GetList(ctx context.Context, filter *Filter) ([]Logs, error) {
 	var err = apihelper.Validate(req, req.Get())
 
 	if err != nil {
-		return list, errwrap.Wrapf("Can't list logs: {{err}}", err)
+		return list, errwrap.Wrapf("Can not list logs: {{err}}", err)
 	}
 
 	err = apihelper.DecodeJSON(req, &list)
 
 	if err != nil {
-		return list, errwrap.Wrapf("Can't decode logs JSON: {{err}}", err)
+		return list, errwrap.Wrapf("Can not decode logs JSON: {{err}}", err)
 	}
 
 	return list, err

@@ -44,7 +44,7 @@ func (overview *ContextOverview) loadProject(directory string) error {
 	case os.IsNotExist(perr):
 		return nil
 	case perr != nil:
-		return errwrap.Wrapf("Can't load project context on "+projectPath+": {{err}}", perr)
+		return errwrap.Wrapf("Can not load project context on "+projectPath+": {{err}}", perr)
 	}
 
 	overview.Scope = usercontext.ProjectScope
@@ -75,7 +75,7 @@ func (overview *ContextOverview) loadContainer(directory string) error {
 	switch {
 	case os.IsNotExist(cerr):
 	case cerr != nil:
-		return errwrap.Wrapf("Can't load container context on "+containerPath+": {{err}}", cerr)
+		return errwrap.Wrapf("Can not load container context on "+containerPath+": {{err}}", cerr)
 	default:
 		if overview.Scope == usercontext.ProjectScope {
 			overview.Scope = usercontext.ContainerScope
@@ -105,7 +105,7 @@ func (overview *ContextOverview) Load(directory string) error {
 
 // InspectContext on a given directory, filtering by format
 func InspectContext(format, directory string) (string, error) {
-	// Can't rely on values on usercontext.Context given that
+	// Can not rely on values on usercontext.Context given that
 	// they are global and we accept the directory parameter
 	var overview = ContextOverview{}
 
@@ -122,7 +122,7 @@ func InspectProject(format, directory string) (string, error) {
 
 	switch {
 	case os.IsNotExist(perr):
-		return "", errwrap.Wrapf("Inspection failure: can't find project", perr)
+		return "", errwrap.Wrapf("Inspection failure: can not find project", perr)
 	case perr != nil:
 		return "", perr
 	}
@@ -169,7 +169,7 @@ func InspectContainer(format, directory string) (string, error) {
 
 	switch {
 	case os.IsNotExist(cerr):
-		return "", errwrap.Wrapf("Inspection failure: can't find container", cerr)
+		return "", errwrap.Wrapf("Inspection failure: can not find container", cerr)
 	case cerr != nil:
 		return "", cerr
 	}

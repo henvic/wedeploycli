@@ -139,7 +139,7 @@ func (l *listFromDirectoryGetter) readFunc(path string) error {
 	case errRead == ErrContainerNotFound:
 		return nil
 	default:
-		return errwrap.Wrapf("Can't list containers: error reading "+
+		return errwrap.Wrapf("Can not list containers: error reading "+
 			path+
 			": {{err}}", errRead)
 	}
@@ -147,7 +147,7 @@ func (l *listFromDirectoryGetter) readFunc(path string) error {
 
 func (l *listFromDirectoryGetter) addFunc(container *Container, dir string) error {
 	if cp, ok := l.idDirMap[container.ID]; ok {
-		return fmt.Errorf(`Can't list containers: ID "%v" was found duplicated on containers %v and %v`,
+		return fmt.Errorf(`Can not list containers: ID "%v" was found duplicated on containers %v and %v`,
 			container.ID,
 			cp,
 			dir)

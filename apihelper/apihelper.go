@@ -38,7 +38,7 @@ type APIFault struct {
 // DefaultToken for the API server
 var DefaultToken = "1"
 
-var errJSONDecodeFailure = errors.New("Can't decode JSON, fallback to body content")
+var errJSONDecodeFailure = errors.New("Can not decode JSON, fallback to body content")
 var errMissingResponse = errors.New("Request is not fulfilled by a response")
 
 func (a APIFault) Error() string {

@@ -23,7 +23,7 @@ func init() {
 		&noPurge,
 		"no-purge",
 		false,
-		"Don't purge usage log after submission")
+		"Do not purge usage log after submission")
 }
 
 // MetricsCmd controls the metrics for the WeDeploy CLI

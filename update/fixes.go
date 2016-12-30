@@ -17,7 +17,7 @@ func autocompleteFix() {
 	oldAutocomplete := filepath.Join(user.GetHomeDir(), "/.we_autocomplete")
 
 	if err := os.Remove(oldAutocomplete); err != nil {
-		verbose.Debug("Can't remove old autocomplete script:", err)
+		verbose.Debug("Can not remove old autocomplete script:", err)
 	}
 }
 

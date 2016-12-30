@@ -101,7 +101,7 @@ func TestSetupAndTeardownProject(t *testing.T) {
 	}
 
 	if Context.ProjectRoot != filepath.Join(workingDir, "mocks/project") {
-		t.Errorf("Context.ProjectRoot doesn't match with expected value")
+		t.Errorf("Context.ProjectRoot does not match with expected value")
 	}
 
 	if Context.ContainerRoot != "" {
@@ -133,7 +133,7 @@ func TestSetupAndTeardownProjectAndContainer(t *testing.T) {
 	}
 
 	if Context.ProjectRoot != filepath.Join(workingDir, "mocks/project") {
-		t.Errorf("Context.ProjectRoot doesn't match with expected value")
+		t.Errorf("Context.ProjectRoot does not match with expected value")
 	}
 
 	if Context.ContainerRoot != filepath.Join(workingDir, "mocks/project/container") {
@@ -328,7 +328,7 @@ func TestRemotesListAndGet(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(wantOriginalRemotes, Global.Remotes) {
-		t.Errorf("Remotes doesn't match expected value")
+		t.Errorf("Remotes does not match expected value")
 	}
 
 	var wantList = []string{

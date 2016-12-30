@@ -78,7 +78,7 @@ func GetWeDeployHost() (string, error) {
 	gateway.Stdout = &gatewayBuf
 
 	if err := gateway.Run(); err != nil {
-		return "", errwrap.Wrapf("Can't get docker network bridge gateway: {{err}}", err)
+		return "", errwrap.Wrapf("Can not get docker network bridge gateway: {{err}}", err)
 	}
 
 	var address = gatewayBuf.String()
@@ -126,7 +126,7 @@ func StopOutdatedImage(nextImage string) error {
 	}
 
 	if q != "" && q != "y" && q != "yes" {
-		return errors.New("Can't update image while running an old version of the infrastructure.")
+		return errors.New("Can not update image while running an old version of the infrastructure.")
 	}
 
 	return cleanupEnvironment()
@@ -223,7 +223,7 @@ func unlinkProjects() error {
 	list, err := projects.List(context.Background())
 
 	if err != nil {
-		return errwrap.Wrapf("Can't list projects for unlinking: {{err}}", err)
+		return errwrap.Wrapf("Can not list projects for unlinking: {{err}}", err)
 	}
 
 	for _, p := range list {
@@ -255,7 +255,7 @@ func cleanupEnvironment() error {
 	ids, err := getDockerContainers(true)
 
 	if err != nil {
-		return errwrap.Wrapf("Can't verify containers are down: {{err}}", err)
+		return errwrap.Wrapf("Can not verify containers are down: {{err}}", err)
 	}
 
 	if len(ids) != 0 {
@@ -377,7 +377,7 @@ func getContainersByLabel(label string, onlyRunning bool) (cs []string, err erro
 	list.Stdout = &buf
 
 	if err := list.Run(); err != nil {
-		return cs, errwrap.Wrapf("Can't get containers list: {{err}}", err)
+		return cs, errwrap.Wrapf("Can not get containers list: {{err}}", err)
 	}
 
 	return strings.Fields(buf.String()), nil

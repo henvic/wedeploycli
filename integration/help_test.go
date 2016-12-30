@@ -33,7 +33,7 @@ func TestHelp(t *testing.T) {
 	var strippedWant = stripSpaces(want)
 
 	if strippedGot != strippedWant {
-		t.Errorf("Stdout doesn't match with expected value: %v", diff.Diff(want, cmd.Stdout.String()))
+		t.Errorf("Stdout does not match with expected value: %v", diff.Diff(want, cmd.Stdout.String()))
 	}
 }
 

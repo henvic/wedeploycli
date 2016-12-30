@@ -99,7 +99,7 @@ func renameRun(cmd *cobra.Command, args []string) error {
 	var oldRemote, ok = remotes[old]
 
 	if !ok {
-		return errors.New("fatal: remote " + old + " doesn't exists.")
+		return errors.New("fatal: remote " + old + " does not exists.")
 	}
 
 	if _, ok := remotes[name]; ok {
@@ -121,7 +121,7 @@ func removeRun(cmd *cobra.Command, args []string) error {
 	var name = args[0]
 
 	if _, ok := remotes[name]; !ok {
-		return errors.New("fatal: remote " + name + " doesn't exists.")
+		return errors.New("fatal: remote " + name + " does not exists.")
 	}
 
 	remotes.Del(name)
@@ -138,7 +138,7 @@ func getURLRun(cmd *cobra.Command, args []string) error {
 	var remote, ok = remotes[name]
 
 	if !ok {
-		return errors.New("fatal: remote " + name + " doesn't exists.")
+		return errors.New("fatal: remote " + name + " does not exists.")
 	}
 
 	fmt.Println(remote.URL)
@@ -156,7 +156,7 @@ func setURLRun(cmd *cobra.Command, args []string) error {
 	var uri = args[1]
 
 	if _, ok := remotes[name]; !ok {
-		return errors.New("fatal: remote " + name + " doesn't exists.")
+		return errors.New("fatal: remote " + name + " does not exists.")
 	}
 
 	remotes.Set(name, uri)

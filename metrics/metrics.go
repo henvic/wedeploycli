@@ -188,7 +188,7 @@ type eventRecorder struct {
 
 func (e *eventRecorder) jsonMarshal() (err error) {
 	if e.jsonMarshaled, err = json.Marshal(e.event); err != nil {
-		return errwrap.Wrapf("Can't JSON marshal metrics event: {{err}}", err)
+		return errwrap.Wrapf("Can not JSON marshal metrics event: {{err}}", err)
 	}
 
 	return nil
@@ -203,7 +203,7 @@ func (e *eventRecorder) appendEvent() error {
 	}()
 
 	if err != nil {
-		return errwrap.Wrapf("Can't open metrics file: {{err}}", err)
+		return errwrap.Wrapf("Can not open metrics file: {{err}}", err)
 	}
 
 	if _, err = file.Write(append(e.jsonMarshaled, []byte("\n")...)); err != nil {
@@ -237,7 +237,7 @@ func (s *Sender) TrySubmit() (int, error) {
 	var lines, err = s.trySend()
 
 	if err != nil {
-		return 0, errwrap.Wrapf("Can't submit analytics: {{err}}", err)
+		return 0, errwrap.Wrapf("Can not submit analytics: {{err}}", err)
 	}
 
 	if s.Purge {
@@ -358,7 +358,7 @@ func (s *Sender) read() (err error) {
 	case os.IsNotExist(err):
 		return nil
 	case err != nil:
-		return errwrap.Wrapf("Can't read metrics file: {{err}}", err)
+		return errwrap.Wrapf("Can not read metrics file: {{err}}", err)
 	default:
 		s.countLines()
 		return nil

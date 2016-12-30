@@ -136,7 +136,7 @@ func TestGetListFromDirectoryDuplicateID(t *testing.T) {
 		t.Errorf("Expected error, got %v instead.", err)
 	}
 
-	var wantErr = fmt.Sprintf(`Can't list containers: ID "email" was found duplicated on containers %v and %v`,
+	var wantErr = fmt.Sprintf(`Can not list containers: ID "email" was found duplicated on containers %v and %v`,
 		abs("./mocks/project-with-duplicate-containers-ids/one"),
 		abs("./mocks/project-with-duplicate-containers-ids/two"))
 
@@ -190,7 +190,7 @@ func TestGet(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(want, got) {
-		t.Errorf("Get doesn't match with wanted structure.")
+		t.Errorf("Get does not match with wanted structure.")
 		t.Errorf(pretty.Compare(want, got))
 	}
 
@@ -227,7 +227,7 @@ func TestList(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(want, got) {
-		t.Errorf("List doesn't match with wanted structure.")
+		t.Errorf("List does not match with wanted structure.")
 		t.Errorf(pretty.Compare(want, got))
 	}
 

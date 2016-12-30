@@ -77,7 +77,7 @@ func execute(format string, data interface{}) (string, error) {
 	}
 
 	if err := tmpl.Execute(wr, data); err != nil {
-		return "", errwrap.Wrapf("Can't execute template: {{err}}", err)
+		return "", errwrap.Wrapf("Can not execute template: {{err}}", err)
 	}
 
 	return buf.String(), nil

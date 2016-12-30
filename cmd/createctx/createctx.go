@@ -194,7 +194,7 @@ func (r *runner) setBase() (err error) {
 
 func (r *runner) setBaseDirectory() (err error) {
 	if r.base, err = filepath.Abs(r.base); err != nil {
-		return errwrap.Wrapf("Can't get absolute path: {{err}}", err)
+		return errwrap.Wrapf("Can not get absolute path: {{err}}", err)
 	}
 
 	e, err := exists(r.base)
@@ -233,7 +233,7 @@ func (r *runner) setupContainerOnProject() error {
 	r.container, ec = r.cmd.Flags().GetString("container")
 
 	if ec != nil {
-		return errwrap.Wrapf("Can't get container created within project: {{err}}", ec)
+		return errwrap.Wrapf("Can not get container created within project: {{err}}", ec)
 	}
 
 	return nil
@@ -286,7 +286,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) (err error) {
 
 func (r *runner) handleProjectBase() error {
 	if r.project != "" {
-		return fmt.Errorf("Can't use project flag (value: \"%v\") from inside a project:\n%v",
+		return fmt.Errorf("Can not use project flag (value: \"%v\") from inside a project:\n%v",
 			color.Format(color.FgBlue, r.project), r.base)
 	}
 
@@ -406,7 +406,7 @@ func (cc *containerCreator) handleContainerType() error {
 	registry, err := containers.GetRegistry(context.Background())
 
 	if err != nil {
-		return errwrap.Wrapf("Can't get the registry: {{err}}", err)
+		return errwrap.Wrapf("Can not get the registry: {{err}}", err)
 	}
 
 	cc.Registry = registry
@@ -519,7 +519,7 @@ func (cc *containerCreator) checkIfDirectoryEmptyForInstallingBoilerplate() (emp
 			return false, nil
 		}
 
-		return false, errors.New("Container directory already exists. Can't install boilerplate.")
+		return false, errors.New("Container directory already exists. Can not install boilerplate.")
 	}
 
 	return true, nil
@@ -581,13 +581,13 @@ func (cc *containerCreator) handleBoilerplate() (err error) {
 		}
 
 		fmt.Fprintf(os.Stderr, "%v\n", cmdStderr.String())
-		return errwrap.Wrapf("Can't get boilerplate: {{err}}", err)
+		return errwrap.Wrapf("Can not get boilerplate: {{err}}", err)
 	}
 
 	cc.boilerplateCreated = true
 
 	if err = os.RemoveAll(boilerplateDotGit); err != nil {
-		return errwrap.Wrapf("Can't remove boilerplate .git hidden dir: {{err}}", err)
+		return errwrap.Wrapf("Can not remove boilerplate .git hidden dir: {{err}}", err)
 	}
 
 	// never use os.RemoveAll here, see block comment on createBoilerplate()
@@ -596,7 +596,7 @@ func (cc *containerCreator) handleBoilerplate() (err error) {
 	}
 
 	if cc.Container, err = containers.Read(cc.ContainerDirectory); err != nil {
-		return errwrap.Wrapf("Can't read boilerplate's container file: {{err}}", err)
+		return errwrap.Wrapf("Can not read boilerplate's container file: {{err}}", err)
 	}
 
 	cc.Container.ID = container
@@ -698,7 +698,7 @@ func tryCreateDirectory(directory string) error {
 	var err = os.MkdirAll(directory, 0775)
 
 	if err != nil {
-		return errwrap.Wrapf("Can't create directory: {{err}}", err)
+		return errwrap.Wrapf("Can not create directory: {{err}}", err)
 	}
 
 	return err

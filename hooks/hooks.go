@@ -49,7 +49,7 @@ func (h *Hooks) Run(hookType string, wdir string, notes ...string) error {
 	var owd, err = os.Getwd()
 
 	if err != nil {
-		return errwrap.Wrapf("Can't get current working dir on hooks run: {{err}}", err)
+		return errwrap.Wrapf("Can not get current working dir on hooks run: {{err}}", err)
 	}
 
 	if wdir != "" {

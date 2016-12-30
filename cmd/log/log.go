@@ -101,7 +101,7 @@ func getSince() (string, error) {
 	var since, err = logs.GetUnixTimestamp(sinceArg)
 
 	if err != nil {
-		return "", errwrap.Wrapf("Can't parse since argument: {{err}}.", err)
+		return "", errwrap.Wrapf("Can not parse since argument: {{err}}.", err)
 	}
 
 	// use microseconds instead of seconds (dashboard takes ms as a param)

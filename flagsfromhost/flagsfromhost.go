@@ -11,7 +11,7 @@ import (
 type ErrorRemoteFlagAndHost struct{}
 
 func (ErrorRemoteFlagAndHost) Error() string {
-	return "Incompatible use: --remote flag can't be used along host format with remote address"
+	return "Incompatible use: --remote flag can not be used along host format with remote address"
 }
 
 // ErrorMultiMode happens when --project and --container are used with host format

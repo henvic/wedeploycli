@@ -103,7 +103,7 @@ func getAllContainers() ([]string, error) {
 	list.Stdout = &buf
 
 	if err := list.Run(); err != nil {
-		return []string{}, errwrap.Wrapf("Can't get containers list: {{err}}", err)
+		return []string{}, errwrap.Wrapf("Can not get containers list: {{err}}", err)
 	}
 
 	return strings.Fields(buf.String()), nil
@@ -199,7 +199,7 @@ func (s *scenario) cleanupEnvironment(t *testing.T) {
 	println("Running cleanup environment script")
 
 	if err := rmAllContainers(); err != nil {
-		t.Fatalf("Can't remove containers: %v", err)
+		t.Fatalf("Can not remove containers: %v", err)
 	}
 
 	if keepImages {
@@ -208,7 +208,7 @@ func (s *scenario) cleanupEnvironment(t *testing.T) {
 	}
 
 	if err := rmAllImages(); err != nil {
-		t.Fatalf("Can't remove images: %v", err)
+		t.Fatalf("Can not remove images: %v", err)
 	}
 
 	log("Finished cleanup environment script (including cleaning up images)")
@@ -300,7 +300,7 @@ var weRunFirstTimeTimeout = 15 * time.Minute
 
 func assertReadyState(cmd *cmdrunner.Command, t *testing.T) bool {
 	if cmd == nil {
-		t.Fatalf(`Can't assert ready state: not invoked after "we dev --infra"`)
+		t.Fatalf(`Can not assert ready state: not invoked after "we dev --infra"`)
 	}
 
 	var out = cmd.Stdout.String()

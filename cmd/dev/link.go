@@ -84,7 +84,7 @@ func (l *linker) getContainersDirectoriesFromScope() ([]string, error) {
 		_, err = containers.Read(wd)
 
 		if err != nil {
-			err = errwrap.Wrapf("Can't find project-orphan container: {{err}}", err)
+			err = errwrap.Wrapf("Can not find project-orphan container: {{err}}", err)
 		}
 
 		return []string{wd}, err
@@ -114,7 +114,7 @@ func (l *linker) getProject() (string, error) {
 
 	if (config.Context.Scope == usercontext.ProjectScope ||
 		config.Context.Scope == usercontext.ContainerScope) && projectID != "" {
-		return "", errors.New("Can't use we link arguments when inside a project")
+		return "", errors.New(`Can not use "we dev --project" when inside a project`)
 	}
 
 	if projectID != "" {

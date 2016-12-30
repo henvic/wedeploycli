@@ -52,7 +52,7 @@ func inspectRun(cmd *cobra.Command, args []string) error {
 
 	var err error
 	if directory, err = filepath.Abs(directory); err != nil {
-		return errwrap.Wrapf("Can't resolve directory: {{err}}", err)
+		return errwrap.Wrapf("Can not resolve directory: {{err}}", err)
 	}
 
 	if len(args) != 1 {
@@ -60,7 +60,7 @@ func inspectRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if showTypeFields && format != "" {
-		return errors.New("Incompatible use: --fields and --format can't be used together")
+		return errors.New("Incompatible use: --fields and --format can not be used together")
 	}
 
 	if showTypeFields {

@@ -32,7 +32,7 @@ func GetRootDirectory(dir, delimiter, file string) (string, error) {
 	case os.IsNotExist(err) || !stat.IsDir():
 		return "", os.ErrNotExist
 	case err != nil:
-		return "", errwrap.Wrapf("Can't read delimiter "+delimiter+"directory: {{err}}", err)
+		return "", errwrap.Wrapf("Can not read delimiter "+delimiter+"directory: {{err}}", err)
 	}
 
 	return walkToRootDirectory(dir, delimiter, file)

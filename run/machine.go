@@ -177,7 +177,7 @@ func (dm *DockerMachine) checkPortsAreAvailable() error {
 		return nil
 	}
 
-	var s = "Can't start. The following network ports must be available:\n"
+	var s = "Can not start. The following network ports must be available:\n"
 
 	for _, port := range notAvailable {
 		s += fmt.Sprintf("%v\n", port)
@@ -270,7 +270,7 @@ func (dm *DockerMachine) checkDockerHost() error {
 		return nil
 	}
 
-	var m = `Can't work with $DOCKER_HOST env variable set to non-socket.`
+	var m = `Can not work with $DOCKER_HOST env variable set to non-socket.`
 
 	if runtime.GOOS != "linux" {
 		m += `If you are using docker-machine, please use Docker Native instead.

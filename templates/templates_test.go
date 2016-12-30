@@ -115,7 +115,7 @@ func TestExecuteCompileError(t *testing.T) {
 }
 
 func TestExecuteRunError(t *testing.T) {
-	var wantErr = `Can't execute template: template: :1:13: executing "" at <.>: can't give argument to non-function .`
+	var wantErr = `Can not execute template: template: :1:13: executing "" at <.>: can't give argument to non-function .`
 	var _, err = Execute("this is a {{ . . }}", 1)
 
 	if err == nil || err.Error() != wantErr {

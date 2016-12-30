@@ -149,7 +149,7 @@ func TestCreateProjectAlreadyExistsInsideBase(t *testing.T) {
 		t.Errorf("Expected stdout to be empty, got %v instead", cmd.Stdout)
 	}
 
-	var wantErr = `Error: Can't use project flag (value: "foo") from inside a project`
+	var wantErr = `Error: Can not use project flag (value: "foo") from inside a project`
 
 	if !strings.Contains(cmd.Stderr.String(), wantErr) {
 		t.Errorf("Wanted stderr to have %v, got %v instead", wantErr, cmd.Stderr)

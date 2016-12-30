@@ -61,7 +61,7 @@ func getSelectOptionIndex(index, indexLength int, err error) (int, error) {
 func Prompt(param string) (string, error) {
 	if !isTerminal {
 		return "", errors.New("Input device is not a terminal. " +
-			`Can't read "` + param + `"`)
+			`Can not read "` + param + `"`)
 	}
 
 	fmt.Fprintf(outStream, param+": ")
@@ -73,7 +73,7 @@ func Prompt(param string) (string, error) {
 	value = strings.TrimPrefix(value, "\r")
 
 	if err != nil {
-		return "", errwrap.Wrapf("Can't read stdin for "+param+": {{err}}", err)
+		return "", errwrap.Wrapf("Can not read stdin for "+param+": {{err}}", err)
 	}
 
 	return value[:len(value)-1], nil
@@ -83,14 +83,14 @@ func Prompt(param string) (string, error) {
 func Hidden(param string) (string, error) {
 	if !isTerminal {
 		return "", errors.New("Input device is not a terminal. " +
-			`Can't read "` + param + `"`)
+			`Can not read "` + param + `"`)
 	}
 
 	fmt.Fprintf(outStream, param+": ")
 	var b, err = terminal.ReadPassword(int(syscall.Stdin))
 
 	if err != nil {
-		return "", errwrap.Wrapf("Can't read stdin for "+param+": {{err}}", err)
+		return "", errwrap.Wrapf("Can not read stdin for "+param+": {{err}}", err)
 	}
 
 	return string(b), nil

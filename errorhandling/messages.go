@@ -26,8 +26,8 @@ var errorReasonCommandMessageOverrides = map[string]messages{
 		"projectContainerQuotaExceeded": "Your quota for containers has exceeded",
 	},
 	"unlink": messages{
-		"documentNotFound": "Can't find project or container",
-		"deleteProject":    "Can't delete project",
+		"documentNotFound": "Can not find project or container",
+		"deleteProject":    "Can not delete project",
 	},
 	"list": messages{
 		"projectNotFound":  "Project not found",

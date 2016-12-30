@@ -224,7 +224,7 @@ func testTrySubmitError(t *testing.T) {
 
 	lines, err := s.TrySubmit()
 
-	if err == nil || !strings.HasPrefix(err.Error(), "Can't submit analytics:") {
+	if err == nil || !strings.HasPrefix(err.Error(), "Can not submit analytics:") {
 		t.Errorf("Expected error for TrySubmit() on invalid port not found, got %v instead", err)
 	}
 

@@ -128,7 +128,7 @@ func TestInspectProjectFormatError(t *testing.T) {
 
 func TestInspectProjectNotFound(t *testing.T) {
 	var _, err = InspectProject("", "./mocks/foo")
-	var wantErr = `Inspection failure: can't find project`
+	var wantErr = `Inspection failure: can not find project`
 
 	if err == nil || err.Error() != wantErr {
 		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
@@ -146,7 +146,7 @@ func TestInspectProjectCorrupted(t *testing.T) {
 
 func TestInspectProjectCorruptedOnContextOverview(t *testing.T) {
 	var _, err = InspectContext("", "./mocks/corrupted-project")
-	var wantErr = fmt.Sprintf(`Can't load project context on %v:`+
+	var wantErr = fmt.Sprintf(`Can not load project context on %v:`+
 		` Inspection failure on project: invalid character 'c' looking for beginning of object key string`,
 		abs("mocks/corrupted-project"))
 
@@ -201,7 +201,7 @@ func TestInspectContainerFormatError(t *testing.T) {
 
 func TestInspectContainerNotFound(t *testing.T) {
 	var _, err = InspectContainer("", "./mocks/my-project/container-not-found")
-	var wantErr = `Inspection failure: can't find container`
+	var wantErr = `Inspection failure: can not find container`
 
 	if err == nil || err.Error() != wantErr {
 		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
@@ -220,7 +220,7 @@ func TestInspectContainerCorrupted(t *testing.T) {
 func TestInspectProjectWithCorruptedContainerOnContextOverview(t *testing.T) {
 	var _, err = InspectContext("", "./mocks/project-with-corrupted-container")
 	var wantErr = fmt.Sprintf(`Error while trying to read list of containers on project: `+
-		`Can't list containers: error reading %v: unexpected end of JSON input`,
+		`Can not list containers: error reading %v: unexpected end of JSON input`,
 		abs("mocks/project-with-corrupted-container/corrupted-container/container.json"))
 
 	if err == nil || err.Error() != wantErr {
@@ -334,7 +334,7 @@ func TestInspectContextOverviewTypeContainerOutsideProject(t *testing.T) {
 
 func TestInspectContainerCorruptedOnContextOverview(t *testing.T) {
 	var _, err = InspectContext("", "./mocks/corrupted-container-outside-project")
-	var wantErr = fmt.Sprintf(`Can't load container context on %v: `+
+	var wantErr = fmt.Sprintf(`Can not load container context on %v: `+
 		`Inspection failure on container: invalid character ':' after top-level value`,
 		abs("./mocks/corrupted-container-outside-project"))
 

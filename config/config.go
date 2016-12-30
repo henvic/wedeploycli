@@ -77,7 +77,7 @@ func (c *Config) Save() error {
 	var err = cfg.ReflectFrom(c)
 
 	if err != nil {
-		return errwrap.Wrapf("Can't load configuration: {{err}}", err)
+		return errwrap.Wrapf("Can not load configuration: {{err}}", err)
 	}
 
 	c.updateRemotes()
@@ -86,7 +86,7 @@ func (c *Config) Save() error {
 	err = cfg.SaveToIndent(c.Path, "    ")
 
 	if err != nil {
-		return errwrap.Wrapf("Can't save configuration: {{err}}", err)
+		return errwrap.Wrapf("Can not save configuration: {{err}}", err)
 	}
 
 	return nil
