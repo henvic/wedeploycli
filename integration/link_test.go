@@ -78,7 +78,7 @@ func TestLink(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"link", "--no-color"},
+		Args: []string{"dev", "--skip-infra", "--no-color"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
@@ -102,14 +102,14 @@ func TestLinkEmptyJSON(t *testing.T) {
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"link", "--project", "foo", "--no-color"},
+		Args: []string{"dev", "--skip-infra", "--project", "foo", "--no-color"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/link/empty-json",
 	}
 
 	var e = &Expect{
 		ExitCode: 1,
-		Stderr:   "Error: Can't find project-orphan container: unexpected end of JSON input",
+		Stderr:   "Error: Can not find project-orphan container: unexpected end of JSON input",
 	}
 
 	cmd.Run()
@@ -167,7 +167,7 @@ func TestLinkToProject(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"link", "--project", "bar", "--no-color"},
+		Args: []string{"dev", "--skip-infra", "--project", "bar", "--no-color"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/container-outside-project",
@@ -187,7 +187,7 @@ func TestLinkToProjectErrorProjectContextAndProjectFlag(t *testing.T) {
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"link", "--project", "bar", "--no-color"},
+		Args: []string{"dev", "--skip-infra", "--project", "bar", "--no-color"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project",
@@ -199,7 +199,7 @@ func TestLinkToProjectErrorProjectContextAndProjectFlag(t *testing.T) {
 		t.Errorf("Unexpected exit code: %v", cmd.ExitCode)
 	}
 
-	var want = "Error: Can't use we link arguments when inside a project\n"
+	var want = "Error: Can not use \"we dev --project\" when inside a project\n"
 	var got = cmd.Stderr.String()
 
 	if want != got {
@@ -212,7 +212,7 @@ func TestLinkToProjectOnContainerErrorProjectContextAndProjectFlag(t *testing.T)
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"link", "--project", "bar", "--no-color"},
+		Args: []string{"dev", "--skip-infra", "--project", "bar", "--no-color"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
@@ -224,7 +224,7 @@ func TestLinkToProjectOnContainerErrorProjectContextAndProjectFlag(t *testing.T)
 		t.Errorf("Unexpected exit code: %v", cmd.ExitCode)
 	}
 
-	var want = "Error: Can't use we link arguments when inside a project\n"
+	var want = "Error: Can not use \"we dev --project\" when inside a project\n"
 	var got = cmd.Stderr.String()
 
 	if want != got {
@@ -264,7 +264,7 @@ func TestLinkToProjectServerFailure(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"link", "--no-color"},
+		Args: []string{"dev", "--skip-infra", "--no-color"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
@@ -323,7 +323,7 @@ func TestLinkToProjectServerFailureQuiet(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"link", "--no-color", "--quiet"},
+		Args: []string{"dev", "--skip-infra", "--no-color", "--quiet"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
@@ -354,7 +354,7 @@ func TestLinkRemoteError(t *testing.T) {
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"link", "--remote=foo"},
+		Args: []string{"dev", "--skip-infra", "--remote=foo"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
@@ -379,7 +379,7 @@ func TestLinkRemoteShortcutError(t *testing.T) {
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"link", "-r=foo"},
+		Args: []string{"dev", "--skip-infra", "-r=foo"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
@@ -404,7 +404,7 @@ func TestLinkHostWithContainerError(t *testing.T) {
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"link", "foo.bar"},
+		Args: []string{"dev", "--skip-infra", "--project", "foo", "--container", "bar"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
@@ -417,7 +417,7 @@ func TestLinkHostWithContainerError(t *testing.T) {
 	}
 
 	var got = cmd.Stderr.String()
-	var want = "Error: Container parameter is not allowed for this command"
+	var want = "Error: unknown flag: --container"
 
 	if !strings.Contains(got, want) {
 		t.Errorf("Error message doesn't contain expected value %v, got %v instead", want, got)

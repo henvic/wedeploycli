@@ -1,12 +1,15 @@
 package cmddev
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmd/dev/unlink"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/run"
+	"github.com/wedeploy/cli/verbose"
 )
 
 type commandRunner interface {
@@ -19,8 +22,8 @@ var (
 	setupHost  cmdflagsfromhost.SetupHost
 	runFlags   = run.Flags{}
 	quiet      bool
-	stop       bool
 	infra      bool
+	skipInfra  bool
 	noInfraTmp bool
 	image      string
 	cmdRunner  commandRunner
@@ -28,19 +31,14 @@ var (
 
 // DevCmd runs the WeDeploy local infrastructure
 // and / or a project or container
-// This module makes some abuse of the cmdflagsfromhost module
-// setting up different options if --stop is used or not
 var DevCmd = &cobra.Command{
 	Use:     "dev",
 	Short:   "Run development environment for a project or container",
 	PreRunE: devPreRun,
 	RunE:    devRun,
 	Example: `  we dev
-  we dev --stop
-  we dev data.chat
-  we dev --stop data.chat
+  we dev stop
   we dev --project chat
-  we dev --stop --project data --container chat
   we dev --infra to startup only the infrastructure
   we dev --no-infra to shutdown the local infrastructure`,
 }
@@ -54,6 +52,11 @@ func maybeShutdown() (err error) {
 }
 
 func maybeStartInfrastructure() error {
+	if skipInfra {
+		verbose.Debug("Skipping setting up infra-structure.")
+		return nil
+	}
+
 	var defaultImage = run.WeDeployImage
 	if image != "" {
 		run.WeDeployImage = image
@@ -79,23 +82,27 @@ func devPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func devRun(cmd *cobra.Command, args []string) (err error) {
-	if !infra {
-		return maybeShutdown()
+	if runFlags.Debug && (!cmd.Flags().Changed("infra") || !infra || skipInfra) {
+		return errors.New("Incompatible use: --debug requires --infra")
 	}
 
-	if stop {
-		return cmdRunner.Run(cmd, args)
+	if len(args) != 0 {
+		return errors.New("Invalid number of arguments.")
+	}
+
+	if !infra {
+		return maybeShutdown()
 	}
 
 	if err = maybeStartInfrastructure(); err != nil {
 		return err
 	}
 
-	if cmdRunner != nil {
-		return cmdRunner.Run(cmd, args)
+	if runFlags.DryRun || cmdRunner == nil {
+		return nil
 	}
 
-	return nil
+	return cmdRunner.Run(cmd, args)
 }
 
 func init() {
@@ -103,15 +110,18 @@ func init() {
 		"Open infra-structure debug ports")
 	DevCmd.Flags().BoolVar(&runFlags.DryRun, "dry-run", false,
 		"Dry-run the infrastructure")
-	DevCmd.Flags().BoolVar(&stop, "stop", false,
-		"Stop project or container")
 	DevCmd.Flags().BoolVar(&infra, "infra", true,
 		"Infrastructure status")
 	DevCmd.Flags().BoolVar(&noInfraTmp, "no-infra", false, "")
+	DevCmd.Flags().BoolVar(&skipInfra, "skip-infra", false, "")
 	DevCmd.Flags().StringVar(&image, "experimental-image", "",
 		"Experimental image to run")
 	DevCmd.Flags().BoolVarP(&quiet, "quiet", "q", false,
-		"Minimize output feedback.")
+		"Link without watching status")
+
+	if err := DevCmd.Flags().MarkHidden("skip-infra"); err != nil {
+		panic(err)
+	}
 
 	if err := DevCmd.Flags().MarkHidden("experimental-image"); err != nil {
 		panic(err)
@@ -122,21 +132,15 @@ func init() {
 	}
 
 	loadCommandInit()
+	DevCmd.AddCommand(cmddevunlink.StopCmd)
 }
 
 func loadCommandInit() {
 	switch {
-	// only --stop / unlink accepts both --project and --container
-	// so we want to use it for these
-	case isCommand("--stop") ||
-		isCommand("--help") ||
-		isCommand("-h"):
-		cmdRunner = &unlinker{}
 	case isCommand("--infra"):
 	case isCommand("--no-infra"):
 		// if --no-infra or --infra are used,
 		// don't load any command runner
-		// this should be after the --stop case above
 	default:
 		cmdRunner = &linker{}
 	}

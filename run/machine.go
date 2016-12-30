@@ -16,6 +16,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/henvic/uilive"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/exechelper"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/verbose"
@@ -70,10 +71,27 @@ func (dm *DockerMachine) Run() (err error) {
 		return err
 	}
 
+	if dm.Container == "" {
+		switch dashboardID, dashboardOnHostErr := dm.checkDashboardIsOnOnHost(); {
+		case dashboardOnHostErr != nil:
+			return err
+		case dashboardID != "":
+			println(color.Format(color.FgHiYellow, "Developer") + " infrastructure is on.")
+			return nil
+		default:
+			verbose.Debug("No developer infrastructure found.")
+		}
+	}
+
 	dm.setupPorts()
 
 	if !dm.Flags.DryRun && dm.Container != "" {
 		println(`Infrastructure is on.`)
+
+		if dm.Flags.Debug {
+			return errors.New(`change to debug mode not allowed: shutdown with "we dev --no-infra" and run with "we dev --infra --debug"`)
+		}
+
 		return nil
 	}
 
@@ -318,6 +336,23 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 
 	stopMsg.Stop()
 	dm.endRun()
+}
+
+func (dm *DockerMachine) checkDashboardIsOnOnHost() (string, error) {
+	var args = []string{"ps", "--filter", "ancestor=wedeploy/dashboard", "--quiet"}
+
+	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(args, " ")))
+	var docker = exec.Command(bin, args...)
+	exechelper.AddCommandToNewProcessGroup(docker)
+	var buf bytes.Buffer
+	docker.Stderr = os.Stderr
+	docker.Stdout = &buf
+
+	if err := docker.Run(); err != nil {
+		return "", errwrap.Wrapf("docker ps error: {{err}}", err)
+	}
+
+	return strings.TrimSpace(buf.String()), nil
 }
 
 // LoadDockerInfo loads the docker info on the DockerMachine object

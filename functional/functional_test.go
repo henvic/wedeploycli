@@ -4,6 +4,7 @@ package functional
 
 import (
 	"bytes"
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -37,7 +38,7 @@ var tests = []func(t *testing.T){
 	scenario1.testRun,
 	scenario1.linkContainer,
 	scenario1.testLinkedChatAfter5Seconds,
-	scenario1.testShutdownGracefullyBySignalAfter5Seconds,
+	scenario1.testShutdownGracefullyAfter5Seconds,
 	scenario1.testDockerHasNoContainersRunning,
 	scenario1.testDockerHasNoContainers,
 	scenario1.teardown,
@@ -299,7 +300,7 @@ var weRunFirstTimeTimeout = 15 * time.Minute
 
 func assertReadyState(cmd *cmdrunner.Command, t *testing.T) bool {
 	if cmd == nil {
-		t.Fatalf(`Can't assert ready state: not invoked after "we run"`)
+		t.Fatalf(`Can't assert ready state: not invoked after "we dev --infra"`)
 	}
 
 	var out = cmd.Stdout.String()
@@ -308,7 +309,7 @@ func assertReadyState(cmd *cmdrunner.Command, t *testing.T) bool {
 		t.Fatalf("Unexpected infrastructure assertion error")
 	}
 
-	if !strings.Contains(out, "You can now test your apps locally.") {
+	if !strings.Contains(out, "WeDeploy is ready!") {
 		return false
 	}
 
@@ -335,7 +336,7 @@ func (s *scenario) linkContainer(t *testing.T) {
 
 	chdir("sample-wechat")
 
-	if err := cmdrunner.Run("we link"); err != nil {
+	if err := cmdrunner.Run("we dev"); err != nil {
 		t.Fatalf("Error trying to link sample-wechat: %v", err)
 	}
 
@@ -397,12 +398,12 @@ func (s *scenario) testLinkedChatAfter5Seconds(t *testing.T) {
 func (s *scenario) testRun(t *testing.T) {
 	s.runCmd = &cmdrunner.Command{
 		Name:    "we",
-		Args:    []string{"run"},
+		Args:    []string{"dev", "--infra"},
 		TeePipe: true,
 	}
 
 	go func() {
-		log(`Executing "we run"`)
+		log(`Executing "we dev --infra"`)
 		s.runCmd.Start()
 	}()
 
@@ -413,7 +414,7 @@ loop:
 	var now = time.Now()
 
 	if now.After(timeout) {
-		t.Fatalf(`Timeout: %v seconds since "we run" started.`,
+		t.Fatalf(`Timeout: %v seconds since "we dev" started.`,
 			(int)(-start.Sub(time.Now()).Seconds()))
 	}
 
@@ -423,35 +424,23 @@ loop:
 	}
 }
 
-func (s *scenario) testShutdownGracefullyBySignal(t *testing.T) {
-	if s.runCmd == nil {
-		t.Fatalf(`Can't shutdown gracefully by signal: not invoked after "we run"`)
+func (s *scenario) testShutdownGracefully(t *testing.T) {
+	var ctx, cancel = context.WithTimeout(context.Background(), 20*time.Second)
+	var shutdown = exec.CommandContext(ctx, "we", "dev", "--no-infra")
+
+	shutdown.Stderr = os.Stderr
+	shutdown.Stdout = os.Stdout
+
+	err := shutdown.Run()
+	cancel()
+
+	if err != nil {
+		t.Fatalf("we dev --no-infra did not exit properly: %v.", err)
 	}
-
-	if err := s.runCmd.Terminate(); err != nil {
-		t.Fatalf(`Error sending SIGTERM signal to "we run": %v`, err)
-	}
-
-	log("Waiting 2s to verify infrastructure is stopped")
-	time.Sleep(2 * time.Second)
-
-	if s.runCmd.Error != nil {
-		t.Errorf(`Unexpected error on "we run" execution: %v`, s.runCmd.Error)
-	}
-
-	if !s.runCmd.ProcessState.Exited() {
-		t.Fatalf("we run did not exit.")
-	}
-
-	if s.runCmd.ExitCode != 0 {
-		t.Errorf("we run did not exit properly.")
-	}
-
-	log("we run has shut down gracefully.")
 }
 
-func (s *scenario) testShutdownGracefullyBySignalAfter5Seconds(t *testing.T) {
-	log("Waiting 5s to send graceful shutdown signal")
+func (s *scenario) testShutdownGracefullyAfter5Seconds(t *testing.T) {
+	log("Waiting 5s to invoke we dev --no-infra")
 	time.Sleep(5 * time.Second)
-	s.testShutdownGracefullyBySignal(t)
+	s.testShutdownGracefully(t)
 }

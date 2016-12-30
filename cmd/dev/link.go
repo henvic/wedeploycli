@@ -32,17 +32,19 @@ func (l *linker) Init() {
 }
 
 func (l *linker) PreRun(cmd *cobra.Command, args []string) error {
-	if cmd.Flags().Changed("infra") && infra {
-		return nil
-	}
-
-	return setupHost.Process(args)
+	// ignore arguments
+	return setupHost.Process([]string{})
 }
 
 func (l *linker) Run(cmd *cobra.Command, args []string) error {
 	var projectID, errProjectID = l.getProject()
 
-	if errProjectID != nil {
+	switch errProjectID {
+	case nil:
+	case projects.ErrProjectNotFound:
+		fmt.Println(`Use "we create" to start a new project.`)
+		return nil
+	default:
 		return errProjectID
 	}
 

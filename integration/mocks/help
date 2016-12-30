@@ -10,8 +10,8 @@ Usage:
 Available Commands:
   build        Build container(s) (current or all containers of a project)
   create       Creates a project or container
+  dev          Run development environment for a project or container
   inspect      Inspect environment info
-  link         Links the given project or container locally
   list         List projects and containers running on WeDeploy
   log          See logs of what is running on WeDeploy
   login        Using Basic Authentication with your credentials
@@ -19,9 +19,7 @@ Available Commands:
   metrics      Analytics reporting and settings
   remote       Configure WeDeploy remotes
   restart      Restart project or container running on WeDeploy
-  run          Run WeDeploy infrastructure for development locally
   start        Run start container hook
-  unlink       Unlinks the given project or container locally
   update       Updates this tool to the latest version
   version      Print version information and quit
 

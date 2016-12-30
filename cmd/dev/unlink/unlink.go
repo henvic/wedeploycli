@@ -1,7 +1,8 @@
-package cmddev
+package cmddevunlink
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"sync"
@@ -15,6 +16,23 @@ import (
 	"github.com/wedeploy/cli/projects"
 )
 
+var (
+	quiet        bool
+	stopUnlinker = &unlinker{}
+)
+
+// StopCmd is the stop command to unlink a project or container
+var StopCmd = &cobra.Command{
+	Use:     "stop",
+	Short:   "Stop a project or container",
+	PreRunE: stopUnlinker.PreRun,
+	RunE:    stopUnlinker.Run,
+	Example: `  we dev stop
+  we dev stop --project chat
+  we dev stop --project chat --container data
+  we dev stop --container data`,
+}
+
 type unlinker struct {
 	project   string
 	container string
@@ -24,20 +42,26 @@ type unlinker struct {
 	err       error
 }
 
-func (u *unlinker) Init() {
-	setupHost = cmdflagsfromhost.SetupHost{
-		Pattern:               cmdflagsfromhost.ProjectAndContainerPattern,
-		UseProjectDirectory:   true,
-		UseContainerDirectory: true,
-		Requires: cmdflagsfromhost.Requires{
-			Local: true,
-		},
-	}
+var setupHost = cmdflagsfromhost.SetupHost{
+	Pattern:               cmdflagsfromhost.ProjectAndContainerPattern,
+	UseProjectDirectory:   true,
+	UseContainerDirectory: true,
+	Requires: cmdflagsfromhost.Requires{
+		Local: true,
+	},
+}
 
-	setupHost.Init(DevCmd)
+func init() {
+	StopCmd.Flags().BoolVarP(&quiet, "quiet", "q", false,
+		"Unlink without watching status")
+	setupHost.Init(StopCmd)
 }
 
 func (u *unlinker) PreRun(cmd *cobra.Command, args []string) error {
+	if len(args) != 0 {
+		return errors.New("Invalid number of arguments.")
+	}
+
 	return setupHost.Process(args)
 }
 
