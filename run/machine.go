@@ -366,6 +366,7 @@ func (dm *DockerMachine) LoadDockerInfo() error {
 		"--no-trunc",
 	}
 
+	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(args, " ")))
 	var docker = exec.Command(bin, args...)
 	exechelper.AddCommandToNewProcessGroup(docker)
 	var buf bytes.Buffer
@@ -402,6 +403,7 @@ func (dm *DockerMachine) checkImage() {
 		WeDeployImage,
 	}
 
+	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(args, " ")))
 	var docker = exec.Command(bin, args...)
 	exechelper.AddCommandToNewProcessGroup(docker)
 	var buf bytes.Buffer
