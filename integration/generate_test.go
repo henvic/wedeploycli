@@ -9,9 +9,9 @@ import (
 	"github.com/wedeploy/cli/projects"
 )
 
-func TestCreateIncompatibleUse(t *testing.T) {
+func TestGenerateIncompatibleUse(t *testing.T) {
 	var cmd = &Command{
-		Args: []string{"create", "--project", "foo", "mocks"},
+		Args: []string{"generate", "--project", "foo", "mocks"},
 	}
 
 	cmd.Run()
@@ -31,9 +31,9 @@ func TestCreateIncompatibleUse(t *testing.T) {
 	}
 }
 
-func TestCreateDirectoryNotExists(t *testing.T) {
+func TestGenerateDirectoryNotExists(t *testing.T) {
 	var cmd = &Command{
-		Args: []string{"create", "--project", "foo", "--directory", "not-found"},
+		Args: []string{"generate", "--project", "foo", "--directory", "not-found"},
 	}
 
 	cmd.Run()
@@ -53,9 +53,9 @@ func TestCreateDirectoryNotExists(t *testing.T) {
 	}
 }
 
-func TestCreateErrorContainerTypeOnContainerOnly(t *testing.T) {
+func TestGenerateErrorContainerTypeOnContainerOnly(t *testing.T) {
 	var cmd = &Command{
-		Args: []string{"create", "--project", "foo", "--container-type", "auth"},
+		Args: []string{"generate", "--project", "foo", "--container-type", "auth"},
 	}
 
 	cmd.Run()
@@ -75,9 +75,9 @@ func TestCreateErrorContainerTypeOnContainerOnly(t *testing.T) {
 	}
 }
 
-func TestCreateProjectAlreadyExists(t *testing.T) {
+func TestGenerateProjectAlreadyExists(t *testing.T) {
 	var cmd = &Command{
-		Args: []string{"create", "--project", "foo", "--directory", "mocks/create", "--no-color"},
+		Args: []string{"generate", "--project", "foo", "--directory", "mocks/generate", "--no-color"},
 	}
 
 	cmd.Run()
@@ -97,13 +97,13 @@ func TestCreateProjectAlreadyExists(t *testing.T) {
 	}
 }
 
-func TestCreateProjectAlreadyExistsAttribute(t *testing.T) {
+func TestGenerateProjectAlreadyExistsAttribute(t *testing.T) {
 	var cmd = &Command{
-		Args: []string{"create",
+		Args: []string{"generate",
 			"--project",
 			"foo",
 			"--directory",
-			"mocks/create",
+			"mocks/generate",
 			"--project-custom-domain",
 			"example.com",
 			"--container",
@@ -129,13 +129,13 @@ Error: --project-custom-domain: flags used when project already exists`
 	}
 }
 
-func TestCreateProjectAlreadyExistsInsideBase(t *testing.T) {
+func TestGenerateProjectAlreadyExistsInsideBase(t *testing.T) {
 	var cmd = &Command{
-		Args: []string{"create",
+		Args: []string{"generate",
 			"--project",
 			"foo",
 			"--directory",
-			"mocks/create/foo",
+			"mocks/generate/foo",
 			"--project-custom-domain",
 			"example.com",
 			"--container",
@@ -160,17 +160,17 @@ func TestCreateProjectAlreadyExistsInsideBase(t *testing.T) {
 	}
 }
 
-func TestCreateProject(t *testing.T) {
-	removeAll("mocks/create/example")
-	defer removeAll("mocks/create/example")
+func TestGenerateProject(t *testing.T) {
+	removeAll("mocks/generate/example")
+	defer removeAll("mocks/generate/example")
 
 	var cmd = &Command{
-		Args: []string{"create", "--project", "example", "--directory", "mocks/create"},
+		Args: []string{"generate", "--project", "example", "--directory", "mocks/generate"},
 	}
 
 	cmd.Run()
 
-	var want = "Project created at"
+	var want = "Project generated at"
 	if !strings.Contains(cmd.Stdout.String(), want) {
 		t.Errorf("Wanted stdout to have %v, got %v instead", want, cmd.Stdout)
 	}
@@ -183,14 +183,14 @@ func TestCreateProject(t *testing.T) {
 		t.Errorf("Expected exit code to be 0, got %v instead", cmd.ExitCode)
 	}
 
-	var p, err = projects.Read("mocks/create/example")
+	var p, err = projects.Read("mocks/generate/example")
 
 	if err != nil {
 		t.Errorf("Expected reading project file, got error %v instead", err)
 	}
 
 	if p.ID != "example" {
-		t.Errorf(`Expected project to be created with ID "example" got %v instead`, p.ID)
+		t.Errorf(`Expected project to be generated with ID "example" got %v instead`, p.ID)
 	}
 
 	if len(p.CustomDomains) != 0 {
@@ -198,24 +198,24 @@ func TestCreateProject(t *testing.T) {
 	}
 }
 
-func TestCreateProjectWithCustomDomain(t *testing.T) {
-	removeAll("mocks/create/example")
-	defer removeAll("mocks/create/example")
+func TestGenerateProjectWithCustomDomain(t *testing.T) {
+	removeAll("mocks/generate/example")
+	defer removeAll("mocks/generate/example")
 
 	var cmd = &Command{
-		Args: []string{"create",
+		Args: []string{"generate",
 			"--project",
 			"example",
 			"--project-custom-domain",
 			"example.com",
 			"--directory",
-			"mocks/create",
+			"mocks/generate",
 		},
 	}
 
 	cmd.Run()
 
-	var want = "Project created at"
+	var want = "Project generated at"
 	if !strings.Contains(cmd.Stdout.String(), want) {
 		t.Errorf("Wanted stdout to have %v, got %v instead", want, cmd.Stdout)
 	}
@@ -228,14 +228,14 @@ func TestCreateProjectWithCustomDomain(t *testing.T) {
 		t.Errorf("Expected exit code to be 0, got %v instead", cmd.ExitCode)
 	}
 
-	var p, err = projects.Read("mocks/create/example")
+	var p, err = projects.Read("mocks/generate/example")
 
 	if err != nil {
 		t.Errorf("Expected reading project file, got error %v instead", err)
 	}
 
 	if p.ID != "example" {
-		t.Errorf(`Expected project to be created with ID "example" got %v instead`, p.ID)
+		t.Errorf(`Expected project to be generated with ID "example" got %v instead`, p.ID)
 	}
 
 	var wantCustomDomains = []string{"example.com"}
@@ -245,12 +245,12 @@ func TestCreateProjectWithCustomDomain(t *testing.T) {
 	}
 }
 
-func TestCreateProjectWithCustomDomainAndContainerWithoutContainerBoilerplate(t *testing.T) {
-	removeAll("mocks/create/example")
-	defer removeAll("mocks/create/example")
+func TestGenerateProjectWithCustomDomainAndContainerWithoutContainerBoilerplate(t *testing.T) {
+	removeAll("mocks/generate/example")
+	defer removeAll("mocks/generate/example")
 
 	var cmd = &Command{
-		Args: []string{"create",
+		Args: []string{"generate",
 			"mail.example",
 			"--project-custom-domain",
 			"example.com",
@@ -258,18 +258,18 @@ func TestCreateProjectWithCustomDomainAndContainerWithoutContainerBoilerplate(t 
 			"auth",
 			"--container-boilerplate=false",
 			"--directory",
-			"mocks/create",
+			"mocks/generate",
 		},
 	}
 
 	cmd.Run()
 
-	var wantProject = "Project created at"
+	var wantProject = "Project generated at"
 	if !strings.Contains(cmd.Stdout.String(), wantProject) {
 		t.Errorf("Wanted stdout to have %v, got %v instead", wantProject, cmd.Stdout)
 	}
 
-	var wantContainer = "Container created at"
+	var wantContainer = "Container generated at"
 	if !strings.Contains(cmd.Stdout.String(), wantContainer) {
 		t.Errorf("Wanted stdout to have %v, got %v instead", wantContainer, cmd.Stdout)
 	}
@@ -282,14 +282,14 @@ func TestCreateProjectWithCustomDomainAndContainerWithoutContainerBoilerplate(t 
 		t.Errorf("Expected exit code to be 0, got %v instead", cmd.ExitCode)
 	}
 
-	var p, err = projects.Read("mocks/create/example")
+	var p, err = projects.Read("mocks/generate/example")
 
 	if err != nil {
 		t.Errorf("Expected reading project file, got error %v instead", err)
 	}
 
 	if p.ID != "example" {
-		t.Errorf(`Expected project to be created with ID "example" got %v instead`, p.ID)
+		t.Errorf(`Expected project to be generated with ID "example" got %v instead`, p.ID)
 	}
 
 	var wantCustomDomains = []string{"example.com"}
@@ -299,30 +299,30 @@ func TestCreateProjectWithCustomDomainAndContainerWithoutContainerBoilerplate(t 
 	}
 }
 
-func TestCreateContainerInsideAlreadyExistingProjectWithoutContainerBoilerplate(t *testing.T) {
-	removeAll("mocks/create/foo/data")
-	defer removeAll("mocks/create/foo/data")
+func TestGenerateContainerInsideAlreadyExistingProjectWithoutContainerBoilerplate(t *testing.T) {
+	removeAll("mocks/generate/foo/data")
+	defer removeAll("mocks/generate/foo/data")
 
 	var cmd = &Command{
-		Args: []string{"create",
+		Args: []string{"generate",
 			"--container",
 			"data",
 			"--container-type",
 			"data",
 			"--container-boilerplate=false",
 			"--directory",
-			"mocks/create/foo",
+			"mocks/generate/foo",
 		},
 	}
 
 	cmd.Run()
 
-	var dontWantProject = "Project created at"
+	var dontWantProject = "Project generated at"
 	if strings.Contains(cmd.Stdout.String(), dontWantProject) {
 		t.Errorf("Wanted stdout to not have %v, got %v instead", dontWantProject, cmd.Stdout)
 	}
 
-	var wantContainer = "Container created at"
+	var wantContainer = "Container generated at"
 	if !strings.Contains(cmd.Stdout.String(), wantContainer) {
 		t.Errorf("Wanted stdout to have %v, got %v instead", wantContainer, cmd.Stdout)
 	}
@@ -335,23 +335,23 @@ func TestCreateContainerInsideAlreadyExistingProjectWithoutContainerBoilerplate(
 		t.Errorf("Expected exit code to be 0, got %v instead", cmd.ExitCode)
 	}
 
-	var c, err = containers.Read("mocks/create/foo/data")
+	var c, err = containers.Read("mocks/generate/foo/data")
 
 	if err != nil {
 		t.Errorf("Expected reading container file, got error %v instead", err)
 	}
 
 	if c.ID != "data" {
-		t.Errorf(`Expected container to be created with ID "data" got %v instead`, c.ID)
+		t.Errorf(`Expected container to be generated with ID "data" got %v instead`, c.ID)
 	}
 }
 
-func TestCreateContainerWithoutProjectError(t *testing.T) {
-	removeAll("mocks/create/example")
-	defer removeAll("mocks/create/example")
+func TestGenerateContainerWithoutProjectError(t *testing.T) {
+	removeAll("mocks/generate/example")
+	defer removeAll("mocks/generate/example")
 
 	var cmd = &Command{
-		Args: []string{"create", "--container", "foo", "--directory", "mocks/create"},
+		Args: []string{"generate", "--container", "foo", "--directory", "mocks/generate"},
 	}
 
 	cmd.Run()

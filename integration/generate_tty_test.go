@@ -13,27 +13,27 @@ import (
 	"github.com/wedeploy/cli/projects"
 )
 
-func TestCreatePromptProjectThenContainer(t *testing.T) {
+func TestGeneratePromptProjectThenContainer(t *testing.T) {
 	Setup()
 	defer Teardown()
-	removeAll("mocks/create/example")
-	defer removeAll("mocks/create/example")
+	removeAll("mocks/generate/example")
+	defer removeAll("mocks/generate/example")
 
-	if ok := t.Run("testCreatePromptProject", testCreatePromptProject); ok {
-		t.Run("testCreatePromptContainer", testCreatePromptContainer)
+	if ok := t.Run("testGeneratePromptProject", testGeneratePromptProject); ok {
+		t.Run("testGeneratePromptContainer", testGeneratePromptContainer)
 	}
 }
 
-func TestCreatePromptProjectAndContainerAtOnce(t *testing.T) {
+func TestGeneratePromptProjectAndContainerAtOnce(t *testing.T) {
 	Setup()
 	defer Teardown()
-	removeAll("mocks/create/example")
-	defer removeAll("mocks/create/example")
+	removeAll("mocks/generate/example")
+	defer removeAll("mocks/generate/example")
 
 	var cmd = (&Command{
-		Args: []string{"create"},
+		Args: []string{"generate"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
-		Dir:  "mocks/create",
+		Dir:  "mocks/generate",
 	}).Prepare()
 
 	var term = &pseudoterm.Terminal{
@@ -50,7 +50,7 @@ func TestCreatePromptProjectAndContainerAtOnce(t *testing.T) {
 
 	story.Add(
 		pseudoterm.Step{
-			Read:      "Create: ",
+			Read:      "Generate: ",
 			SkipWrite: true,
 		},
 		pseudoterm.Step{
@@ -92,10 +92,10 @@ func TestCreatePromptProjectAndContainerAtOnce(t *testing.T) {
 	}
 
 	if !term.Wait().Success() {
-		t.Errorf("we create did not execute successfully")
+		t.Errorf("we generate did not execute successfully")
 	}
 
-	project, err := projects.Read("mocks/create/example")
+	project, err := projects.Read("mocks/generate/example")
 
 	if err != nil {
 		t.Errorf("Wanted err to be nil, got %v instead", err)
@@ -107,7 +107,7 @@ func TestCreatePromptProjectAndContainerAtOnce(t *testing.T) {
 		t.Errorf("Expected project ID to be %v, got %v instead", wantProject, project.ID)
 	}
 
-	container, err := containers.Read("mocks/create/example/auth")
+	container, err := containers.Read("mocks/generate/example/auth")
 
 	var wantContainer = "auth"
 
@@ -120,11 +120,11 @@ func TestCreatePromptProjectAndContainerAtOnce(t *testing.T) {
 	}
 }
 
-func testCreatePromptProject(t *testing.T) {
+func testGeneratePromptProject(t *testing.T) {
 	var cmd = (&Command{
-		Args: []string{"create"},
+		Args: []string{"generate"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
-		Dir:  "mocks/create",
+		Dir:  "mocks/generate",
 	}).Prepare()
 
 	var term = &pseudoterm.Terminal{
@@ -141,7 +141,7 @@ func testCreatePromptProject(t *testing.T) {
 
 	story.Add(
 		pseudoterm.Step{
-			Read:      "Create: ",
+			Read:      "Generate: ",
 			SkipWrite: true,
 		},
 		pseudoterm.Step{
@@ -167,10 +167,10 @@ func testCreatePromptProject(t *testing.T) {
 	}
 
 	if !term.Wait().Success() {
-		t.Errorf("we create did not execute successfully")
+		t.Errorf("we generate did not execute successfully")
 	}
 
-	project, err := projects.Read("mocks/create/example")
+	project, err := projects.Read("mocks/generate/example")
 
 	if err != nil {
 		t.Errorf("Wanted err to be nil, got %v instead", err)
@@ -183,11 +183,11 @@ func testCreatePromptProject(t *testing.T) {
 	}
 }
 
-func testCreatePromptContainer(t *testing.T) {
+func testGeneratePromptContainer(t *testing.T) {
 	var cmd = (&Command{
-		Args: []string{"create"},
+		Args: []string{"generate"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
-		Dir:  "mocks/create/example",
+		Dir:  "mocks/generate/example",
 	}).Prepare()
 
 	var term = &pseudoterm.Terminal{
@@ -222,10 +222,10 @@ func testCreatePromptContainer(t *testing.T) {
 	}
 
 	if !term.Wait().Success() {
-		t.Errorf("we create did not execute successfully")
+		t.Errorf("we generate did not execute successfully")
 	}
 
-	container, err := containers.Read("mocks/create/example/auth")
+	container, err := containers.Read("mocks/generate/example/auth")
 
 	var wantContainer = "auth"
 
@@ -237,7 +237,7 @@ func testCreatePromptContainer(t *testing.T) {
 		t.Errorf("Wanted err to be nil, got %v instead", err)
 	}
 
-	if _, err := os.Stat("mocks/create/example/auth/README.md"); err != nil {
+	if _, err := os.Stat("mocks/generate/example/auth/README.md"); err != nil {
 		t.Errorf("Expected boilerplate file to exist, got %v instead", err)
 	}
 }

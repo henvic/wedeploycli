@@ -1,4 +1,4 @@
-package cmdcreate
+package cmdgenerate
 
 import (
 	"bytes"
@@ -32,23 +32,23 @@ var (
 	containerType       string
 )
 
-var createRunner = runner{}
+var generateRunner = runner{}
 
-// CreateCmd creates a project or container
-var CreateCmd = &cobra.Command{
-	Use:   "create <host>",
-	Short: "Creates a project or container",
-	Long: `Use "we create" to create projects and containers.
-You can create a project anywhere on your machine and on the cloud.
-Containers can only be created from inside projects and
+// GenerateCmd generates a project or container
+var GenerateCmd = &cobra.Command{
+	Use:   "generate <host>",
+	Short: "Generates a project or container",
+	Long: `Use "we generate" to generate projects and containers.
+You can generate a project anywhere on your machine and on the cloud.
+Containers can only be generated from inside projects and
 are stored on the first subdirectory of its project.
 
 --directory should point to either the parent dir of a project directory to be
-created or to a existing project directory.`,
-	PreRunE: createRunner.PreRun,
-	RunE:    createRunner.Run,
-	Example: `we create projector.cinema.wedeploy.io
-we create --project cinema --container projector room`,
+generated or to a existing project directory.`,
+	PreRunE: generateRunner.PreRun,
+	RunE:    generateRunner.Run,
+	Example: `we generate projector.cinema.wedeploy.io
+we generate --project cinema --container projector room`,
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
@@ -65,40 +65,40 @@ func init() {
 		setupHost.Requires.Project = true
 	}
 
-	setupHost.Init(CreateCmd)
-	createRunner.cmd = CreateCmd
+	setupHost.Init(GenerateCmd)
+	generateRunner.cmd = GenerateCmd
 
-	CreateCmd.Flags().StringVar(
-		&createRunner.base,
+	GenerateCmd.Flags().StringVar(
+		&generateRunner.base,
 		"directory",
 		"",
 		"Overrides current working directory")
 
-	CreateCmd.Flags().StringVar(
+	GenerateCmd.Flags().StringVar(
 		&projectCustomDomain,
 		"project-custom-domain",
 		"",
 		customDomainForProjectMessage)
 
-	CreateCmd.Flags().StringVar(
+	GenerateCmd.Flags().StringVar(
 		&containerType,
 		"container-type",
 		"",
 		containerTypeMessage)
 
-	CreateCmd.Flags().BoolVar(
-		&createRunner.boilerplate,
+	GenerateCmd.Flags().BoolVar(
+		&generateRunner.boilerplate,
 		"container-boilerplate",
 		true,
-		"Create container boilerplate")
+		"Generate container boilerplate")
 }
 
-func shouldPromptToCreateContainer() (bool, error) {
+func shouldPromptToGenerateContainer() (bool, error) {
 	if !terminal.IsTerminal(int(os.Stdin.Fd())) {
 		return false, errors.New("Project is required when detached from terminal")
 	}
 
-	fmt.Println("Create:")
+	fmt.Println("Generate:")
 	fmt.Println("1) a project")
 	fmt.Println("2) a project and a container inside it")
 
@@ -150,7 +150,7 @@ func getUsedFlagsPrefixList(cmd *cobra.Command, prefix string) (list []string) {
 	return list
 }
 
-func (r *runner) checkNoContainerFlagsWhenContainerIsNotCreated() error {
+func (r *runner) checkNoContainerFlagsWhenContainerIsNotGenerated() error {
 	var list = getUsedFlagsPrefixList(r.cmd, "container")
 
 	if len(list) == 0 {
@@ -171,16 +171,16 @@ func checkNoProjectFlagsWhenProjectAlreadyExists(cmd *cobra.Command) error {
 }
 
 type runner struct {
-	base            string
-	project         string
-	projectBase     string
-	container       string
-	askWithPrompt   bool
-	createContainer bool
-	boilerplate     bool
-	cmd             *cobra.Command
-	baseIsProject   bool
-	flagsErr        error
+	base              string
+	project           string
+	projectBase       string
+	container         string
+	askWithPrompt     bool
+	generateContainer bool
+	boilerplate       bool
+	cmd               *cobra.Command
+	baseIsProject     bool
+	flagsErr          error
 }
 
 func (r *runner) setBase() (err error) {
@@ -233,7 +233,7 @@ func (r *runner) setupContainerOnProject() error {
 	r.container, ec = r.cmd.Flags().GetString("container")
 
 	if ec != nil {
-		return errwrap.Wrapf("Can not get container created within project: {{err}}", ec)
+		return errwrap.Wrapf("Can not get container generated within project: {{err}}", ec)
 	}
 
 	return nil
@@ -252,7 +252,7 @@ func (r *runner) selectProject() (err error) {
 			return err
 		}
 	default:
-		if err = r.handleCreateWhatPrompts(); err != nil {
+		if err = r.handleGenerateWhatPrompts(); err != nil {
 			return err
 		}
 
@@ -277,8 +277,8 @@ func (r *runner) Run(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	if r.createContainer {
-		return r.handleCreateContainer()
+	if r.generateContainer {
+		return r.handleGenerateContainer()
 	}
 
 	return nil
@@ -294,21 +294,21 @@ func (r *runner) handleProjectBase() error {
 		return err
 	}
 
-	r.createContainer = true
+	r.generateContainer = true
 	return nil
 }
 
-func (r *runner) handleCreateWhatPrompts() (err error) {
+func (r *runner) handleGenerateWhatPrompts() (err error) {
 	if r.container != "" {
-		r.createContainer = true
+		r.generateContainer = true
 	} else if r.project == "" && r.container == "" {
-		if r.createContainer, err = shouldPromptToCreateContainer(); err != nil {
+		if r.generateContainer, err = shouldPromptToGenerateContainer(); err != nil {
 			return err
 		}
 	}
 
-	if !r.createContainer {
-		if err := r.checkNoContainerFlagsWhenContainerIsNotCreated(); err != nil {
+	if !r.generateContainer {
+		if err := r.checkNoContainerFlagsWhenContainerIsNotGenerated(); err != nil {
 			return err
 		}
 	}
@@ -331,7 +331,7 @@ func (r *runner) handleProject() error {
 	}
 
 	if projectExists {
-		if !r.createContainer {
+		if !r.generateContainer {
 			return fmt.Errorf("Project %v already exists in:\n%v",
 				color.Format(color.FgBlue, r.project), r.projectBase)
 		}
@@ -345,7 +345,7 @@ func (r *runner) handleProject() error {
 	return r.newProject()
 }
 
-func (r *runner) handleCreateContainer() error {
+func (r *runner) handleGenerateContainer() error {
 	if r.container != "" {
 		if err := checkContainerDirectory(r.container,
 			filepath.Join(r.projectBase, r.container)); err != nil {
@@ -373,7 +373,7 @@ type containerCreator struct {
 	ContainerDirectory     string
 	boilerplate            bool
 	boilerplateFlagChanged bool
-	boilerplateCreated     bool
+	boilerplateGenerated   bool
 }
 
 func (cc *containerCreator) run() error {
@@ -393,8 +393,8 @@ func (cc *containerCreator) run() error {
 
 	// 1. mkdir repo; 2. git clone u@h:/p or git scheme://404 repo =>
 	// On error git clone actually removes the existing directory. Odd. Weird.
-	if !cc.boilerplateCreated {
-		if err := tryCreateDirectory(cc.ContainerDirectory); err != nil {
+	if !cc.boilerplateGenerated {
+		if err := tryGenerateDirectory(cc.ContainerDirectory); err != nil {
 			return err
 		}
 	}
@@ -584,13 +584,13 @@ func (cc *containerCreator) handleBoilerplate() (err error) {
 		return errwrap.Wrapf("Can not get boilerplate: {{err}}", err)
 	}
 
-	cc.boilerplateCreated = true
+	cc.boilerplateGenerated = true
 
 	if err = os.RemoveAll(boilerplateDotGit); err != nil {
 		return errwrap.Wrapf("Can not remove boilerplate .git hidden dir: {{err}}", err)
 	}
 
-	// never use os.RemoveAll here, see block comment on createBoilerplate()
+	// never use os.RemoveAll here, see block comment on generateBoilerplate()
 	if err = os.Remove(filepath.Join(cc.ContainerDirectory, ".git")); err != nil {
 		return errwrap.Wrapf("Error removing .git ref file for container's boilerplate: {{err}}", err)
 	}
@@ -621,7 +621,7 @@ func (cc *containerCreator) saveContainer() error {
 			fmt.Fprintf(os.Stderr, "Error getting absolute path: %v\n", aerr)
 		}
 
-		fmt.Fprintf(os.Stdout, `Container created at %v
+		fmt.Fprintf(os.Stdout, `Container generated at %v
 Go to the container directory to keep hacking! :)
 Some tips:
 	Run the container on your local machine with: "we link"
@@ -651,7 +651,7 @@ func (r *runner) newProject() (err error) {
 }
 
 func (r *runner) saveProject(p *projects.Project) error {
-	if err := tryCreateDirectory(r.projectBase); err != nil {
+	if err := tryGenerateDirectory(r.projectBase); err != nil {
 		return err
 	}
 
@@ -670,11 +670,11 @@ func (r *runner) saveProject(p *projects.Project) error {
 			return err
 		}
 
-		fmt.Fprintf(os.Stdout, `Project created at %v
+		fmt.Fprintf(os.Stdout, `Project generated at %v
 Go to the project directory and happy hacking! :)
 Some tips:
 	Run the project on your local machine with: "we link"
-	Create a container there with: "we create"
+	Generate a container there with: "we generate"
 	Check project.json for additional configuration.
 `, abs)
 	}
@@ -694,11 +694,11 @@ func exists(file string) (bool, error) {
 	}
 }
 
-func tryCreateDirectory(directory string) error {
+func tryGenerateDirectory(directory string) error {
 	var err = os.MkdirAll(directory, 0775)
 
 	if err != nil {
-		return errwrap.Wrapf("Can not create directory: {{err}}", err)
+		return errwrap.Wrapf("Can not generate directory: {{err}}", err)
 	}
 
 	return err

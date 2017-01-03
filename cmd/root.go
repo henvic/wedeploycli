@@ -6,8 +6,8 @@ import (
 	"github.com/wedeploy/cli/cmd/autocomplete"
 	"github.com/wedeploy/cli/cmd/build"
 	"github.com/wedeploy/cli/cmd/cmdmanager"
-	"github.com/wedeploy/cli/cmd/createctx"
 	"github.com/wedeploy/cli/cmd/dev"
+	"github.com/wedeploy/cli/cmd/generate"
 	"github.com/wedeploy/cli/cmd/inspect"
 	"github.com/wedeploy/cli/cmd/list"
 	"github.com/wedeploy/cli/cmd/log"
@@ -49,7 +49,7 @@ var commands = []*cobra.Command{
 	cmdautocomplete.AutocompleteCmd,
 	cmdlogin.LoginCmd,
 	cmdlogout.LogoutCmd,
-	cmdcreate.CreateCmd,
+	cmdgenerate.GenerateCmd,
 	cmddev.DevCmd,
 	cmdlog.LogCmd,
 	cmdlist.ListCmd,

@@ -9,8 +9,8 @@ Usage:
 
 Available Commands:
   build        Build container(s) (current or all containers of a project)
-  create       Creates a project or container
   dev          Run development environment for a project or container
+  generate     Generates a project or container
   inspect      Inspect environment info
   list         List projects and containers running on WeDeploy
   log          See logs of what is running on WeDeploy
