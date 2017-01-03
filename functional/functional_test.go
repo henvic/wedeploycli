@@ -313,10 +313,6 @@ func assertReadyState(cmd *cmdrunner.Command, t *testing.T) bool {
 		return false
 	}
 
-	if !strings.Contains(out, "Press Ctrl+C to shut it down when you are done.") {
-		log("Expected ^c message not found")
-	}
-
 	u := wedeploy.URL("http://localhost/")
 
 	if err := u.Get(); err != wedeploy.ErrUnexpectedResponse {
