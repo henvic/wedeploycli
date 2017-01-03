@@ -18,3 +18,5 @@ import:
 - package: github.com/henvic/pseudoterm
 - package: github.com/satori/go.uuid
   version: ~1.1.0
+- package: github.com/coreos/go-semver
+  version: v0.2.0

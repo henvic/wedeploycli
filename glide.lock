@@ -1,6 +1,10 @@
-hash: a6895b07f3e095a75838e0e48593425d613c82f0d5d48400025fbd462624544d
-updated: 2016-12-27T08:47:49.783274987-08:00
+hash: a50b942a2fd7e189e30f6e7fcddd7179f221dace1d347ffb916abc95a5218947
+updated: 2017-01-03T15:35:56.846413224-08:00
 imports:
+- name: github.com/coreos/go-semver
+  version: 8ab6407b697782a06568d4b7f1db25550ec2e4c6
+  subpackages:
+  - semver
 - name: github.com/cpuguy83/go-md2man
   version: a65d4d2de4d5f7c74868dfa9b202a3c8be315aaa
   subpackages:

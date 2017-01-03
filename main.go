@@ -172,7 +172,7 @@ func (cl *configLoader) loadConfig() {
 
 func (cl *configLoader) checkPastVersion() {
 	if config.Global.PastVersion != "" {
-		update.ApplyFixes(config.Global.PastVersion)
+		update.ApplyTransitions(config.Global.PastVersion)
 		config.Global.PastVersion = ""
 		cl.reload = true
 	}
