@@ -190,6 +190,7 @@ func (dm *DockerMachine) checkPortsAreAvailable() error {
 }
 
 func (dm *DockerMachine) waitReadyState() {
+	fmt.Println("WeDeploy is not running yet... Please wait.")
 	var tries = 1
 	dm.WaitLiveMsg = &waitlivemsg.WaitLiveMsg{
 		Msg:    "Starting WeDeploy",
