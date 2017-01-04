@@ -15,15 +15,6 @@ import (
 	"github.com/wedeploy/cli/wdircontext"
 )
 
-// ListRemoteFlags hides the globals non used --remote
-var ListRemoteFlags = map[string]bool{
-	"list":    true,
-	"log":     true,
-	"run":     true,
-	"remote":  true,
-	"restart": true,
-}
-
 // SetLocal the context
 func SetLocal() {
 	config.Context.Token = apihelper.DefaultToken
