@@ -25,7 +25,7 @@ var autocompleteTransition = Transition{
 		return "fix broken autocomplete"
 	},
 	Test: func(pastVersion string) bool {
-		return isPastVersionOlder(pastVersion, "1.0.0-alpha-29")
+		return isVersionLessOrEqualThan(pastVersion, "1.0.0-alpha-29")
 	},
 	Apply: func() error {
 		if runtime.GOOS == "windows" {
@@ -46,22 +46,22 @@ var transitions = []Transition{
 	autocompleteTransition,
 }
 
-func isPastVersionOlder(pastVersion, sinceVersion string) bool {
+func isVersionLessOrEqualThan(refVersion, sinceVersion string) bool {
 	var old, errOld = semver.NewVersion(sinceVersion)
 
 	if errOld != nil {
-		fmt.Fprintf(os.Stderr, "Error parsing \"since\" version: %v\n", errOld)
+		verbose.Debug(`Error parsing "since" version: ` + errOld.Error())
 		return false
 	}
 
-	var past, errNew = semver.NewVersion(pastVersion)
+	var ref, errNew = semver.NewVersion(refVersion)
 
 	if errNew != nil {
-		fmt.Fprintf(os.Stderr, "Error parsing past version %v: %v\n", past, errNew)
+		verbose.Debug(`Error parsing "reference" version: ` + errNew.Error())
 		return false
 	}
 
-	if past.Compare(*old) > 0 {
+	if ref.Compare(*old) > 0 {
 		return false
 	}
 
