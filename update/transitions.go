@@ -71,7 +71,7 @@ func isPastVersionOlder(pastVersion, sinceVersion string) bool {
 // ApplyTransitions applies transition / fixes functions for updating this tool after updates
 // It is assumed that this is called only manually, but it is not guaranteed
 func ApplyTransitions(pastVersion string) {
-	if len(pastVersion) == 0 || pastVersion == defaults.Version {
+	if len(pastVersion) == 0 || pastVersion == defaults.Version || pastVersion == "master" {
 		return
 	}
 
