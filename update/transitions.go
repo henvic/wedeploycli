@@ -25,7 +25,7 @@ var autocompleteTransition = Transition{
 		return "fix broken autocomplete"
 	},
 	Test: func(pastVersion string) bool {
-		return isVersionLessOrEqualThan(pastVersion, "1.0.0-alpha-29")
+		return true
 	},
 	Apply: func() error {
 		if runtime.GOOS == "windows" {

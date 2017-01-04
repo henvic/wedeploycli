@@ -13,7 +13,7 @@ import (
 )
 
 var script = `if [ -n "$ZSH_VERSION" ]; then
-  autoload bashcompinit
+  autoload -U bashcompinit
   bashcompinit
 fi
 
