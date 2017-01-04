@@ -15,6 +15,7 @@ import (
 	"github.com/wedeploy/cli/cmd/logout"
 	"github.com/wedeploy/cli/cmd/metrics"
 	"github.com/wedeploy/cli/cmd/remote"
+	"github.com/wedeploy/cli/cmd/removed"
 	"github.com/wedeploy/cli/cmd/restart"
 	"github.com/wedeploy/cli/cmd/start"
 	"github.com/wedeploy/cli/cmd/update"
@@ -64,6 +65,7 @@ var commands = []*cobra.Command{
 
 func init() {
 	autocomplete.RootCmd = RootCmd
+	commands = append(commands, cmdremoved.List...)
 
 	RootCmd.PersistentFlags().BoolVarP(
 		&verbose.Enabled,
