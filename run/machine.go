@@ -86,7 +86,7 @@ func (dm *DockerMachine) Run() (err error) {
 	dm.setupPorts()
 
 	if !dm.Flags.DryRun && dm.Container != "" {
-		println(`Infrastructure is on.`)
+		verbose.Debug(`Infrastructure is on.`)
 
 		if dm.Flags.Debug {
 			return errors.New(`change to debug mode not allowed: shutdown with "we dev --no-infra" and run with "we dev --infra --debug"`)
