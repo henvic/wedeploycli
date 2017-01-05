@@ -19,14 +19,14 @@ type commandRunner interface {
 }
 
 var (
-	setupHost  cmdflagsfromhost.SetupHost
-	runFlags   = run.Flags{}
-	quiet      bool
-	infra      bool
-	skipInfra  bool
-	noInfraTmp bool
-	image      string
-	cmdRunner  commandRunner
+	setupHost        cmdflagsfromhost.SetupHost
+	runFlags         = run.Flags{}
+	quiet            bool
+	infra            bool
+	skipInfra        bool
+	shutdownInfraTmp bool
+	image            string
+	cmdRunner        commandRunner
 )
 
 // DevCmd runs the WeDeploy local infrastructure
@@ -40,7 +40,7 @@ var DevCmd = &cobra.Command{
   we dev stop
   we dev --project chat
   we dev --infra to startup only the infrastructure
-  we dev --no-infra to shutdown the local infrastructure`,
+  we dev --shutdown-infra to shutdown the local infrastructure`,
 }
 
 func maybeShutdown() (err error) {
@@ -70,7 +70,7 @@ func maybeStartInfrastructure() error {
 }
 
 func devPreRun(cmd *cobra.Command, args []string) error {
-	if noInfraTmp {
+	if shutdownInfraTmp {
 		infra = false
 	}
 
@@ -112,7 +112,7 @@ func init() {
 		"Dry-run the infrastructure")
 	DevCmd.Flags().BoolVar(&infra, "infra", true,
 		"Infrastructure status")
-	DevCmd.Flags().BoolVar(&noInfraTmp, "no-infra", false, "")
+	DevCmd.Flags().BoolVar(&shutdownInfraTmp, "shutdown-infra", false, "")
 	DevCmd.Flags().BoolVar(&skipInfra, "skip-infra", false, "")
 	DevCmd.Flags().StringVar(&image, "experimental-image", "",
 		"Experimental image to run")
@@ -127,7 +127,7 @@ func init() {
 		panic(err)
 	}
 
-	if err := DevCmd.Flags().MarkHidden("no-infra"); err != nil {
+	if err := DevCmd.Flags().MarkHidden("shutdown-infra"); err != nil {
 		panic(err)
 	}
 
@@ -138,8 +138,8 @@ func init() {
 func loadCommandInit() {
 	switch {
 	case isCommand("--infra"):
-	case isCommand("--no-infra"):
-		// if --no-infra or --infra are used,
+	case isCommand("--shutdown-infra"):
+		// if --shutdown-infra or --infra are used,
 		// don't load any command runner
 	default:
 		cmdRunner = &linker{}

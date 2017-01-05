@@ -49,7 +49,7 @@ var stopCmd = &cobra.Command{
 		fmt.Fprintln(os.Stderr,
 			color.Format(color.FgHiRed, "we stop")+
 				" has been replaced by "+
-				color.Format(color.FgHiRed, "we dev --no-infra")+".")
+				color.Format(color.FgHiRed, "we dev --shutdown-infra")+".")
 		os.Exit(1)
 	},
 }

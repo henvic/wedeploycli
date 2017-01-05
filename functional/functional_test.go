@@ -422,7 +422,7 @@ loop:
 
 func (s *scenario) testShutdownGracefully(t *testing.T) {
 	var ctx, cancel = context.WithTimeout(context.Background(), 20*time.Second)
-	var shutdown = exec.CommandContext(ctx, "we", "dev", "--no-infra")
+	var shutdown = exec.CommandContext(ctx, "we", "dev", "--shutdown-infra")
 
 	shutdown.Stderr = os.Stderr
 	shutdown.Stdout = os.Stdout
@@ -431,12 +431,12 @@ func (s *scenario) testShutdownGracefully(t *testing.T) {
 	cancel()
 
 	if err != nil {
-		t.Fatalf("we dev --no-infra did not exit properly: %v.", err)
+		t.Fatalf("we dev --shutdown-infra did not exit properly: %v.", err)
 	}
 }
 
 func (s *scenario) testShutdownGracefullyAfter5Seconds(t *testing.T) {
-	log("Waiting 5s to invoke we dev --no-infra")
+	log("Waiting 5s to invoke we dev --shutdown-infra")
 	time.Sleep(5 * time.Second)
 	s.testShutdownGracefully(t)
 }

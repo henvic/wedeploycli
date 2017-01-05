@@ -89,7 +89,7 @@ func (dm *DockerMachine) Run() (err error) {
 		verbose.Debug(`Infrastructure is on.`)
 
 		if dm.Flags.Debug {
-			return errors.New(`change to debug mode not allowed: shutdown with "we dev --no-infra" and run with "we dev --infra --debug"`)
+			return errors.New(`change to debug mode not allowed: shutdown with "we dev --shutdown-infra" and run with "we dev --infra --debug"`)
 		}
 
 		return nil
@@ -318,7 +318,7 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 		<-sigs
 
 		if time.Now().After(gracefulExitLoopTimeout) {
-			println("\n\"we dev\" killed awkwardly. Use \"we dev --no-infra\" to kill ghosts.")
+			println("\n\"we dev\" killed awkwardly. Use \"we dev --shutdown-infra\" to kill ghosts.")
 			os.Exit(1)
 		}
 
