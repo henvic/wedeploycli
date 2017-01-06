@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path/filepath"
 
@@ -76,7 +77,7 @@ func Create(ctx context.Context, id string) (project *Project, err error) {
 
 // Get project by ID
 func Get(ctx context.Context, id string) (project Project, err error) {
-	err = apihelper.AuthGet(ctx, "/projects/"+id, &project)
+	err = apihelper.AuthGet(ctx, "/projects/"+url.QueryEscape(id), &project)
 	return project, err
 }
 
@@ -151,7 +152,7 @@ func readValidate(project Project, err error) error {
 
 // Restart restarts a project
 func Restart(ctx context.Context, id string) error {
-	var req = apihelper.URL(ctx, "/restart/project?projectId="+id)
+	var req = apihelper.URL(ctx, "/restart/project?projectId="+url.QueryEscape(id))
 
 	apihelper.Auth(req)
 	return apihelper.Validate(req, req.Post())
