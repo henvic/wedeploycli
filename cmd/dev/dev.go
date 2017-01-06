@@ -39,7 +39,7 @@ var DevCmd = &cobra.Command{
 	Example: `  we dev
   we dev stop
   we dev --project chat
-  we dev --infra to startup only the infrastructure
+  we dev --start-infra to startup only the local infrastructure
   we dev --shutdown-infra to shutdown the local infrastructure`,
 }
 
@@ -83,7 +83,7 @@ func devPreRun(cmd *cobra.Command, args []string) error {
 
 func devRun(cmd *cobra.Command, args []string) (err error) {
 	if runFlags.Debug && (!cmd.Flags().Changed("infra") || !infra || skipInfra) {
-		return errors.New("Incompatible use: --debug requires --infra")
+		return errors.New("Incompatible use: --debug requires --start-infra")
 	}
 
 	if len(args) != 0 {
@@ -137,9 +137,9 @@ func init() {
 
 func loadCommandInit() {
 	switch {
-	case isCommand("--infra"):
+	case isCommand("--start-infra"):
 	case isCommand("--shutdown-infra"):
-		// if --shutdown-infra or --infra are used,
+		// if --shutdown-infra or --start-infra are used,
 		// don't load any command runner
 	default:
 		cmdRunner = &linker{}

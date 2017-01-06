@@ -300,7 +300,7 @@ var weRunFirstTimeTimeout = 15 * time.Minute
 
 func assertReadyState(cmd *cmdrunner.Command, t *testing.T) bool {
 	if cmd == nil {
-		t.Fatalf(`Can not assert ready state: not invoked after "we dev --infra"`)
+		t.Fatalf(`Can not assert ready state: not invoked after "we dev --start-infra"`)
 	}
 
 	var out = cmd.Stdout.String()
@@ -394,12 +394,12 @@ func (s *scenario) testLinkedChatAfter5Seconds(t *testing.T) {
 func (s *scenario) testRun(t *testing.T) {
 	s.runCmd = &cmdrunner.Command{
 		Name:    "we",
-		Args:    []string{"dev", "--infra"},
+		Args:    []string{"dev", "--start-infra"},
 		TeePipe: true,
 	}
 
 	go func() {
-		log(`Executing "we dev --infra"`)
+		log(`Executing "we dev --start-infra"`)
 		s.runCmd.Start()
 	}()
 
