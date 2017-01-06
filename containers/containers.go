@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -165,14 +166,17 @@ func (l *listFromDirectoryGetter) addFunc(container *Container, dir string) erro
 // List containers of a given project
 func List(ctx context.Context, projectID string) (Containers, error) {
 	var cs Containers
-	var err = apihelper.AuthGet(ctx, "/projects/"+projectID+"/containers", &cs)
+	var err = apihelper.AuthGet(ctx, "/projects/"+url.QueryEscape(projectID)+"/containers", &cs)
 	return cs, err
 }
 
 // Get container
 func Get(ctx context.Context, projectID, containerID string) (Container, error) {
 	var c Container
-	var err = apihelper.AuthGet(ctx, "/projects/"+projectID+"/containers/"+containerID, &c)
+	var err = apihelper.AuthGet(ctx, "/projects/"+
+		url.QueryEscape(projectID)+
+		"/containers/"+
+		url.QueryEscape(containerID), &c)
 	return c, err
 }
 
@@ -251,7 +255,10 @@ func readValidate(container Container, err error) error {
 
 // Restart restarts a container inside a project
 func Restart(ctx context.Context, projectID, containerID string) error {
-	var req = apihelper.URL(ctx, "/restart/container?projectId="+projectID+"&containerId="+containerID)
+	var req = apihelper.URL(ctx, "/restart/container?projectId="+
+		url.QueryEscape(projectID)+
+		"&containerId="+
+		url.QueryEscape(containerID))
 
 	apihelper.Auth(req)
 	return apihelper.Validate(req, req.Post())
