@@ -51,15 +51,19 @@ type SetupHost struct {
 type Pattern int
 
 const (
-	missing Pattern = iota
+	missing Pattern = 1 << iota
 	// RemotePattern takes only --remote
 	RemotePattern
+	// ContainerPattern takes only --container
+	ContainerPattern
 	// ProjectPattern takes only --project
 	ProjectPattern
 	// ProjectAndContainerPattern takes only --project and --container
-	ProjectAndContainerPattern
+	ProjectAndContainerPattern = ProjectPattern | ContainerPattern
+	// ProjectAndRemotePattern takes only --project, and --remote
+	ProjectAndRemotePattern = ProjectPattern | RemotePattern
 	// FullHostPattern takes --project, --container, and --remote
-	FullHostPattern
+	FullHostPattern = RemotePattern | ProjectAndContainerPattern
 )
 
 // Project of the parsed flags or host
@@ -84,20 +88,26 @@ func (s *SetupHost) RemoteAddress() string {
 
 // Init flags on a given command
 func (s *SetupHost) Init(cmd *cobra.Command) {
+	var none = true
 	s.cmdName = cmd.Name()
 
-	switch s.Pattern {
-	case RemotePattern:
+	if s.Pattern&RemotePattern != 0 {
 		s.addRemoteFlag(cmd)
-	case ProjectPattern:
+		none = false
+	}
+
+	if s.Pattern&ProjectPattern != 0 {
 		s.addProjectFlag(cmd)
-	case ProjectAndContainerPattern:
-		s.addProjectAndContainerFlags(cmd)
-	case FullHostPattern:
-		s.addRemoteFlag(cmd)
-		s.addProjectAndContainerFlags(cmd)
-	default:
-		panic("Missing host pattern")
+		none = false
+	}
+
+	if s.Pattern&ContainerPattern != 0 {
+		s.addContainerFlag(cmd)
+		none = false
+	}
+
+	if none {
+		panic("Missing or unsupported host pattern")
 	}
 }
 
@@ -158,13 +168,12 @@ func (s *SetupHost) addProjectFlag(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&s.project, "project", "", "Project ID")
 }
 
-func (s *SetupHost) addProjectAndContainerFlags(cmd *cobra.Command) {
-	s.addProjectFlag(cmd)
+func (s *SetupHost) addContainerFlag(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&s.container, "container", "", "Container ID")
 }
 
 func (s *SetupHost) getContainerFromCurrentWorkingDirectory() (container string, err error) {
-	if s.Pattern != ProjectPattern && s.Pattern != ProjectAndContainerPattern && s.Pattern != FullHostPattern {
+	if s.Pattern&ProjectPattern == 0 {
 		return "", nil
 	}
 
@@ -181,7 +190,7 @@ func (s *SetupHost) getContainerFromCurrentWorkingDirectory() (container string,
 }
 
 func (s *SetupHost) getProjectFromCurrentWorkingDirectory() (project string, err error) {
-	if s.Pattern != ProjectPattern && s.Pattern != ProjectAndContainerPattern && s.Pattern != FullHostPattern {
+	if s.Pattern&ProjectPattern == 0 {
 		return "", nil
 	}
 
@@ -191,8 +200,7 @@ func (s *SetupHost) getProjectFromCurrentWorkingDirectory() (project string, err
 	case err != nil && err != projects.ErrProjectNotFound:
 		return "", errwrap.Wrapf("Error extracting project ID from current directory's context: {{err}}", err)
 	case err == projects.ErrProjectNotFound:
-		return "", errwrap.Wrapf("{{err}} or local project.json context",
-			flagsfromhost.ErrorContainerWithNoProject{})
+		return "", errwrap.Wrapf("Project or local project.json context not found", err)
 	}
 
 	return project, nil
@@ -202,6 +210,18 @@ func (s *SetupHost) loadValues() (err error) {
 	var container = s.parsed.Container()
 	var project = s.parsed.Project()
 	var remote = s.parsed.Remote()
+
+	if s.Pattern&RemotePattern == 0 && remote != "" {
+		return errors.New("Remote is not allowed for this command")
+	}
+
+	if s.Pattern&ProjectPattern == 0 && project != "" {
+		return errors.New("Project is not allowed for this command")
+	}
+
+	if s.Pattern&ContainerPattern == 0 && container != "" {
+		return errors.New("Container is not allowed for this command")
+	}
 
 	if container == "" && s.UseContainerDirectory {
 		container, err = s.getContainerFromCurrentWorkingDirectory()
@@ -217,7 +237,7 @@ func (s *SetupHost) loadValues() (err error) {
 		}
 	}
 
-	if (s.Pattern != ProjectAndContainerPattern && s.Pattern != FullHostPattern) && container != "" {
+	if (s.Pattern&ProjectPattern == 0 && s.Pattern&ContainerPattern == 0) && container != "" {
 		return errors.New("Container parameter is not allowed for this command")
 	}
 

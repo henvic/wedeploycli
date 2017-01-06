@@ -23,7 +23,7 @@ func TestLogsIncompatibleUse(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stderr:   "Error: Incompatible use: --container requires --project or local project.json context",
+		Stderr:   "Error: Project or local project.json context not found",
 		ExitCode: 1,
 	}
 
