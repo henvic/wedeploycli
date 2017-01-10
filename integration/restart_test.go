@@ -101,7 +101,7 @@ func TestRestartContainerQuiet(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"restart", "bar.foo.wedeploy.me", "-q"},
+		Args: []string{"restart", "-u", "bar.foo.wedeploy.me", "-q"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 

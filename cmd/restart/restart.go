@@ -14,15 +14,15 @@ import (
 
 // RestartCmd is used for getting restart
 var RestartCmd = &cobra.Command{
-	Use:     "restart <host> or --project <project> --container <container>",
+	Use:     "restart --url <host URL> or --project <project> --container <container>",
 	Short:   "Restart project or container running on WeDeploy",
 	PreRunE: preRun,
 	RunE:    restartRun,
 	Example: `we restart --project chat --container data
-we restart data
-we restart data.chat
-we restart data.chat --remote cloud
-we restart data.chat.wedeploy.me`,
+we restart --container data
+we restart --project chat --container data
+we restart --project chat --container data --remote cloud
+we restart --url data.chat.wedeploy.me`,
 }
 
 var quiet bool
@@ -101,7 +101,7 @@ func (r *restart) checkProjectOrContainerExists() error {
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	return setupHost.Process(args)
+	return setupHost.Process()
 }
 
 func restartRun(cmd *cobra.Command, args []string) error {

@@ -31,6 +31,28 @@ func TestLogsIncompatibleUse(t *testing.T) {
 	e.Assert(t, cmd)
 }
 
+func TestLogIncompatibleUseProjectAndHostURLFlag(t *testing.T) {
+	var cmd = &Command{
+		Args: []string{"log", "--project", "foo", "-u", "mocks"},
+	}
+
+	cmd.Run()
+
+	if cmd.Stdout.Len() != 0 {
+		t.Errorf("Expected stdout to be empty, got %v instead", cmd.Stdout)
+	}
+
+	var wantErr = "Error: Incompatible use: --project and --container are not allowed with host URL flag"
+
+	if !strings.Contains(cmd.Stderr.String(), wantErr) {
+		t.Errorf("Wanted stderr to have %v, got %v instead", wantErr, cmd.Stderr)
+	}
+
+	if cmd.ExitCode == 0 {
+		t.Errorf("Expected exit code to be not 0, got %v instead", cmd.ExitCode)
+	}
+}
+
 func TestLogs(t *testing.T) {
 	defer Teardown()
 	Setup()
@@ -48,6 +70,7 @@ func TestLogs(t *testing.T) {
 	var cmd = &Command{
 		Args: []string{
 			"log",
+			"-u",
 			"nodejs5143.foo",
 			"--no-color"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
@@ -174,6 +197,7 @@ func TestLogsWithWeDeployDotMeAddress(t *testing.T) {
 	var cmd = &Command{
 		Args: []string{
 			"log",
+			"-u",
 			"nodejs5143.foo.wedeploy.me",
 			"--no-color"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
@@ -206,6 +230,7 @@ func TestWatch(t *testing.T) {
 	var cmd = &Command{
 		Args: []string{
 			"log",
+			"-u",
 			"nodejs5143.foo",
 			"--watch"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},

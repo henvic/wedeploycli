@@ -39,6 +39,7 @@ type SetupHost struct {
 	UseProjectDirectory             bool
 	UseProjectDirectoryForContainer bool
 	UseContainerDirectory           bool
+	url                             string
 	project                         string
 	container                       string
 	remote                          string
@@ -91,6 +92,10 @@ func (s *SetupHost) Init(cmd *cobra.Command) {
 	var none = true
 	s.cmdName = cmd.Name()
 
+	if !s.Requires.NoHost && (s.Pattern&RemotePattern != 0 || s.Pattern&ContainerPattern != 0) {
+		s.addURLFlag(cmd)
+	}
+
 	if s.Pattern&RemotePattern != 0 {
 		s.addRemoteFlag(cmd)
 		none = false
@@ -111,24 +116,8 @@ func (s *SetupHost) Init(cmd *cobra.Command) {
 	}
 }
 
-// Process host and flags
-func (s *SetupHost) Process(args []string) error {
-	if s.Requires.NoHost && len(args) != 0 {
-		return errors.New("Values by host style is disabled for this command")
-	}
-
-	switch len(args) {
-	case 0:
-		return s.process("")
-	case 1:
-		return s.process(args[0])
-	default:
-		return errors.New("Wrong number of arguments (expected only host)")
-	}
-}
-
-func (s *SetupHost) parseFlags(host string) (f *flagsfromhost.FlagsFromHost, err error) {
-	f, err = flagsfromhost.Parse(host, s.project, s.container, s.remote)
+func (s *SetupHost) parseFlags() (f *flagsfromhost.FlagsFromHost, err error) {
+	f, err = flagsfromhost.Parse(s.url, s.project, s.container, s.remote)
 
 	if (s.UseProjectDirectory || s.UseProjectDirectoryForContainer) && err != nil {
 		switch err.(type) {
@@ -140,8 +129,9 @@ func (s *SetupHost) parseFlags(host string) (f *flagsfromhost.FlagsFromHost, err
 	return f, err
 }
 
-func (s *SetupHost) process(host string) (err error) {
-	s.parsed, err = s.parseFlags(host)
+// Process flags
+func (s *SetupHost) Process() (err error) {
+	s.parsed, err = s.parseFlags()
 
 	if err != nil {
 		return err
@@ -156,6 +146,10 @@ func (s *SetupHost) process(host string) (err error) {
 	}
 
 	return nil
+}
+
+func (s *SetupHost) addURLFlag(cmd *cobra.Command) {
+	cmd.Flags().StringVarP(&s.url, "url", "u", "", "URL host for resource")
 }
 
 func (s *SetupHost) addRemoteFlag(cmd *cobra.Command) {

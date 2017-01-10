@@ -32,8 +32,7 @@ func (l *linker) Init() {
 }
 
 func (l *linker) PreRun(cmd *cobra.Command, args []string) error {
-	// ignore arguments
-	return setupHost.Process([]string{})
+	return setupHost.Process()
 }
 
 func (l *linker) Run(cmd *cobra.Command, args []string) error {

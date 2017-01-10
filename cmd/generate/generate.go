@@ -36,7 +36,7 @@ var generateRunner = runner{}
 
 // GenerateCmd generates a project or container
 var GenerateCmd = &cobra.Command{
-	Use:   "generate <host>",
+	Use:   "generate",
 	Short: "Generates a project or container",
 	Long: `Use "we generate" to generate projects and containers.
 You can generate a project anywhere on your machine and on the cloud.
@@ -53,6 +53,9 @@ we generate --project cinema --container projector room`,
 
 var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern: cmdflagsfromhost.ProjectAndContainerPattern,
+	Requires: cmdflagsfromhost.Requires{
+		NoHost: true,
+	},
 }
 
 const (
@@ -240,7 +243,7 @@ func (r *runner) setupContainerOnProject() error {
 }
 
 func (r *runner) PreRun(cmd *cobra.Command, args []string) (err error) {
-	r.flagsErr = setupHost.Process(args)
+	r.flagsErr = setupHost.Process()
 	return nil
 }
 

@@ -14,11 +14,11 @@ func (ErrorRemoteFlagAndHost) Error() string {
 	return "Incompatible use: --remote flag can not be used along host format with remote address"
 }
 
-// ErrorMultiMode happens when --project and --container are used with host format
+// ErrorMultiMode happens when --project and --container are used with host URL flag
 type ErrorMultiMode struct{}
 
 func (ErrorMultiMode) Error() string {
-	return "Incompatible use: --project and --container are not allowed with host format"
+	return "Incompatible use: --project and --container are not allowed with host URL flag"
 }
 
 // ErrorContainerWithNoProject hapens when --container is used without --project

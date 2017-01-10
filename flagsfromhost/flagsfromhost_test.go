@@ -225,7 +225,7 @@ func TestParseErrorMultiModeContainer(t *testing.T) {
 		t.Errorf("Expected err to be of type ErrorMultiMode, got %v instead", err)
 	}
 
-	if err.Error() != "Incompatible use: --project and --container are not allowed with host format" {
+	if err.Error() != "Incompatible use: --project and --container are not allowed with host URL flag" {
 		t.Errorf("Expected incompatible use message, got %v instead", err)
 	}
 }

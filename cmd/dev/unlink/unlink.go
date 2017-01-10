@@ -62,7 +62,7 @@ func (u *unlinker) PreRun(cmd *cobra.Command, args []string) error {
 		return errors.New("Invalid number of arguments.")
 	}
 
-	return setupHost.Process(args)
+	return setupHost.Process()
 }
 
 func (u *unlinker) Run(cmd *cobra.Command, args []string) error {

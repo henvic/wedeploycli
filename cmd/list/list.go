@@ -11,10 +11,10 @@ import (
 var ListCmd = &cobra.Command{
 	Use: "list <host> or --project <project> --container <container>",
 	Example: `we list --project chat --container data
-we list data
-we list data.chat
-we list data.chat.wedeploy.me
-we list data.chat.wedeploy.io`,
+we list --container data
+we list --project chat --container data
+we list --url data.chat.wedeploy.me
+we list --url data.chat.wedeploy.io`,
 	Short:   "List projects and containers running on WeDeploy",
 	PreRunE: preRun,
 	Run:     listRun,
@@ -38,7 +38,7 @@ func init() {
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	return setupHost.Process(args)
+	return setupHost.Process()
 }
 
 func listRun(cmd *cobra.Command, args []string) {

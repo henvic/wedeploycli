@@ -9,28 +9,6 @@ import (
 	"github.com/wedeploy/cli/projects"
 )
 
-func TestGenerateIncompatibleUse(t *testing.T) {
-	var cmd = &Command{
-		Args: []string{"generate", "--project", "foo", "mocks"},
-	}
-
-	cmd.Run()
-
-	if cmd.Stdout.Len() != 0 {
-		t.Errorf("Expected stdout to be empty, got %v instead", cmd.Stdout)
-	}
-
-	var wantErr = "Error: Incompatible use: --project and --container are not allowed with host format"
-
-	if !strings.Contains(cmd.Stderr.String(), wantErr) {
-		t.Errorf("Wanted stderr to have %v, got %v instead", wantErr, cmd.Stderr)
-	}
-
-	if cmd.ExitCode == 0 {
-		t.Errorf("Expected exit code to be not 0, got %v instead", cmd.ExitCode)
-	}
-}
-
 func TestGenerateDirectoryNotExists(t *testing.T) {
 	var cmd = &Command{
 		Args: []string{"generate", "--project", "foo", "--directory", "not-found"},
@@ -251,7 +229,10 @@ func TestGenerateProjectWithCustomDomainAndContainerWithoutContainerBoilerplate(
 
 	var cmd = &Command{
 		Args: []string{"generate",
-			"mail.example",
+			"--project",
+			"example",
+			"--container",
+			"email",
 			"--project-custom-domain",
 			"example.com",
 			"--container-type",
