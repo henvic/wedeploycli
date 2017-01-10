@@ -253,6 +253,39 @@ func readValidate(container Container, err error) error {
 	}
 }
 
+// SetEnvironmentVariable sets an environment variable
+func SetEnvironmentVariable(ctx context.Context, projectID, containerID, key, value string) error {
+	var req = apihelper.URL(ctx,
+		"/projects",
+		url.QueryEscape(projectID),
+		"/containers",
+		url.QueryEscape(containerID),
+		"/env",
+		url.QueryEscape(key))
+
+	apihelper.Auth(req)
+
+	if err := apihelper.SetBody(req, value); err != nil {
+		return errwrap.Wrapf("Can not set body for setting environment variable: {{err}}", err)
+	}
+
+	return apihelper.Validate(req, req.Put())
+}
+
+// UnsetEnvironmentVariable removes an environment variable
+func UnsetEnvironmentVariable(ctx context.Context, projectID, containerID, key string) error {
+	var req = apihelper.URL(ctx,
+		"/projects",
+		url.QueryEscape(projectID),
+		"/containers",
+		url.QueryEscape(containerID),
+		"/env",
+		url.QueryEscape(key))
+
+	apihelper.Auth(req)
+	return apihelper.Validate(req, req.Delete())
+}
+
 // Restart restarts a container inside a project
 func Restart(ctx context.Context, projectID, containerID string) error {
 	var req = apihelper.URL(ctx, "/restart/container?projectId="+

@@ -343,6 +343,56 @@ func TestReadCorrupted(t *testing.T) {
 	}
 }
 
+func TestSetEnvironmentVariable(t *testing.T) {
+	servertest.Setup()
+	configmock.Setup()
+
+	servertest.Mux.HandleFunc("/projects/foo/containers/bar/env/xyz",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodPut {
+				t.Errorf("Expected method %v, got %v instead", http.MethodPut, r.Method)
+			}
+
+			var body, err = ioutil.ReadAll(r.Body)
+
+			if err != nil {
+				t.Errorf("Error parsing response")
+			}
+
+			var wantBody = `"abc"`
+
+			if string(body) != wantBody {
+				t.Errorf("Wanted body to be %v, got %v instead", wantBody, string(body))
+			}
+		})
+
+	if err := SetEnvironmentVariable(context.Background(), "foo", "bar", "xyz", "abc"); err != nil {
+		t.Errorf("Expected no error when adding domains, got %v instead", err)
+	}
+
+	servertest.Teardown()
+	configmock.Teardown()
+}
+
+func TestUnsetEnvironmentVariable(t *testing.T) {
+	servertest.Setup()
+	configmock.Setup()
+
+	servertest.Mux.HandleFunc("/projects/foo/containers/bar/env/xyz",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodDelete {
+				t.Errorf("Expected method %v, got %v instead", http.MethodDelete, r.Method)
+			}
+		})
+
+	if err := UnsetEnvironmentVariable(context.Background(), "foo", "bar", "xyz"); err != nil {
+		t.Errorf("Expected no error when adding domains, got %v instead", err)
+	}
+
+	servertest.Teardown()
+	configmock.Teardown()
+}
+
 func TestRestart(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
