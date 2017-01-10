@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/containers"
@@ -73,6 +74,31 @@ func Create(ctx context.Context, id string) (project *Project, err error) {
 
 	err = apihelper.DecodeJSON(req, &project)
 	return project, err
+}
+
+// AddDomain in project
+func AddDomain(ctx context.Context, projectID string, domain string) (err error) {
+	var req = apihelper.URL(ctx, "/projects", url.QueryEscape(projectID), "/customDomains")
+
+	apihelper.Auth(req)
+
+	if err := apihelper.SetBody(req, domain); err != nil {
+		return errwrap.Wrapf("Can not set body for domain: {{err}}", err)
+	}
+	return apihelper.Validate(req, req.Patch())
+}
+
+// RemoveDomain in project
+func RemoveDomain(ctx context.Context, projectID string, domain string) (err error) {
+	var req = apihelper.URL(ctx,
+		"/projects",
+		url.QueryEscape(projectID),
+		"/customDomains",
+		"/",
+		url.QueryEscape(domain))
+
+	apihelper.Auth(req)
+	return apihelper.Validate(req, req.Delete())
 }
 
 // Get project by ID

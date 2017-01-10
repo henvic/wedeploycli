@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
@@ -107,6 +108,56 @@ func TestCreateError(t *testing.T) {
 	case *apihelper.APIFault:
 	default:
 		t.Errorf("Wanted APIFault error, got %v instead", err)
+	}
+
+	servertest.Teardown()
+	configmock.Teardown()
+}
+
+func TestAddDomain(t *testing.T) {
+	servertest.Setup()
+	configmock.Setup()
+
+	servertest.Mux.HandleFunc("/projects/foo/customDomains",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodPatch {
+				t.Errorf("Expected method %v, got %v instead", http.MethodPatch, r.Method)
+			}
+
+			var body, err = ioutil.ReadAll(r.Body)
+
+			if err != nil {
+				t.Errorf("Error parsing response")
+			}
+
+			var wantBody = `"example.com"`
+
+			if string(body) != wantBody {
+				t.Errorf("Wanted body to be %v, got %v instead", wantBody, string(body))
+			}
+		})
+
+	if err := AddDomain(context.Background(), "foo", "example.com"); err != nil {
+		t.Errorf("Expected no error when adding domains, got %v instead", err)
+	}
+
+	servertest.Teardown()
+	configmock.Teardown()
+}
+
+func TestRemoveDomain(t *testing.T) {
+	servertest.Setup()
+	configmock.Setup()
+
+	servertest.Mux.HandleFunc("/projects/foo/customDomains/example.com",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodDelete {
+				t.Errorf("Expected method %v, got %v instead", http.MethodDelete, r.Method)
+			}
+		})
+
+	if err := RemoveDomain(context.Background(), "foo", "example.com"); err != nil {
+		t.Errorf("Expected no error when adding domains, got %v instead", err)
 	}
 
 	servertest.Teardown()
