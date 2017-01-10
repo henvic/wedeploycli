@@ -3,6 +3,7 @@ package integration
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 	"syscall"
 	"testing"
@@ -11,6 +12,25 @@ import (
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/tdata"
 )
+
+func TestLogsTooManyArguments(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	var cmd = &Command{
+		Args: []string{"log", "do", "re", "mi", "fa", "so", "la", "ti", "do"},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir:  "mocks/home/",
+	}
+
+	var e = &Expect{
+		Stderr:   "Error: Invalid number of arguments: too many",
+		ExitCode: 1,
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+}
 
 func TestLogsIncompatibleUse(t *testing.T) {
 	defer Teardown()
