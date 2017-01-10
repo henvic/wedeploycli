@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/dev/unlink"
+	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/run"
 	"github.com/wedeploy/cli/verbose"
@@ -78,16 +79,16 @@ func devPreRun(cmd *cobra.Command, args []string) error {
 		return cmdRunner.PreRun(cmd, args)
 	}
 
+	if err := cmdargslen.Validate(args, 0, 0); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func devRun(cmd *cobra.Command, args []string) (err error) {
 	if runFlags.Debug && (!cmd.Flags().Changed("infra") || !infra || skipInfra) {
 		return errors.New("Incompatible use: --debug requires --start-infra")
-	}
-
-	if len(args) != 0 {
-		return errors.New("Invalid number of arguments.")
 	}
 
 	if !infra {

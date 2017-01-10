@@ -19,6 +19,7 @@ import (
 	wordwrap "github.com/mitchellh/go-wordwrap"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/containers"
@@ -243,6 +244,10 @@ func (r *runner) setupContainerOnProject() error {
 }
 
 func (r *runner) PreRun(cmd *cobra.Command, args []string) (err error) {
+	if err := cmdargslen.Validate(args, 0, 0); err != nil {
+		return err
+	}
+
 	r.flagsErr = setupHost.Process()
 	return nil
 }

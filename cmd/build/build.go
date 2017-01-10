@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/hooks"
@@ -17,9 +18,10 @@ import (
 
 // BuildCmd builds the current project or container
 var BuildCmd = &cobra.Command{
-	Use:   "build",
-	Short: "Build container(s) (current or all containers of a project)",
-	RunE:  buildRun,
+	Use:     "build",
+	Short:   "Build container(s) (current or all containers of a project)",
+	PreRunE: cmdargslen.ValidateCmd(0, 0),
+	RunE:    buildRun,
 }
 
 func getContainersFromScope() ([]string, error) {

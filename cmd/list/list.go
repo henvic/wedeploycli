@@ -1,6 +1,7 @@
 package cmdlist
 
 import (
+	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/list"
 
@@ -38,6 +39,10 @@ func init() {
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
+	if err := cmdargslen.Validate(args, 0, 0); err != nil {
+		return err
+	}
+
 	return setupHost.Process()
 }
 

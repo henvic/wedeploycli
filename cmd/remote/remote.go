@@ -5,21 +5,24 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/verbose"
 )
 
 // RemoteCmd runs the WeDeploy structure for development locally
 var RemoteCmd = &cobra.Command{
-	Use:   "remote",
-	Short: "Configure WeDeploy remotes",
-	RunE:  remoteRun,
+	Use:     "remote",
+	Short:   "Configure WeDeploy remotes",
+	PreRunE: cmdargslen.ValidateCmd(0, 0),
+	RunE:    remoteRun,
 }
 
 var addCmd = &cobra.Command{
 	Use:     "add",
 	Short:   "Adds a remote named <name> for the repository at <url>",
 	Example: "we remote add hk https://hk.example.com/",
+	PreRunE: cmdargslen.ValidateCmd(2, 2),
 	RunE:    addRun,
 }
 
@@ -27,6 +30,7 @@ var renameCmd = &cobra.Command{
 	Use:     "rename",
 	Short:   "Rename the remote named <old> to <new>",
 	Example: "we remote rename asia hk",
+	PreRunE: cmdargslen.ValidateCmd(2, 2),
 	RunE:    renameRun,
 }
 
@@ -34,26 +38,25 @@ var removeCmd = &cobra.Command{
 	Use:     "remove",
 	Short:   "Remove the remote named <name>",
 	Example: "we remote remove hk",
+	PreRunE: cmdargslen.ValidateCmd(1, 1),
 	RunE:    removeRun,
 }
 
 var getURLCmd = &cobra.Command{
-	Use:   "get-url",
-	Short: "Retrieves the URLs for a remote",
-	RunE:  getURLRun,
+	Use:     "get-url",
+	Short:   "Retrieves the URLs for a remote",
+	PreRunE: cmdargslen.ValidateCmd(1, 1),
+	RunE:    getURLRun,
 }
 
 var setURLCmd = &cobra.Command{
-	Use:   "set-url",
-	Short: "Changes URLs for the remote",
-	RunE:  setURLRun,
+	Use:     "set-url",
+	Short:   "Changes URLs for the remote",
+	PreRunE: cmdargslen.ValidateCmd(2, 2),
+	RunE:    setURLRun,
 }
 
 func remoteRun(cmd *cobra.Command, args []string) error {
-	if len(args) != 0 {
-		return errors.New("Invalid number of arguments.")
-	}
-
 	var remotes = config.Global.Remotes
 
 	for _, k := range remotes.Keys() {

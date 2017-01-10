@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/inspector"
 	"github.com/wedeploy/cli/projects"
@@ -21,7 +22,8 @@ var InspectCmd = &cobra.Command{
 	Short: "Inspect environment info",
 	Long: `Use "we inspect" to peek inside a project or a container on your file system.
 <type> = context | project | container`,
-	RunE: inspectRun,
+	PreRunE: cmdargslen.ValidateCmd(0, 1),
+	RunE:    inspectRun,
 	Example: `we inspect context
 we inspect context --fields
 we inspect context --format "{{.Scope}}"
@@ -56,7 +58,7 @@ func inspectRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(args) != 1 {
-		return errors.New("Wrong number of arguments; expected: we inspect <type>")
+		return errors.New("Expected: we inspect [context|project|container]")
 	}
 
 	if showTypeFields && format != "" {

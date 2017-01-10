@@ -5,15 +5,17 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/user"
 )
 
 // LogoutCmd unsets the user credential
 var LogoutCmd = &cobra.Command{
-	Use:   "logout",
-	Short: "Revoke credentials",
-	RunE:  logoutRun,
+	Use:     "logout",
+	Short:   "Revoke credentials",
+	PreRunE: cmdargslen.ValidateCmd(0, 0),
+	RunE:    logoutRun,
 }
 
 var rmConfig bool

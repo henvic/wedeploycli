@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/prompt"
@@ -11,9 +12,10 @@ import (
 
 // LoginCmd sets the user credential
 var LoginCmd = &cobra.Command{
-	Use:   "login",
-	Short: "Using Basic Authentication with your credentials",
-	RunE:  loginRun,
+	Use:     "login",
+	Short:   "Using Basic Authentication with your credentials",
+	PreRunE: cmdargslen.ValidateCmd(0, 0),
+	RunE:    loginRun,
 }
 
 func loginRun(cmd *cobra.Command, args []string) error {
