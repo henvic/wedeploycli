@@ -414,7 +414,7 @@ func (cc *containerCreator) handleContainerType() error {
 	registry, err := containers.GetRegistry(context.Background())
 
 	if err != nil {
-		return errwrap.Wrapf("Can not get the registry: {{err}}", err)
+		return errwrap.Wrapf("Can not get the registry to create container: {{err}}", err)
 	}
 
 	cc.Registry = registry
