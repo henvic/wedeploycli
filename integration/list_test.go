@@ -16,7 +16,7 @@ func TestList(t *testing.T) {
 		tdata.ServerJSONFileHandler("./mocks/list/projects_response.json"))
 
 	var cmd = &Command{
-		Args: []string{"list", "--no-color"},
+		Args: []string{"list", "--remote", "local", "--no-color"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
@@ -34,7 +34,7 @@ func TestListIncompatibleUseContainerRequiresProject(t *testing.T) {
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"list", "--container", "container", "--no-color"},
+		Args: []string{"list", "--container", "container", "--remote", "local", "--no-color"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
@@ -56,7 +56,7 @@ func TestListContainerFromInsideProject(t *testing.T) {
 		tdata.ServerJSONFileHandler("./mocks/home/bucket/project/container/container_list.json"))
 
 	var cmd = &Command{
-		Args: []string{"list", "--container", "container", "--no-color"},
+		Args: []string{"list", "--container", "container", "--remote", "local", "--no-color"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/home/bucket/project",
 	}

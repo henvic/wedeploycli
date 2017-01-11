@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/wedeploy/cli/remotes"
@@ -170,10 +171,37 @@ func TestSave(t *testing.T) {
 	}
 
 	var got = tdata.FromFile(Global.Path)
-	var want = tdata.FromFile("./mocks/we-reference.ini")
+	var want = []string{
+		`# Configuration file for WeDeploy CLI
+# https://wedeploy.io
+username                         = other
+password                         = safe
+token                            = 
+local                            = true
+local_port                       = 8080
+disable_autocomplete_autoinstall = false
+disable_colors                   = false
+notify_updates                   = true
+release_channel                  = stable
+enable_analytics                 = false
+analytics_option_date            = 
+analytics_id                     = 
+`,
+		`
+# Default cloud remote
+[remote "wedeploy"]
+    url = wedeploy.io
+`,
+		`
+# Default local remote
+[remote "local"]
+    url = wedeploy.me
 
-	if got != want {
-		t.Errorf("Wanted created configuration to match we-reference.ini")
+`}
+	for _, w := range want {
+		if !strings.Contains(got, w) {
+			t.Errorf("Expected string does not exists in generated configuration file: %v", w)
+		}
 	}
 
 	if err = tmp.Close(); err != nil {
@@ -214,10 +242,37 @@ func TestSaveAfterCreation(t *testing.T) {
 	}
 
 	var got = tdata.FromFile(Global.Path)
-	var want = tdata.FromFile("./mocks/we-reference-homeless.ini")
+	var want = []string{
+		`# Configuration file for WeDeploy CLI
+# https://wedeploy.io
+username                         = other
+password                         = 
+token                            = 
+local                            = true
+local_port                       = 8080
+disable_autocomplete_autoinstall = false
+disable_colors                   = false
+notify_updates                   = true
+release_channel                  = stable
+enable_analytics                 = false
+analytics_option_date            = 
+analytics_id                     = 
+`,
+		`# Default cloud remote
+[remote "wedeploy"]
+    url = wedeploy.io
+`,
+		`
+# Default local remote
+[remote "local"]
+    url = wedeploy.me
 
-	if got != want {
-		t.Errorf("Wanted created configuration to match we-reference-homeless.ini")
+`}
+
+	for _, w := range want {
+		if !strings.Contains(got, w) {
+			t.Errorf("Expected string does not exists in generated configuration file: %v", w)
+		}
 	}
 
 	if err = tmp.Close(); err != nil {
@@ -266,11 +321,58 @@ func TestRemotes(t *testing.T) {
 	}
 
 	var got = tdata.FromFile(Global.Path)
+	var want = []string{
+		`username                         = fool
+password                         = safe
+token                            = 
+local                            = true
+disable_colors                   = false
+notify_updates                   = true
+release_channel                  = stable
+# commented vars remains even when empty
+next_version                     = 
+local_port                       = 8080
+disable_autocomplete_autoinstall = false
+enable_analytics                 = false
+analytics_option_date            = 
+analytics_id                     = 
+`,
+		`
+[remote "alternative"]
+    url = http://example.net/
+`,
+		`
+[remote "staging"]
+    url = https://staging.example.net/
+`,
+		`
+# remote for beta testing
+[remote "beta"]
+    url = https://beta.example.com/
+`,
+		`
+# commented vars remains even when empty
+[remote "remain"]
+`,
+		`
+# Default local remote
+[remote "local"]
+    url = wedeploy.me
+`,
+		`
+# Default cloud remote
+[remote "wedeploy"]
+    url = wedeploy.io
+`,
+		`
+[remote "new"]
+    url = http://foo/
+`}
 
-	var want = tdata.FromFile("./mocks/we-reference-remotes.ini")
-
-	if got != want {
-		t.Errorf("Wanted created configuration to match we-reference-remotes.ini")
+	for _, w := range want {
+		if !strings.Contains(got, w) {
+			t.Errorf("Expected string does not exists in generated configuration file: %v", w)
+		}
 	}
 
 	if err = tmp.Close(); err != nil {
@@ -305,6 +407,14 @@ func TestRemotesListAndGet(t *testing.T) {
 	}
 
 	var wantOriginalRemotes = remotes.List{
+		"wedeploy": remotes.Entry{
+			URL:     "wedeploy.io",
+			Comment: "# Default cloud remote",
+		},
+		"local": remotes.Entry{
+			URL:     "wedeploy.me",
+			Comment: "# Default local remote",
+		},
 		"alternative": remotes.Entry{
 			URL: "http://example.net/",
 		},
@@ -336,8 +446,10 @@ func TestRemotesListAndGet(t *testing.T) {
 		"beta",
 		"dontremain",
 		"dontremain2",
+		"local",
 		"remain",
 		"staging",
+		"wedeploy",
 	}
 
 	var names = Global.Remotes.Keys()

@@ -91,7 +91,7 @@ func TestLogs(t *testing.T) {
 		Args: []string{
 			"log",
 			"-u",
-			"nodejs5143.foo",
+			"nodejs5143.foo.wedeploy.me",
 			"--no-color"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/",

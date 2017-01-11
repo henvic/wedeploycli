@@ -2,6 +2,7 @@ package cmdflagsfromhost
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/hashicorp/errwrap"
@@ -9,6 +10,7 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/flagsfromhost"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/remoteuriparser"
@@ -17,6 +19,7 @@ import (
 
 // SetLocal the context
 func SetLocal() {
+	config.Context.Remote = ""
 	config.Context.Token = apihelper.DefaultToken
 	config.Context.Endpoint = config.Global.LocalEndpoint
 	config.Context.RemoteAddress = "wedeploy.me"
@@ -44,7 +47,7 @@ type SetupHost struct {
 	container                       string
 	remote                          string
 	remoteAddress                   string
-	cmdName                         string
+	cmd                             *cobra.Command
 	parsed                          *flagsfromhost.FlagsFromHost
 }
 
@@ -90,7 +93,7 @@ func (s *SetupHost) RemoteAddress() string {
 // Init flags on a given command
 func (s *SetupHost) Init(cmd *cobra.Command) {
 	var none = true
-	s.cmdName = cmd.Name()
+	s.cmd = cmd
 
 	if !s.Requires.NoHost && (s.Pattern&RemotePattern != 0 || s.Pattern&ContainerPattern != 0) {
 		s.addURLFlag(cmd)
@@ -117,7 +120,14 @@ func (s *SetupHost) Init(cmd *cobra.Command) {
 }
 
 func (s *SetupHost) parseFlags() (f *flagsfromhost.FlagsFromHost, err error) {
-	f, err = flagsfromhost.Parse(s.url, s.project, s.container, s.remote)
+	var remoteFlag = s.cmd.Flag("remote")
+	var remoteFlagValue = s.remote
+
+	if remoteFlag != nil && !remoteFlag.Changed {
+		remoteFlagValue = ""
+	}
+
+	f, err = flagsfromhost.Parse(s.url, s.project, s.container, remoteFlagValue)
 
 	if (s.UseProjectDirectory || s.UseProjectDirectoryForContainer) && err != nil {
 		switch err.(type) {
@@ -155,7 +165,7 @@ func (s *SetupHost) addURLFlag(cmd *cobra.Command) {
 func (s *SetupHost) addRemoteFlag(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(
 		&s.remote,
-		"remote", "r", "", "Remote to use")
+		"remote", "r", "wedeploy", "Remote to use")
 }
 
 func (s *SetupHost) addProjectFlag(cmd *cobra.Command) {
@@ -204,6 +214,10 @@ func (s *SetupHost) loadValues() (err error) {
 	var container = s.parsed.Container()
 	var project = s.parsed.Project()
 	var remote = s.parsed.Remote()
+
+	if remote == defaults.DefaultLocalRemote {
+		remote = ""
+	}
 
 	if s.Pattern&RemotePattern == 0 && remote != "" {
 		return errors.New("Remote is not allowed for this command")
@@ -263,7 +277,7 @@ func (s *SetupHost) verifyCmdReqAuth() error {
 		return nil
 	}
 
-	if s.parsed.Remote() == "" {
+	if s.Remote() == "" {
 		return nil
 	}
 
@@ -275,21 +289,27 @@ func (s *SetupHost) verifyCmdReqAuth() error {
 		return nil
 	}
 
-	return errors.New(`Please run "we login" before using "we ` + s.cmdName + `".`)
+	return errors.New(`Please run "we login" before using "we ` + s.cmd.Name() + `".`)
 }
 
 func (s *SetupHost) setEndpoint() error {
-	if s.parsed.Remote() == "" {
+	if s.Remote() == "" {
 		SetLocal()
 		return nil
 	}
 
-	return s.setRemote()
+	return SetRemote(s.Remote())
 }
 
-func (s *SetupHost) setRemote() (err error) {
-	var r = config.Global.Remotes[s.parsed.Remote()]
-	config.Context.Remote = s.parsed.Remote()
+// SetRemote sets the remote for the current context
+func SetRemote(remote string) (err error) {
+	var r, ok = config.Global.Remotes[remote]
+
+	if !ok {
+		return fmt.Errorf(`Error loading selected remote "%v"`, remote)
+	}
+
+	config.Context.Remote = remote
 	config.Context.RemoteAddress = getRemoteAddress(r.URL)
 	config.Context.Endpoint = remoteuriparser.Parse(r.URL)
 	config.Context.Username = config.Global.Username

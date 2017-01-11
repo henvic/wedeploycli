@@ -11,6 +11,8 @@ import (
 	"gopkg.in/ini.v1"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/remotes"
 	"github.com/wedeploy/cli/user"
 	"github.com/wedeploy/cli/usercontext"
@@ -65,10 +67,29 @@ func (c *Config) Load() error {
 
 	if c.Remotes == nil {
 		c.Remotes = remotes.List{}
-		c.Remotes.Set("wedeploy", "wedeploy.io", "Default remote")
 	}
 
+	c.loadDefaultRemotes()
+
 	return nil
+}
+
+func (c *Config) loadDefaultRemotes() {
+	switch c.Remotes[defaults.DefaultCloudRemote].URL {
+	case "wedeploy.io":
+	case "":
+		c.Remotes.Set(defaults.DefaultCloudRemote, "wedeploy.io", "Default cloud remote")
+	default:
+		println(color.Format(color.FgHiRed, "Warning: Non-standard wedeploy remote cloud detected"))
+	}
+
+	switch c.Remotes[defaults.DefaultLocalRemote].URL {
+	case "wedeploy.me":
+	case "":
+		c.Remotes.Set(defaults.DefaultLocalRemote, "wedeploy.me", "Default local remote")
+	default:
+		println(color.Format(color.FgHiRed, "Warning: Non-standard local cloud detected"))
+	}
 }
 
 // Save the configuration

@@ -99,10 +99,8 @@ func init() {
 }
 
 func persistentPreRun(cmd *cobra.Command, args []string) error {
-	// load default remote (local) on config context
-	cmdflagsfromhost.SetLocal()
-
-	return nil
+	// load default cloud remote on config context
+	return cmdflagsfromhost.SetRemote(defaults.DefaultCloudRemote)
 }
 
 func run(cmd *cobra.Command, args []string) {

@@ -21,4 +21,10 @@ var (
 
 	// AnalyticsEndpoint for posting analytics events in bulk
 	AnalyticsEndpoint = "https://cli-metrics.wedeploy.com/"
+
+	// DefaultCloudRemote is the name for the default cloud for WeDeploy
+	DefaultCloudRemote = "wedeploy"
+
+	// DefaultLocalRemote is the local infrastructure remote name
+	DefaultLocalRemote = "local"
 )
