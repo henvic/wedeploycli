@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -99,8 +100,12 @@ func TestIsCommandOutputNopNotFinished(t *testing.T) {
 		Args: []string{"5"},
 	}
 
+	var mutex sync.Mutex
+
 	go func() {
-		cmd.Run()
+		mutex.Lock()
+		cmd.Start()
+		mutex.Unlock()
 	}()
 
 	time.Sleep(10 * time.Millisecond)
@@ -114,7 +119,33 @@ func TestIsCommandOutputNopNotFinished(t *testing.T) {
 		}
 	}()
 
+	mutex.Lock()
 	IsCommandOutputNop(cmd)
+	mutex.Unlock()
+}
+
+func TestIsCommandTerminate(t *testing.T) {
+	var cmd = &Command{
+		Name: "sleep",
+		Args: []string{"5"},
+	}
+
+	var mutex sync.Mutex
+
+	go func() {
+		mutex.Lock()
+		cmd.Start()
+		mutex.Unlock()
+	}()
+
+	time.Sleep(10 * time.Millisecond)
+	mutex.Lock()
+
+	if err := cmd.Terminate(); err != nil {
+		t.Errorf("Error during termination of command: %v", err)
+	}
+
+	mutex.Unlock()
 }
 
 func TestIsCommandOutputNop(t *testing.T) {

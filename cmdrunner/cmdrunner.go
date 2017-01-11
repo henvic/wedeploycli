@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sync"
 	"syscall"
 )
 
@@ -94,16 +93,13 @@ func (cmd *Command) Wait() {
 
 // Terminate sends a SIGTERM signal
 func (cmd *Command) Terminate() error {
-	var err error
-	var w sync.WaitGroup
-	w.Add(1)
+	var ec = make(chan error, 1)
 
 	go func() {
-		err = cmd.Process.Signal(syscall.SIGTERM)
-		w.Done()
+		ec <- cmd.Process.Signal(syscall.SIGTERM)
 	}()
 
-	w.Wait()
+	var err = <-ec
 	cmd.Wait()
 
 	return err
