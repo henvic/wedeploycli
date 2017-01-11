@@ -20,7 +20,7 @@ var RemoteCmd = &cobra.Command{
 
 var addCmd = &cobra.Command{
 	Use:     "add",
-	Short:   "Adds a remote named <name> for the repository at <url>",
+	Short:   "Adds a remote named <name> with <url>",
 	Example: "we remote add hk https://hk.example.com/",
 	PreRunE: cmdargslen.ValidateCmd(2, 2),
 	RunE:    addRun,
@@ -35,9 +35,9 @@ var renameCmd = &cobra.Command{
 }
 
 var removeCmd = &cobra.Command{
-	Use:     "remove",
+	Use:     "rm",
 	Short:   "Remove the remote named <name>",
-	Example: "we remote remove hk",
+	Example: "we remote rm hk",
 	PreRunE: cmdargslen.ValidateCmd(1, 1),
 	RunE:    removeRun,
 }
