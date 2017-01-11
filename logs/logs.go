@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -44,6 +45,7 @@ type Watcher struct {
 	Filter          *Filter
 	PoolingInterval time.Duration
 	end             bool
+	endMutex        sync.Mutex
 }
 
 // SeverityToLevel map
@@ -140,7 +142,15 @@ func Watch(watcher *Watcher) {
 // Start for Watcher
 func (w *Watcher) Start() {
 	go func() {
-		for !w.end {
+		for {
+			w.endMutex.Lock()
+			e := w.end
+			w.endMutex.Unlock()
+
+			if e {
+				return
+			}
+
 			w.pool()
 			time.Sleep(w.PoolingInterval)
 		}
@@ -149,7 +159,9 @@ func (w *Watcher) Start() {
 
 // Stop for Watcher
 func (w *Watcher) Stop() {
+	w.endMutex.Lock()
 	w.end = true
+	w.endMutex.Unlock()
 }
 
 func printList(list []Logs) {
