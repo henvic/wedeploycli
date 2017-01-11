@@ -48,8 +48,7 @@ are stored on the first subdirectory of its project.
 generated or to a existing project directory.`,
 	PreRunE: generateRunner.PreRun,
 	RunE:    generateRunner.Run,
-	Example: `we generate projector.cinema.wedeploy.io
-we generate --project cinema --container projector room`,
+	Example: `we generate --project cinema --container projector room`,
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
