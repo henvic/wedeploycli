@@ -151,13 +151,13 @@ func pullImages(missing []string) (err error) {
 		var queue sync.WaitGroup
 		queue.Add(1)
 
-		go func() {
-			if err = pullImage(needed); err != nil {
+		go func(i string) {
+			if err = pullImage(i); err != nil {
 				err = errwrap.Wrapf("Error while trying to pull image", err)
 			}
 
 			queue.Done()
-		}()
+		}(needed)
 
 		queue.Wait()
 
