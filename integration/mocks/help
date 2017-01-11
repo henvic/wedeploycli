@@ -10,6 +10,7 @@ Usage:
 Available Commands:
   build        Build container(s) (current or all containers of a project)
   dev          Run development environment for a project or container
+  domain       Configure custom domains for projects
   generate     Generates a project or container
   inspect      Inspect environment info
   list         List projects and containers running on WeDeploy

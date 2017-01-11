@@ -7,6 +7,7 @@ import (
 	"github.com/wedeploy/cli/cmd/build"
 	"github.com/wedeploy/cli/cmd/cmdmanager"
 	"github.com/wedeploy/cli/cmd/dev"
+	"github.com/wedeploy/cli/cmd/domain"
 	"github.com/wedeploy/cli/cmd/generate"
 	"github.com/wedeploy/cli/cmd/inspect"
 	"github.com/wedeploy/cli/cmd/list"
@@ -56,6 +57,7 @@ var commands = []*cobra.Command{
 	cmdlist.ListCmd,
 	cmdrestart.RestartCmd,
 	cmdbuild.BuildCmd,
+	cmddomain.DomainCmd,
 	cmdstart.StartCmd,
 	cmdinspect.InspectCmd,
 	cmdremote.RemoteCmd,
