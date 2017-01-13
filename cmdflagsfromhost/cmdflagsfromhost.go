@@ -169,11 +169,11 @@ func (s *SetupHost) addRemoteFlag(cmd *cobra.Command) {
 }
 
 func (s *SetupHost) addProjectFlag(cmd *cobra.Command) {
-	cmd.Flags().StringVar(&s.project, "project", "", "Project ID")
+	cmd.Flags().StringVarP(&s.project, "project", "p", "", "Project ID")
 }
 
 func (s *SetupHost) addContainerFlag(cmd *cobra.Command) {
-	cmd.Flags().StringVar(&s.container, "container", "", "Container ID")
+	cmd.Flags().StringVarP(&s.container, "container", "c", "", "Container ID")
 }
 
 func (s *SetupHost) getContainerFromCurrentWorkingDirectory() (container string, err error) {
