@@ -127,7 +127,12 @@ func (s *SetupHost) parseFlags() (f *flagsfromhost.FlagsFromHost, err error) {
 		remoteFlagValue = ""
 	}
 
-	f, err = flagsfromhost.Parse(s.url, s.project, s.container, remoteFlagValue)
+	f, err = flagsfromhost.Parse(flagsfromhost.ParseFlags{
+		Host:      s.url,
+		Project:   s.project,
+		Container: s.container,
+		Remote:    remoteFlagValue,
+	})
 
 	if (s.UseProjectDirectory || s.UseProjectDirectoryForContainer) && err != nil {
 		switch err.(type) {

@@ -101,9 +101,17 @@ func InjectRemotes(list *remotes.List) {
 	remotesList = list
 }
 
+// ParseFlags for the flags received by the CLI
+type ParseFlags struct {
+	Project   string
+	Container string
+	Remote    string
+	Host      string
+}
+
 // Parse host and flags
-func Parse(host, project, container, remote string) (*FlagsFromHost, error) {
-	var flagsFromHost, err = parse(host, project, container, remote)
+func Parse(pf ParseFlags) (*FlagsFromHost, error) {
+	var flagsFromHost, err = parse(pf.Host, pf.Project, pf.Container, pf.Remote)
 
 	if err != nil {
 		return nil, err

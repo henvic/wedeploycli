@@ -109,32 +109,30 @@ func TestParseRemoteAddresses(t *testing.T) {
 	}
 }
 
-type parseByFlagsMockStruct struct {
-	project   string
-	container string
-	remote    string
-}
-
-var parseByFlagsMocks = []parseByFlagsMockStruct{
-	parseByFlagsMockStruct{
+var parseByFlagsMocks = []ParseFlags{
+	ParseFlags{
 		"cinema",
 		"projector",
 		"hollywood",
+		"",
 	},
-	parseByFlagsMockStruct{
+	ParseFlags{
 		"cinema",
 		"",
 		"",
+		"",
 	},
-	parseByFlagsMockStruct{
+	ParseFlags{
 		"cinema",
 		"projector",
 		"",
+		"",
 	},
-	parseByFlagsMockStruct{
+	ParseFlags{
 		"cinema",
 		"",
 		"hollywood",
+		"",
 	},
 }
 
@@ -147,15 +145,15 @@ func TestParseByFlagsOnly(t *testing.T) {
 	}
 
 	for _, k := range parseByFlagsMocks {
-		var parsed, err = Parse("", k.project, k.container, k.remote)
+		var parsed, err = Parse(k)
 
 		if err != nil {
 			t.Errorf("Expected no error on parsing, got %v instead", err)
 		}
 
-		if parsed.Project() != k.project ||
-			parsed.Container() != k.container ||
-			parsed.Remote() != k.remote {
+		if parsed.Project() != k.Project ||
+			parsed.Container() != k.Container ||
+			parsed.Remote() != k.Remote {
 			t.Errorf("Expected values doesn't match on parsed object: %+v", parsed)
 		}
 
@@ -173,7 +171,10 @@ func TestContainerWithMissingProject(t *testing.T) {
 		},
 	}
 
-	var parsed, err = Parse("", "", "foo", "hollywood")
+	var parsed, err = Parse(ParseFlags{
+		Container: "foo",
+		Remote:    "hollywood",
+	})
 
 	var expected = &FlagsFromHost{
 		project:   "",
@@ -198,7 +199,10 @@ func TestContainerWithMissingProject(t *testing.T) {
 
 func TestParseErrorMultiModeProject(t *testing.T) {
 	defer resetDefaults()
-	var parsed, err = Parse("foo.bar.wedeploy.com", "a", "", "")
+	var parsed, err = Parse(ParseFlags{
+		Host:    "foo.bar.wedeploy.com",
+		Project: "a",
+	})
 
 	if parsed != nil {
 		t.Errorf("Expected parsed to be nil, got %v instead", parsed)
@@ -213,7 +217,10 @@ func TestParseErrorMultiModeProject(t *testing.T) {
 
 func TestParseErrorMultiModeContainer(t *testing.T) {
 	defer resetDefaults()
-	var parsed, err = Parse("foo.bar.wedeploy.com", "", "b", "")
+	var parsed, err = Parse(ParseFlags{
+		Host:      "foo.bar.wedeploy.com",
+		Container: "b",
+	})
 
 	if parsed != nil {
 		t.Errorf("Expected parsed to be nil, got %v instead", parsed)
@@ -238,7 +245,10 @@ func TestParseHostWithErrorRemoteFlagAndHost(t *testing.T) {
 		},
 	}
 
-	var parsed, err = Parse("foo.bar.wedeploy.com", "", "", "remote-by-flag")
+	var parsed, err = Parse(ParseFlags{
+		Host:   "foo.bar.wedeploy.com",
+		Remote: "remote",
+	})
 
 	if parsed != nil {
 		t.Errorf("Expected parsed to be nil, got %v instead", parsed)
@@ -263,7 +273,9 @@ func TestParseNoMatchFromExternalHost(t *testing.T) {
 		},
 	}
 
-	var parsed, err = Parse("x.example.com", "", "", "")
+	var parsed, err = Parse(ParseFlags{
+		Host: "x.example.com",
+	})
 
 	if parsed != nil {
 		t.Errorf("Expected parsed to be nil, got %v instead", parsed)
@@ -281,10 +293,7 @@ func TestParseNoMatchFromExternalHost(t *testing.T) {
 }
 
 type parseHostOnlyMockStruct struct {
-	host                 string
-	project              string
-	container            string
-	remote               string
+	Flags                ParseFlags
 	wantProject          string
 	wantContainer        string
 	wantRemote           string
@@ -294,10 +303,12 @@ type parseHostOnlyMockStruct struct {
 
 var parseHostOnlyMocks = []parseHostOnlyMockStruct{
 	parseHostOnlyMockStruct{
-		host:                 "example.com",
-		project:              "",
-		container:            "",
-		remote:               "foo",
+		Flags: ParseFlags{
+			Host:      "example.com",
+			Project:   "",
+			Container: "",
+			Remote:    "foo",
+		},
 		wantProject:          "",
 		wantContainer:        "",
 		wantRemote:           "foo",
@@ -305,10 +316,12 @@ var parseHostOnlyMocks = []parseHostOnlyMockStruct{
 		wantErr:              ErrorRemoteFlagAndHost{},
 	},
 	parseHostOnlyMockStruct{
-		host:                 "cinema.example.com",
-		project:              "",
-		container:            "",
-		remote:               "",
+		Flags: ParseFlags{
+			Host:      "cinema.example.com",
+			Project:   "",
+			Container: "",
+			Remote:    "",
+		},
 		wantProject:          "cinema",
 		wantContainer:        "",
 		wantRemote:           "foo",
@@ -316,10 +329,12 @@ var parseHostOnlyMocks = []parseHostOnlyMockStruct{
 		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:                 "projector.cinema.example.com",
-		project:              "",
-		container:            "",
-		remote:               "",
+		Flags: ParseFlags{
+			Host:      "projector.cinema.example.com",
+			Project:   "",
+			Container: "",
+			Remote:    "",
+		},
 		wantProject:          "cinema",
 		wantContainer:        "projector",
 		wantRemote:           "foo",
@@ -327,10 +342,12 @@ var parseHostOnlyMocks = []parseHostOnlyMockStruct{
 		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:                 "projector.cinema",
-		project:              "",
-		container:            "",
-		remote:               "foo",
+		Flags: ParseFlags{
+			Host:      "projector.cinema",
+			Project:   "",
+			Container: "",
+			Remote:    "foo",
+		},
 		wantProject:          "cinema",
 		wantContainer:        "projector",
 		wantRemote:           "foo",
@@ -338,10 +355,12 @@ var parseHostOnlyMocks = []parseHostOnlyMockStruct{
 		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:                 "cinema",
-		project:              "",
-		container:            "",
-		remote:               "",
+		Flags: ParseFlags{
+			Host:      "cinema",
+			Project:   "",
+			Container: "",
+			Remote:    "",
+		},
 		wantProject:          "",
 		wantContainer:        "cinema",
 		wantRemote:           "",
@@ -349,10 +368,12 @@ var parseHostOnlyMocks = []parseHostOnlyMockStruct{
 		wantErr:              ErrorContainerWithNoProject{},
 	},
 	parseHostOnlyMockStruct{
-		host:                 "cinema",
-		project:              "",
-		container:            "",
-		remote:               "foo",
+		Flags: ParseFlags{
+			Host:      "cinema",
+			Project:   "",
+			Container: "",
+			Remote:    "foo",
+		},
 		wantProject:          "",
 		wantContainer:        "cinema",
 		wantRemote:           "foo",
@@ -360,10 +381,12 @@ var parseHostOnlyMocks = []parseHostOnlyMockStruct{
 		wantErr:              ErrorContainerWithNoProject{},
 	},
 	parseHostOnlyMockStruct{
-		host:                 "abc.def.ghi.jkl.mnn.opq.rst.uvw.xyz",
-		project:              "",
-		container:            "",
-		remote:               "",
+		Flags: ParseFlags{
+			Host:      "abc.def.ghi.jkl.mnn.opq.rst.uvw.xyz",
+			Project:   "",
+			Container: "",
+			Remote:    "",
+		},
 		wantProject:          "abc",
 		wantContainer:        "",
 		wantRemote:           "alphabet",
@@ -371,10 +394,12 @@ var parseHostOnlyMocks = []parseHostOnlyMockStruct{
 		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:                 "abc.11.22.33.44:5555",
-		project:              "",
-		container:            "",
-		remote:               "",
+		Flags: ParseFlags{
+			Host:      "abc.11.22.33.44:5555",
+			Project:   "",
+			Container: "",
+			Remote:    "",
+		},
 		wantProject:          "abc",
 		wantContainer:        "",
 		wantRemote:           "ip",
@@ -382,10 +407,12 @@ var parseHostOnlyMocks = []parseHostOnlyMockStruct{
 		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:                 "def.abc.11.22.33.44:5555",
-		project:              "",
-		container:            "",
-		remote:               "",
+		Flags: ParseFlags{
+			Host:      "def.abc.11.22.33.44:5555",
+			Project:   "",
+			Container: "",
+			Remote:    "",
+		},
 		wantProject:          "abc",
 		wantContainer:        "def",
 		wantRemote:           "ip",
@@ -393,10 +420,12 @@ var parseHostOnlyMocks = []parseHostOnlyMockStruct{
 		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:                 "",
-		project:              "",
-		container:            "",
-		remote:               "",
+		Flags: ParseFlags{
+			Host:      "",
+			Project:   "",
+			Container: "",
+			Remote:    "",
+		},
 		wantProject:          "",
 		wantContainer:        "",
 		wantRemote:           "",
@@ -404,10 +433,12 @@ var parseHostOnlyMocks = []parseHostOnlyMockStruct{
 		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:                 "wedeploy.io",
-		project:              "",
-		container:            "",
-		remote:               "",
+		Flags: ParseFlags{
+			Host:      "wedeploy.io",
+			Project:   "",
+			Container: "",
+			Remote:    "",
+		},
 		wantProject:          "",
 		wantContainer:        "",
 		wantRemote:           "wedeploy",
@@ -415,10 +446,12 @@ var parseHostOnlyMocks = []parseHostOnlyMockStruct{
 		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:                 "wedeploy.me",
-		project:              "",
-		container:            "",
-		remote:               "",
+		Flags: ParseFlags{
+			Host:      "wedeploy.me",
+			Project:   "",
+			Container: "",
+			Remote:    "",
+		},
 		wantProject:          "",
 		wantContainer:        "",
 		wantRemote:           "",
@@ -426,10 +459,12 @@ var parseHostOnlyMocks = []parseHostOnlyMockStruct{
 		wantErr:              nil,
 	},
 	parseHostOnlyMockStruct{
-		host:                 "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
-		project:              "",
-		container:            "",
-		remote:               "",
+		Flags: ParseFlags{
+			Host:      "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
+			Project:   "",
+			Container: "",
+			Remote:    "",
+		},
 		wantProject:          "",
 		wantContainer:        "",
 		wantRemote:           "alphabet",
@@ -456,7 +491,7 @@ func TestParse(t *testing.T) {
 	}
 
 	for _, k := range parseHostOnlyMocks {
-		var parsed, err = Parse(k.host, k.project, k.container, k.remote)
+		var parsed, err = Parse(k.Flags)
 
 		if err != k.wantErr {
 			t.Errorf("Expected error to be %v on parsing, got %v instead", k.wantErr, err)
@@ -474,7 +509,9 @@ func TestParse(t *testing.T) {
 func TestParseUnknownRemoteFlagOnly(t *testing.T) {
 	defer resetDefaults()
 	remotesList = &remotes.List{}
-	parsed, err := Parse("", "", "", "cloud")
+	parsed, err := Parse(ParseFlags{
+		Remote: "cloud",
+	})
 
 	if parsed != nil {
 		t.Errorf("Expected parsed value to be nil, got %v instead", parsed)
@@ -490,7 +527,10 @@ func TestParseUnknownRemoteFlagOnly(t *testing.T) {
 func TestParseUnknownRemoteFlag(t *testing.T) {
 	defer resetDefaults()
 	remotesList = &remotes.List{}
-	_, err := Parse("project", "", "", "not-found")
+	_, err := Parse(ParseFlags{
+		Host:   "project",
+		Remote: "not-found",
+	})
 
 	switch err.(type) {
 	case ErrorNotFound:
@@ -507,7 +547,10 @@ func TestParseUnknownRemoteFlag(t *testing.T) {
 
 func TestParseNoMixingProjectAndHost(t *testing.T) {
 	defer resetDefaults()
-	switch _, err := Parse("foo.wedeploy.me", "foo", "", ""); err.(type) {
+	switch _, err := Parse(ParseFlags{
+		Host:    "foo.wedeploy.me",
+		Project: "foo",
+	}); err.(type) {
 	case ErrorMultiMode:
 	default:
 		t.Errorf(`Expected error "%v" doesn't match expected type`, err)
