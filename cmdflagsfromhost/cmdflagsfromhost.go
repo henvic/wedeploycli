@@ -122,17 +122,20 @@ func (s *SetupHost) Init(cmd *cobra.Command) {
 func (s *SetupHost) parseFlags() (f *flagsfromhost.FlagsFromHost, err error) {
 	var remoteFlag = s.cmd.Flag("remote")
 	var remoteFlagValue = s.remote
+	var remoteFlagChanged bool
 
-	if remoteFlag != nil && !remoteFlag.Changed {
-		remoteFlagValue = ""
+	if remoteFlag != nil && remoteFlag.Changed {
+		remoteFlagChanged = true
 	}
 
-	f, err = flagsfromhost.Parse(flagsfromhost.ParseFlags{
-		Host:      s.url,
-		Project:   s.project,
-		Container: s.container,
-		Remote:    remoteFlagValue,
-	})
+	f, err = flagsfromhost.ParseWithDefaultCustomRemote(
+		flagsfromhost.ParseFlagsWithDefaultCustomRemote{
+			Host:          s.url,
+			Project:       s.project,
+			Container:     s.container,
+			Remote:        remoteFlagValue,
+			RemoteChanged: remoteFlagChanged,
+		})
 
 	if (s.UseProjectDirectory || s.UseProjectDirectoryForContainer) && err != nil {
 		switch err.(type) {
