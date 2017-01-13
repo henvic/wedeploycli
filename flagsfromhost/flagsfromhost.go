@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/remotes"
 )
 
@@ -122,6 +123,36 @@ func Parse(pf ParseFlags) (*FlagsFromHost, error) {
 	}
 
 	return flagsFromHost, err
+}
+
+// ParseFlagsWithDefaultCustomRemote is similar to ParseFlags,
+// but with 'default custom remote' support
+type ParseFlagsWithDefaultCustomRemote struct {
+	Project       string
+	Container     string
+	Remote        string
+	Host          string
+	RemoteChanged bool
+}
+
+// ParseWithDefaultCustomRemote parses the flags using a custom default remote value
+func ParseWithDefaultCustomRemote(pf ParseFlagsWithDefaultCustomRemote) (*FlagsFromHost, error) {
+	if !pf.RemoteChanged {
+		pf.Remote = ""
+	}
+
+	var f, err = Parse(ParseFlags{
+		Project:   pf.Project,
+		Container: pf.Container,
+		Remote:    pf.Remote,
+		Host:      pf.Host,
+	})
+
+	if f != nil && !f.IsRemoteFromHost() && !pf.RemoteChanged {
+		f.remote = defaults.DefaultCloudRemote
+	}
+
+	return f, err
 }
 
 func parse(host, project, container, remote string) (*FlagsFromHost, error) {
