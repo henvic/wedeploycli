@@ -89,7 +89,7 @@ func devPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func devRun(cmd *cobra.Command, args []string) (err error) {
-	if runFlags.Debug && (!cmd.Flags().Changed("infra") || !infra || skipInfra) {
+	if runFlags.Debug && (!cmd.Flags().Changed("start-infra") || !infra || skipInfra) {
 		return errors.New("Incompatible use: --debug requires --start-infra")
 	}
 
@@ -113,7 +113,7 @@ func init() {
 		"Open infra-structure debug ports")
 	DevCmd.Flags().BoolVar(&runFlags.DryRun, "dry-run", false,
 		"Dry-run the infrastructure")
-	DevCmd.Flags().BoolVar(&infra, "infra", true,
+	DevCmd.Flags().BoolVar(&infra, "start-infra", true,
 		"Infrastructure status")
 	DevCmd.Flags().BoolVar(&shutdownInfraTmp, "shutdown-infra", false, "")
 	DevCmd.Flags().BoolVar(&skipInfra, "skip-infra", false, "")
