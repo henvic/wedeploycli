@@ -148,8 +148,13 @@ func ParseWithDefaultCustomRemote(pf ParseFlagsWithDefaultCustomRemote) (*FlagsF
 		Host:      pf.Host,
 	})
 
-	if f != nil && !f.IsRemoteFromHost() && !pf.RemoteChanged {
-		f.remote = defaults.DefaultCloudRemote
+	if f != nil {
+		switch {
+		case f.remote == "" && (pf.RemoteChanged || f.IsRemoteFromHost()):
+			f.remote = defaults.DefaultLocalRemote
+		case !f.IsRemoteFromHost() && !pf.RemoteChanged:
+			f.remote = defaults.DefaultCloudRemote
+		}
 	}
 
 	return f, err
@@ -264,7 +269,9 @@ func parseHost(host string) (*FlagsFromHost, error) {
 		remote:    remote,
 	}
 
-	if remote != "" {
+	if remote != "" ||
+		host == localRemoteAddress ||
+		strings.HasSuffix(host, "."+localRemoteAddress) {
 		flagsFromHost.isRemoteFromHost = true
 	}
 

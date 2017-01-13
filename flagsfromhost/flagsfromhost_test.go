@@ -456,6 +456,18 @@ var parseMocks = []parseMock{
 	},
 	parseMock{
 		Flags: ParseFlags{
+			Host:      "foo.wedeploy.me",
+			Project:   "",
+			Container: "",
+			Remote:    "",
+		},
+		Want: parsed{
+			Project:          "foo",
+			IsRemoteFromHost: true,
+		},
+	},
+	parseMock{
+		Flags: ParseFlags{
 			Host:      "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
 			Project:   "",
 			Container: "",
@@ -662,7 +674,47 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 			Remote:    "",
 		},
 		Want: parsed{
+			Remote:           "local",
 			IsRemoteFromHost: true,
+		},
+	},
+	parseMockWithDefaultCustomRemote{
+		Flags: ParseFlagsWithDefaultCustomRemote{
+			Host:      "project.wedeploy.me",
+			Project:   "",
+			Container: "",
+			Remote:    "",
+		},
+		Want: parsed{
+			Project:          "project",
+			Remote:           "local",
+			IsRemoteFromHost: true,
+		},
+	},
+	parseMockWithDefaultCustomRemote{
+		Flags: ParseFlagsWithDefaultCustomRemote{
+			Host:      "container.project.wedeploy.me",
+			Project:   "",
+			Container: "",
+			Remote:    "",
+		},
+		Want: parsed{
+			Project:          "project",
+			Container:        "container",
+			Remote:           "local",
+			IsRemoteFromHost: true,
+		},
+	},
+	parseMockWithDefaultCustomRemote{
+		Flags: ParseFlagsWithDefaultCustomRemote{
+			Host:          "",
+			Project:       "",
+			Container:     "",
+			Remote:        "local",
+			RemoteChanged: true,
+		},
+		Want: parsed{
+			Remote: "local",
 		},
 	},
 	parseMockWithDefaultCustomRemote{
@@ -708,6 +760,9 @@ func TestParseWithDefaultCustomRemote(t *testing.T) {
 		},
 		"wedeploy": remotes.Entry{
 			URL: "wedeploy.io",
+		},
+		"local": remotes.Entry{
+			URL: "wedeploy.me",
 		},
 	}
 
