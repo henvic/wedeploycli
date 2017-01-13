@@ -27,6 +27,9 @@ type linker struct {
 func (l *linker) Init() {
 	setupHost = cmdflagsfromhost.SetupHost{
 		Pattern: cmdflagsfromhost.ProjectPattern,
+		Requires: cmdflagsfromhost.Requires{
+			Local: true,
+		},
 	}
 
 	setupHost.Init(DevCmd)

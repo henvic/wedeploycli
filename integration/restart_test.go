@@ -28,7 +28,7 @@ func TestRestartProjectQuiet(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"restart", "--project", "foo", "--quiet"},
+		Args: []string{"restart", "--remote", "local", "--project", "foo", "--quiet"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
@@ -64,7 +64,7 @@ func TestRestartProjectQuietFromCurrentWorkingDirectoryContext(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"restart", "--quiet"},
+		Args: []string{"restart", "--remote", "local", "--quiet"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/restart/foo",
 	}
@@ -137,7 +137,7 @@ func TestRestartContainerQuietFromCurrentWorkingDirectoryContext(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"restart", "-q"},
+		Args: []string{"restart", "--remote", "local", "-q"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/restart/foo/bar",
 	}

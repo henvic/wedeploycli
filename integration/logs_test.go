@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"sync"
 	"syscall"
 	"testing"
 	"time"
@@ -123,6 +122,8 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContext(t *testing.T) {
 	var cmd = &Command{
 		Args: []string{
 			"log",
+			"--remote",
+			"local",
 			"--no-color"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/foo",
@@ -154,6 +155,8 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContextFilteringByContainer(t *
 	var cmd = &Command{
 		Args: []string{
 			"log",
+			"--remote",
+			"local",
 			"--container=nodejs5143",
 			"--no-color"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
@@ -186,6 +189,8 @@ func TestLogsFromCurrentWorkingOnContainerDirectoryContext(t *testing.T) {
 	var cmd = &Command{
 		Args: []string{
 			"log",
+			"--remote",
+			"local",
 			"--no-color"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/foo/nodejs5143",
@@ -206,6 +211,10 @@ func TestLogsWithWeDeployDotMeAddress(t *testing.T) {
 
 	servertest.IntegrationMux.HandleFunc("/logs/foo",
 		func(w http.ResponseWriter, r *http.Request) {
+			if strings.Index(r.Host, "localhost:") != 0 {
+				t.Errorf("Expected host to be localhost, got %v instead", r.Host)
+			}
+
 			if r.URL.Query().Get("containerId") != "nodejs5143" {
 				t.Errorf("Wrong value for containerId")
 			}
@@ -251,7 +260,7 @@ func TestWatch(t *testing.T) {
 		Args: []string{
 			"log",
 			"-u",
-			"nodejs5143.foo",
+			"nodejs5143.foo.wedeploy.me",
 			"--watch"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/",

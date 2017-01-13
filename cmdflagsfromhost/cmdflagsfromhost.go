@@ -119,7 +119,7 @@ func (s *SetupHost) Init(cmd *cobra.Command) {
 	}
 }
 
-func (s *SetupHost) parseFlags() (f *flagsfromhost.FlagsFromHost, err error) {
+func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 	var remoteFlag = s.cmd.Flag("remote")
 	var remoteFlagValue = s.remote
 	var remoteFlagChanged bool
@@ -128,15 +128,28 @@ func (s *SetupHost) parseFlags() (f *flagsfromhost.FlagsFromHost, err error) {
 		remoteFlagChanged = true
 	}
 
-	f, err = flagsfromhost.ParseWithDefaultCustomRemote(
+	if s.Requires.Local {
+		return s.applyParseFlagsFilters(flagsfromhost.Parse(
+			flagsfromhost.ParseFlags{
+				Host:      s.url,
+				Project:   s.project,
+				Container: s.container,
+				Remote:    remoteFlagValue,
+			}))
+	}
+
+	return s.applyParseFlagsFilters(flagsfromhost.ParseWithDefaultCustomRemote(
 		flagsfromhost.ParseFlagsWithDefaultCustomRemote{
 			Host:          s.url,
 			Project:       s.project,
 			Container:     s.container,
 			Remote:        remoteFlagValue,
 			RemoteChanged: remoteFlagChanged,
-		})
+		}))
+}
 
+func (s *SetupHost) applyParseFlagsFilters(f *flagsfromhost.FlagsFromHost, err error) (
+	*flagsfromhost.FlagsFromHost, error) {
 	if (s.UseProjectDirectory || s.UseProjectDirectoryForContainer) && err != nil {
 		switch err.(type) {
 		case flagsfromhost.ErrorContainerWithNoProject:

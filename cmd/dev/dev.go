@@ -71,6 +71,8 @@ func maybeStartInfrastructure() error {
 }
 
 func devPreRun(cmd *cobra.Command, args []string) error {
+	cmdflagsfromhost.SetLocal()
+
 	if shutdownInfraTmp {
 		infra = false
 	}

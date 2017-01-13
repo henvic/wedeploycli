@@ -55,6 +55,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern: cmdflagsfromhost.ProjectAndContainerPattern,
 	Requires: cmdflagsfromhost.Requires{
 		NoHost: true,
+		Local:  true,
 	},
 }
 
