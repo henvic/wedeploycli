@@ -155,6 +155,7 @@ func (dm *DockerMachine) setupPorts() {
 	dm.tcpPorts = tcpPortsStruct{
 		80,
 		6379,
+		8001,
 		8080,
 		9300,
 		24224,
@@ -164,7 +165,6 @@ func (dm *DockerMachine) setupPorts() {
 		dm.tcpPorts = append(dm.tcpPorts,
 			5001,
 			5005,
-			8001,
 			8500,
 			9200)
 	}
