@@ -44,6 +44,7 @@ type Filter struct {
 type Watcher struct {
 	Filter          *Filter
 	PoolingInterval time.Duration
+	filterMutex     sync.Mutex
 	end             bool
 	endMutex        sync.Mutex
 }
@@ -64,6 +65,7 @@ var instancesWheel = colorwheel.New(color.TextPalette)
 
 var errStream io.Writer = os.Stderr
 var outStream io.Writer = os.Stdout
+var outStreamMutex sync.Mutex
 
 // GetLevel to get level from severity or itself
 func GetLevel(severityOrLevel string) (int, error) {
@@ -131,7 +133,9 @@ func Watch(watcher *Watcher) {
 
 	go func() {
 		<-sigs
+		outStreamMutex.Lock()
 		fmt.Fprintln(outStream, "")
+		outStreamMutex.Unlock()
 		watcher.Stop()
 		done <- true
 	}()
@@ -168,7 +172,9 @@ func printList(list []Logs) {
 	for _, log := range list {
 		iw := instancesWheel.Get(log.ContainerUID)
 		fd := color.Format(iw, log.ContainerID+"."+log.ProjectID+".wedeploy.me["+trim(log.ContainerUID, 7)+"]")
+		outStreamMutex.Lock()
 		fmt.Fprintf(outStream, "%v %v\n", fd, log.Message)
+		outStreamMutex.Unlock()
 	}
 }
 
@@ -188,7 +194,9 @@ func (w *Watcher) pool() {
 	var length = len(list)
 
 	if length == 0 {
+		w.filterMutex.Lock()
 		verbose.Debug("No new log since " + w.Filter.Since)
+		w.filterMutex.Unlock()
 		return
 	}
 
@@ -205,8 +213,10 @@ func (w *Watcher) incSinceArgument(list []Logs) {
 
 	next++
 
+	w.filterMutex.Lock()
 	w.Filter.Since = fmt.Sprintf("%v", next)
 	verbose.Debug("Next --since parameter value = " + w.Filter.Since)
+	w.filterMutex.Unlock()
 }
 
 // GetUnixTimestamp gets the Unix timestamp in seconds from a friendly string.

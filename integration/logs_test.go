@@ -261,37 +261,27 @@ func TestWatch(t *testing.T) {
 		ExitCode: 0,
 	}
 
-	var wg sync.WaitGroup
-
 	var c = cmd.Prepare()
 
 	if err := c.Start(); err != nil {
 		t.Errorf("Expected no error, got %v instead", err)
 	}
 
-	wg.Add(1)
+	time.Sleep(100 * time.Millisecond)
 
-	go func() {
-		time.Sleep(100 * time.Millisecond)
+	if err := c.Process.Signal(syscall.SIGINT); err != nil {
+		panic(err)
+	}
 
-		if err := c.Process.Signal(syscall.SIGINT); err != nil {
-			panic(err)
-		}
-
-		time.Sleep(100 * time.Millisecond)
-
-		if !c.ProcessState.Exited() {
-			t.Error("Expected process to be gone.")
-		}
-
-		e.Assert(t, cmd)
-
-		wg.Done()
-	}()
+	time.Sleep(100 * time.Millisecond)
 
 	if err := c.Wait(); err != nil {
 		t.Errorf("Expected no error, got %v instead", err)
 	}
 
-	wg.Wait()
+	if !c.ProcessState.Exited() {
+		t.Error("Expected process to be gone.")
+	}
+
+	e.Assert(t, cmd)
 }
