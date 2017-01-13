@@ -140,6 +140,10 @@ func parse(host, project, container, remote string) (*FlagsFromHost, error) {
 
 func parseWithHost(host, remoteFromFlag string) (*FlagsFromHost, error) {
 	if remote, err := ParseRemoteAddress(host); err == nil {
+		if remote != "" && remoteFromFlag != "" {
+			return nil, ErrorRemoteFlagAndHost{}
+		}
+
 		return &FlagsFromHost{
 			remote:           remote,
 			isRemoteFromHost: true,

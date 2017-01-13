@@ -294,6 +294,17 @@ type parseHostOnlyMockStruct struct {
 
 var parseHostOnlyMocks = []parseHostOnlyMockStruct{
 	parseHostOnlyMockStruct{
+		host:                 "example.com",
+		project:              "",
+		container:            "",
+		remote:               "foo",
+		wantProject:          "",
+		wantContainer:        "",
+		wantRemote:           "foo",
+		wantIsRemoteFromHost: true,
+		wantErr:              ErrorRemoteFlagAndHost{},
+	},
+	parseHostOnlyMockStruct{
 		host:                 "cinema.example.com",
 		project:              "",
 		container:            "",
@@ -451,10 +462,10 @@ func TestParse(t *testing.T) {
 			t.Errorf("Expected error to be %v on parsing, got %v instead", k.wantErr, err)
 		}
 
-		if parsed.Project() != k.wantProject ||
+		if parsed != nil && (parsed.Project() != k.wantProject ||
 			parsed.Container() != k.wantContainer ||
 			parsed.Remote() != k.wantRemote ||
-			parsed.IsRemoteFromHost() != k.wantIsRemoteFromHost {
+			parsed.IsRemoteFromHost() != k.wantIsRemoteFromHost) {
 			t.Errorf("Expected values doesn't match on parsed object: %+v", parsed)
 		}
 	}
