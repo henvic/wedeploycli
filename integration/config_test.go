@@ -31,7 +31,7 @@ func TestLoggedOut(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stderr:   "Error: Remote foo not found\n",
+		Stderr:   "Remote foo not found\n",
 		ExitCode: 1,
 	}
 

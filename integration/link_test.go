@@ -109,7 +109,7 @@ func TestLinkEmptyJSON(t *testing.T) {
 
 	var e = &Expect{
 		ExitCode: 1,
-		Stderr:   "Error: Can not find project-orphan container: unexpected end of JSON input",
+		Stderr:   "Can not find project-orphan container: unexpected end of JSON input",
 	}
 
 	cmd.Run()
@@ -199,7 +199,7 @@ func TestLinkToProjectErrorProjectContextAndProjectFlag(t *testing.T) {
 		t.Errorf("Unexpected exit code: %v", cmd.ExitCode)
 	}
 
-	var want = "Error: Can not use \"we dev --project\" when inside a project\n"
+	var want = "Can not use \"we dev --project\" when inside a project\n"
 	var got = cmd.Stderr.String()
 
 	if want != got {
@@ -224,7 +224,7 @@ func TestLinkToProjectOnContainerErrorProjectContextAndProjectFlag(t *testing.T)
 		t.Errorf("Unexpected exit code: %v", cmd.ExitCode)
 	}
 
-	var want = "Error: Can not use \"we dev --project\" when inside a project\n"
+	var want = "Can not use \"we dev --project\" when inside a project\n"
 	var got = cmd.Stderr.String()
 
 	if want != got {
@@ -278,7 +278,7 @@ func TestLinkToProjectServerFailure(t *testing.T) {
 
 	var wantErrsContains = []string{
 		`Killing linking watcher after linking errors (use "we list" to see what is up).`,
-		`Error: Linking errors`,
+		`Linking errors:`,
 		`mocks/home/bucket/project/container: WeDeploy API error: 500 Internal Server Error`,
 	}
 
@@ -336,7 +336,7 @@ func TestLinkToProjectServerFailureQuiet(t *testing.T) {
 	}
 
 	var wantErrsContains = []string{
-		`Error: Linking errors`,
+		`Linking errors:`,
 		`mocks/home/bucket/project/container: WeDeploy API error: 500 Internal Server Error`,
 	}
 
@@ -367,7 +367,7 @@ func TestLinkRemoteError(t *testing.T) {
 	}
 
 	var got = cmd.Stderr.String()
-	var want = "Error: unknown flag: --remote"
+	var want = "unknown flag: --remote"
 
 	if !strings.Contains(got, want) {
 		t.Errorf("Error message doesn't contain expected value %v, got %v instead", want, got)
@@ -392,7 +392,7 @@ func TestLinkRemoteShortcutError(t *testing.T) {
 	}
 
 	var got = cmd.Stderr.String()
-	var want = "Error: unknown shorthand flag: 'r' in -r=foo"
+	var want = "unknown shorthand flag: 'r' in -r=foo"
 
 	if !strings.Contains(got, want) {
 		t.Errorf("Error message doesn't contain expected value %v, got %v instead", want, got)
@@ -417,7 +417,7 @@ func TestLinkHostWithContainerError(t *testing.T) {
 	}
 
 	var got = cmd.Stderr.String()
-	var want = "Error: unknown flag: --container"
+	var want = "unknown flag: --container"
 
 	if !strings.Contains(got, want) {
 		t.Errorf("Error message doesn't contain expected value %v, got %v instead", want, got)

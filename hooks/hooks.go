@@ -79,7 +79,7 @@ func (h *Hooks) Run(hookType string, wdir string, notes ...string) error {
 
 func (h *Hooks) runBuild(notes ...string) error {
 	if h.Build == "" && (h.BeforeBuild != "" || h.AfterBuild != "") {
-		fmt.Fprintf(errStream, "Error: no build hook main action\n")
+		fmt.Fprintf(errStream, "No build hook main action\n")
 	}
 
 	return runHook([]step{
@@ -91,7 +91,7 @@ func (h *Hooks) runBuild(notes ...string) error {
 
 func (h *Hooks) runStart(notes ...string) error {
 	if h.Start == "" && (h.BeforeStart != "" || h.AfterStart != "") {
-		fmt.Fprintf(errStream, "Error: no start hook main action\n")
+		fmt.Fprintf(errStream, "No start hook main action\n")
 	}
 
 	return runHook([]step{

@@ -71,7 +71,7 @@ func (le Errors) Error() string {
 		msgs = append(msgs, fmt.Sprintf("%v: %v", e.ContainerPath, e.Error.Error()))
 	}
 
-	return fmt.Sprintf("Linking errors\n%v", strings.Join(msgs, "\n"))
+	return fmt.Sprintf("Linking errors:\n%v", strings.Join(msgs, "\n"))
 }
 
 // Setup the linking machine

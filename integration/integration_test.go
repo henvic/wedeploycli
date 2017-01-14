@@ -191,7 +191,7 @@ func TestInvalidArgument(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stderr: fmt.Sprintf(`Error: unknown command "%v" for "we"
+		Stderr: fmt.Sprintf(`unknown command "%v" for "we"
 Run 'we --help' for usage.
 `, invalidArg),
 		ExitCode: 1,

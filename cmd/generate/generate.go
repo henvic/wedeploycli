@@ -161,7 +161,7 @@ func (r *runner) checkNoContainerFlagsWhenContainerIsNotGenerated() error {
 		return nil
 	}
 
-	return fmt.Errorf("%v: flags requires --container directive", strings.Join(list, ", "))
+	return fmt.Errorf("%v: Flag --container is required by --container-type", strings.Join(list, ", "))
 }
 
 func checkNoProjectFlagsWhenProjectAlreadyExists(cmd *cobra.Command) error {
@@ -171,7 +171,7 @@ func checkNoProjectFlagsWhenProjectAlreadyExists(cmd *cobra.Command) error {
 		return nil
 	}
 
-	return fmt.Errorf("%v: flags used when project already exists", strings.Join(list, ", "))
+	return fmt.Errorf("Project flags (%v) can only be used on new projects", strings.Join(list, ", "))
 }
 
 type runner struct {

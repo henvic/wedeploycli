@@ -20,7 +20,7 @@ func TestGenerateDirectoryNotExists(t *testing.T) {
 		t.Errorf("Expected stdout to be empty, got %v instead", cmd.Stdout)
 	}
 
-	var wantErr = "Error: Directory not exists"
+	var wantErr = "Directory not exists"
 
 	if !strings.Contains(cmd.Stderr.String(), wantErr) {
 		t.Errorf("Wanted stderr to have %v, got %v instead", wantErr, cmd.Stderr)
@@ -42,7 +42,7 @@ func TestGenerateErrorContainerTypeOnContainerOnly(t *testing.T) {
 		t.Errorf("Expected stdout to be empty, got %v instead", cmd.Stdout)
 	}
 
-	var wantErr = "Error: --container-type: flags requires --container directive"
+	var wantErr = "Flag --container is required by --container-type"
 
 	if !strings.Contains(cmd.Stderr.String(), wantErr) {
 		t.Errorf("Wanted stderr to have %v, got %v instead", wantErr, cmd.Stderr)
@@ -64,7 +64,7 @@ func TestGenerateProjectAlreadyExists(t *testing.T) {
 		t.Errorf("Expected stdout to be empty, got %v instead", cmd.Stdout)
 	}
 
-	var wantErr = "Error: Project foo already exists in"
+	var wantErr = "Project foo already exists in"
 
 	if !strings.Contains(cmd.Stderr.String(), wantErr) {
 		t.Errorf("Wanted stderr to have %v, got %v instead", wantErr, cmd.Stderr)
@@ -96,7 +96,7 @@ func TestGenerateProjectAlreadyExistsAttribute(t *testing.T) {
 	}
 
 	var wantErr = `Jumping creation of project foo (already exists)
-Error: --project-custom-domain: flags used when project already exists`
+Project flags (--project-custom-domain) can only be used on new projects`
 
 	if !strings.Contains(cmd.Stderr.String(), wantErr) {
 		t.Errorf("Wanted stderr to have %v, got %v instead", wantErr, cmd.Stderr)
@@ -127,7 +127,7 @@ func TestGenerateProjectAlreadyExistsInsideBase(t *testing.T) {
 		t.Errorf("Expected stdout to be empty, got %v instead", cmd.Stdout)
 	}
 
-	var wantErr = `Error: Can not use project flag (value: "foo") from inside a project`
+	var wantErr = `Can not use project flag (value: "foo") from inside a project`
 
 	if !strings.Contains(cmd.Stderr.String(), wantErr) {
 		t.Errorf("Wanted stderr to have %v, got %v instead", wantErr, cmd.Stderr)
@@ -337,7 +337,7 @@ func TestGenerateContainerWithoutProjectError(t *testing.T) {
 
 	cmd.Run()
 
-	var wantErr = "Error: Incompatible use: --container requires --project unless on a project directory"
+	var wantErr = "Incompatible use: --container requires --project unless on a project directory"
 
 	if !strings.Contains(cmd.Stderr.String(), wantErr) {
 		t.Errorf("Wanted stdout to have %v, got %v instead", wantErr, cmd.Stdout)

@@ -66,7 +66,7 @@ func buildRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if hasError {
-		return errors.New("build hooks failure")
+		return errors.New("Build hooks failure")
 	}
 
 	return nil

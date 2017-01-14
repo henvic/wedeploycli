@@ -82,7 +82,7 @@ after start
 			AfterBuild:  "echo b",
 		},
 		WantOutput: "> before_build : echo a\na\n> after_build : echo b\nb\n",
-		WantErr:    "Error: no build hook main action\n",
+		WantErr:    "No build hook main action\n",
 		WantError:  nil,
 	},
 	HooksProvider{
@@ -92,7 +92,7 @@ after start
 			AfterStart:  "echo b",
 		},
 		WantOutput: "> before_start : echo a\na\n> after_start : echo b\nb\n",
-		WantErr:    "Error: no start hook main action\n",
+		WantErr:    "No start hook main action\n",
 		WantError:  nil,
 	},
 	HooksProvider{

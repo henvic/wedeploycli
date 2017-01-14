@@ -86,7 +86,7 @@ func (m *mainProgram) executeCommand() {
 	m.cmdFriendlyErr = errorhandling.Handle(m.cmdErr)
 
 	if m.cmdErr != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", m.cmdFriendlyErr)
+		fmt.Fprintf(os.Stderr, "%v\n", m.cmdFriendlyErr)
 	}
 
 	m.reportCommand()
@@ -159,7 +159,7 @@ type configLoader struct {
 
 func (cl *configLoader) loadConfig() {
 	if err := config.Setup(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
+		fmt.Fprintf(os.Stderr, "%v\n", errorhandling.Handle(err))
 		os.Exit(1)
 	}
 
@@ -192,7 +192,7 @@ func (cl *configLoader) checkAnalytics() {
 
 	switch toEnabled, err := metrics.TryAskEnable(); {
 	case err != nil:
-		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
+		fmt.Fprintf(os.Stderr, "%v\n", errorhandling.Handle(err))
 	case toEnabled:
 		fmt.Println(color.Format(color.FgCyan,
 			`Thanks. If you change your mind, use "we metrics usage disable" to stop reporting metrics.
@@ -207,7 +207,7 @@ func (cl *configLoader) applyChanges() {
 	}
 
 	if err := config.Global.Save(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", errorhandling.Handle(err))
+		fmt.Fprintf(os.Stderr, "%v\n", errorhandling.Handle(err))
 		os.Exit(1)
 	}
 

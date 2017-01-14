@@ -23,7 +23,7 @@ func TestLogsTooManyArguments(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stderr:   "Error: Invalid number of arguments: too many",
+		Stderr:   "Invalid number of arguments: too many",
 		ExitCode: 1,
 	}
 
@@ -42,7 +42,7 @@ func TestLogsIncompatibleUse(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stderr:   "Error: Project or local project.json context not found",
+		Stderr:   "Project or local project.json context not found",
 		ExitCode: 1,
 	}
 
@@ -61,7 +61,7 @@ func TestLogIncompatibleUseProjectAndHostURLFlag(t *testing.T) {
 		t.Errorf("Expected stdout to be empty, got %v instead", cmd.Stdout)
 	}
 
-	var wantErr = "Error: Incompatible use: --project and --container are not allowed with host URL flag"
+	var wantErr = "Incompatible use: --project and --container are not allowed with host URL flag"
 
 	if !strings.Contains(cmd.Stderr.String(), wantErr) {
 		t.Errorf("Wanted stderr to have %v, got %v instead", wantErr, cmd.Stderr)
