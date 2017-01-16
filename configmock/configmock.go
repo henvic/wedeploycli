@@ -48,6 +48,7 @@ func Setup() {
 // SetupLocalContext loads the config mock local context
 func SetupLocalContext() {
 	config.Context.Remote = ""
+	config.Context.RemoteAddress = "wedeploy.me"
 	config.Context.Endpoint = "http://localhost:8080/"
 	config.Context.Token = "1"
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/colorwheel"
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/verbose"
 )
@@ -171,7 +172,11 @@ func (w *Watcher) Stop() {
 func printList(list []Logs) {
 	for _, log := range list {
 		iw := instancesWheel.Get(log.ContainerUID)
-		fd := color.Format(iw, log.ContainerID+"."+log.ProjectID+".wedeploy.me["+trim(log.ContainerUID, 7)+"]")
+		fd := color.Format(iw,
+			log.ContainerID+"."+
+				log.ProjectID+"."+
+				config.Context.RemoteAddress+
+				"["+trim(log.ContainerUID, 7)+"]")
 		outStreamMutex.Lock()
 		fmt.Fprintf(outStream, "%v %v\n", fd, log.Message)
 		outStreamMutex.Unlock()
