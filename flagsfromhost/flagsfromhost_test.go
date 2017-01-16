@@ -308,6 +308,17 @@ type parsed struct {
 var parseMocks = []parseMock{
 	parseMock{
 		Flags: ParseFlags{
+			Host:      "EXAMPLE.com",
+			Project:   "",
+			Container: "",
+			Remote:    "foo",
+		},
+		Want: parsed{
+			Err: ErrorRemoteFlagAndHost{},
+		},
+	},
+	parseMock{
+		Flags: ParseFlags{
 			Host:      "example.com",
 			Project:   "",
 			Container: "",
@@ -315,6 +326,19 @@ var parseMocks = []parseMock{
 		},
 		Want: parsed{
 			Err: ErrorRemoteFlagAndHost{},
+		},
+	},
+	parseMock{
+		Flags: ParseFlags{
+			Host:      "CINEMA.EXAMPLE.COM",
+			Project:   "",
+			Container: "",
+			Remote:    "",
+		},
+		Want: parsed{
+			Project:          "cinema",
+			Remote:           "foo",
+			IsRemoteFromHost: true,
 		},
 	},
 	parseMock{
@@ -533,6 +557,20 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 		},
 		Want: parsed{
 			Err: ErrorRemoteFlagAndHost{},
+		},
+	},
+	parseMockWithDefaultCustomRemote{
+		Flags: ParseFlagsWithDefaultCustomRemote{
+			Host:          "",
+			Project:       "CINEMA",
+			Container:     "THEATER",
+			Remote:        "FOO",
+			RemoteChanged: true,
+		},
+		Want: parsed{
+			Project:   "cinema",
+			Container: "theater",
+			Remote:    "foo",
 		},
 	},
 	parseMockWithDefaultCustomRemote{

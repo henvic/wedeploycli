@@ -112,6 +112,11 @@ type ParseFlags struct {
 
 // Parse host and flags
 func Parse(pf ParseFlags) (*FlagsFromHost, error) {
+	pf.Host = strings.ToLower(pf.Host)
+	pf.Project = strings.ToLower(pf.Project)
+	pf.Container = strings.ToLower(pf.Container)
+	pf.Remote = strings.ToLower(pf.Remote)
+
 	var flagsFromHost, err = parse(pf.Host, pf.Project, pf.Container, pf.Remote)
 
 	if err != nil {
