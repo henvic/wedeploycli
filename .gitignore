@@ -11,9 +11,6 @@ integration/mocks/login/.we
 integration/mocks/login/.we_metrics
 integration/mocks/create/example
 integration/mocks/create/foo/data
-pod/mocks/res/package.tar.gz
-pod/mocks/benchmark/linux-4.6-rc2
-pod/mocks/benchmark/linux-4.6-rc2.tar.xz
 
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 cli
