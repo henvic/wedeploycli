@@ -33,6 +33,7 @@ type Config struct {
 	LastUpdateCheck string       `ini:"last_update_check"`
 	PastVersion     string       `ini:"past_version"`
 	NextVersion     string       `ini:"next_version"`
+	AskAutoCommit   bool         `ini:"ask_auto_commit"`
 	EnableAnalytics bool         `ini:"enable_analytics"`
 	AnalyticsOption string       `ini:"analytics_option_date"`
 	AnalyticsID     string       `ini:"analytics_id"`

@@ -5,6 +5,8 @@ doc/*.md
 doc/*.1
 
 # Temporary mocks
+deployment/mocks/project/.git
+deployment/mocks/project-repo/
 metrics/mocks/.we
 metrics/mocks/.we_metrics
 integration/mocks/login/.we

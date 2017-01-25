@@ -9,6 +9,7 @@ Usage:
 
 Available Commands:
   build        Build container(s) (current or all containers of a project)
+  deploy       Deploy the current project
   dev          Run development environment for a project or container
   domain       Configure custom domains for projects
   env          Environment variables for containers

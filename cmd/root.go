@@ -6,6 +6,7 @@ import (
 	"github.com/wedeploy/cli/cmd/autocomplete"
 	"github.com/wedeploy/cli/cmd/build"
 	"github.com/wedeploy/cli/cmd/cmdmanager"
+	"github.com/wedeploy/cli/cmd/deploy"
 	"github.com/wedeploy/cli/cmd/dev"
 	"github.com/wedeploy/cli/cmd/domain"
 	"github.com/wedeploy/cli/cmd/env"
@@ -54,6 +55,7 @@ var commands = []*cobra.Command{
 	cmdlogout.LogoutCmd,
 	cmdgenerate.GenerateCmd,
 	cmddev.DevCmd,
+	cmddeploy.DeployCmd,
 	cmdlog.LogCmd,
 	cmdlist.ListCmd,
 	cmdrestart.RestartCmd,
