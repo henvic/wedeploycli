@@ -91,7 +91,7 @@ func (l *linker) getContainersDirectoriesFromScope() ([]string, error) {
 		_, err = containers.Read(wd)
 
 		if err != nil {
-			err = errwrap.Wrapf("Can not find project-orphan container: {{err}}", err)
+			err = errwrap.Wrapf("Can not read container with no project: {{err}}", err)
 		}
 
 		return []string{wd}, err

@@ -109,7 +109,7 @@ func TestLinkEmptyJSON(t *testing.T) {
 
 	var e = &Expect{
 		ExitCode: 1,
-		Stderr:   "Can not find project-orphan container: unexpected end of JSON input",
+		Stderr:   "Can not read container with no project: unexpected end of JSON input",
 	}
 
 	cmd.Run()
