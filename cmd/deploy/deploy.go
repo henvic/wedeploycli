@@ -72,8 +72,10 @@ func run(cmd *cobra.Command, args []string) error {
 		Force:            force,
 	}
 
-	if err := deploy.InitalizeRepositoryIfNotExists(); err != nil {
-		return err
+	var initializeErr = deploy.InitalizeRepositoryIfNotExists()
+
+	if initializeErr != nil {
+		return initializeErr
 	}
 
 	if err := deploy.CheckCurrentBranchIsMaster(); err != nil {

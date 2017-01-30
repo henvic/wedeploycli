@@ -210,6 +210,7 @@ func (d *Deploy) Push() error {
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Dir = d.Path
+	cmd.Stdin = os.Stdin
 	cmd.Stderr = errStream
 	cmd.Stdout = outStream
 
