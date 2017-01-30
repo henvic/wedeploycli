@@ -21,6 +21,7 @@ import (
 	"github.com/wedeploy/cli/cmd/removed"
 	"github.com/wedeploy/cli/cmd/restart"
 	"github.com/wedeploy/cli/cmd/start"
+	"github.com/wedeploy/cli/cmd/undeploy"
 	"github.com/wedeploy/cli/cmd/update"
 	"github.com/wedeploy/cli/cmd/version"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
@@ -56,6 +57,7 @@ var commands = []*cobra.Command{
 	cmdgenerate.GenerateCmd,
 	cmddev.DevCmd,
 	cmddeploy.DeployCmd,
+	cmdundeploy.UndeployCmd,
 	cmdlog.LogCmd,
 	cmdlist.ListCmd,
 	cmdrestart.RestartCmd,

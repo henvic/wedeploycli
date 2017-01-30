@@ -23,6 +23,7 @@ Available Commands:
   remote       Configure WeDeploy remotes
   restart      Restart project or container running on WeDeploy
   start        Run start container hook
+  undeploy     Undeploy a given project or container
   update       Updates this tool to the latest version
   version      Print version information and quit
 
