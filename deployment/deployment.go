@@ -14,6 +14,7 @@ import (
 	"os"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -33,6 +34,7 @@ type Deploy struct {
 	Path               string
 	Force              bool
 	Remote             string
+	RepoAuthorization  string
 	GitRemoteAddress   string
 	uncommittedChanges bool
 }
@@ -207,7 +209,19 @@ func (d *Deploy) Push() error {
 		params = append(params, "--force")
 	}
 
+	if verbose.Enabled {
+		params = append(params, "--verbose")
+	}
+
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
+	if d.RepoAuthorization != "" {
+		verbose.Debug(color.Format(color.BgYellow, "Basic Auth credential: hidden value"))
+		params = append([]string{
+			"-c",
+			"http." + d.GitRemoteAddress + ".extraHeader=Authorization: " + d.RepoAuthorization,
+		}, params...)
+	}
+
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Dir = d.Path
 	cmd.Stdin = os.Stdin

@@ -2,6 +2,7 @@ package cmddeploy
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -43,6 +44,21 @@ func preRun(cmd *cobra.Command, args []string) error {
 	return setupHost.Process()
 }
 
+// basicAuth creates the basic auth parameter
+// extracted from golang/go/src/net/http/client.go
+func basicAuth(username, password string) string {
+	auth := username + ":" + password
+	return base64.StdEncoding.EncodeToString([]byte(auth))
+}
+
+func getRepoAuthorization() (string, error) {
+	if config.Global.Username == "" {
+		return "", errors.New("User is not configured yet")
+	}
+
+	return "Basic " + basicAuth(config.Global.Username, config.Global.Password), nil
+}
+
 func run(cmd *cobra.Command, args []string) error {
 	if setupHost.Remote() == "" {
 		return errors.New(`You can not deploy in the local infrastructure. Use "we dev" instead`)
@@ -58,18 +74,25 @@ func run(cmd *cobra.Command, args []string) error {
 		return errwrap.Wrapf("Error trying to read project: {{err}}", projectErr)
 	}
 
+	var repoAuthorization, repoAuthorizationErr = getRepoAuthorization()
+
+	if repoAuthorizationErr != nil {
+		return repoAuthorizationErr
+	}
+
 	var gitServer = fmt.Sprintf("%vgit.%v/%v.git",
 		gitSchema,
 		config.Context.RemoteAddress,
 		project.ID)
 
 	var deploy = deployment.Deploy{
-		Context:          context.Background(),
-		ProjectID:        project.ID,
-		Path:             config.Context.ProjectRoot,
-		Remote:           config.Context.Remote,
-		GitRemoteAddress: gitServer,
-		Force:            force,
+		Context:           context.Background(),
+		ProjectID:         project.ID,
+		Path:              config.Context.ProjectRoot,
+		Remote:            config.Context.Remote,
+		RepoAuthorization: repoAuthorization,
+		GitRemoteAddress:  gitServer,
+		Force:             force,
 	}
 
 	var initializeErr = deploy.InitalizeRepositoryIfNotExists()
