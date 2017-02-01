@@ -1,5 +1,5 @@
 # Configuration file for WeDeploy CLI
-# https://wedeploy.io
+# https://wedeploy.com
 username          = admin
 password          = safe
 token             = safe123

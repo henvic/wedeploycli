@@ -291,7 +291,7 @@ func (c *Config) updateRemotes() {
 
 func (c *Config) banner() {
 	c.file.Section("DEFAULT").Comment = `# Configuration file for WeDeploy CLI
-# https://wedeploy.io`
+# https://wedeploy.com`
 }
 
 func setupContext() (err error) {

@@ -1,5 +1,5 @@
 # Configuration file for WeDeploy CLI
-# https://wedeploy.io
+# https://wedeploy.com
 auto_update       = true
 release_channel   = stable
 last_update_check = 

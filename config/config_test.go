@@ -173,7 +173,7 @@ func TestSave(t *testing.T) {
 	var got = tdata.FromFile(Global.Path)
 	var want = []string{
 		`# Configuration file for WeDeploy CLI
-# https://wedeploy.io
+# https://wedeploy.com
 username                         = other
 password                         = safe
 token                            = 
@@ -245,7 +245,7 @@ func TestSaveAfterCreation(t *testing.T) {
 	var got = tdata.FromFile(Global.Path)
 	var want = []string{
 		`# Configuration file for WeDeploy CLI
-# https://wedeploy.io
+# https://wedeploy.com
 username                         = other
 password                         = 
 token                            = 
