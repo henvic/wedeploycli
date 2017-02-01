@@ -279,6 +279,41 @@ func TestSelectOptionInvalidOption(t *testing.T) {
 	}
 }
 
+func TestSelectOptionInvalidOptionOffByOne(t *testing.T) {
+	defer func() {
+		isTerminal = defaultIsTerminal
+	}()
+	bufInStream.Reset()
+	bufErrStream.Reset()
+	bufOutStream.Reset()
+	isTerminal = true
+	var _, err = bufInStream.WriteString("5\n")
+
+	if err != nil {
+		panic(err)
+	}
+
+	var option, errt = SelectOption(4, nil)
+
+	if option != -1 {
+		t.Errorf("Expected option to be -1, got %v instead", option)
+	}
+
+	var wantErr = "Invalid option."
+
+	if errt == nil || errt.Error() != wantErr {
+		t.Errorf("Expected option error to be %v, got %v instead", wantErr, errt)
+	}
+
+	if bufErrStream.Len() != 0 {
+		t.Error("Expected error stream to be empty")
+	}
+
+	if bufOutStream.String() != "\nSelect from 1..4: " {
+		t.Error("Unexpected output stream")
+	}
+}
+
 func TestSelectOptionInvalidOptionEquivalent(t *testing.T) {
 	defer func() {
 		isTerminal = defaultIsTerminal

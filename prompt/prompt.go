@@ -49,7 +49,7 @@ func SelectOption(indexLength int, equivalents map[string]int) (index int, err e
 
 func getSelectOptionIndex(index, indexLength int, err error) (int, error) {
 	index--
-	if err != nil || index < 0 || index > indexLength {
+	if err != nil || index < 0 || index >= indexLength {
 		return -1, errors.New("Invalid option.")
 	}
 
