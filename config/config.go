@@ -49,6 +49,8 @@ var (
 
 	// Context stores the environmental context
 	Context *usercontext.Context
+
+	parseRemoteSectionNameRegex = regexp.MustCompile(`remote \"(.*)\"`)
 )
 
 // Load the configuration
@@ -192,8 +194,7 @@ func (c *Config) read() error {
 }
 
 func parseRemoteSectionName(parsable string) (parsed string, is bool) {
-	var r = regexp.MustCompile(`remote \"(.*)\"`)
-	var matches = r.FindStringSubmatch(parsable)
+	var matches = parseRemoteSectionNameRegex.FindStringSubmatch(parsable)
 
 	if len(matches) == 2 {
 		parsed = matches[1]
