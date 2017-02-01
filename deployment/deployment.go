@@ -215,7 +215,9 @@ func (d *Deploy) Push() error {
 
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	if d.RepoAuthorization != "" {
-		verbose.Debug(color.Format(color.BgYellow, "Basic Auth credential: hidden value"))
+		verbose.Debug(color.Format(color.FgBlue, "Push Authorization") +
+			color.Format(color.FgRed, ": ") +
+			color.Format(color.BgYellow, " hidden value "))
 		params = append([]string{
 			"-c",
 			"http." + d.GitRemoteAddress + ".extraHeader=Authorization: " + d.RepoAuthorization,
