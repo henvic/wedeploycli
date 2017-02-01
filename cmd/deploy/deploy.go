@@ -29,8 +29,9 @@ var DeployCmd = &cobra.Command{
 }
 
 var (
-	ask   = false
-	force = false
+	tmpAutoCommit   = false
+	tmpNoAutoCommit = false
+	force           = false
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{
@@ -111,7 +112,7 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(stage) != 0 {
-		if err := maybeAskAutoCommit(cmd, stage); err != nil {
+		if err := askAutoCommit(cmd, stage); err != nil {
 			return err
 		}
 
@@ -135,20 +136,34 @@ func run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func maybeAskAutoCommit(cmd *cobra.Command, stage string) error {
-	if ask || (config.Global.AskAutoCommit && !cmd.Flag("ask-on-changes").Changed) {
-		return askAutoCommit(cmd, stage)
+func askAutoCommit(cmd *cobra.Command, stage string) error {
+	var autoCommit bool
+	var flagChanged = cmd.Flags().Changed("no-auto-commit")
+
+	switch flagChanged {
+	case true:
+		autoCommit = !tmpNoAutoCommit
+	default:
+		flagChanged = cmd.Flags().Changed("auto-commit")
+		autoCommit = tmpAutoCommit
 	}
 
-	return nil
-}
-
-func askAutoCommit(cmd *cobra.Command, stage string) error {
-	var options = []string{}
+	if flagChanged && autoCommit != config.Global.AskAutoCommit {
+		config.Global.AskAutoCommit = autoCommit
+		if err := config.Global.Save(); err != nil {
+			return errwrap.Wrapf("Can not save auto commit config: {{err}}", err)
+		}
+	}
 
 	if !config.Global.AskAutoCommit {
-		options = append(options, "always")
+		return nil
 	}
+
+	return askAutoCommitSelect()
+}
+
+func askAutoCommitSelect() error {
+	var options = []string{}
 
 	options = append(options, "yes")
 	options = append(options, "no")
@@ -159,18 +174,7 @@ func askAutoCommit(cmd *cobra.Command, stage string) error {
 		return errwrap.Wrapf("Can not auto-commit: %v", err)
 	}
 
-	return askAutoCommitSelect(action)
-}
-
-func askAutoCommitSelect(action string) error {
 	switch {
-	case action == "a" || action == "always":
-		config.Global.AskAutoCommit = true
-		if err := config.Global.Save(); err != nil {
-			return errwrap.Wrapf("Can not save auto commit config: {{err}}", err)
-		}
-
-		return nil
 	case action == "y" || action == "yes":
 		return nil
 	case action == "n" || action == "no":
@@ -183,5 +187,10 @@ func askAutoCommitSelect(action string) error {
 func init() {
 	setupHost.Init(DeployCmd)
 	DeployCmd.Flags().BoolVarP(&force, "force", "f", false, "Force updates")
-	DeployCmd.Flags().BoolVar(&ask, "ask-on-changes", false, "Ask before staging and auto-committing changes on deployment")
+	DeployCmd.Flags().BoolVar(&tmpAutoCommit, "auto-commit", false, "Stage and auto-commit changes on this and future deployments")
+	DeployCmd.Flags().BoolVar(&tmpNoAutoCommit, "no-auto-commit", false, "Do not auto-commit")
+
+	if err := DeployCmd.Flags().MarkHidden("no-auto-commit"); err != nil {
+		panic(err)
+	}
 }
