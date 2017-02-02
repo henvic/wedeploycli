@@ -50,8 +50,8 @@ func (d *Deploy) getGitRemote() string {
 	return remote
 }
 
-// InitalizeRepository as a git repo
-func (d *Deploy) InitalizeRepository() error {
+// InitializeRepository as a git repo
+func (d *Deploy) InitializeRepository() error {
 	var params = []string{"init"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
@@ -67,11 +67,11 @@ func (d *Deploy) InitalizeRepository() error {
 	return nil
 }
 
-// InitalizeRepositoryIfNotExists as a git repo
-func (d *Deploy) InitalizeRepositoryIfNotExists() error {
+// InitializeRepositoryIfNotExists as a git repo
+func (d *Deploy) InitializeRepositoryIfNotExists() error {
 	switch _, err := os.Stat(filepath.Join(d.Path, ".git")); {
 	case os.IsNotExist(err):
-		return d.InitalizeRepository()
+		return d.InitializeRepository()
 	case err != nil:
 		return errwrap.Wrapf("Unexpected error when trying to find .git: {{err}}", err)
 	default:

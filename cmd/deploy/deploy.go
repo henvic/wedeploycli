@@ -96,7 +96,7 @@ func run(cmd *cobra.Command, args []string) error {
 		Force:             force,
 	}
 
-	var initializeErr = deploy.InitalizeRepositoryIfNotExists()
+	var initializeErr = deploy.InitializeRepositoryIfNotExists()
 
 	if initializeErr != nil {
 		return initializeErr

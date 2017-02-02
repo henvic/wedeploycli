@@ -68,7 +68,7 @@ func (dt *DeployTest) Run() {
 }
 
 func (dt *DeployTest) TryInitializeRepo() {
-	if err := dt.deploy.InitalizeRepositoryIfNotExists(); err != nil {
+	if err := dt.deploy.InitializeRepository(); err != nil {
 		dt.t.Errorf("Unexpected error %v", err)
 	}
 
@@ -78,7 +78,7 @@ func (dt *DeployTest) TryInitializeRepo() {
 
 	// try to initialize again
 	// it should not initialize, as it already exists, but no error should happen
-	if err := dt.deploy.InitalizeRepositoryIfNotExists(); err != nil {
+	if err := dt.deploy.InitializeRepository(); err != nil {
 		dt.t.Errorf("Unexpected error %v", err)
 	}
 }
