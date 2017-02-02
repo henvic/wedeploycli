@@ -5,7 +5,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/hashicorp/errwrap"
@@ -60,6 +62,27 @@ func getRepoAuthorization() (string, error) {
 	return "Basic " + basicAuth(config.Global.Username, config.Global.Password), nil
 }
 
+func maybeInitializeRepositoryIfNotExists(d *deployment.Deploy) (inited bool, err error) {
+	switch _, err := os.Stat(filepath.Join(d.Path, ".git")); {
+	case os.IsNotExist(err):
+		if errAskInitAndCommit := askInit(); errAskInitAndCommit != nil {
+			return false, errAskInitAndCommit
+		}
+
+		err = d.InitializeRepository()
+
+		if err != nil {
+			return false, err
+		}
+
+		return true, nil
+	case err != nil:
+		return false, errwrap.Wrapf("Unexpected error when trying to find .git: {{err}}", err)
+	default:
+		return false, nil
+	}
+}
+
 func run(cmd *cobra.Command, args []string) error {
 	if setupHost.Remote() == "" {
 		return errors.New(`You can not deploy in the local infrastructure. Use "we dev" instead`)
@@ -96,10 +119,10 @@ func run(cmd *cobra.Command, args []string) error {
 		Force:             force,
 	}
 
-	var initializeErr = deploy.InitializeRepositoryIfNotExists()
+	var inited, initErr = maybeInitializeRepositoryIfNotExists(&deploy)
 
-	if initializeErr != nil {
-		return initializeErr
+	if initErr != nil {
+		return initErr
 	}
 
 	if err := deploy.CheckCurrentBranchIsMaster(); err != nil {
@@ -112,8 +135,10 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(stage) != 0 {
-		if err := askAutoCommit(cmd, stage); err != nil {
-			return err
+		if !inited {
+			if err := askAutoCommit(cmd, stage); err != nil {
+				return err
+			}
 		}
 
 		if _, err := deploy.Commit(); err != nil {
@@ -172,6 +197,29 @@ func askAutoCommitSelect() error {
 
 	if err != nil {
 		return errwrap.Wrapf("Can not auto-commit: %v", err)
+	}
+
+	switch {
+	case action == "y" || action == "yes":
+		return nil
+	case action == "n" || action == "no":
+		return errors.New("Aborting deployment")
+	default:
+		return errors.New("Invalid option")
+	}
+}
+
+func askInit() error {
+	var options = []string{}
+
+	options = append(options, "yes")
+	options = append(options, "no")
+	fmt.Println("Your project does not have a git repository yet.")
+	var action, err = prompt.Prompt("Initialize a repo, stage files, and commit changes? [" + strings.Join(options, "/") + "]")
+	action = strings.ToLower(action)
+
+	if err != nil {
+		return errwrap.Wrapf("Can not initialize git and auto-commit: %v", err)
 	}
 
 	switch {
