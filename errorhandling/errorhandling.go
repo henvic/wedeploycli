@@ -49,13 +49,25 @@ type handler struct {
 
 type messages map[string]string
 
+func extractParentCommand(cmd string) string {
+	var splitCmd = strings.Split(cmd, " ")
+	return strings.Join(splitCmd[:len(splitCmd)-1], " ")
+}
+
 // tryGetMessage tries to get a human-friendly error message from the
-// command / local (falling back to the global) error message lists.
+// command / local error message lists falling back to the parent command
+// and at last instance to the global
 func tryGetMessage(cmd, reason string) (string, bool) {
-	if haystack, ok := errorReasonCommandMessageOverrides[cmd]; ok {
+	local := cmd
+getMessage:
+	if haystack, ok := errorReasonCommandMessageOverrides[local]; ok {
 		if msg, has := haystack[reason]; has {
 			return msg, true
 		}
+	}
+
+	if local = extractParentCommand(local); local != "" {
+		goto getMessage
 	}
 
 	msg, ok := errorReasonMessage[reason]

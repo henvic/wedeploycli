@@ -215,6 +215,135 @@ func TestHandleAPIWrappedFaultGenericErrorFound(t *testing.T) {
 	}
 }
 
+func TestHandleAPIWrappedFaultGenericErrorFoundNested(t *testing.T) {
+	CommandName = "payment credit"
+	defer restoreOriginalErrorMessages()
+
+	errorReasonMessage = messages{
+		"documentNotFound": "Document not found",
+	}
+
+	errorReasonCommandMessageOverrides = map[string]messages{
+		"payment": messages{
+			"documentNotFound":  "Payment not found",
+			"invalidCredential": "Credential not valid for payment",
+		},
+		"payment credit": messages{
+			"documentNotFound":  "Payment not found",
+			"invalidCredential": "Credit card not valid for payment",
+		},
+	}
+
+	var err = errwrap.Wrapf("Wrapped error: {{err}}", &apihelper.APIFault{
+		Method:  "GET",
+		URL:     "http://example.com/",
+		Code:    404,
+		Message: "Payment Not Found",
+		Errors: apihelper.APIFaultErrors{
+			apihelper.APIFaultError{
+				Reason:  "invalidCredential",
+				Message: "Credential not valid",
+			},
+		},
+	})
+
+	var got = Handle(err)
+
+	var want = "Credit card not valid for payment"
+
+	if want != got.Error() {
+		t.Errorf("Wanted %v, got %v instead", want, got)
+	}
+}
+
+func TestHandleAPIWrappedFaultGenericErrorFoundDeepNested(t *testing.T) {
+	CommandName = "payment credit amex"
+	defer restoreOriginalErrorMessages()
+
+	errorReasonMessage = messages{
+		"documentNotFound": "Document not found",
+	}
+
+	errorReasonCommandMessageOverrides = map[string]messages{
+		"payment": messages{
+			"documentNotFound":  "Payment not found",
+			"invalidCredential": "Credential not valid for payment",
+		},
+		"payment credit": messages{
+			"documentNotFound":  "Payment not found",
+			"invalidCredential": "Credit card not valid for payment",
+		},
+		"payment credit amex": messages{
+			"documentNotFound":  "Payment not found",
+			"invalidCredential": "Amex credit card is not accepted",
+		},
+	}
+
+	var err = errwrap.Wrapf("Wrapped error: {{err}}", &apihelper.APIFault{
+		Method:  "GET",
+		URL:     "http://example.com/",
+		Code:    404,
+		Message: "Payment Not Found",
+		Errors: apihelper.APIFaultErrors{
+			apihelper.APIFaultError{
+				Reason:  "invalidCredential",
+				Message: "Credential not valid",
+			},
+		},
+	})
+
+	var got = Handle(err)
+
+	var want = "Amex credit card is not accepted"
+
+	if want != got.Error() {
+		t.Errorf("Wanted %v, got %v instead", want, got)
+	}
+}
+
+func TestHandleAPIWrappedFaultGenericErrorFoundDeepNestedNoOverride(t *testing.T) {
+	CommandName = "payment credit amex"
+	defer restoreOriginalErrorMessages()
+
+	errorReasonMessage = messages{
+		"documentNotFound":  "Document not found",
+		"invalidCredential": "Invalid credential",
+	}
+
+	errorReasonCommandMessageOverrides = map[string]messages{
+		"payment": messages{
+			"documentNotFound": "Payment not found",
+		},
+		"payment credit": messages{
+			"documentNotFound": "Payment not found",
+		},
+		"payment credit amex": messages{
+			"documentNotFound": "Payment not found",
+		},
+	}
+
+	var err = errwrap.Wrapf("Wrapped error: {{err}}", &apihelper.APIFault{
+		Method:  "GET",
+		URL:     "http://example.com/",
+		Code:    404,
+		Message: "Payment Not Found",
+		Errors: apihelper.APIFaultErrors{
+			apihelper.APIFaultError{
+				Reason:  "invalidCredential",
+				Message: "Credential not valid",
+			},
+		},
+	})
+
+	var got = Handle(err)
+
+	var want = "Invalid credential"
+
+	if want != got.Error() {
+		t.Errorf("Wanted %v, got %v instead", want, got)
+	}
+}
+
 func TestHandleAPIFaultCommandOverridesErrorMessage(t *testing.T) {
 	CommandName = "payment"
 	defer restoreOriginalErrorMessages()

@@ -21,11 +21,11 @@ var errorReasonMessage = messages{
 }
 
 var errorReasonCommandMessageOverrides = map[string]messages{
-	"link": messages{
+	"dev": messages{
 		"typeNotFound":                  "Container type not found",
 		"projectContainerQuotaExceeded": "Your quota for containers has exceeded",
 	},
-	"unlink": messages{
+	"dev stop": messages{
 		"documentNotFound": "Can not find project or container",
 		"deleteProject":    "Can not delete project",
 	},

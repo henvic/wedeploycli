@@ -232,13 +232,7 @@ func isCommand(cmd string) bool {
 }
 
 func setErrorHandlingCommandName() {
-	ccmd, _, err := cmd.RootCmd.Find(os.Args[1:])
-
-	if err != nil {
-		return
-	}
-
-	errorhandling.CommandName = ccmd.Name()
+	errorhandling.CommandName = strings.Join(os.Args[1:], " ")
 }
 
 func panickingListener(panicking *bool) {
