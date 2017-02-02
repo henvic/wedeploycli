@@ -11,8 +11,8 @@ metrics/mocks/.we
 metrics/mocks/.we_metrics
 integration/mocks/login/.we
 integration/mocks/login/.we_metrics
-integration/mocks/create/example
-integration/mocks/create/foo/data
+integration/mocks/generate/example
+integration/mocks/generate/foo/data
 
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 cli
