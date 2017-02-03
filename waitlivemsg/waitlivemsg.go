@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"sync"
+
 	"github.com/henvic/uilive"
 )
 
@@ -22,14 +24,17 @@ type WaitLiveMsg struct {
 	Msg    string
 	Stream *uilive.Writer
 
-	start   time.Time
-	tickerd chan bool
+	start        time.Time
+	tickerd      chan bool
+	tickerdMutex sync.Mutex
 }
 
 // Wait starts the waiting message
 func (w *WaitLiveMsg) Wait() {
 	var ticker = time.NewTicker(time.Second)
+	w.tickerdMutex.Lock()
 	w.tickerd = make(chan bool, 1)
+	w.tickerdMutex.Unlock()
 	w.start = time.Now()
 
 	for {
@@ -58,7 +63,9 @@ func (w *WaitLiveMsg) Wait() {
 
 // Stop the waiting message
 func (w *WaitLiveMsg) Stop() {
+	w.tickerdMutex.Lock()
 	w.tickerd <- true
+	w.tickerdMutex.Unlock()
 }
 
 // Duration in seconds
