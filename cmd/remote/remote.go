@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/wedeploy/cli/formatter"
 )
 
 // RemoteCmd runs the WeDeploy structure for development locally
@@ -60,13 +60,8 @@ func remoteRun(cmd *cobra.Command, args []string) error {
 	var remotes = config.Global.Remotes
 
 	for _, k := range remotes.Keys() {
-		switch verbose.Enabled {
-		case true:
-			var key, _ = remotes[k]
-			fmt.Printf("%s\t%s\n", k, key.URL)
-		default:
-			fmt.Println(k)
-		}
+		var key, _ = remotes[k]
+		fmt.Printf("%s%s%s\n", k, formatter.CondPad(k, 15), key.URL)
 	}
 
 	return nil
