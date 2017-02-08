@@ -23,6 +23,7 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/flagsfromhost"
+	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/metrics"
 	"github.com/wedeploy/cli/update"
 	"github.com/wedeploy/cli/user"
@@ -41,13 +42,18 @@ func turnColorsOffOnWindows() bool {
 	return windowsPrompt
 }
 
-func main() {
-	var panickingFlag = true
-	defer panickingListener(&panickingFlag)
+func init() {
+	_, machineFriendly := os.LookupEnv("WEDEPLOY_MACHINE_FRIENDLY")
+	formatter.Human = !machineFriendly
 
 	if isCommand("--no-color") || turnColorsOffOnWindows() {
 		color.NoColorFlag = true
 	}
+}
+
+func main() {
+	var panickingFlag = true
+	defer panickingListener(&panickingFlag)
 
 	setErrorHandlingCommandName()
 	(&mainProgram{}).run()
