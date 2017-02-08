@@ -250,8 +250,8 @@ function release() {
     echo Last version seems to be $LAST_TAG
   fi
 
-  read -p "Release channel [stable]: " RELEASE_CHANNEL < /dev/tty;
-  RELEASE_CHANNEL=${RELEASE_CHANNEL:-"stable"}
+  read -p "Release channel [unstable]: " RELEASE_CHANNEL < /dev/tty;
+  RELEASE_CHANNEL=${RELEASE_CHANNEL:-"unstable"}
 
   read -p "New version: " NEW_RELEASE_VERSION < /dev/tty;
   # normalize by removing leading v (i.e., v0.0.1)
