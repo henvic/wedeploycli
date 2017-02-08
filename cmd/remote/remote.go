@@ -18,12 +18,13 @@ var RemoteCmd = &cobra.Command{
 	RunE:    remoteRun,
 }
 
-var addCmd = &cobra.Command{
-	Use:     "add",
+var setCmd = &cobra.Command{
+	Use:     "set",
 	Short:   "Adds a remote named <name> with <url>",
-	Example: "we remote add hk https://hk.example.com/",
+	Example: "we remote set hk https://hk.example.com/",
+	Aliases: []string{"add"},
 	PreRunE: cmdargslen.ValidateCmd(2, 2),
-	RunE:    addRun,
+	RunE:    setRun,
 }
 
 var renameCmd = &cobra.Command{
@@ -32,6 +33,7 @@ var renameCmd = &cobra.Command{
 	Example: "we remote rename asia hk",
 	PreRunE: cmdargslen.ValidateCmd(2, 2),
 	RunE:    renameRun,
+	Hidden:  true,
 }
 
 var removeCmd = &cobra.Command{
@@ -47,6 +49,7 @@ var getURLCmd = &cobra.Command{
 	Short:   "Retrieves the URLs for a remote",
 	PreRunE: cmdargslen.ValidateCmd(1, 1),
 	RunE:    getURLRun,
+	Hidden:  true,
 }
 
 var setURLCmd = &cobra.Command{
@@ -54,6 +57,7 @@ var setURLCmd = &cobra.Command{
 	Short:   "Changes URLs for the remote",
 	PreRunE: cmdargslen.ValidateCmd(2, 2),
 	RunE:    setURLRun,
+	Hidden:  true,
 }
 
 func remoteRun(cmd *cobra.Command, args []string) error {
@@ -67,7 +71,7 @@ func remoteRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func addRun(cmd *cobra.Command, args []string) error {
+func setRun(cmd *cobra.Command, args []string) error {
 	if len(args) != 2 {
 		return errors.New("Invalid number of arguments.")
 	}
@@ -77,7 +81,7 @@ func addRun(cmd *cobra.Command, args []string) error {
 	var name = args[0]
 
 	if _, ok := remotes[name]; ok {
-		return errors.New("fatal: remote " + name + " already exists.")
+		remotes.Del(name)
 	}
 
 	remotes.Set(name, args[1])
@@ -162,7 +166,7 @@ func setURLRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	RemoteCmd.AddCommand(addCmd)
+	RemoteCmd.AddCommand(setCmd)
 	RemoteCmd.AddCommand(renameCmd)
 	RemoteCmd.AddCommand(removeCmd)
 	RemoteCmd.AddCommand(getURLCmd)
