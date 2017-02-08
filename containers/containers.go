@@ -255,17 +255,30 @@ func readValidate(container Container, err error) error {
 
 // SetEnvironmentVariable sets an environment variable
 func SetEnvironmentVariable(ctx context.Context, projectID, containerID, key, value string) error {
+	var container, cerr = Get(ctx, projectID, containerID)
+
+	if cerr != nil {
+		return errwrap.Wrapf("Can not get current environment variables: {{err}}", cerr)
+	}
+
+	var envs = container.Env
+
+	if envs == nil {
+		envs = map[string]string{}
+	}
+
+	envs[key] = value
+
 	var req = apihelper.URL(ctx,
 		"/projects",
 		url.QueryEscape(projectID),
 		"/containers",
 		url.QueryEscape(containerID),
-		"/env",
-		url.QueryEscape(key))
+		"/env")
 
 	apihelper.Auth(req)
 
-	if err := apihelper.SetBody(req, value); err != nil {
+	if err := apihelper.SetBody(req, envs); err != nil {
 		return errwrap.Wrapf("Can not set body for setting environment variable: {{err}}", err)
 	}
 
@@ -274,16 +287,34 @@ func SetEnvironmentVariable(ctx context.Context, projectID, containerID, key, va
 
 // UnsetEnvironmentVariable removes an environment variable
 func UnsetEnvironmentVariable(ctx context.Context, projectID, containerID, key string) error {
+	var container, cerr = Get(ctx, projectID, containerID)
+
+	if cerr != nil {
+		return errwrap.Wrapf("Can not get current environment variables: {{err}}", cerr)
+	}
+
+	var envs = container.Env
+
+	if envs == nil {
+		envs = map[string]string{}
+	}
+
+	delete(envs, key)
+
 	var req = apihelper.URL(ctx,
 		"/projects",
 		url.QueryEscape(projectID),
 		"/containers",
 		url.QueryEscape(containerID),
-		"/env",
-		url.QueryEscape(key))
+		"/env")
 
 	apihelper.Auth(req)
-	return apihelper.Validate(req, req.Delete())
+
+	if err := apihelper.SetBody(req, envs); err != nil {
+		return errwrap.Wrapf("Can not set body for setting environment variable: {{err}}", err)
+	}
+
+	return apihelper.Validate(req, req.Put())
 }
 
 // Restart restarts a container inside a project

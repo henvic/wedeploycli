@@ -344,6 +344,7 @@ func TestReadCorrupted(t *testing.T) {
 }
 
 func TestSetEnvironmentVariable(t *testing.T) {
+	t.Skipf("Skipping until https://github.com/wedeploy/cli/issues/186 is closed")
 	servertest.Setup()
 	configmock.Setup()
 
@@ -375,6 +376,7 @@ func TestSetEnvironmentVariable(t *testing.T) {
 }
 
 func TestUnsetEnvironmentVariable(t *testing.T) {
+	t.Skipf("Skipping until https://github.com/wedeploy/cli/issues/186 is closed")
 	servertest.Setup()
 	configmock.Setup()
 
