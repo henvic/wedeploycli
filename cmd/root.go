@@ -51,29 +51,30 @@ var (
 )
 
 var commands = []*cobra.Command{
-	cmdmetrics.MetricsCmd,
 	cmdautocomplete.AutocompleteCmd,
 	cmdlogin.LoginCmd,
 	cmdlogout.LogoutCmd,
+	cmdremote.RemoteCmd,
 	cmdgenerate.GenerateCmd,
-	cmddev.DevCmd,
 	cmddeploy.DeployCmd,
 	cmdundeploy.UndeployCmd,
-	cmdlog.LogCmd,
-	cmdlist.ListCmd,
-	cmdrestart.RestartCmd,
+	cmddev.DevCmd,
 	cmdbuild.BuildCmd,
 	cmddomain.DomainCmd,
 	cmdenv.EnvCmd,
+	cmdlist.ListCmd,
+	cmdlog.LogCmd,
 	cmdstart.StartCmd,
-	cmdinspect.InspectCmd,
-	cmdremote.RemoteCmd,
+	cmdrestart.RestartCmd,
+	cmdmetrics.MetricsCmd,
 	cmdupdate.UpdateCmd,
 	cmdversion.VersionCmd,
+	cmdinspect.InspectCmd,
 	cmdwho.WhoCmd,
 }
 
 func init() {
+	cobra.EnableCommandSorting = false
 	autocomplete.RootCmd = RootCmd
 	commands = append(commands, cmdremoved.List...)
 

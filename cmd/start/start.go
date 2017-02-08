@@ -14,6 +14,10 @@ var StartCmd = &cobra.Command{
 	RunE:  startRun,
 }
 
+func init() {
+	StartCmd.Hidden = true
+}
+
 func startRun(cmd *cobra.Command, args []string) error {
 	var container, err = containers.Read(".")
 

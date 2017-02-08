@@ -24,6 +24,10 @@ var BuildCmd = &cobra.Command{
 	RunE:    buildRun,
 }
 
+func init() {
+	BuildCmd.Hidden = true
+}
+
 func getContainersFromScope() ([]string, error) {
 	if config.Context.ContainerRoot != "" {
 		_, container := filepath.Split(config.Context.ContainerRoot)

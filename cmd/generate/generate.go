@@ -95,6 +95,8 @@ func init() {
 		"container-boilerplate",
 		true,
 		"Generate container boilerplate")
+
+	GenerateCmd.Hidden = true
 }
 
 func shouldPromptToGenerateContainer() (bool, error) {
