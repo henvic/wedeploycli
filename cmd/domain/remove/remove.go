@@ -2,7 +2,6 @@ package cmddomainremove
 
 import (
 	"context"
-	"errors"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
@@ -12,14 +11,12 @@ import (
 
 // Cmd for removing a domain
 var Cmd = &cobra.Command{
-	Use:     "remove",
+	Use:     "rm",
 	Short:   "Remove custom domain of a given project",
-	Example: "we domain remove --domain example.com",
+	Example: "we domain rm example.com",
 	PreRunE: preRun,
 	RunE:    run,
 }
-
-var domain string
 
 var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern:             cmdflagsfromhost.ProjectAndRemotePattern,
@@ -32,12 +29,10 @@ var setupHost = cmdflagsfromhost.SetupHost{
 
 func init() {
 	setupHost.Init(Cmd)
-	Cmd.Flags().StringVar(&domain, "domain", "",
-		"Custom domain")
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if err := cmdargslen.Validate(args, 0, 0); err != nil {
+	if err := cmdargslen.Validate(args, 1, 1); err != nil {
 		return err
 	}
 
@@ -45,12 +40,8 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	if domain == "" {
-		return errors.New("Custom domain is required")
-	}
-
 	return projects.RemoveDomain(
 		context.Background(),
 		setupHost.Project(),
-		domain)
+		args[0])
 }

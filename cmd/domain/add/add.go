@@ -18,8 +18,6 @@ var Cmd = &cobra.Command{
 	RunE:    run,
 }
 
-var domain string
-
 var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern:             cmdflagsfromhost.ProjectAndRemotePattern,
 	UseProjectDirectory: true,
@@ -31,8 +29,6 @@ var setupHost = cmdflagsfromhost.SetupHost{
 
 func init() {
 	setupHost.Init(Cmd)
-	Cmd.Flags().StringVar(&domain, "domain", "",
-		"Custom domain")
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
