@@ -8,24 +8,26 @@ Usage:
   we [command]
 
 Available Commands:
-  build        Build container(s) (current or all containers of a project)
-  deploy       Deploy the current project
-  dev          Run development environment for a project or container
-  domain       Configure custom domains for projects
-  env          Environment variables for containers
-  generate     Generates a project or container
-  inspect      Inspect environment info
-  list         List projects and containers running on WeDeploy
-  log          See logs of what is running on WeDeploy
   login        Using Basic Authentication with your credentials
   logout       Revoke credentials
-  metrics      Analytics reporting and settings
   remote       Configure WeDeploy remotes
-  restart      Restart project or container running on WeDeploy
-  start        Run start container hook
+
+  deploy       Deploy the current project
   undeploy     Undeploy a given project or container
+  dev          Run development environment
+
+  domain       Configure custom domains for projects
+  env          Environment variables for containers
+  list         List projects and containers running
+  log          See logs running containers
+  restart      Restart project or container
+
+  metrics      Analytics reporting and settings
   update       Updates this tool to the latest version
   version      Print version information and quit
+
+  inspect      Inspect environment info
+  diagnostics  Send diagnostics report to WeDeploy
 
 Flags:
       --no-color   Disable color output
