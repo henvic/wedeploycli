@@ -78,27 +78,52 @@ func Create(ctx context.Context, id string) (project *Project, err error) {
 
 // AddDomain in project
 func AddDomain(ctx context.Context, projectID string, domain string) (err error) {
+	var project, perr = Get(context.Background(), projectID)
+
+	if perr != nil {
+		return errwrap.Wrapf("Can not get current domains: {{err}}", perr)
+	}
+
+	var customDomains = project.CustomDomains
+	customDomains = append(customDomains, domain)
+
 	var req = apihelper.URL(ctx, "/projects", url.QueryEscape(projectID), "/customDomains")
 
 	apihelper.Auth(req)
 
-	if err := apihelper.SetBody(req, domain); err != nil {
+	if err := apihelper.SetBody(req, customDomains); err != nil {
 		return errwrap.Wrapf("Can not set body for domain: {{err}}", err)
 	}
-	return apihelper.Validate(req, req.Patch())
+	return apihelper.Validate(req, req.Put())
 }
 
 // RemoveDomain in project
 func RemoveDomain(ctx context.Context, projectID string, domain string) (err error) {
+	var project, perr = Get(context.Background(), projectID)
+
+	if perr != nil {
+		return errwrap.Wrapf("Can not get current domains: {{err}}", perr)
+	}
+
+	var customDomains = []string{}
+
+	for _, d := range project.CustomDomains {
+		if domain != d {
+			customDomains = append(customDomains, d)
+		}
+	}
+
 	var req = apihelper.URL(ctx,
 		"/projects",
 		url.QueryEscape(projectID),
-		"/customDomains",
-		"/",
-		url.QueryEscape(domain))
+		"/customDomains")
 
 	apihelper.Auth(req)
-	return apihelper.Validate(req, req.Delete())
+
+	if err := apihelper.SetBody(req, customDomains); err != nil {
+		return errwrap.Wrapf("Can not set body for domain: {{err}}", err)
+	}
+	return apihelper.Validate(req, req.Put())
 }
 
 // Get project by ID

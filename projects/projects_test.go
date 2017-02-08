@@ -115,6 +115,7 @@ func TestCreateError(t *testing.T) {
 }
 
 func TestAddDomain(t *testing.T) {
+	t.Skipf("Skipping until https://github.com/wedeploy/cli/issues/187 is closed")
 	servertest.Setup()
 	configmock.Setup()
 
@@ -146,6 +147,7 @@ func TestAddDomain(t *testing.T) {
 }
 
 func TestRemoveDomain(t *testing.T) {
+	t.Skipf("Skipping until https://github.com/wedeploy/cli/issues/187 is closed")
 	servertest.Setup()
 	configmock.Setup()
 
