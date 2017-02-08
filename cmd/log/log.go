@@ -37,7 +37,7 @@ func init() {
 // LogCmd is used for getting logs about a given scope
 var LogCmd = &cobra.Command{
 	Use:     "log <host> or --project <project> --container <container> --instance hash",
-	Short:   "See logs of what is running on WeDeploy",
+	Short:   "See logs running containers",
 	PreRunE: preRun,
 	RunE:    logRun,
 	Example: `we log --project chat --container data

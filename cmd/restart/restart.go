@@ -15,7 +15,7 @@ import (
 // RestartCmd is used for getting restart
 var RestartCmd = &cobra.Command{
 	Use:     "restart --url <host URL> or --project <project> --container <container>",
-	Short:   "Restart project or container running on WeDeploy",
+	Short:   "Restart project or container\n",
 	PreRunE: preRun,
 	RunE:    restartRun,
 	Example: `we restart --project chat --container data

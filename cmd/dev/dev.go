@@ -34,7 +34,7 @@ var (
 // and / or a project or container
 var DevCmd = &cobra.Command{
 	Use:     "dev",
-	Short:   "Run development environment for a project or container",
+	Short:   "Run development environment\n",
 	PreRunE: devPreRun,
 	RunE:    devRun,
 	Example: `  we dev
