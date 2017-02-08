@@ -95,3 +95,7 @@ Functional test suites are saved in:
 ```
 
 And run it as a regular executable on each target system. Several options (including some required) are available both for automated and for manual testing.
+
+
+## Environment variables
+`WEDEPLOY_MACHINE_FRIENDLY` changes human-friendly multiple spaces to machine-friendly tabs.
