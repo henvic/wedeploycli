@@ -2,7 +2,6 @@ package cmdenvunset
 
 import (
 	"context"
-	"errors"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
@@ -14,12 +13,10 @@ import (
 var Cmd = &cobra.Command{
 	Use:     "rm",
 	Short:   "Remove an environment variable for a given container",
-	Example: "we env rm --key FOO",
+	Example: "we env rm foo",
 	PreRunE: preRun,
 	RunE:    run,
 }
-
-var key string
 
 var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern:               cmdflagsfromhost.FullHostPattern,
@@ -34,11 +31,10 @@ var setupHost = cmdflagsfromhost.SetupHost{
 
 func init() {
 	setupHost.Init(Cmd)
-	Cmd.Flags().StringVar(&key, "key", "", "Environment variable name")
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if err := cmdargslen.Validate(args, 0, 0); err != nil {
+	if err := cmdargslen.Validate(args, 1, 1); err != nil {
 		return err
 	}
 
@@ -46,13 +42,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	if key == "" {
-		return errors.New("Environment variable name is required")
-	}
-
 	return containers.UnsetEnvironmentVariable(
 		context.Background(),
 		setupHost.Project(),
 		setupHost.Container(),
-		key)
+		args[0])
 }
