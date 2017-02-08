@@ -49,7 +49,7 @@ func (l *linker) Run(cmd *cobra.Command, args []string) error {
 	switch errProjectID {
 	case nil:
 	case projects.ErrProjectNotFound:
-		fmt.Println(`Use "we generate" to start a new project.`)
+		fmt.Println(`See http://wedeploy.com/docs`)
 		return nil
 	default:
 		return errProjectID
