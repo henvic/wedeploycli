@@ -24,6 +24,7 @@ import (
 	"github.com/wedeploy/cli/cmd/undeploy"
 	"github.com/wedeploy/cli/cmd/update"
 	"github.com/wedeploy/cli/cmd/version"
+	"github.com/wedeploy/cli/cmd/who"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
@@ -69,6 +70,7 @@ var commands = []*cobra.Command{
 	cmdremote.RemoteCmd,
 	cmdupdate.UpdateCmd,
 	cmdversion.VersionCmd,
+	cmdwho.WhoCmd,
 }
 
 func init() {
