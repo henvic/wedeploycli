@@ -51,6 +51,36 @@ func resetMetricsSetup() {
 	}
 }
 
+func TestConfigIsNil(t *testing.T) {
+	var cached = config.Global
+	defer func() {
+		config.Global = cached
+	}()
+
+	config.Global = nil
+	var saved, err = RecOrFail(Event{
+		Type: "update",
+		Text: "Starting update to version 0.2 from 0.1.",
+		Tags: []string{
+			"update_after_outdated_notification",
+			"local_infrastructure_is_shutdown",
+		},
+		Extra: map[string]string{
+			"old_version": "0.1",
+			"new_version": "0.2",
+			"channel":     "stable",
+		},
+	})
+
+	if saved {
+		t.Errorf("Expected config to not be saved")
+	}
+
+	if err != nil {
+		t.Errorf("Expected no errors, got %v instead", err)
+	}
+}
+
 func TestSetPath(t *testing.T) {
 	defer resetMetricsSetup()
 

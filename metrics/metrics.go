@@ -91,7 +91,7 @@ func Rec(e Event) {
 
 // RecOrFail records event if analytics is enabled and returns an error on failure
 func RecOrFail(e Event) (saved bool, err error) {
-	if !config.Global.EnableAnalytics {
+	if config.Global == nil || !config.Global.EnableAnalytics {
 		return false, nil
 	}
 
