@@ -17,6 +17,7 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/errorhandling"
+	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/projects"
 )
 
@@ -193,8 +194,7 @@ func (l *List) printProject(p projects.Project) {
 	}
 
 	l.printf(word)
-	l.printf(" ")
-	l.conditionalPad(word, 55)
+	l.printf(formatter.CondPad(word, 55))
 	l.printf(getFormattedHealth(p.Health) + "\n")
 	l.printContainers(p.ID, p.Containers)
 }
@@ -216,21 +216,15 @@ func (l *List) printContainers(projectID string, cs containers.Containers) {
 	}
 }
 
-func (l *List) conditionalPad(word string, maxWord int) {
-	if maxWord > len(word) {
-		l.printf(pad(maxWord - len(word)))
-	}
-}
-
 func (l *List) printContainer(projectID string, c *containers.Container) {
 	l.printf(color.Format(getHealthForegroundColor(c.Health), " ● "))
 	containerDomain := getContainerDomain(projectID, c.ID)
-	l.printf("%v ", containerDomain)
-	l.conditionalPad(containerDomain, 52)
+	l.printf("%v", containerDomain)
+	l.printf(formatter.CondPad(containerDomain, 52))
 	l.printInstances(c.Scale)
 	t := getType(c.Type)
-	l.printf(color.Format(color.FgHiBlack, "%v ", t))
-	l.conditionalPad(t, 23)
+	l.printf(color.Format(color.FgHiBlack, "%v", t))
+	l.printf(formatter.CondPad(t, 23))
 	l.printf("%v\n", c.Health)
 }
 
@@ -247,8 +241,7 @@ func (l *List) printInstances(instances int) {
 		l.printf("s")
 	}
 
-	l.printf(" ")
-	l.conditionalPad(s, 14)
+	l.printf(formatter.CondPad(s, 15))
 }
 
 // Watcher structure
