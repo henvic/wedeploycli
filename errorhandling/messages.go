@@ -42,10 +42,6 @@ var errorReasonCommandMessageOverrides = map[string]messages{
 		"documentNotFound": "Not found",
 		"notFound":         "Not found",
 	},
-	"log": messages{
-		"notFound":         "Container not found",
-		"documentNotFound": "Container not found",
-	},
 	"undeploy": messages{
 		"notFound":         "Project not found",
 		"invalidContainer": "Container not found",
