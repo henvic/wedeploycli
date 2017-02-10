@@ -12,9 +12,12 @@ import (
 	"reflect"
 	"regexp"
 	"runtime"
+	"testing"
 	"time"
 
+	"github.com/wedeploy/cli/cmdrunner"
 	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/stringlib"
 	"github.com/wedeploy/cli/verbosereq"
 )
 
@@ -76,4 +79,29 @@ func log(format string, a ...interface{}) {
 
 func logInterface(a ...interface{}) {
 	log("%v", a...)
+}
+
+// Expect structure
+type Expect struct {
+	Stderr   string
+	Stdout   string
+	ExitCode int
+}
+
+// Assert tests if command executed exactly as described by Expect
+func (e *Expect) Assert(t *testing.T, cmd *cmdrunner.Command) {
+	if cmd.ExitCode != e.ExitCode {
+		t.Errorf("Wanted exit code %v, got %v instead", e.ExitCode, cmd.ExitCode)
+	}
+
+	errString := cmd.Stderr.String()
+	outString := cmd.Stdout.String()
+
+	if !stringlib.Similar(errString, e.Stderr) {
+		t.Errorf("Wanted Stderr %v, got %v instead", e.Stderr, errString)
+	}
+
+	if !stringlib.Similar(outString, e.Stdout) {
+		t.Errorf("Wanted Stdout %v, got %v instead", e.Stdout, outString)
+	}
 }
