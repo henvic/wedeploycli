@@ -2,6 +2,7 @@ package cmdenvset
 
 import (
 	"context"
+	"errors"
 
 	"strings"
 
@@ -45,9 +46,11 @@ func preRun(cmd *cobra.Command, args []string) error {
 	return setupHost.Process()
 }
 
-func run(cmd *cobra.Command, args []string) error {
-	var key = args[0]
-	var value string
+func getEnvPair(args []string) (key, value string, err error) {
+	key = args[0]
+
+	// don't check if value for environment variable is empty
+	// as it is an acceptable value, no matter how useless it might be
 
 	if len(args) == 2 {
 		value = args[1]
@@ -55,12 +58,24 @@ func run(cmd *cobra.Command, args []string) error {
 
 	if value == "" && len(args) == 1 {
 		var v = strings.SplitN(key, "=", 2)
+
+		if len(v) != 2 {
+			return "", "", errors.New("Missing environment variable value")
+		}
+
 		key = v[0]
 		value = v[1]
 	}
 
-	// don't check if value for environment variable is empty
-	// as it is an acceptable value, no matter how useless it might be
+	return key, value, nil
+}
+
+func run(cmd *cobra.Command, args []string) error {
+	var key, value, err = getEnvPair(args)
+
+	if err != nil {
+		return err
+	}
 
 	return containers.SetEnvironmentVariable(
 		context.Background(),
