@@ -1,6 +1,8 @@
 package integration
 
 import (
+	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/wedeploy/cli/servertest"
@@ -52,6 +54,10 @@ func TestListContainerFromInsideProject(t *testing.T) {
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc(
+		"/projects/app/containers/container",
+		tdata.ServerJSONFileHandler("./mocks/home/bucket/project/container/container.json"))
+
+	servertest.IntegrationMux.HandleFunc(
 		"/projects/app",
 		tdata.ServerJSONFileHandler("./mocks/home/bucket/project/container/container_list.json"))
 
@@ -64,6 +70,40 @@ func TestListContainerFromInsideProject(t *testing.T) {
 	var e = &Expect{
 		Stdout:   tdata.FromFile("mocks/home/bucket/project/container/container_list_want"),
 		ExitCode: 0,
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+}
+
+func TestListContainerFromInsideProjectNotExists(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	servertest.IntegrationMux.HandleFunc("/projects/app/containers/container", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-type", "application/json; charset=UTF-8")
+		w.WriteHeader(404)
+		fmt.Fprintf(w, `{
+    "code": 404,
+    "message": "Not Found",
+    "errors": [
+        {
+            "reason": "notFound",
+            "message": "The requested operation failed because a resource associated with the request could not be found."
+        }
+    ]
+}`)
+	})
+
+	var cmd = &Command{
+		Args: []string{"list", "--container", "container", "--remote", "local", "--no-color"},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+		Dir:  "mocks/home/bucket/project",
+	}
+
+	var e = &Expect{
+		Stderr:   "Not found\n",
+		ExitCode: 1,
 	}
 
 	cmd.Run()

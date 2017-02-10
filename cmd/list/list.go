@@ -1,8 +1,11 @@
 package cmdlist
 
 import (
+	"context"
+
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
+	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/list"
 
 	"github.com/spf13/cobra"
@@ -43,7 +46,17 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return setupHost.Process()
+	if err := setupHost.Process(); err != nil {
+		return err
+	}
+
+	if !watch && setupHost.Container() != "" {
+		if _, err := containers.Get(context.Background(), setupHost.Project(), setupHost.Container()); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func listRun(cmd *cobra.Command, args []string) {
