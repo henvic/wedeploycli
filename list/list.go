@@ -209,6 +209,11 @@ func (l *List) printContainers(projectID string, cs containers.Containers) {
 		keys = append(keys, k)
 	}
 
+	if len(keys) == 0 {
+		l.printf(fmt.Sprintln(color.Format(color.FgHiRed, " (no container found)")))
+		return
+	}
+
 	sort.Strings(keys)
 
 	for _, k := range keys {
