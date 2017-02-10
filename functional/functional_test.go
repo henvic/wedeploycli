@@ -38,6 +38,7 @@ var tests = []func(t *testing.T){
 	scenario1.testRun,
 	scenario1.linkContainer,
 	scenario1.testLinkedChatAfter5Seconds,
+	scenario1.testErrorFeedbacks,
 	scenario1.testShutdownGracefullyAfter5Seconds,
 	scenario1.testDockerHasNoContainersRunning,
 	scenario1.testDockerHasNoContainers,
@@ -382,6 +383,111 @@ func (s *scenario) testLinkedChat(t *testing.T) {
 
 	if !ok || v != "Hello, world! Message from a functional test." {
 		t.Fatalf("Expected value not found in %v", m)
+	}
+}
+
+type feTestCase struct {
+	argsList [][]string
+	stderr   string
+}
+
+var feTestCases = []feTestCase{
+	feTestCase{
+		[][]string{
+			[]string{"undeploy", "--project", "foo", "-r", "local"},
+			[]string{"undeploy", "--project", "foo", "--remote", "local"},
+		},
+		`You can not run undeploy in the local infrastructure. Use "we dev stop" instead`,
+	},
+	feTestCase{
+		[][]string{
+			[]string{"domain", "-p", "foo", "-r", "local"},
+			[]string{"domain", "--project", "foo", "-r", "local"},
+			[]string{"domain", "-u", "foo.wedeploy.me"},
+			[]string{"domain", "--url", "foo.wedeploy.me"},
+			[]string{"domain", "-p", "foo", "-r", "local", "add", "example.com"},
+			[]string{"domain", "--project", "foo", "-r", "local", "add", "example.com"},
+			[]string{"domain", "-u", "foo.wedeploy.me", "-r", "local", "add", "example.com"},
+			[]string{"domain", "--url", "foo.wedeploy.me", "-r", "local", "add", "example.com"},
+			[]string{"domain", "-p", "foo", "-r", "local", "rm", "example.com"},
+			[]string{"domain", "--project", "foo", "-r", "local", "rm", "example.com"},
+			[]string{"domain", "-u", "foo.wedeploy.me", "rm", "example.com"},
+			[]string{"domain", "--url", "foo.wedeploy.me", "rm", "example.com"},
+			[]string{"domain", "--project", "foo", "--remote", "local"},
+		},
+		"Project not found",
+	},
+	feTestCase{
+		[][]string{
+			[]string{"env", "-p", "foo", "-c", "bar", "-r", "local"},
+			[]string{"env", "--project", "foo", "--container", "bar", "--remote", "local"},
+			[]string{"env", "-u", "bar.foo.wedeploy.me"},
+			[]string{"env", "--url", "bar.foo.wedeploy.me"},
+			[]string{"env", "-p", "foo", "-c", "bar", "--remote", "local", "add", "envkey=envvalue"},
+			[]string{"env", "--project", "foo", "-c", "bar", "add", "envkey=envvalue"},
+			[]string{"env", "-u", "bar.foo.wedeploy.me", "add", "envkey=envvalue"},
+			[]string{"env", "--url", "bar.foo.wedeploy.me", "add", "envkey=envvalue"},
+			[]string{"env", "-p", "foo", "-c", "bar", "--remote", "local", "set", "envkey=envvalue"},
+			[]string{"env", "--project", "foo", "-c", "bar", "--remote", "local", "set", "envkey=envvalue"},
+			[]string{"env", "-u", "bar.foo.wedeploy.me", "set", "envkey=envvalue"},
+			[]string{"env", "--url", "bar.foo.wedeploy.me", "set", "envkey=envvalue"},
+			[]string{"env", "--url", "bar.foo.wedeploy.me", "set", "envkey", "envvalue"},
+			[]string{"env", "-p", "foo", "-c", "bar", "--remote", "local", "rm", "envkey"},
+			[]string{"env", "--project", "foo", "--container", "bar", "--remote", "local", "rm", "envkey"},
+			[]string{"env", "-u", "bar.foo.wedeploy.me", "rm", "envkey"},
+			[]string{"env", "--url", "bar.foo.wedeploy.me", "rm", "envkey"},
+		},
+		"Container not found",
+	},
+	feTestCase{
+		[][]string{
+			[]string{"list", "-p", "foo", "-r", "local"},
+			[]string{"list", "--project", "foo", "--remote", "local"},
+			[]string{"list", "--project", "foo", "-c", "bar", "--remote", "local"},
+			[]string{"list", "--project", "foo", "--container", "bar", "--remote", "local"},
+			[]string{"list", "--url", "foo.wedeploy.me"},
+			[]string{"log", "-p", "foo", "-r", "local"},
+			[]string{"log", "--project", "foo", "--remote", "local"},
+			[]string{"log", "--project", "foo", "-c", "bar", "--remote", "local"},
+			[]string{"log", "--project", "foo", "--container", "bar", "--remote", "local"},
+			[]string{"log", "--url", "foo.wedeploy.me"},
+			[]string{"restart", "-p", "foo", "-r", "local"},
+			[]string{"restart", "--project", "foo", "--remote", "local"},
+			[]string{"restart", "--project", "foo", "-c", "bar", "--remote", "local"},
+			[]string{"restart", "--project", "foo", "--container", "bar", "--remote", "local"},
+			[]string{"restart", "--url", "foo.wedeploy.me"},
+		},
+		"Not found",
+	},
+	feTestCase{
+		[][]string{
+			[]string{"env", "--project", "foo", "-c", "bar", "add", "envkey"},
+		},
+		"Missing environment variable value",
+	},
+}
+
+func testErrorFeedbackFunc(t *testing.T, args []string, stderr string) {
+	var cmd = &cmdrunner.Command{
+		Name: "we",
+		Args: args,
+	}
+
+	cmd.Run()
+
+	var e = &Expect{
+		Stderr:   stderr,
+		ExitCode: 1,
+	}
+
+	e.Assert(t, cmd)
+}
+
+func (s *scenario) testErrorFeedbacks(t *testing.T) {
+	for _, tc := range feTestCases {
+		for _, args := range tc.argsList {
+			testErrorFeedbackFunc(t, args, tc.stderr)
+		}
 	}
 }
 
