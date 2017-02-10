@@ -1,10 +1,9 @@
 package errorhandling
 
 var errorReasonMessage = messages{
-	"unauthorized":     "Access is denied due to invalid credentials",
-	"documentNotFound": "Document not found",
-	"notFound": "The requested operation failed because a resource associated" +
-		" with the request could not be found",
+	"unauthorized":              "Access is denied due to invalid credentials",
+	"documentNotFound":          "Not found",
+	"notFound":                  "Not found",
 	"badRequest":                "The API request is invalid or improperly formed",
 	"internalError":             "The request failed due to an internal error",
 	"projectQuotaExceeded":      "Project quote exceeded",
@@ -18,22 +17,37 @@ var errorReasonMessage = messages{
 	"customDomainAlreadyExists": "Custom domain already exists",
 	"invalidProjectId":          "Invalid project ID",
 	"projectAlreadyExists":      "Project already exists",
+	"projectNotFound":           "Project not found",
+	"containerNotFound":         "Container not found",
 }
 
 var errorReasonCommandMessageOverrides = map[string]messages{
 	"dev": messages{
 		"typeNotFound":                  "Container type not found",
 		"projectContainerQuotaExceeded": "Your quota for containers has exceeded",
+		"exists":                        "Project is already linked",
 	},
 	"dev stop": messages{
-		"documentNotFound": "Can not find project or container",
-		"deleteProject":    "Can not delete project",
+		"deleteProject": "Can not delete project",
 	},
-	"list": messages{
-		"projectNotFound":  "Project not found",
+	"domain": messages{
+		"notFound":         "Project not found",
 		"documentNotFound": "Project not found",
 	},
+	"env": messages{
+		"notFound":         "Container not found",
+		"documentNotFound": "Container not found",
+	},
+	"list": messages{
+		"documentNotFound": "Not found",
+		"notFound":         "Not found",
+	},
 	"log": messages{
-		"notFound": "Log not found",
+		"notFound":         "Container not found",
+		"documentNotFound": "Container not found",
+	},
+	"undeploy": messages{
+		"notFound":         "Project not found",
+		"invalidContainer": "Container not found",
 	},
 }
