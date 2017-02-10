@@ -8,6 +8,7 @@ import (
 	"github.com/wedeploy/cli/cmd/cmdmanager"
 	"github.com/wedeploy/cli/cmd/deploy"
 	"github.com/wedeploy/cli/cmd/dev"
+	"github.com/wedeploy/cli/cmd/diagnostics"
 	"github.com/wedeploy/cli/cmd/domain"
 	"github.com/wedeploy/cli/cmd/env"
 	"github.com/wedeploy/cli/cmd/generate"
@@ -70,6 +71,7 @@ var commands = []*cobra.Command{
 	cmdupdate.UpdateCmd,
 	cmdversion.VersionCmd,
 	cmdinspect.InspectCmd,
+	cmddiagnostics.DiagnosticsCmd,
 	cmdwho.WhoCmd,
 }
 

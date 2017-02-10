@@ -27,7 +27,7 @@ Available Commands:
   version      Print version information and quit
 
   inspect      Inspect environment info
-  diagnostics  Send diagnostics report to WeDeploy
+  diagnostics  Diagnose & Feedback
 
 Flags:
       --no-color   Disable color output
