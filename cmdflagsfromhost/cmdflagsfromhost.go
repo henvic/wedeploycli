@@ -206,7 +206,7 @@ func (s *SetupHost) getContainerFromCurrentWorkingDirectory() (container string,
 
 	switch {
 	case err != nil && err != containers.ErrContainerNotFound:
-		return "", errwrap.Wrapf("Error extracting container ID from current directory's context: {{err}}", err)
+		return "", errwrap.Wrapf("Error reading current container: {{err}}", err)
 	case err == containers.ErrContainerNotFound:
 		return "", nil
 	}
@@ -223,9 +223,19 @@ func (s *SetupHost) getProjectFromCurrentWorkingDirectory() (project string, err
 
 	switch {
 	case err != nil && err != projects.ErrProjectNotFound:
-		return "", errwrap.Wrapf("Error extracting project ID from current directory's context: {{err}}", err)
+		return "", errwrap.Wrapf("Error reading current project: {{err}}", err)
 	case err == projects.ErrProjectNotFound:
-		return "", errwrap.Wrapf("Project or local project.json context not found", err)
+		if !s.Requires.Container || s.Pattern&ContainerPattern == 0 {
+			return "", errwrap.Wrapf(
+				"Use flag --project or call this from inside a project directory", err)
+		}
+
+		if !s.UseContainerDirectory {
+			return "", errwrap.Wrapf("Use flags --project and --container", err)
+		}
+
+		return "", errwrap.Wrapf(
+			"Use flags --project and --container or call this from inside a project container directory", err)
 	}
 
 	return project, nil

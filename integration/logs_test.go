@@ -42,7 +42,7 @@ func TestLogsIncompatibleUse(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stderr:   "Project or local project.json context not found",
+		Stderr:   "Use flag --project or call this from inside a project directory",
 		ExitCode: 1,
 	}
 
