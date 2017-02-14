@@ -27,7 +27,7 @@ type Logs struct {
 	Level        int    `json:"level"`
 	Message      string `json:"message"`
 	Severity     string `json:"severity"`
-	Timestamp    string `json:"timestamp"`
+	Timestamp    int64  `json:"timestamp"`
 }
 
 // Filter structure
@@ -185,13 +185,7 @@ func (w *Watcher) pool() {
 
 func (w *Watcher) incSinceArgument(list []Logs) {
 	var last = list[len(list)-1]
-	var next, err = strconv.ParseInt(last.Timestamp, 10, 0)
-
-	if err != nil {
-		panic(err)
-	}
-
-	next++
+	var next = last.Timestamp + 1
 
 	w.Filter.Since = fmt.Sprintf("%v", next)
 	verbose.Debug("Next --since parameter value = " + w.Filter.Since)
