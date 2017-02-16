@@ -1,5 +1,5 @@
-hash: a50b942a2fd7e189e30f6e7fcddd7179f221dace1d347ffb916abc95a5218947
-updated: 2017-01-03T15:35:56.846413224-08:00
+hash: 6de00a35e093a0ec5613adad5fc80114ccc3677684e67e4d7fb01489f9e3c570
+updated: 2017-02-14T10:36:18.983871462-08:00
 imports:
 - name: github.com/coreos/go-semver
   version: 8ab6407b697782a06568d4b7f1db25550ec2e4c6
@@ -9,6 +9,8 @@ imports:
   version: a65d4d2de4d5f7c74868dfa9b202a3c8be315aaa
   subpackages:
   - md2man
+- name: github.com/dgrijalva/jwt-go
+  version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
 - name: github.com/equinox-io/equinox
   version: 6f97d0d3970881d3e53dd6f547a41109eb055e54
   subpackages:
@@ -36,6 +38,8 @@ imports:
   version: 66b8e73f3f5cda9f96b69efd03dd3d7fc4a5cdb8
 - name: github.com/mitchellh/go-wordwrap
   version: ad45545899c7b13c020ea92b2072220eefad42b8
+- name: github.com/pkg/browser
+  version: 8189194c9f158043d6d45a0b939a47a924ea4b13
 - name: github.com/russross/blackfriday
   version: 35eb537633d9950afc8ae7bdf0edb6134584e9fc
 - name: github.com/satori/go.uuid
