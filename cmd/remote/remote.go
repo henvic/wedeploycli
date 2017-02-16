@@ -20,7 +20,7 @@ var RemoteCmd = &cobra.Command{
 
 var setCmd = &cobra.Command{
 	Use:     "set",
-	Short:   "Adds a remote named <name> with <url>",
+	Short:   "Set a remote named <name> with <url>",
 	Example: "we remote set hk https://hk.example.com/",
 	Aliases: []string{"add"},
 	PreRunE: cmdargslen.ValidateCmd(2, 2),
