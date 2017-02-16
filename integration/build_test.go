@@ -140,6 +140,34 @@ func TestBuildProjectNoErrors(t *testing.T) {
 	Teardown()
 }
 
+func TestBuildProjectNoErrorsWithVerboseByEnv(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Not testing hooks.Build() on Windows")
+	}
+
+	Setup()
+
+	var cmd = &Command{
+		Args: []string{"build"},
+		Env: []string{
+			"WEDEPLOY_UNSAFE_VERBOSE=true",
+			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome(),
+		},
+		Dir: "mocks/build/project-no-errors",
+	}
+
+	var e = &Expect{
+		ExitCode: 0,
+		Stderr:   tdata.FromFile("mocks/build/project-no-errors/expect_stderr"),
+		Stdout:   tdata.FromFile("mocks/build/project-no-errors/expect_stdout"),
+	}
+
+	cmd.Run()
+	e.Assert(t, cmd)
+
+	Teardown()
+}
+
 func TestBuildProjectVerbose(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("Not testing hooks.Build() on Windows")

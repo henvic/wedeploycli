@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/autocomplete"
 	"github.com/wedeploy/cli/cmd/autocomplete"
@@ -75,6 +77,13 @@ var commands = []*cobra.Command{
 	cmdwho.WhoCmd,
 }
 
+// see note on usage of maybeEnableVerboseByEnv
+func maybeEnableVerboseByEnv() {
+	if unsafe, _ := os.LookupEnv("WEDEPLOY_UNSAFE_VERBOSE"); unsafe == "true" {
+		verbose.Enabled = true
+	}
+}
+
 func init() {
 	cobra.EnableCommandSorting = false
 	autocomplete.RootCmd = RootCmd
@@ -86,6 +95,9 @@ func init() {
 		"v",
 		false,
 		"Verbose output")
+
+	// this has to run after defining the --verbose flag above
+	maybeEnableVerboseByEnv()
 
 	RootCmd.PersistentFlags().BoolVar(
 		&verbosereq.Disabled,
