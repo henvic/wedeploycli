@@ -4,6 +4,8 @@ var errorReasonMessage = messages{
 	"unauthorized":              "Access is denied due to invalid credentials",
 	"documentNotFound":          "Not found",
 	"notFound":                  "Not found",
+	"projectNotFound":           "Not found",
+	"containerNotFound":         "Not found",
 	"badRequest":                "The API request is invalid or improperly formed",
 	"internalError":             "The request failed due to an internal error",
 	"projectQuotaExceeded":      "Project quote exceeded",
@@ -17,8 +19,6 @@ var errorReasonMessage = messages{
 	"customDomainAlreadyExists": "Custom domain already exists",
 	"invalidProjectId":          "Invalid project ID",
 	"projectAlreadyExists":      "Project already exists",
-	"projectNotFound":           "Project not found",
-	"containerNotFound":         "Container not found",
 }
 
 var errorReasonCommandMessageOverrides = map[string]messages{
@@ -30,20 +30,7 @@ var errorReasonCommandMessageOverrides = map[string]messages{
 	"dev stop": messages{
 		"deleteProject": "Can not delete project",
 	},
-	"domain": messages{
-		"notFound":         "Project not found",
-		"documentNotFound": "Project not found",
-	},
-	"env": messages{
-		"notFound":         "Container not found",
-		"documentNotFound": "Container not found",
-	},
-	"list": messages{
-		"documentNotFound": "Not found",
-		"notFound":         "Not found",
-	},
 	"undeploy": messages{
-		"notFound":         "Project not found",
-		"invalidContainer": "Container not found",
+		"invalidContainer": "Not found",
 	},
 }

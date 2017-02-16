@@ -414,11 +414,6 @@ var feTestCases = []feTestCase{
 			[]string{"domain", "-u", "foo.wedeploy.me", "rm", "example.com"},
 			[]string{"domain", "--url", "foo.wedeploy.me", "rm", "example.com"},
 			[]string{"domain", "--project", "foo", "--remote", "local"},
-		},
-		"Project not found",
-	},
-	feTestCase{
-		[][]string{
 			[]string{"env", "-p", "foo", "-c", "bar", "-r", "local"},
 			[]string{"env", "--project", "foo", "--container", "bar", "--remote", "local"},
 			[]string{"env", "-u", "bar.foo.wedeploy.me"},
@@ -436,11 +431,6 @@ var feTestCases = []feTestCase{
 			[]string{"env", "--project", "foo", "--container", "bar", "--remote", "local", "rm", "envkey"},
 			[]string{"env", "-u", "bar.foo.wedeploy.me", "rm", "envkey"},
 			[]string{"env", "--url", "bar.foo.wedeploy.me", "rm", "envkey"},
-		},
-		"Container not found",
-	},
-	feTestCase{
-		[][]string{
 			[]string{"list", "-p", "foo", "-r", "local"},
 			[]string{"list", "--project", "foo", "--remote", "local"},
 			[]string{"list", "--project", "foo", "-c", "bar", "--remote", "local"},
