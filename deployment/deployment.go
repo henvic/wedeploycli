@@ -201,6 +201,16 @@ func (d *Deploy) Commit() (commit string, err error) {
 	return commit, nil
 }
 
+func (d *Deploy) verboseOnPush() {
+	if !verbose.Enabled {
+		return
+	}
+
+	verbose.Debug(color.Format(color.FgBlue, "Push Authorization") +
+		color.Format(color.FgRed, ": ") +
+		verbose.SafeEscape(d.RepoAuthorization))
+}
+
 // Push project to the WeDeploy remote
 func (d *Deploy) Push() error {
 	var params = []string{"push", d.getGitRemote(), "master"}
@@ -215,9 +225,7 @@ func (d *Deploy) Push() error {
 
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	if d.RepoAuthorization != "" {
-		verbose.Debug(color.Format(color.FgBlue, "Push Authorization") +
-			color.Format(color.FgRed, ": ") +
-			color.Format(color.BgYellow, " hidden value "))
+		d.verboseOnPush()
 		params = append([]string{
 			"-c",
 			"http." + d.GitRemoteAddress + ".extraHeader=Authorization: " + d.RepoAuthorization,
