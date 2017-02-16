@@ -16,6 +16,9 @@ var (
 	// Dashboard for the system (global)
 	Dashboard = "http://" + DashboardAddress
 
+	// OAuthTokenEndpoint for generating OAuth tokens
+	OAuthTokenEndpoint = "http://auth.dashboard.wedeploy.com/oauth/token"
+
 	// Docs page
 	Docs = "http://wedeploy.com/docs/"
 

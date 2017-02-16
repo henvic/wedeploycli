@@ -51,6 +51,7 @@ func basicAuthLogin() error {
 	var (
 		username string
 		password string
+		token    string
 		err      error
 	)
 
@@ -68,23 +69,19 @@ Please, set up a WeDeploy password first at
 		return err
 	}
 
-	var g = config.Global
+	token, err = loginserver.OAuthTokenFromBasicAuth(username, password)
 
-	g.Username = username
-	g.Password = password
-	g.Token = ""
-
-	if err = g.Save(); err != nil {
+	if err != nil {
 		return err
 	}
 
-	fmt.Println("Authentication information saved.")
-	return nil
+	fmt.Println("")
+	return saveUser(username, token)
 }
 
 func loginRun(cmd *cobra.Command, args []string) error {
 	if noLaunchBrowser {
-		println("OAuth still not implemented: fallback to Basic Auth")
+		println("OAuth implemented trough Basic Auth")
 		return basicAuthLogin()
 	}
 
@@ -108,6 +105,10 @@ func loginRun(cmd *cobra.Command, args []string) error {
 		return tokenErr
 	}
 
+	return saveUser(username, token)
+}
+
+func saveUser(username, token string) (err error) {
 	var g = config.Global
 
 	g.Username = username

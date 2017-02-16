@@ -13,6 +13,8 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/hashicorp/errwrap"
+	wedeploy "github.com/wedeploy/api-go"
+	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/defaults"
 )
 
@@ -207,4 +209,25 @@ type handler struct {
 
 func (s *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.handler(w, r)
+}
+
+type accessToken struct {
+	AccessToken string `json:"access_token"`
+}
+
+// OAuthTokenFromBasicAuth gets a token from a Basic Auth flow
+func OAuthTokenFromBasicAuth(username, password string) (token string, err error) {
+	var request = wedeploy.URL(defaults.OAuthTokenEndpoint)
+
+	request.Param("username", username)
+	request.Param("password", password)
+	request.Param("grant_type", "password")
+
+	if err := apihelper.Validate(request, request.Get()); err != nil {
+		return "", err
+	}
+
+	var data accessToken
+	err = apihelper.DecodeJSON(request, &data)
+	return data.AccessToken, err
 }
