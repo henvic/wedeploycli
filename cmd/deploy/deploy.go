@@ -2,7 +2,6 @@ package cmddeploy
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"os"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/deployment"
@@ -47,11 +47,13 @@ func preRun(cmd *cobra.Command, args []string) error {
 	return setupHost.Process()
 }
 
-// basicAuth creates the basic auth parameter
-// extracted from golang/go/src/net/http/client.go
-func basicAuth(username, password string) string {
-	auth := username + ":" + password
-	return base64.StdEncoding.EncodeToString([]byte(auth))
+func getAuthCredentials() string {
+	// hacky way to get the credentials
+	// instead of duplicating code, let's use existing one
+	// that already does so
+	var request = apihelper.URL(context.Background(), "")
+	apihelper.Auth(request)
+	return request.Headers.Get("Authorization")
 }
 
 func getRepoAuthorization() (string, error) {
@@ -59,7 +61,7 @@ func getRepoAuthorization() (string, error) {
 		return "", errors.New("User is not configured yet")
 	}
 
-	return "Basic " + basicAuth(config.Global.Username, config.Global.Password), nil
+	return getAuthCredentials(), nil
 }
 
 func maybeInitializeRepositoryIfNotExists(d *deployment.Deploy) (inited bool, err error) {
