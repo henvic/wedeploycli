@@ -415,6 +415,76 @@ func TestRequestVerboseFeedbackJSONResponseWithBlacklistedHeaders(t *testing.T) 
 	servertest.Teardown()
 }
 
+func TestRequestVerboseFeedbackJSONResponseWithBlacklistedHeadersUnsafe(t *testing.T) {
+	defer func() {
+		unsafeVerbose = false
+	}()
+
+	unsafeVerbose = true
+
+	bufErrStream.Reset()
+	servertest.Setup()
+
+	servertest.Mux.HandleFunc("/foo", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Authorization", "Bearer 1")
+		w.Header().Add("Set-Cookie", "foo4=bar4")
+		w.Header().Add("Cookie", "foo1=bar1")
+		w.Header().Add("Cookie", "foo2=bar2")
+		w.Header().Set("Proxy-Authorization", "foo")
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, `{"Hello": "World"}`)
+	})
+
+	var request = wedeploy.URL("http://www.example.com/foo")
+
+	type Foo struct {
+		Bar string `json:"bar"`
+	}
+
+	var foo = &Foo{Bar: "one"}
+
+	var b, err = json.Marshal(foo)
+
+	if err != nil {
+		panic(err)
+	}
+
+	request.Body(bytes.NewBuffer(b))
+
+	if err := request.Post(); err != nil {
+		panic(err)
+	}
+
+	Feedback(request)
+
+	var got = bufErrStream.String()
+
+	var find = []string{
+		"> POST http://www.example.com/foo HTTP/1.1",
+		`{"bar":"one"}`,
+		"{\n    \"Hello\": \"World\"\n}",
+		"Authorization: Bearer 1",
+		"Cookie: foo4=bar4",
+		"Cookie: [foo1=bar1 foo2=bar2]",
+		"Proxy-Authorization: foo",
+	}
+
+	var assertionError = false
+
+	for _, want := range find {
+		if !strings.Contains(got, want) {
+			assertionError = true
+			t.Errorf("Response doesn't contain expected value %v", want)
+		}
+	}
+
+	if assertionError {
+		t.Errorf("Response is:\n%v", got)
+	}
+
+	servertest.Teardown()
+}
+
 func TestRequestVerboseFeedbackInvalidJSONResponse(t *testing.T) {
 	bufErrStream.Reset()
 	servertest.Setup()

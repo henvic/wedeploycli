@@ -34,8 +34,13 @@ func SetLogFunc(i func(...interface{})) {
 	log = i
 }
 
+var unsafeVerbose = false
+
 func init() {
 	SetLogFunc(verbose.Debug)
+	if unsafe, _ := os.LookupEnv("WEDEPLOY_UNSAFE_VERBOSE"); unsafe == "true" {
+		unsafeVerbose = true
+	}
 }
 
 // debugRequestBody prints verbose messages when debugging is enabled
@@ -190,7 +195,7 @@ func feedbackResponseBodyAll(response *http.Response, body []byte) {
 func getHeaderValue(key string, values []string) string {
 	var v string
 
-	if BlacklistHeadersValues[key] {
+	if BlacklistHeadersValues[key] && !unsafeVerbose {
 		var plural string
 
 		if len(values) != 1 {
