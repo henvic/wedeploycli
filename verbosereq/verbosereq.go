@@ -38,9 +38,7 @@ var unsafeVerbose = false
 
 func init() {
 	SetLogFunc(verbose.Debug)
-	if unsafe, _ := os.LookupEnv("WEDEPLOY_UNSAFE_VERBOSE"); unsafe == "true" {
-		unsafeVerbose = true
-	}
+	unsafeVerbose = verbose.IsUnsafeMode()
 }
 
 // debugRequestBody prints verbose messages when debugging is enabled
@@ -196,13 +194,7 @@ func getHeaderValue(key string, values []string) string {
 	var v string
 
 	if BlacklistHeadersValues[key] && !unsafeVerbose {
-		var plural string
-
-		if len(values) != 1 {
-			plural = "s"
-		}
-
-		return color.Format(color.BgYellow, " %d hidden value%s ", len(values), plural)
+		return verbose.SafeEscapeSlice(values)
 	}
 
 	switch len(values) {
