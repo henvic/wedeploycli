@@ -8,7 +8,7 @@ Usage:
   we [command]
 
 Available Commands:
-  login        Using Basic Authentication with your credentials
+  login        Authenticate on WeDeploy
   logout       Revoke credentials
   remote       Configure WeDeploy remotes
 

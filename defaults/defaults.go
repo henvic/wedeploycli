@@ -10,6 +10,15 @@ var (
 	// BuildTime is the time when the build was generated
 	BuildTime = ""
 
+	// DashboardAddress for the system (global)
+	DashboardAddress = "dashboard.wedeploy.com"
+
+	// Dashboard for the system (global)
+	Dashboard = "http://" + DashboardAddress
+
+	// Docs page
+	Docs = "http://wedeploy.com/docs/"
+
 	// Hub for the system
 	Hub = "http://api.dashboard.wedeploy.io"
 
