@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
@@ -32,19 +33,20 @@ func init() {
 }
 
 func maybeOpenBrowser(loginURL string) {
-	switch errBrowser := browser.OpenURL(loginURL); {
-	case errBrowser != nil:
-		verbose.Debug("Can not open browser: " + errBrowser.Error())
-		fmt.Println("Authenticate the CLI tool by visiting:")
-	default:
-		fmt.Println("Your browser has been opened to visit:")
-	}
+	fmt.Fprintf(os.Stdout, `Your browser is being open to visit:
+	%v
 
-	fmt.Fprintf(os.Stdout, `%v
-
-Waiting authentication via browser
 `,
 		loginURL)
+
+	time.Sleep(420 * time.Millisecond)
+	fmt.Println("Waiting authentication via browser")
+	time.Sleep(710 * time.Millisecond)
+
+	if err := browser.OpenURL(loginURL); err != nil {
+		verbose.Debug("Can not open browser: " + err.Error())
+		fmt.Println("Authenticate the CLI tool by visiting the link above.")
+	}
 }
 
 func basicAuthLogin() error {
