@@ -8,14 +8,14 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-
-	"time"
+	"sync"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/hashicorp/errwrap"
 	wedeploy "github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/verbose"
 )
 
 // Service server for receiving JSON Web Token
@@ -66,6 +66,15 @@ func (s *Service) Listen(ctx context.Context) (address string, err error) {
 	return s.serverAddress, nil
 }
 
+func (s *Service) waitServer(w *sync.WaitGroup) {
+	<-s.ctx.Done()
+	var err = s.httpServer.Shutdown(s.ctx)
+	if err != nil && err != context.Canceled {
+		s.err = errwrap.Wrapf("Can not shutdown login service properly: {{err}}", err)
+	}
+	w.Done()
+}
+
 // Serve HTTP requests
 func (s *Service) Serve() error {
 	if s.netListener == nil {
@@ -78,17 +87,18 @@ func (s *Service) Serve() error {
 		},
 	}
 
-	go func() {
-		<-s.ctx.Done()
-		// hack before Go 1.8's HTTP server Shutdown() is available
-		time.Sleep(100 * time.Millisecond)
-		_ = s.netListener.Close()
-	}()
+	var w sync.WaitGroup
+	w.Add(1)
+	go s.waitServer(&w)
 
-	// return s.httpServer.Serve(s.netListener)
-	// with go 1.8...
-	_ = s.httpServer.Serve(s.netListener)
-	return nil
+	var serverErr = s.httpServer.Serve(s.netListener)
+
+	if serverErr != http.ErrServerClosed {
+		verbose.Debug(fmt.Sprintf("Error closing authentication server: %v", serverErr))
+	}
+
+	w.Wait()
+	return s.err
 }
 
 type oauthClaims struct {
