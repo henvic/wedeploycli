@@ -25,7 +25,7 @@ const gitSchema = "http://"
 // DeployCmd deploys a given project
 var DeployCmd = &cobra.Command{
 	Use:     "deploy",
-	Short:   "Deploy the current project",
+	Short:   "Deploy project or container",
 	PreRunE: preRun,
 	RunE:    run,
 }

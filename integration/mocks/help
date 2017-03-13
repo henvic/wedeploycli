@@ -12,7 +12,7 @@ Available Commands:
   logout       Revoke credentials
   remote       Configure WeDeploy remotes
 
-  deploy       Deploy the current project
+  deploy       Deploy project or container
   undeploy     Undeploy a given project or container
   dev          Run development environment
 
