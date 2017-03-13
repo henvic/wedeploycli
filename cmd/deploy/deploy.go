@@ -44,7 +44,41 @@ var setupHost = cmdflagsfromhost.SetupHost{
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	return setupHost.Process()
+	if err := setupHost.Process(); err != nil {
+		return err
+	}
+
+	if setupHost.Remote() == "" {
+		return errors.New(`You can not deploy in the local infrastructure. Use "we dev" instead`)
+	}
+
+	return checkContextAmbiguity()
+}
+
+func checkContextAmbiguity() error {
+	var project = setupHost.Project()
+	var container = setupHost.Container()
+
+	if config.Context.Scope == usercontext.ProjectScope && project != "" {
+		return errors.New("Can not use --project from inside a project")
+	}
+
+	if config.Context.Scope == usercontext.GlobalScope && project == "" {
+		return errors.New("--project is required when running this command outside a project")
+	}
+
+	if config.Context.Scope == usercontext.ContainerScope {
+		switch {
+		case project != "" && container != "":
+			return errors.New("Can not use --project or --container from inside a project container")
+		case project != "":
+			return errors.New("Can not use --project from inside a project")
+		case container != "":
+			return errors.New("Can not use --container from inside a project container")
+		}
+	}
+
+	return nil
 }
 
 func getAuthCredentials() string {
