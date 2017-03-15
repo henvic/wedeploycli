@@ -15,6 +15,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/user"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -29,14 +30,16 @@ var (
 
 // Deploy project
 type Deploy struct {
-	Context            context.Context
-	ProjectID          string
-	Path               string
-	Force              bool
-	Remote             string
-	RepoAuthorization  string
-	GitRemoteAddress   string
-	uncommittedChanges bool
+	Context           context.Context
+	ProjectID         string
+	Path              string
+	Remote            string
+	RepoAuthorization string
+	GitRemoteAddress  string
+}
+
+func (d *Deploy) getGitPath() string {
+	return filepath.Join(user.GetHomeDir(), ".wedeploy", "tmp", "repos", d.Path)
 }
 
 func (d *Deploy) getGitRemote() string {
@@ -50,15 +53,24 @@ func (d *Deploy) getGitRemote() string {
 	return remote
 }
 
+// Cleanup directory
+func (d *Deploy) Cleanup() error {
+	return os.RemoveAll(d.getGitPath())
+}
+
+// CreateGitDirectory creates the git directory for the deployment
+func (d *Deploy) CreateGitDirectory() error {
+	return os.MkdirAll(d.getGitPath(), 0775)
+}
+
 // InitializeRepository as a git repo
 func (d *Deploy) InitializeRepository() error {
 	var params = []string{"init"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
+	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
-
-	fmt.Fprintf(outStream, "Initializing git repository on project folder\n")
 
 	if err := cmd.Run(); err != nil {
 		return err
@@ -67,23 +79,12 @@ func (d *Deploy) InitializeRepository() error {
 	return nil
 }
 
-// InitializeRepositoryIfNotExists as a git repo
-func (d *Deploy) InitializeRepositoryIfNotExists() error {
-	switch _, err := os.Stat(filepath.Join(d.Path, ".git")); {
-	case os.IsNotExist(err):
-		return d.InitializeRepository()
-	case err != nil:
-		return errwrap.Wrapf("Unexpected error when trying to find .git: {{err}}", err)
-	default:
-		return nil
-	}
-}
-
 // GetCurrentBranch gets the current branch
 func (d *Deploy) GetCurrentBranch() (branch string, err error) {
 	var params = []string{"symbolic-ref", "HEAD"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
+	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
 	var buf bytes.Buffer
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
@@ -99,47 +100,11 @@ func (d *Deploy) GetCurrentBranch() (branch string, err error) {
 	return branch, nil
 }
 
-// CheckCurrentBranchIsMaster checks if the current branch is master
-func (d *Deploy) CheckCurrentBranchIsMaster() error {
-	var branch, err = d.GetCurrentBranch()
-
-	if err != nil {
-		return err
-	}
-
-	if branch != "master" {
-		return errors.New("Current branch is not master")
-	}
-
-	return nil
-}
-
-// CheckUncommittedChanges checks for uncommitted changes on the staging area
-func (d *Deploy) CheckUncommittedChanges() (stage string, err error) {
-	var params = []string{"status", "--porcelain"}
-	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
-	var buf bytes.Buffer
-	cmd.Dir = d.Path
-	cmd.Stderr = errStream
-	cmd.Stdout = &buf
-
-	if err := cmd.Run(); err != nil {
-		return "", err
-	}
-
-	if buf.Len() != 0 {
-		fmt.Fprintf(outStream, "You have uncommitted changes\n")
-		d.uncommittedChanges = true
-	}
-
-	return buf.String(), nil
-}
-
 func (d *Deploy) stageAllFiles() (err error) {
 	var params = []string{"add", "."}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
+	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
 	cmd.Stdout = outStream
@@ -151,6 +116,7 @@ func (d *Deploy) getLastCommit() (commit string, err error) {
 	var params = []string{"rev-parse", "HEAD"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
+	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
 	var buf bytes.Buffer
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
@@ -173,11 +139,15 @@ func (d *Deploy) Commit() (commit string, err error) {
 	}
 
 	var msg = fmt.Sprintf("Deployment at %v", time.Now().Format(unixTimeFormat))
-	var params = []string{"commit", "--message", msg}
+	var params = []string{"commit", "--allow-empty", "--message", msg}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
+	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
 	cmd.Dir = d.Path
-	cmd.Stderr = errStream
+
+	if verbose.Enabled {
+		cmd.Stderr = errStream
+	}
 
 	err = cmd.Run()
 
@@ -191,13 +161,7 @@ func (d *Deploy) Commit() (commit string, err error) {
 		return "", err
 	}
 
-	var shortCommit = commit
-
-	if len(commit) > 7 {
-		shortCommit = commit[0:7]
-	}
-
-	fmt.Fprintf(outStream, "commit %v: %v\n", shortCommit, msg)
+	verbose.Debug("commit", commit)
 	return commit, nil
 }
 
@@ -211,13 +175,9 @@ func (d *Deploy) verboseOnPush() {
 		verbose.SafeEscape(d.RepoAuthorization))
 }
 
-// Push project to the WeDeploy remote
+// Push deployment to the WeDeploy remote
 func (d *Deploy) Push() error {
-	var params = []string{"push", d.getGitRemote(), "master"}
-
-	if d.Force {
-		params = append(params, "--force")
-	}
+	var params = []string{"push", d.getGitRemote(), "master", "--force"}
 
 	if verbose.Enabled {
 		params = append(params, "--verbose")
@@ -233,27 +193,29 @@ func (d *Deploy) Push() error {
 	}
 
 	var cmd = exec.CommandContext(d.Context, "git", params...)
+	cmd.Env = append(cmd.Env,
+		"GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path,
+		"GIT_TERMINAL_PROMPT=0",
+	)
 	cmd.Dir = d.Path
-	cmd.Stdin = os.Stdin
-	cmd.Stderr = errStream
-	cmd.Stdout = outStream
 
-	return cmd.Run()
-}
+	var bufErr bytes.Buffer
+	cmd.Stderr = &bufErr
 
-func (d *Deploy) removeRemote() error {
-	var params = []string{"remote", "rm", d.getGitRemote()}
-	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Dir = d.Path
-	return cmd.Run()
+	var err = cmd.Run()
+
+	if err != nil && strings.Contains(bufErr.String(), "could not read Username") {
+		return errors.New("Invalid credentials")
+	}
+
+	return err
 }
 
 // AddRemote on project
 func (d *Deploy) AddRemote() error {
-	_ = d.removeRemote()
 	var params = []string{"remote", "add", d.getGitRemote(), d.GitRemoteAddress}
 	var cmd = exec.CommandContext(d.Context, "git", params...)
+	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
 	cmd.Stdout = outStream
