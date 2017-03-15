@@ -6,7 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 
 	"os"
 
@@ -205,11 +207,15 @@ func run(cmd *cobra.Command, args []string) error {
 		GitRemoteAddress:  gitServer,
 	}
 
-	if err := deploy.Do(); err != nil {
-		return err
-	}
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	return nil
+	go func() {
+		<-sigs
+		_ = deploy.Cleanup()
+	}()
+
+	return deploy.Do()
 }
 
 func init() {
