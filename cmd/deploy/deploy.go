@@ -170,6 +170,18 @@ func getProjectID() (string, error) {
 	return projectID, nil
 }
 
+func createProjectIfNotFound(ctx context.Context, id string) error {
+	var _, err = projects.Get(ctx, id)
+
+	if err == nil {
+		return nil
+	}
+
+	_, err = projects.Create(ctx, id)
+
+	return err
+}
+
 func run(cmd *cobra.Command, args []string) error {
 	if setupHost.Remote() == "" {
 		return errors.New(`You can not deploy in the local infrastructure. Use "we dev" instead`)
@@ -198,8 +210,14 @@ func run(cmd *cobra.Command, args []string) error {
 		config.Context.RemoteAddress,
 		projectID)
 
+	var ctx = context.Background()
+
+	if err := createProjectIfNotFound(ctx, projectID); err != nil {
+		return err
+	}
+
 	var deploy = deployment.Deploy{
-		Context:           context.Background(),
+		Context:           ctx,
 		ProjectID:         projectID,
 		Path:              path,
 		Remote:            config.Context.Remote,
