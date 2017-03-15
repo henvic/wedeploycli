@@ -200,7 +200,12 @@ func (d *Deploy) Push() error {
 	cmd.Dir = d.Path
 
 	var bufErr bytes.Buffer
-	cmd.Stderr = &bufErr
+
+	if verbose.Enabled {
+		cmd.Stderr = io.MultiWriter(&bufErr, os.Stderr)
+	} else {
+		cmd.Stderr = &bufErr
+	}
 
 	var err = cmd.Run()
 
@@ -220,4 +225,44 @@ func (d *Deploy) AddRemote() error {
 	cmd.Stderr = errStream
 	cmd.Stdout = outStream
 	return cmd.Run()
+}
+
+// Do deployment
+func (d *Deploy) Do() error {
+	if err := d.Cleanup(); err != nil {
+		return errwrap.Wrapf("Can not clean up directory for deployment: {{err}}", err)
+	}
+
+	if err := d.CreateGitDirectory(); err != nil {
+		return errwrap.Wrapf("Can not create temporary directory for deployment: {{err}}", err)
+	}
+
+	defer func() {
+		if err := d.Cleanup(); err != nil {
+			verbose.Debug(
+				errwrap.Wrapf("Error trying to clean up directory after deployment: {{err}}", err))
+		}
+	}()
+
+	if err := d.InitializeRepository(); err != nil {
+		return err
+	}
+
+	if _, err := d.Commit(); err != nil {
+		return err
+	}
+
+	if err := d.AddRemote(); err != nil {
+		return err
+	}
+
+	if err := d.Push(); err != nil {
+		if _, ok := err.(*exec.ExitError); ok {
+			return errwrap.Wrapf("Can not deploy (push failure)", err)
+		}
+
+		return errwrap.Wrapf("Unexpected push failure: can not deploy ({{err}})", err)
+	}
+
+	return nil
 }

@@ -30,6 +30,9 @@ var errorReasonCommandMessageOverrides = map[string]messages{
 	"dev stop": messages{
 		"deleteProject": "Can not delete project",
 	},
+	"deploy": messages{
+		"invalidDocumentValue": "Access denied to this project",
+	},
 	"undeploy": messages{
 		"invalidContainer": "Not found",
 	},

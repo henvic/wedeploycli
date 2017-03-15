@@ -2,19 +2,23 @@ package cmddeploy
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"os/exec"
+	"io/ioutil"
+	"path/filepath"
+
+	"os"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/deployment"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/usercontext"
-	"github.com/wedeploy/cli/verbose"
 )
 
 const gitSchema = "http://"
@@ -89,19 +93,96 @@ func getRepoAuthorization() (string, error) {
 	return getAuthCredentials(), nil
 }
 
+func getPath() (path string, err error) {
+	if config.Context.Scope != usercontext.GlobalScope {
+		switch {
+		case setupHost.Project() != "" && setupHost.Container() != "":
+			return "", errors.New("--project and --container can not be used inside this context")
+		case setupHost.Project() != "":
+			return "", errors.New("--project can not be used inside this context")
+		case setupHost.Container() != "":
+			return "", errors.New("--container can not be used inside this context")
+		}
+	}
+
+	if config.Context.Scope == usercontext.ProjectScope {
+		return config.Context.ProjectRoot, nil
+	}
+
+	if config.Context.Scope == usercontext.ContainerScope {
+		return config.Context.ContainerRoot, nil
+	}
+
+	wd, err := os.Getwd()
+
+	if err != nil {
+		return "", errwrap.Wrapf("Can not get current working directory: {{err}}", err)
+	}
+
+	_, err = containers.Read(wd)
+
+	if err == nil {
+		if setupHost.Container() == "" {
+			return wd, nil
+		}
+
+		return "", errors.New("--container can not be used inside a directory with container.json")
+	}
+
+	if err != containers.ErrContainerNotFound {
+		return "", err
+	}
+
+	return wd, createContainerJSON(setupHost.Container(), wd)
+}
+
+func createContainerJSON(id, path string) error {
+	var c = &containers.Container{
+		ID:   filepath.Base(path),
+		Type: "wedeploy/hosting",
+	}
+
+	bin, err := json.MarshalIndent(c, "", "    ")
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(filepath.Join(path, "container.json"), bin, 0644)
+}
+
+func getProjectID() (string, error) {
+	var project, err = projects.Read(config.Context.ProjectRoot)
+	var projectID = setupHost.Project()
+
+	switch {
+	case err == nil:
+		projectID = project.ID
+	case err != projects.ErrProjectNotFound:
+		return "", errwrap.Wrapf("Error trying to read project: {{err}}", err)
+	}
+
+	if setupHost.Project() != "" && projectID != setupHost.Project() {
+		return "", errwrap.Wrapf("You can not use a different id on --project from inside a project directory", err)
+	}
+
+	return projectID, nil
+}
+
 func run(cmd *cobra.Command, args []string) error {
 	if setupHost.Remote() == "" {
 		return errors.New(`You can not deploy in the local infrastructure. Use "we dev" instead`)
 	}
 
-	if config.Context.Scope == usercontext.GlobalScope {
-		return errors.New("You are not inside a project")
+	projectID, err := getProjectID()
+
+	if err != nil {
+		return err
 	}
 
-	var project, projectErr = projects.Read(config.Context.ProjectRoot)
+	path, err := getPath()
 
-	if projectErr != nil {
-		return errwrap.Wrapf("Error trying to read project: {{err}}", projectErr)
+	if err != nil {
+		return err
 	}
 
 	var repoAuthorization, repoAuthorizationErr = getRepoAuthorization()
@@ -113,49 +194,21 @@ func run(cmd *cobra.Command, args []string) error {
 	var gitServer = fmt.Sprintf("%vgit.%v/%v.git",
 		gitSchema,
 		config.Context.RemoteAddress,
-		project.ID)
+		projectID)
 
 	var deploy = deployment.Deploy{
 		Context:           context.Background(),
-		ProjectID:         project.ID,
-		Path:              config.Context.ProjectRoot,
+		ProjectID:         projectID,
+		Path:              path,
 		Remote:            config.Context.Remote,
 		RepoAuthorization: repoAuthorization,
 		GitRemoteAddress:  gitServer,
 	}
 
-	if err := deploy.Cleanup(); err != nil {
-		return errwrap.Wrapf("Can not clean up directory for deployment: {{err}}", err)
-	}
-
-	defer func() {
-		if err := deploy.Cleanup(); err != nil {
-			verbose.Debug(
-				errwrap.Wrapf("Error trying to clean up directory after deployment: {{err}}", err))
-		}
-	}()
-
-	if err := deploy.InitializeRepository(); err != nil {
+	if err := deploy.Do(); err != nil {
 		return err
 	}
 
-	if _, err := deploy.Commit(); err != nil {
-		return err
-	}
-
-	if err := deploy.AddRemote(); err != nil {
-		return err
-	}
-
-	if err := deploy.Push(); err != nil {
-		if _, ok := err.(*exec.ExitError); ok {
-			return errwrap.Wrapf("Can not deploy (push failure)", err)
-		}
-
-		return errwrap.Wrapf("Unexpected push failure: can not deploy ({{err}})", err)
-	}
-
-	fmt.Println("Deploying project " + project.ID)
 	return nil
 }
 
