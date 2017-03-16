@@ -175,6 +175,16 @@ func (d *Deploy) verboseOnPush() {
 		verbose.SafeEscape(d.RepoAuthorization))
 }
 
+func copyErrStreamAndVerbose(cmd *exec.Cmd) (bufErr bytes.Buffer) {
+	if verbose.Enabled {
+		cmd.Stderr = io.MultiWriter(&bufErr, os.Stderr)
+	} else {
+		cmd.Stderr = &bufErr
+	}
+
+	return bufErr
+}
+
 // Push deployment to the WeDeploy remote
 func (d *Deploy) Push() error {
 	var params = []string{"push", d.getGitRemote(), "master", "--force"}
@@ -199,14 +209,7 @@ func (d *Deploy) Push() error {
 	)
 	cmd.Dir = d.Path
 
-	var bufErr bytes.Buffer
-
-	if verbose.Enabled {
-		cmd.Stderr = io.MultiWriter(&bufErr, os.Stderr)
-	} else {
-		cmd.Stderr = &bufErr
-	}
-
+	var bufErr = copyErrStreamAndVerbose(cmd)
 	var err = cmd.Run()
 
 	if err != nil && strings.Contains(bufErr.String(), "could not read Username") {
@@ -227,6 +230,13 @@ func (d *Deploy) AddRemote() error {
 	return cmd.Run()
 }
 
+func (d *Deploy) cleanupAfter() {
+	if err := d.Cleanup(); err != nil {
+		verbose.Debug(
+			errwrap.Wrapf("Error trying to clean up directory after deployment: {{err}}", err))
+	}
+}
+
 // Do deployment
 func (d *Deploy) Do() error {
 	if err := d.Cleanup(); err != nil {
@@ -237,12 +247,7 @@ func (d *Deploy) Do() error {
 		return errwrap.Wrapf("Can not create temporary directory for deployment: {{err}}", err)
 	}
 
-	defer func() {
-		if err := d.Cleanup(); err != nil {
-			verbose.Debug(
-				errwrap.Wrapf("Error trying to clean up directory after deployment: {{err}}", err))
-		}
-	}()
+	defer d.cleanupAfter()
 
 	if err := d.InitializeRepository(); err != nil {
 		return err
