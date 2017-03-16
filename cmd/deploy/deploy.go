@@ -19,6 +19,7 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/deployment"
+	"github.com/wedeploy/cli/inspector"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/usercontext"
 )
@@ -38,6 +39,11 @@ var setupHost = cmdflagsfromhost.SetupHost{
 	Requires: cmdflagsfromhost.Requires{
 		Auth: true,
 	},
+}
+
+type deployCmd struct {
+	path      string
+	projectID string
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
@@ -193,7 +199,11 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	path, err := getPath()
+	var dc = &deployCmd{
+		projectID: projectID,
+	}
+
+	dc.path, err = getPath()
 
 	if err != nil {
 		return err
@@ -219,7 +229,7 @@ func run(cmd *cobra.Command, args []string) error {
 	var deploy = deployment.Deploy{
 		Context:           ctx,
 		ProjectID:         projectID,
-		Path:              path,
+		Path:              dc.path,
 		Remote:            config.Context.Remote,
 		RepoAuthorization: repoAuthorization,
 		GitRemoteAddress:  gitServer,
@@ -233,7 +243,77 @@ func run(cmd *cobra.Command, args []string) error {
 		_ = deploy.Cleanup()
 	}()
 
-	return deploy.Do()
+	return dc.Feedback(deploy.Do())
+}
+
+func (dc *deployCmd) Feedback(err error) error {
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Project " + dc.printAddress(""))
+
+	switch {
+	case config.Context.Scope == usercontext.ProjectScope:
+		var containersInfoList, err = getContainersInfoListFromProject(dc.path)
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading containers after deployment: %v", err)
+		}
+
+		for _, c := range containersInfoList {
+			fmt.Println(dc.printAddress(c.ID))
+		}
+	case config.Context.Scope == usercontext.ContainerScope:
+		var containersInfoList, err = getContainersInfoListFromProject(dc.path)
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading containers after deployment: %v", err)
+		}
+
+		for _, c := range containersInfoList {
+			if c.Location == dc.path {
+				fmt.Println(dc.printAddress(c.ID))
+			}
+		}
+	default:
+		var c, err = containers.Read(dc.path)
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading container after deployment: %v", err)
+		}
+
+		fmt.Println(dc.printAddress(c.ID))
+	}
+
+	return nil
+}
+
+func (dc *deployCmd) printAddress(container string) string {
+	var address = dc.projectID + "." + config.Global.Remotes[setupHost.Remote()].URL
+
+	if container != "" {
+		address = container + "." + address
+	}
+
+	return address
+}
+
+// getContainersInfoListFromProject get a list of containers on a given project directory
+func getContainersInfoListFromProject(projectPath string) (containers.ContainerInfoList, error) {
+	var i = &inspector.ContextOverview{}
+
+	if err := i.Load(projectPath); err != nil {
+		return containers.ContainerInfoList{}, errwrap.Wrapf("Can not list containers from project: {{err}}", err)
+	}
+
+	var containerInfo = containers.ContainerInfoList{}
+
+	for _, c := range i.ProjectContainers {
+		containerInfo = append(containerInfo, c)
+	}
+
+	return containerInfo, nil
 }
 
 func init() {
