@@ -1,6 +1,7 @@
 package cmddev
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -67,7 +68,7 @@ func maybeStartInfrastructure() error {
 			defaultImage)
 	}
 
-	return run.Run(runFlags)
+	return run.Run(context.Background(), runFlags)
 }
 
 func devPreRun(cmd *cobra.Command, args []string) error {

@@ -38,12 +38,14 @@ type DockerMachine struct {
 	livew          *uilive.Writer
 	end            chan bool
 	started        chan bool
+	context        context.Context
+	contextCancel  context.CancelFunc
 	selfStopSignal bool
 	tcpPorts       tcpPortsStruct
 }
 
 // Run runs the WeDeploy infrastructure
-func Run(flags Flags) error {
+func Run(ctx context.Context, flags Flags) error {
 	if err := checkDockerAvailable(); err != nil {
 		return err
 	}
@@ -52,7 +54,7 @@ func Run(flags Flags) error {
 		Flags: flags,
 	}
 
-	return dm.Run()
+	return dm.Run(ctx)
 }
 
 // Stop stops the WeDeploy infrastructure
@@ -66,7 +68,9 @@ func Stop() error {
 }
 
 // Run executes the WeDeploy infraestruture
-func (dm *DockerMachine) Run() (err error) {
+func (dm *DockerMachine) Run(ctx context.Context) (err error) {
+	dm.context, dm.contextCancel = context.WithCancel(ctx)
+
 	if err = dm.LoadDockerInfo(); err != nil {
 		return err
 	}
@@ -112,10 +116,20 @@ func (dm *DockerMachine) Run() (err error) {
 	}
 
 	dm.started <- true
+	go dm.dockerWait()
 	go dm.waitReadyState()
 	<-dm.end
 
 	return nil
+}
+
+func (dm *DockerMachine) dockerWait() {
+	var docker = exec.CommandContext(dm.context, bin, "wait", dm.Container)
+	exechelper.AddCommandToNewProcessGroup(docker)
+	_ = docker.Run()
+	dm.contextCancel()
+	fmt.Fprintf(os.Stderr, "Infrastructure terminated unexpectedly.\n")
+	dm.end <- true
 }
 
 // Stop stops the machine
@@ -343,7 +357,7 @@ func (dm *DockerMachine) checkDashboardIsOnOnHost() (string, error) {
 	var args = []string{"ps", "--filter", "ancestor=wedeploy/dashboard", "--quiet"}
 
 	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(args, " ")))
-	var docker = exec.Command(bin, args...)
+	var docker = exec.CommandContext(dm.context, bin, args...)
 	exechelper.AddCommandToNewProcessGroup(docker)
 	var buf bytes.Buffer
 	docker.Stderr = os.Stderr
@@ -368,7 +382,7 @@ func (dm *DockerMachine) LoadDockerInfo() error {
 	}
 
 	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(args, " ")))
-	var docker = exec.Command(bin, args...)
+	var docker = exec.CommandContext(dm.context, bin, args...)
 	exechelper.AddCommandToNewProcessGroup(docker)
 	var buf bytes.Buffer
 	docker.Stderr = os.Stderr
@@ -405,7 +419,7 @@ func (dm *DockerMachine) checkImage() {
 	}
 
 	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(args, " ")))
-	var docker = exec.Command(bin, args...)
+	var docker = exec.CommandContext(dm.context, bin, args...)
 	exechelper.AddCommandToNewProcessGroup(docker)
 	var buf bytes.Buffer
 	docker.Stderr = os.Stderr
