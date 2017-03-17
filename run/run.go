@@ -332,6 +332,7 @@ func rmOldInfrastructureImages() error {
 
 	var params = []string{"rmi"}
 	params = append(params, ids...)
+	params = append(params, "--force")
 	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
 	var rm = exec.Command(bin, params...)
 	exechelper.AddCommandToNewProcessGroup(rm)
