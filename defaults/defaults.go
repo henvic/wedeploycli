@@ -26,7 +26,7 @@ var (
 	Hub = "http://api.dashboard.wedeploy.io"
 
 	// WeDeployImageTag is the WeDeploy image tag for docker
-	WeDeployImageTag = "1.0.0-beta"
+	WeDeployImageTag = "beta"
 
 	// RequiresDockerConstraint semver version constraint
 	RequiresDockerConstraint = ">= 1.12.0"
