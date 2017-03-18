@@ -14,7 +14,7 @@ Available Commands:
 
   deploy       Deploy project or container
   undeploy     Undeploy a given project or container
-  dev          Run development environment
+  run          Run development environment
 
   domain       Configure custom domains for projects
   env          Environment variables for containers

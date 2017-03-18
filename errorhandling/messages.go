@@ -22,12 +22,12 @@ var errorReasonMessage = messages{
 }
 
 var errorReasonCommandMessageOverrides = map[string]messages{
-	"dev": messages{
+	"run": messages{
 		"typeNotFound":                  "Container type not found",
 		"projectContainerQuotaExceeded": "Your quota for containers has exceeded",
 		"exists":                        "Project is already linked",
 	},
-	"dev stop": messages{
+	"run stop": messages{
 		"deleteProject": "Can not delete project",
 	},
 	"deploy": messages{

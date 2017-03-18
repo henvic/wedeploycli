@@ -1,4 +1,4 @@
-package cmddev
+package cmdrun
 
 import (
 	"errors"
@@ -32,7 +32,7 @@ func (l *linker) Init() {
 		},
 	}
 
-	setupHost.Init(DevCmd)
+	setupHost.Init(RunCmd)
 }
 
 func (l *linker) PreRun(cmd *cobra.Command, args []string) error {
@@ -130,7 +130,7 @@ func (l *linker) getProject() (string, error) {
 
 	if (config.Context.Scope == usercontext.ProjectScope ||
 		config.Context.Scope == usercontext.ContainerScope) && projectID != "" {
-		return "", errors.New(`Can not use "we dev --project" when inside a project`)
+		return "", errors.New(`Can not use "we run --project" when inside a project`)
 	}
 
 	if projectID != "" {

@@ -1,4 +1,4 @@
-package cmddev
+package cmdrun
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmd/dev/unlink"
+	"github.com/wedeploy/cli/cmd/run/unlink"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/run"
@@ -31,18 +31,18 @@ var (
 	cmdRunner        commandRunner
 )
 
-// DevCmd runs the WeDeploy local infrastructure
+// RunCmd runs the WeDeploy local infrastructure
 // and / or a project or container
-var DevCmd = &cobra.Command{
-	Use:     "dev",
+var RunCmd = &cobra.Command{
+	Use:     "run",
 	Short:   "Run development environment\n",
-	PreRunE: devPreRun,
-	RunE:    devRun,
-	Example: `  we dev
-  we dev stop
-  we dev --project chat
-  we dev --start-infra to startup only the local infrastructure
-  we dev --shutdown-infra to shutdown the local infrastructure`,
+	PreRunE: preRun,
+	RunE:    runRun,
+	Example: `  we run
+  we run stop
+  we run --project chat
+  we run --start-infra to startup only the local infrastructure
+  we run --shutdown-infra to shutdown the local infrastructure`,
 }
 
 func maybeShutdown() (err error) {
@@ -71,7 +71,7 @@ func maybeStartInfrastructure() error {
 	return run.Run(context.Background(), runFlags)
 }
 
-func devPreRun(cmd *cobra.Command, args []string) error {
+func preRun(cmd *cobra.Command, args []string) error {
 	cmdflagsfromhost.SetLocal()
 
 	if shutdownInfraTmp {
@@ -89,7 +89,7 @@ func devPreRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func devRun(cmd *cobra.Command, args []string) (err error) {
+func runRun(cmd *cobra.Command, args []string) (err error) {
 	if runFlags.Debug && (!cmd.Flags().Changed("start-infra") || !infra || skipInfra) {
 		return errors.New("Incompatible use: --debug requires --start-infra")
 	}
@@ -110,33 +110,33 @@ func devRun(cmd *cobra.Command, args []string) (err error) {
 }
 
 func init() {
-	DevCmd.Flags().BoolVar(&runFlags.Debug, "debug", false,
+	RunCmd.Flags().BoolVar(&runFlags.Debug, "debug", false,
 		"Open infra-structure debug ports")
-	DevCmd.Flags().BoolVar(&runFlags.DryRun, "dry-run", false,
+	RunCmd.Flags().BoolVar(&runFlags.DryRun, "dry-run", false,
 		"Dry-run the infrastructure")
-	DevCmd.Flags().BoolVar(&infra, "start-infra", true,
+	RunCmd.Flags().BoolVar(&infra, "start-infra", true,
 		"Infrastructure status")
-	DevCmd.Flags().BoolVar(&shutdownInfraTmp, "shutdown-infra", false, "")
-	DevCmd.Flags().BoolVar(&skipInfra, "skip-infra", false, "")
-	DevCmd.Flags().StringVar(&image, "experimental-image", "",
+	RunCmd.Flags().BoolVar(&shutdownInfraTmp, "shutdown-infra", false, "")
+	RunCmd.Flags().BoolVar(&skipInfra, "skip-infra", false, "")
+	RunCmd.Flags().StringVar(&image, "experimental-image", "",
 		"Experimental image to run")
-	DevCmd.Flags().BoolVarP(&quiet, "quiet", "q", false,
+	RunCmd.Flags().BoolVarP(&quiet, "quiet", "q", false,
 		"Link without watching status")
 
-	if err := DevCmd.Flags().MarkHidden("skip-infra"); err != nil {
+	if err := RunCmd.Flags().MarkHidden("skip-infra"); err != nil {
 		panic(err)
 	}
 
-	if err := DevCmd.Flags().MarkHidden("experimental-image"); err != nil {
+	if err := RunCmd.Flags().MarkHidden("experimental-image"); err != nil {
 		panic(err)
 	}
 
-	if err := DevCmd.Flags().MarkHidden("shutdown-infra"); err != nil {
+	if err := RunCmd.Flags().MarkHidden("shutdown-infra"); err != nil {
 		panic(err)
 	}
 
 	loadCommandInit()
-	DevCmd.AddCommand(cmddevunlink.StopCmd)
+	RunCmd.AddCommand(cmdunlink.StopCmd)
 }
 
 func loadCommandInit() {

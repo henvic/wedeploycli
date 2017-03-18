@@ -1,4 +1,4 @@
-package cmddevunlink
+package cmdunlink
 
 import (
 	"context"
@@ -28,10 +28,10 @@ var StopCmd = &cobra.Command{
 	Short:   "Stop a project or container",
 	PreRunE: stopUnlinker.PreRun,
 	RunE:    stopUnlinker.Run,
-	Example: `  we dev stop
-  we dev stop --project chat
-  we dev stop --project chat --container data
-  we dev stop --container data`,
+	Example: `  we run stop
+  we run stop --project chat
+  we run stop --project chat --container data
+  we run stop --container data`,
 }
 
 type unlinker struct {

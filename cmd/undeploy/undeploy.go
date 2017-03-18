@@ -37,7 +37,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 func run(cmd *cobra.Command, args []string) error {
 	if setupHost.Remote() == "" {
-		return errors.New(`You can not run undeploy in the local infrastructure. Use "we dev stop" instead`)
+		return errors.New(`You can not run undeploy in the local infrastructure. Use "we run stop" instead`)
 	}
 
 	var project = setupHost.Project()
