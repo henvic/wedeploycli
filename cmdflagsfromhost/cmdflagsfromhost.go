@@ -42,6 +42,7 @@ type SetupHost struct {
 	UseProjectDirectory             bool
 	UseProjectDirectoryForContainer bool
 	UseContainerDirectory           bool
+	FlagsOverridesContext           bool
 	url                             string
 	project                         string
 	container                       string
@@ -262,14 +263,14 @@ func (s *SetupHost) loadValues() (err error) {
 		return errors.New("Container is not allowed for this command")
 	}
 
-	if container == "" && s.UseContainerDirectory {
+	if container == "" && !s.FlagsOverridesContext && s.UseContainerDirectory {
 		container, err = s.getContainerFromCurrentWorkingDirectory()
 		if err != nil {
 			return err
 		}
 	}
 
-	if project == "" && (s.UseProjectDirectory || (s.UseProjectDirectoryForContainer && container != "")) {
+	if project == "" && !s.FlagsOverridesContext && (s.UseProjectDirectory || (s.UseProjectDirectoryForContainer && container != "")) {
 		project, err = s.getProjectFromCurrentWorkingDirectory()
 		if err != nil {
 			return err
