@@ -49,6 +49,15 @@ func (l *linker) Run(cmd *cobra.Command, args []string) error {
 	switch errProjectID {
 	case nil:
 	case projects.ErrProjectNotFound:
+		fmt.Fprintf(os.Stderr, "No project or container on the current context.\n")
+
+		if _, ec := containers.Read("."); ec == nil {
+			fmt.Fprintf(os.Stderr,
+				`container.json found: maybe you want to try "we dev --project <project>" instead
+
+`)
+		}
+
 		fmt.Println(`See http://wedeploy.com/docs`)
 		return nil
 	default:
