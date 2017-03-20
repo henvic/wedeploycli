@@ -196,7 +196,7 @@ func getWeDeployHost() string {
 
 	if err != nil {
 		println("Could not find a suitable host.")
-		println("To use \"we dev\" you need a suitable docker network interface on.")
+		println("To use \"we run\" you need a suitable docker network interface on.")
 		println(err.Error())
 		os.Exit(1)
 	}

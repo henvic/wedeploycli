@@ -53,7 +53,7 @@ func (l *linker) Run(cmd *cobra.Command, args []string) error {
 
 		if _, ec := containers.Read("."); ec == nil {
 			fmt.Fprintf(os.Stderr,
-				`container.json found: maybe you want to try "we dev --project <project>" instead
+				`container.json found: maybe you want to try "we run --project <project>" instead
 
 `)
 		}

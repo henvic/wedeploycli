@@ -52,7 +52,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if setupHost.Remote() == "" {
-		return errors.New(`You can not deploy in the local infrastructure. Use "we dev" instead`)
+		return errors.New(`You can not deploy in the local infrastructure. Use "we run" instead`)
 	}
 
 	return checkContextAmbiguity()
@@ -190,7 +190,7 @@ func createProjectIfNotFound(ctx context.Context, id string) error {
 
 func run(cmd *cobra.Command, args []string) error {
 	if setupHost.Remote() == "" {
-		return errors.New(`You can not deploy in the local infrastructure. Use "we dev" instead`)
+		return errors.New(`You can not deploy in the local infrastructure. Use "we run" instead`)
 	}
 
 	projectID, err := getProjectID()
