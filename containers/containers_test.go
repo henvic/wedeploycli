@@ -198,6 +198,30 @@ func TestGet(t *testing.T) {
 	configmock.Teardown()
 }
 
+func TestGetEmptyContainerID(t *testing.T) {
+	var _, err = Get(context.Background(), "images", "")
+
+	if err != ErrEmptyContainerID {
+		t.Errorf("Wanted error to be %v, got %v instead", ErrEmptyContainerID, err)
+	}
+}
+
+func TestGetEmptyProjectID(t *testing.T) {
+	var _, err = Get(context.Background(), "", "foo")
+
+	if err != ErrEmptyProjectID {
+		t.Errorf("Wanted error to be %v, got %v instead", ErrEmptyProjectID, err)
+	}
+}
+
+func TestGetEmptyProjectAndContainerID(t *testing.T) {
+	var _, err = Get(context.Background(), "", "")
+
+	if err != ErrEmptyProjectAndContainerID {
+		t.Errorf("Wanted error to be %v, got %v instead", ErrEmptyProjectAndContainerID, err)
+	}
+}
+
 func TestList(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()

@@ -51,6 +51,15 @@ var (
 
 	// ErrInvalidContainerID happens when a container ID is invalid
 	ErrInvalidContainerID = errors.New("Invalid container ID")
+
+	// ErrEmptyProjectID happens when trying to access a project, but providing an empty ID
+	ErrEmptyProjectID = errors.New("Can not get project: Project ID is empty")
+
+	// ErrEmptyContainerID happens when trying to access a container, but providing an empty ID
+	ErrEmptyContainerID = errors.New("Can not get container: Container ID is empty")
+
+	// ErrEmptyProjectAndContainerID happens when trying to access a container, but providing empty IDs
+	ErrEmptyProjectAndContainerID = errors.New("Can not get container: Project and Container ID is empty")
 )
 
 // ContainerInfo is for a tuple of container ID and Location.
@@ -171,9 +180,17 @@ func List(ctx context.Context, projectID string) (Containers, error) {
 }
 
 // Get container
-func Get(ctx context.Context, projectID, containerID string) (Container, error) {
-	var c Container
-	var err = apihelper.AuthGet(ctx, "/projects/"+
+func Get(ctx context.Context, projectID, containerID string) (c Container, err error) {
+	switch {
+	case projectID == "" && containerID == "":
+		return c, ErrEmptyProjectAndContainerID
+	case projectID == "":
+		return c, ErrEmptyProjectID
+	case containerID == "":
+		return c, ErrEmptyContainerID
+	}
+
+	err = apihelper.AuthGet(ctx, "/projects/"+
 		url.QueryEscape(projectID)+
 		"/containers/"+
 		url.QueryEscape(containerID), &c)
