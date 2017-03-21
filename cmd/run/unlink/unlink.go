@@ -47,7 +47,6 @@ var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern:               cmdflagsfromhost.ProjectAndContainerPattern,
 	UseProjectDirectory:   true,
 	UseContainerDirectory: true,
-	FlagsOverridesContext: true,
 	Requires: cmdflagsfromhost.Requires{
 		Project: true,
 		Local:   true,
