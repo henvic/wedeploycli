@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/config"
@@ -187,6 +188,10 @@ func (l *linker) setupLocallyExistingProject(projectPath string) error {
 
 	created, err := projects.ValidateOrCreateFromJSON(
 		filepath.Join(projectPath, "project.json"))
+
+	if ea, ok := err.(*apihelper.APIFault); ok && ea.Has("exists") {
+		return nil
+	}
 
 	if created {
 		fmt.Fprintf(os.Stdout, "New project %v created.\n", project.ID)

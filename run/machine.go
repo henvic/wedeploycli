@@ -119,7 +119,7 @@ func (dm *DockerMachine) Run() (err error) {
 			if !ok {
 				fmt.Fprintf(os.Stderr, "%v\n",
 					color.Format(color.BgRed, color.Bold,
-						" change to debug mode not allowed: already running infrastructure"))
+						" change to debug mode not allowed: already running infrastructure "))
 
 				fmt.Fprintf(os.Stderr, "%v\n", `
 To run the infrastructure with debug mode:
