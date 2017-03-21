@@ -38,6 +38,9 @@ var (
 
 	// ErrInvalidProjectID happens when a Project ID is invalid
 	ErrInvalidProjectID = errors.New("Invalid project ID")
+
+	// ErrEmptyProjectID happens when trying to access a project, but providing an empty ID
+	ErrEmptyProjectID = errors.New("Can not get project: ID is empty")
 )
 
 // CreateFromJSON a project on WeDeploy
@@ -128,6 +131,10 @@ func RemoveDomain(ctx context.Context, projectID string, domain string) (err err
 
 // Get project by ID
 func Get(ctx context.Context, id string) (project Project, err error) {
+	if id == "" {
+		return project, ErrEmptyProjectID
+	}
+
 	err = apihelper.AuthGet(ctx, "/projects/"+url.QueryEscape(id), &project)
 	return project, err
 }

@@ -193,6 +193,14 @@ func TestGet(t *testing.T) {
 	configmock.Teardown()
 }
 
+func TestGetEmpty(t *testing.T) {
+	var _, err = Get(context.Background(), "")
+
+	if err != ErrEmptyProjectID {
+		t.Errorf("Wanted error to be %v, got %v instead", ErrEmptyProjectID, err)
+	}
+}
+
 func TestList(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
