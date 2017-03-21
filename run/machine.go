@@ -70,6 +70,20 @@ func Stop() error {
 	return dm.Stop()
 }
 
+func (dm *DockerMachine) checkDockerDebug() (ok bool, err error) {
+	var docker = exec.CommandContext(dm.Context, bin, "port", dm.Container)
+	exechelper.AddCommandToNewProcessGroup(docker)
+	docker.Stderr = os.Stderr
+	var buf bytes.Buffer
+	docker.Stdout = &buf
+	err = docker.Run()
+	var s = buf.String()
+	ok = strings.Contains(s,
+		fmt.Sprintf("%v/tcp", debugPorts[0]))
+
+	return ok, err
+}
+
 // Run executes the WeDeploy infraestruture
 func (dm *DockerMachine) Run() (err error) {
 	dm.Context, dm.contextCancel = context.WithCancel(dm.Context)
@@ -96,7 +110,23 @@ func (dm *DockerMachine) Run() (err error) {
 		verbose.Debug(`Infrastructure is on.`)
 
 		if dm.Flags.Debug {
-			return errors.New(`change to debug mode not allowed: shutdown with "we run --shutdown-infra" and run with "we run --infra --debug"`)
+			var ok, errd = dm.checkDockerDebug()
+
+			if errd != nil {
+				return errwrap.Wrapf("Can not get docker ports for container: {{err}}", errd)
+			}
+
+			if !ok {
+				fmt.Fprintf(os.Stderr, "%v\n",
+					color.Format(color.BgRed, color.Bold,
+						" change to debug mode not allowed: already running infrastructure"))
+
+				fmt.Fprintf(os.Stderr, "%v\n", `
+To run the infrastructure with debug mode:
+	1. Shutdown with "we run --shutdown-infra"
+	2. Run with "we run --infra --debug"
+	3. Run any project or containers you want`)
+			}
 		}
 
 		return nil
@@ -168,22 +198,26 @@ func (dm *DockerMachine) Stop() error {
 	return nil
 }
 
+var servicesPorts = tcpPortsStruct{
+	80,
+	6379,
+	8001,
+	8080,
+	9300,
+	24224}
+
+var debugPorts = tcpPortsStruct{
+	5001,
+	5005,
+	8500,
+	9200,
+}
+
 func (dm *DockerMachine) setupPorts() {
-	dm.tcpPorts = tcpPortsStruct{
-		80,
-		6379,
-		8001,
-		8080,
-		9300,
-		24224,
-	}
+	dm.tcpPorts = servicesPorts
 
 	if dm.Flags.Debug {
-		dm.tcpPorts = append(dm.tcpPorts,
-			5001,
-			5005,
-			8500,
-			9200)
+		dm.tcpPorts = append(dm.tcpPorts, debugPorts...)
 	}
 }
 

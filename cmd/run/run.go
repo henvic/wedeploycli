@@ -2,7 +2,6 @@ package cmdrun
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 
@@ -90,10 +89,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func runRun(cmd *cobra.Command, args []string) (err error) {
-	if runFlags.Debug && (!cmd.Flags().Changed("start-infra") || !infra || skipInfra) {
-		return errors.New("Incompatible use: --debug requires --start-infra")
-	}
-
 	if !infra {
 		return maybeShutdown()
 	}
