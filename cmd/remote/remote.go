@@ -3,10 +3,13 @@ package cmdremote
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/formatter"
 )
 
@@ -127,6 +130,15 @@ func removeRun(cmd *cobra.Command, args []string) error {
 	}
 
 	remotes.Del(name)
+
+	if name == defaults.CloudRemote {
+		fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Removed default cloud remote "wedeploy" will be recreated with its default value`))
+	}
+
+	if name == defaults.LocalRemote {
+		fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Removed default local remote "local" will be recreated with its default value`))
+	}
+
 	return global.Save()
 }
 
