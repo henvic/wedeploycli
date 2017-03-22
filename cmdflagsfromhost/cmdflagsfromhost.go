@@ -246,7 +246,7 @@ func (s *SetupHost) loadValues() (err error) {
 	var project = s.parsed.Project()
 	var remote = s.parsed.Remote()
 
-	if remote == defaults.DefaultLocalRemote {
+	if remote == defaults.LocalRemote {
 		remote = ""
 	}
 

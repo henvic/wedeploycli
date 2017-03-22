@@ -77,18 +77,18 @@ func (c *Config) Load() error {
 }
 
 func (c *Config) loadDefaultRemotes() {
-	switch c.Remotes[defaults.DefaultCloudRemote].URL {
+	switch c.Remotes[defaults.CloudRemote].URL {
 	case "wedeploy.io":
 	case "":
-		c.Remotes.Set(defaults.DefaultCloudRemote, "wedeploy.io", "Default cloud remote")
+		c.Remotes.Set(defaults.CloudRemote, "wedeploy.io", "Default cloud remote")
 	default:
 		println(color.Format(color.FgHiRed, "Warning: Non-standard wedeploy remote cloud detected"))
 	}
 
-	switch c.Remotes[defaults.DefaultLocalRemote].URL {
+	switch c.Remotes[defaults.LocalRemote].URL {
 	case "wedeploy.me":
 	case "":
-		c.Remotes.Set(defaults.DefaultLocalRemote, "wedeploy.me", "Default local remote")
+		c.Remotes.Set(defaults.LocalRemote, "wedeploy.me", "Default local remote")
 	default:
 		println(color.Format(color.FgHiRed, "Warning: Non-standard local cloud detected"))
 	}

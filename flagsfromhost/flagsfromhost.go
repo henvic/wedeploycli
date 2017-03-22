@@ -156,9 +156,9 @@ func ParseWithDefaultCustomRemote(pf ParseFlagsWithDefaultCustomRemote) (*FlagsF
 	if f != nil {
 		switch {
 		case f.remote == "" && (pf.RemoteChanged || f.IsRemoteFromHost()):
-			f.remote = defaults.DefaultLocalRemote
+			f.remote = defaults.LocalRemote
 		case !f.IsRemoteFromHost() && !pf.RemoteChanged:
-			f.remote = defaults.DefaultCloudRemote
+			f.remote = defaults.CloudRemote
 		}
 	}
 
