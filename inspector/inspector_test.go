@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/wedeploy/api-go/jsonlib"
@@ -273,6 +274,29 @@ func TestInspectContextOverviewTypeProject(t *testing.T) {
 				Location: abs("./mocks/my-project/other"),
 			},
 		},
+	}
+
+	if !reflect.DeepEqual(want, overview) {
+		t.Errorf("Wanted ContextOverview %+v, got %+v instead", want, overview)
+	}
+}
+
+func TestInspectContextOverviewTypeProjectWithDuplicatedContainers(t *testing.T) {
+	var overview = ContextOverview{}
+	var err = overview.Load("./mocks/my-project-with-duplicated-containers/")
+
+	if err == nil || strings.Contains(err.Error(),
+		"Error while trying to read list of containers on project:\n"+
+			`Can not list containers: ID "other" was found duplicated on containers`) {
+		t.Errorf("Expected error to contain duplicated information, got %v instead", err)
+	}
+
+	var want = ContextOverview{
+		Scope:         "project",
+		ProjectRoot:   abs("./mocks/my-project-with-duplicated-containers"),
+		ContainerRoot: "",
+		ProjectID:     "my-project",
+		ContainerID:   "",
 	}
 
 	if !reflect.DeepEqual(want, overview) {
