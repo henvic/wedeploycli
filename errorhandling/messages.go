@@ -8,7 +8,7 @@ var errorReasonMessage = messages{
 	"containerNotFound":         "Not found",
 	"badRequest":                "The API request is invalid or improperly formed",
 	"internalError":             "The request failed due to an internal error",
-	"projectQuotaExceeded":      "Project quote exceeded",
+	"projectQuotaExceeded":      "Project quota exceeded",
 	"invalidContainer":          "Invalid container",
 	"invalidProject":            "Invalid project",
 	"invalidAccountEmail":       "Invalid email account",
