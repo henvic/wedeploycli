@@ -307,13 +307,13 @@ func getContainersInfoListFromProject(projectPath string) (containers.ContainerI
 		return containers.ContainerInfoList{}, errwrap.Wrapf("Can not list containers from project: {{err}}", err)
 	}
 
-	var containerInfo = containers.ContainerInfoList{}
+	var list = containers.ContainerInfoList{}
 
 	for _, c := range i.ProjectContainers {
-		containerInfo = append(containerInfo, c)
+		list = append(list, c)
 	}
 
-	return containerInfo, nil
+	return list, nil
 }
 
 func init() {
