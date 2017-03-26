@@ -189,7 +189,7 @@ func (l *linker) setupLocallyExistingProject(projectPath string) error {
 	created, err := projects.ValidateOrCreateFromJSON(
 		filepath.Join(projectPath, "project.json"))
 
-	if ea, ok := err.(*apihelper.APIFault); ok && ea.Has("exists") {
+	if ea, ok := err.(*apihelper.APIFault); ok && ea.Has("projectAlreadyExists") {
 		return nil
 	}
 
