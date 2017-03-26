@@ -1,6 +1,6 @@
 // +build !windows
 
-package user
+package userhome
 
 import "os"
 

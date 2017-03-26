@@ -26,7 +26,7 @@ import (
 	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/metrics"
 	"github.com/wedeploy/cli/update"
-	"github.com/wedeploy/cli/user"
+	"github.com/wedeploy/cli/userhome"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -84,7 +84,7 @@ func (m *mainProgram) run() {
 
 func (m *mainProgram) setupMetrics() {
 	metrics.SetPID(os.Getpid())
-	metrics.SetPath(filepath.Join(user.GetHomeDir(), ".we_metrics"))
+	metrics.SetPath(filepath.Join(userhome.GetHomeDir(), ".we_metrics"))
 }
 
 func (m *mainProgram) executeCommand() {

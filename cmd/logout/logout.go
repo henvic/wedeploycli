@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/user"
+	"github.com/wedeploy/cli/userhome"
 )
 
 // LogoutCmd unsets the user credential
@@ -26,7 +26,7 @@ func init() {
 
 func logoutRun(cmd *cobra.Command, args []string) error {
 	if rmConfig {
-		return os.Remove(filepath.Join(user.GetHomeDir(), ".we"))
+		return os.Remove(filepath.Join(userhome.GetHomeDir(), ".we"))
 	}
 
 	var g = config.Global

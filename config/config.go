@@ -14,8 +14,8 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/remotes"
-	"github.com/wedeploy/cli/user"
 	"github.com/wedeploy/cli/usercontext"
+	"github.com/wedeploy/cli/userhome"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -306,7 +306,7 @@ func setupContext() (err error) {
 
 func setupGlobal() error {
 	Global = &Config{
-		Path: filepath.Join(user.GetHomeDir(), ".we"),
+		Path: filepath.Join(userhome.GetHomeDir(), ".we"),
 	}
 
 	if err := Global.Load(); err != nil {

@@ -9,7 +9,7 @@ import (
 	"github.com/coreos/go-semver/semver"
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/user"
+	"github.com/wedeploy/cli/userhome"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -32,7 +32,7 @@ var autocompleteTransition = Transition{
 			return nil
 		}
 
-		oldAutocomplete := filepath.Join(user.GetHomeDir(), "/.we_autocomplete")
+		oldAutocomplete := filepath.Join(userhome.GetHomeDir(), "/.we_autocomplete")
 
 		if err := os.Remove(oldAutocomplete); err != nil {
 			return errwrap.Wrapf("Can not remove old autocomplete script: {{err}}", err)

@@ -9,7 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/wedeploy/cli/user"
+	"github.com/wedeploy/cli/userhome"
 )
 
 var script = `if [ -n "$ZSH_VERSION" ]; then
@@ -53,7 +53,7 @@ fi
 var scriptPath string
 
 func init() {
-	scriptPath = filepath.Join(user.GetHomeDir(), "/.we_autocomplete")
+	scriptPath = filepath.Join(userhome.GetHomeDir(), "/.we_autocomplete")
 }
 
 func autoInstall() {

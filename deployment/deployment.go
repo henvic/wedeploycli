@@ -15,7 +15,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/user"
+	"github.com/wedeploy/cli/userhome"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -39,7 +39,7 @@ type Deploy struct {
 }
 
 func (d *Deploy) getGitPath() string {
-	return filepath.Join(user.GetHomeDir(), ".wedeploy", "tmp", "repos", d.Path)
+	return filepath.Join(userhome.GetHomeDir(), ".wedeploy", "tmp", "repos", d.Path)
 }
 
 func (d *Deploy) getGitRemote() string {
