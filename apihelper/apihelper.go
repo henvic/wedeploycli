@@ -313,16 +313,20 @@ func reportHTTPErrorJSON(request *wedeploy.WeDeploy, af APIFault) error {
 func reportHTTPErrorNotJSON(
 	request *wedeploy.WeDeploy, body []byte) *APIFault {
 	var response = request.Response
-	return &APIFault{
+	var fault = &APIFault{
 		Method:  request.Request.Method,
 		URL:     request.URL,
 		Code:    response.StatusCode,
 		Message: http.StatusText(response.StatusCode),
-		Errors: APIFaultErrors{
-			APIFaultError{
-				Reason:  string(body),
-				Message: "body",
-			},
-		},
+		Errors:  APIFaultErrors{},
 	}
+
+	if len(body) != 0 {
+		fault.Errors = append(fault.Errors, APIFaultError{
+			Reason:  string(body),
+			Message: "body",
+		})
+	}
+
+	return fault
 }

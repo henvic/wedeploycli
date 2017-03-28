@@ -1085,3 +1085,25 @@ func TestValidateUnexpectedResponseCustom(t *testing.T) {
 		t.Errorf("Wanted %v, got %v", want, err.Error())
 	}
 }
+
+func TestValidateUnexpectedResponseNonBody(t *testing.T) {
+	servertest.Setup()
+	defer servertest.Teardown()
+
+	servertest.Mux.HandleFunc("/foo/bah", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(403)
+	})
+
+	var want = `WeDeploy API error: 403 Forbidden (GET http://www.example.com/foo/bah)`
+
+	r := URL(context.Background(), "/foo/bah")
+	err := Validate(r, r.Get())
+
+	if err == nil {
+		t.Errorf("Expected error, got %v instead", err)
+	}
+
+	if err.Error() != want {
+		t.Errorf("Wanted %v, got %v", want, err.Error())
+	}
+}
