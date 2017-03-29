@@ -348,24 +348,8 @@ func rmOldInfrastructureImages() error {
 }
 
 func getDockerContainers(onlyRunning bool) (cids []string, err error) {
-	cids, err = getContainersByLabel("com.wedeploy.container.type", onlyRunning)
-
-	if err != nil {
-		return []string{}, err
-	}
-
-	idsInfra, err := getContainersByLabel("com.wedeploy.project.infra", onlyRunning)
-
-	if err != nil {
-		return []string{}, err
-	}
-
-	return append(cids, idsInfra...), err
-}
-
-func getContainersByLabel(label string, onlyRunning bool) (cs []string, err error) {
 	var params = []string{
-		"ps", "--filter", "label=" + label, "--quiet", "--no-trunc",
+		"ps", "--format", "{{.ID}}|{{.Image}}", "--no-trunc",
 	}
 
 	if !onlyRunning {
@@ -380,10 +364,24 @@ func getContainersByLabel(label string, onlyRunning bool) (cs []string, err erro
 	list.Stdout = &buf
 
 	if err := list.Run(); err != nil {
-		return cs, errwrap.Wrapf("Can not get containers list: {{err}}", err)
+		return []string{}, errwrap.Wrapf("Can not get containers list: {{err}}", err)
 	}
 
-	return strings.Fields(buf.String()), nil
+	return filterWeDeployDockerContainers(strings.Fields(buf.String())), nil
+}
+
+func filterWeDeployDockerContainers(cs []string) []string {
+	var filtered = []string{}
+
+	for _, c := range cs {
+		var p = strings.SplitN(c, "|", 2)
+
+		if strings.HasPrefix(p[1], "wedeploy/") && len(p) == 2 {
+			filtered = append(filtered, p[0])
+		}
+	}
+
+	return filtered
 }
 
 func getOldInfrastructureImages() ([]string, error) {
