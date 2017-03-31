@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -174,13 +173,13 @@ func TestGet(t *testing.T) {
 	configmock.Setup()
 
 	var want = Container{
-		ID:     "search7606",
-		Health: "on",
-		Type:   "cloudsearch",
-		Scale:  7,
+		ServiceID: "search7606",
+		Health:    "on",
+		Type:      "cloudsearch",
+		Scale:     7,
 	}
 
-	servertest.Mux.HandleFunc("/projects/images/containers/search7606",
+	servertest.Mux.HandleFunc("/projects/images/services/search7606",
 		tdata.ServerJSONFileHandler("mocks/container_response.json"))
 
 	var got, err = Get(context.Background(), "images", "search7606")
@@ -226,22 +225,22 @@ func TestList(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	var want = Containers{
-		"search7606": &Container{
-			ID:     "search7606",
-			Health: "on",
-			Type:   "cloudsearch",
-			Scale:  7,
+	var want = []Container{
+		Container{
+			ServiceID: "search7606",
+			Health:    "on",
+			Type:      "cloudsearch",
+			Scale:     7,
 		},
-		"nodejs5143": &Container{
-			ID:     "nodejs5143",
-			Health: "on",
-			Type:   "nodejs",
-			Scale:  5,
+		Container{
+			ServiceID: "nodejs5143",
+			Health:    "on",
+			Type:      "nodejs",
+			Scale:     5,
 		},
 	}
 
-	servertest.Mux.HandleFunc("/projects/images/containers",
+	servertest.Mux.HandleFunc("/projects/images/services",
 		tdata.ServerJSONFileHandler("mocks/containers_response.json"))
 
 	var got, err = List(context.Background(), "images")
@@ -250,7 +249,8 @@ func TestList(t *testing.T) {
 		t.Errorf("Expected no error, got %v instead", err)
 	}
 
-	if !reflect.DeepEqual(want, got) {
+	// if !reflect.DeepEqual(want, got) {
+	if fmt.Sprintf("%+v", got) != fmt.Sprintf("%+v", want) {
 		t.Errorf("List does not match with wanted structure.")
 		t.Errorf(pretty.Compare(want, got))
 	}
@@ -264,20 +264,10 @@ func TestLink(t *testing.T) {
 	configmock.Setup()
 
 	servertest.Mux.HandleFunc(
-		"/deploy",
+		"/projects/sound/services",
 		func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "PUT" {
+			if r.Method != "POST" {
 				t.Errorf("Expected install method to be PUT")
-			}
-
-			var qp = r.URL.Query()
-
-			if qp.Get("projectId") != "sound" {
-				t.Errorf("Missing expected value for projectId query param")
-			}
-
-			if qp.Get("containerId") != "speaker" {
-				t.Errorf("Missing expected value for containerId query param")
 			}
 
 			var body, err = ioutil.ReadAll(r.Body)
@@ -295,7 +285,7 @@ func TestLink(t *testing.T) {
 			}
 
 			jsonlib.AssertJSONMarshal(t,
-				`{"id":"speaker", "type": "nodejs"}`,
+				`{"serviceId":"speaker", "type": "nodejs", "source": "mocks/app/speaker"}`,
 				data)
 		})
 
@@ -372,7 +362,7 @@ func TestSetEnvironmentVariable(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	servertest.Mux.HandleFunc("/projects/foo/containers/bar/env/xyz",
+	servertest.Mux.HandleFunc("/projects/foo/services/bar/env/xyz",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != http.MethodPut {
 				t.Errorf("Expected method %v, got %v instead", http.MethodPut, r.Method)
@@ -404,7 +394,7 @@ func TestUnsetEnvironmentVariable(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	servertest.Mux.HandleFunc("/projects/foo/containers/bar/env/xyz",
+	servertest.Mux.HandleFunc("/projects/foo/services/bar/env/xyz",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != http.MethodDelete {
 				t.Errorf("Expected method %v, got %v instead", http.MethodDelete, r.Method)
@@ -423,18 +413,8 @@ func TestRestart(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	servertest.Mux.HandleFunc("/restart/container",
+	servertest.Mux.HandleFunc("/projects/foo/services/bar/restart",
 		func(w http.ResponseWriter, r *http.Request) {
-			var p, err = url.ParseQuery(r.URL.RawQuery)
-
-			if err != nil {
-				panic(err)
-			}
-
-			if p.Get("projectId") != "foo" || p.Get("containerId") != "bar" {
-				t.Errorf("Wrong query parameters, got %v", r.URL.RawQuery)
-			}
-
 			fmt.Fprintf(w, `"on"`)
 		})
 
@@ -450,7 +430,7 @@ func TestUnlink(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	servertest.Mux.HandleFunc("/deploy/foo/bar", func(w http.ResponseWriter, r *http.Request) {
+	servertest.Mux.HandleFunc("/projects/foo/services/bar", func(w http.ResponseWriter, r *http.Request) {
 		var wantMethod = "DELETE"
 		if r.Method != wantMethod {
 			t.Errorf("Wanted method %v, got %v instead", wantMethod, r.Method)
@@ -471,7 +451,7 @@ func TestValidate(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	servertest.Mux.HandleFunc("/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/services/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.FormValue("projectId") != "foo" {
 				t.Errorf("Wrong projectId form value")
@@ -494,7 +474,7 @@ func TestValidateAlreadyExists(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	servertest.Mux.HandleFunc("/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/services/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)
@@ -513,7 +493,7 @@ func TestValidateInvalidID(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	servertest.Mux.HandleFunc("/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/services/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)
@@ -532,7 +512,7 @@ func TestValidateError(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	servertest.Mux.HandleFunc("/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/services/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			w.WriteHeader(400)
@@ -555,7 +535,7 @@ func TestValidateInvalidError(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	servertest.Mux.HandleFunc("/validators/containers/id",
+	servertest.Mux.HandleFunc("/validators/services/id",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)

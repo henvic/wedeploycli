@@ -1,7 +1,6 @@
 package containers
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -21,17 +20,46 @@ import (
 	"github.com/wedeploy/cli/verbosereq"
 )
 
-// Containers map
-type Containers map[string]*Container
+// Containers list
+type Containers []Container
+
+// Get a container from the container list
+func (cs Containers) Get(id string) (c Container, err error) {
+	for _, c := range cs {
+		if c.ServiceID == id {
+			return c, nil
+		}
+	}
+
+	return c, errors.New("No container found")
+}
 
 // Container structure
 type Container struct {
-	ID     string            `json:"id"`
-	Health string            `json:"health,omitempty"`
-	Type   string            `json:"type,omitempty"`
-	Hooks  *hooks.Hooks      `json:"hooks,omitempty"`
-	Env    map[string]string `json:"env,omitempty"`
-	Scale  int               `json:"scale,omitempty"`
+	ServiceID string            `json:"serviceId,omitempty"`
+	Health    string            `json:"health,omitempty"`
+	Type      string            `json:"type,omitempty"`
+	Hooks     *hooks.Hooks      `json:"hooks,omitempty"`
+	Env       map[string]string `json:"env,omitempty"`
+	Scale     int               `json:"scale,omitempty"`
+}
+
+// ContainerPackage is the structure for container.json
+type ContainerPackage struct {
+	ID    string            `json:"id,omitempty"`
+	Type  string            `json:"type,omitempty"`
+	Hooks *hooks.Hooks      `json:"hooks,omitempty"`
+	Env   map[string]string `json:"env,omitempty"`
+}
+
+// Container returns a Container type created taking container.json as base
+func (cp ContainerPackage) Container() *Container {
+	return &Container{
+		ServiceID: cp.ID,
+		Type:      cp.Type,
+		Hooks:     cp.Hooks,
+		Env:       cp.Env,
+	}
 }
 
 // Register for the container structure
@@ -64,8 +92,8 @@ var (
 
 // ContainerInfo is for a tuple of container ID and Location.
 type ContainerInfo struct {
-	ID       string
-	Location string
+	ServiceID string
+	Location  string
 }
 
 // ContainerInfoList is a list of ContainerInfo
@@ -87,7 +115,7 @@ func (c ContainerInfoList) GetIDs() []string {
 	var ids = []string{}
 
 	for _, ci := range c {
-		ids = append(ids, ci.ID)
+		ids = append(ids, ci.ServiceID)
 	}
 
 	return ids
@@ -155,18 +183,18 @@ func (l *listFromDirectoryGetter) readFunc(path string) error {
 	}
 }
 
-func (l *listFromDirectoryGetter) addFunc(container *Container, dir string) error {
-	if cp, ok := l.idDirMap[container.ID]; ok {
+func (l *listFromDirectoryGetter) addFunc(cp *ContainerPackage, dir string) error {
+	if cpv, ok := l.idDirMap[cp.ID]; ok {
 		return fmt.Errorf(`Can not list containers: ID "%v" was found duplicated on containers %v and %v`,
-			container.ID,
-			cp,
+			cp.ID,
+			cpv,
 			dir)
 	}
 
-	l.idDirMap[container.ID] = dir
+	l.idDirMap[cp.ID] = dir
 	l.list = append(l.list, ContainerInfo{
-		ID:       container.ID,
-		Location: strings.TrimPrefix(dir, l.root+string(os.PathSeparator)),
+		ServiceID: cp.ID,
+		Location:  strings.TrimPrefix(dir, l.root+string(os.PathSeparator)),
 	})
 
 	return filepath.SkipDir
@@ -175,7 +203,7 @@ func (l *listFromDirectoryGetter) addFunc(container *Container, dir string) erro
 // List containers of a given project
 func List(ctx context.Context, projectID string) (Containers, error) {
 	var cs Containers
-	var err = apihelper.AuthGet(ctx, "/projects/"+url.QueryEscape(projectID)+"/containers", &cs)
+	var err = apihelper.AuthGet(ctx, "/projects/"+url.QueryEscape(projectID)+"/services", &cs)
 	return cs, err
 }
 
@@ -192,36 +220,87 @@ func Get(ctx context.Context, projectID, containerID string) (c Container, err e
 
 	err = apihelper.AuthGet(ctx, "/projects/"+
 		url.QueryEscape(projectID)+
-		"/containers/"+
+		"/services/"+
 		url.QueryEscape(containerID), &c)
 	return c, err
 }
 
+// EnvironmentVariable of a container
+type EnvironmentVariable struct {
+	Name  string `json:"name,omitempty"`
+	Value string `json:"value,omitempty"`
+}
+
+// GetEnvironmentVariables of a service
+func GetEnvironmentVariables(ctx context.Context, projectID, containerID string) (envs []EnvironmentVariable, err error) {
+	err = apihelper.AuthGet(ctx, "/projects/"+
+		url.QueryEscape(projectID)+
+		"/services/"+
+		url.QueryEscape(containerID)+
+		"/environment-variables", &envs)
+	return envs, err
+}
+
+func extractType(container Container) (image, version string, err error) {
+	var s = strings.SplitN(container.Type, ":", 2)
+
+	if len(s) == 1 {
+		return s[0], "", nil
+	}
+
+	if strings.Contains(s[1], ":") {
+		return s[0], s[1], fmt.Errorf(`Invalid container type: "%s"`, container.Type)
+	}
+
+	return s[0], s[1], nil
+}
+
+type linkRequestBody struct {
+	ServiceID string            `json:"serviceId,omitempty"`
+	Image     string            `json:"image,omitempty"`
+	Port      string            `json:"port,omitempty"`
+	Scale     int               `json:"scale,omitempty"`
+	Env       map[string]string `json:"env,omitempty"`
+	Version   string            `json:"version,omitempty"`
+	Source    string            `json:"source,omitempty"`
+}
+
 // Link container to project
-func Link(ctx context.Context, projectID, containerID, containerPath string) error {
-	verbose.Debug("Linking container " + containerID + " to project " + projectID)
+func Link(ctx context.Context, projectID string, container Container, source string) (err error) {
+	var reqBody = linkRequestBody{
+		ServiceID: container.ServiceID,
+		Scale:     container.Scale,
+		Env:       container.Env,
+		Source:    source,
+	}
 
-	var req = apihelper.URL(ctx, "/deploy")
-	apihelper.Auth(req)
-
-	req.Param("projectId", projectID)
-	req.Param("containerId", containerID)
-	req.Param("source", normalizePath(containerPath))
-
-	var c, err = ioutil.ReadFile(filepath.Join(containerPath, "container.json"))
+	reqBody.Image, reqBody.Version, err = extractType(container)
 
 	if err != nil {
 		return err
 	}
 
-	req.Body(bytes.NewReader(c))
+	verbose.Debug("Linking container " + container.ServiceID + " to project " + projectID)
 
-	return apihelper.Validate(req, req.Put())
+	var req = apihelper.URL(ctx, "/projects", url.QueryEscape(projectID), "/services")
+	apihelper.Auth(req)
+
+	err = apihelper.SetBody(req, reqBody)
+
+	if err != nil {
+		return err
+	}
+
+	return apihelper.Validate(req, req.Post())
 }
 
 // Unlink container
 func Unlink(ctx context.Context, projectID, containerID string) error {
-	var req = apihelper.URL(ctx, "/deploy", projectID, containerID)
+	var req = apihelper.URL(ctx,
+		"/projects",
+		url.QueryEscape(projectID),
+		"/services",
+		url.QueryEscape(containerID))
 	apihelper.Auth(req)
 
 	return apihelper.Validate(req, req.Delete())
@@ -244,9 +323,9 @@ func GetRegistry(ctx context.Context) (registry []Register, err error) {
 }
 
 // Read a container directory properties (defined by a container.json on it)
-func Read(path string) (*Container, error) {
+func Read(path string) (*ContainerPackage, error) {
 	var content, err = ioutil.ReadFile(filepath.Join(path, "container.json"))
-	var data Container
+	var data ContainerPackage
 
 	if err != nil {
 		return nil, readValidate(data, err)
@@ -257,7 +336,7 @@ func Read(path string) (*Container, error) {
 	return &data, readValidate(data, err)
 }
 
-func readValidate(container Container, err error) error {
+func readValidate(container ContainerPackage, err error) error {
 	switch {
 	case os.IsNotExist(err):
 		return ErrContainerNotFound
@@ -272,30 +351,17 @@ func readValidate(container Container, err error) error {
 
 // SetEnvironmentVariable sets an environment variable
 func SetEnvironmentVariable(ctx context.Context, projectID, containerID, key, value string) error {
-	var container, cerr = Get(ctx, projectID, containerID)
-
-	if cerr != nil {
-		return errwrap.Wrapf("Can not get current environment variables: {{err}}", cerr)
-	}
-
-	var envs = container.Env
-
-	if envs == nil {
-		envs = map[string]string{}
-	}
-
-	envs[key] = value
-
 	var req = apihelper.URL(ctx,
 		"/projects",
 		url.QueryEscape(projectID),
-		"/containers",
+		"/services",
 		url.QueryEscape(containerID),
-		"/env")
+		"/env/"+
+			url.QueryEscape(key))
 
 	apihelper.Auth(req)
 
-	if err := apihelper.SetBody(req, envs); err != nil {
+	if err := apihelper.SetBody(req, value); err != nil {
 		return errwrap.Wrapf("Can not set body for setting environment variable: {{err}}", err)
 	}
 
@@ -304,42 +370,26 @@ func SetEnvironmentVariable(ctx context.Context, projectID, containerID, key, va
 
 // UnsetEnvironmentVariable removes an environment variable
 func UnsetEnvironmentVariable(ctx context.Context, projectID, containerID, key string) error {
-	var container, cerr = Get(ctx, projectID, containerID)
-
-	if cerr != nil {
-		return errwrap.Wrapf("Can not get current environment variables: {{err}}", cerr)
-	}
-
-	var envs = container.Env
-
-	if envs == nil {
-		envs = map[string]string{}
-	}
-
-	delete(envs, key)
-
 	var req = apihelper.URL(ctx,
 		"/projects",
 		url.QueryEscape(projectID),
-		"/containers",
+		"/services",
 		url.QueryEscape(containerID),
-		"/env")
+		"/environment-variables/"+
+			url.QueryEscape(key))
 
 	apihelper.Auth(req)
 
-	if err := apihelper.SetBody(req, envs); err != nil {
-		return errwrap.Wrapf("Can not set body for setting environment variable: {{err}}", err)
-	}
-
-	return apihelper.Validate(req, req.Put())
+	return apihelper.Validate(req, req.Delete())
 }
 
 // Restart restarts a container inside a project
-func Restart(ctx context.Context, projectID, containerID string) error {
-	var req = apihelper.URL(ctx, "/restart/container?projectId="+
+func Restart(ctx context.Context, projectID, serviceID string) error {
+	var req = apihelper.URL(ctx, "/projects/"+
 		url.QueryEscape(projectID)+
-		"&containerId="+
-		url.QueryEscape(containerID))
+		"/services/"+
+		url.QueryEscape(serviceID)+
+		"/restart")
 
 	apihelper.Auth(req)
 	return apihelper.Validate(req, req.Post())
@@ -347,7 +397,7 @@ func Restart(ctx context.Context, projectID, containerID string) error {
 
 // Validate container
 func Validate(ctx context.Context, projectID, containerID string) (err error) {
-	var req = apihelper.URL(ctx, "/validators/containers/id")
+	var req = apihelper.URL(ctx, "/validators/services/id")
 	err = doValidate(projectID, containerID, req)
 
 	if err == nil || err != wedeploy.ErrUnexpectedResponse {
