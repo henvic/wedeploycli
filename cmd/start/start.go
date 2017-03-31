@@ -19,18 +19,18 @@ func init() {
 }
 
 func startRun(cmd *cobra.Command, args []string) error {
-	var container, err = containers.Read(".")
+	var cp, err = containers.Read(".")
 
 	if err != nil {
 		return errwrap.Wrapf("container.json error: {{err}}", err)
 	}
 
-	if container.Hooks == nil || (container.Hooks.BeforeStart == "" &&
-		container.Hooks.Start == "" &&
-		container.Hooks.AfterStart == "") {
-		println("> [" + container.ID + "] has no start hooks")
+	if cp.Hooks == nil || (cp.Hooks.BeforeStart == "" &&
+		cp.Hooks.Start == "" &&
+		cp.Hooks.AfterStart == "") {
+		println("> [" + cp.ID + "] has no start hooks")
 		return nil
 	}
 
-	return container.Hooks.Run(hooks.Start, ".", container.ID)
+	return cp.Hooks.Run(hooks.Start, ".", cp.ID)
 }
