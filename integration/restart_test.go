@@ -86,18 +86,12 @@ func TestRestartContainerQuiet(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc("/projects/foo/containers/bar",
+	servertest.IntegrationMux.HandleFunc("/projects/foo/services/bar",
 		tdata.ServerJSONFileHandler("mocks/restart/foo/bar/container_response.json"))
 
-	servertest.IntegrationMux.HandleFunc("/restart/container",
+	servertest.IntegrationMux.HandleFunc("/projects/foo/services/bar/restart",
 		func(w http.ResponseWriter, r *http.Request) {
 			handled = true
-
-			var wantQS = "projectId=foo&containerId=bar"
-
-			if r.URL.RawQuery != wantQS {
-				t.Errorf("Wanted %v, got %v instead", wantQS, r.URL.RawQuery)
-			}
 		})
 
 	var cmd = &Command{
@@ -122,18 +116,12 @@ func TestRestartContainerQuietFromCurrentWorkingDirectoryContext(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc("/projects/foo/containers/bar",
+	servertest.IntegrationMux.HandleFunc("/projects/foo/services/bar",
 		tdata.ServerJSONFileHandler("mocks/restart/foo/bar/container_response.json"))
 
-	servertest.IntegrationMux.HandleFunc("/restart/container",
+	servertest.IntegrationMux.HandleFunc("/projects/foo/services/bar/restart",
 		func(w http.ResponseWriter, r *http.Request) {
 			handled = true
-
-			var wantQS = "projectId=foo&containerId=bar"
-
-			if r.URL.RawQuery != wantQS {
-				t.Errorf("Wanted %v, got %v instead", wantQS, r.URL.RawQuery)
-			}
 		})
 
 	var cmd = &Command{
