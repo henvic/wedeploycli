@@ -146,7 +146,7 @@ func Setup() error {
 
 func (c *Config) setDefaults() {
 	c.Local = true
-	c.LocalPort = 8080
+	c.LocalPort = 3002
 	c.NotifyUpdates = true
 	c.ReleaseChannel = "stable"
 

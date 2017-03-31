@@ -52,12 +52,11 @@ func TestMain(m *testing.M) {
 
 func TestAuth(t *testing.T) {
 	defaultContextToken := config.Context.Token
-	config.Context.Token = ""
 	r := wedeploy.URL("http://localhost/")
 
 	Auth(r)
 
-	var want = "Basic YWRtaW46c2FmZQ==" // admin:safe in base64
+	var want = "Bearer mock_token"
 	var got = r.Headers.Get("Authorization")
 
 	if want != got {
@@ -74,7 +73,7 @@ func TestAuthLocal(t *testing.T) {
 
 	Auth(r)
 
-	var want = "Bearer 1" // admin:safe in base64
+	var want = "Basic bm8tcmVwbHlAd2VkZXBsb3kuY29tOmNsaS10b29sLXBhc3N3b3Jk"
 	var got = r.Headers.Get("Authorization")
 
 	if want != got {

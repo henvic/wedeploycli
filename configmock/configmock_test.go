@@ -35,11 +35,19 @@ func TestConfigMockDefaultContext(t *testing.T) {
 		t.Errorf("Unexpected remote for default [local] context")
 	}
 
-	if config.Context.Endpoint != "http://localhost:8080/" {
+	if config.Context.Endpoint != "http://localhost:3002/" {
 		t.Errorf("Unexpected endpoint for default [local] context")
 	}
 
-	if config.Context.Token != "1" {
+	if config.Context.Username != "no-reply@wedeploy.com" {
+		t.Errorf("Unexpected username for default [local] context")
+	}
+
+	if config.Context.Password != "cli-tool-password" {
+		t.Errorf("Unexpected password for default [local] context")
+	}
+
+	if config.Context.Token != "" {
 		t.Errorf("Unexpected token for default [local] context")
 	}
 
@@ -54,11 +62,19 @@ func TestConfigMockLocalContext(t *testing.T) {
 		t.Errorf("Unexpected remote for local context")
 	}
 
-	if config.Context.Endpoint != "http://localhost:8080/" {
+	if config.Context.Endpoint != "http://localhost:3002/" {
 		t.Errorf("Unexpected endpoint for local context")
 	}
 
-	if config.Context.Token != "1" {
+	if config.Context.Username != "no-reply@wedeploy.com" {
+		t.Errorf("Unexpected username for local context")
+	}
+
+	if config.Context.Password != "cli-tool-password" {
+		t.Errorf("Unexpected password for local context")
+	}
+
+	if config.Context.Token != "" {
 		t.Errorf("Unexpected token for local context")
 	}
 

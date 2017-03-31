@@ -129,8 +129,6 @@ var (
 // Auth a WeDeploy request with the global authentication data
 func Auth(request *wedeploy.WeDeploy) {
 	switch {
-	case config.Context.Remote == "":
-		request.Auth(DefaultToken)
 	case config.Context.Token == "":
 		request.Auth(config.Context.Username, config.Context.Password)
 	default:

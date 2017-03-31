@@ -39,7 +39,7 @@ func Setup() {
 		Username: global.Username,
 		Password: global.Password,
 		Token:    global.Token,
-		Endpoint: fmt.Sprintf("http://localhost:8080/"),
+		Endpoint: fmt.Sprintf("http://localhost:3002/"),
 	}
 
 	SetupLocalContext()
@@ -49,14 +49,18 @@ func Setup() {
 func SetupLocalContext() {
 	config.Context.Remote = ""
 	config.Context.RemoteAddress = "wedeploy.me"
-	config.Context.Endpoint = "http://localhost:8080/"
-	config.Context.Token = "1"
+	config.Context.Endpoint = "http://localhost:3002/"
+	config.Context.Username = "no-reply@wedeploy.com"
+	config.Context.Password = "cli-tool-password"
+	config.Context.Token = ""
 }
 
 // SetupRemoteContext loads the config mock remote context
 func SetupRemoteContext() {
 	config.Context.Remote = "foo"
 	config.Context.Endpoint = "http://www.example.com/"
+	config.Context.Username = ""
+	config.Context.Password = ""
 	config.Context.Token = config.Global.Token
 }
 

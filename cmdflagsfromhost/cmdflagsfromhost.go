@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/defaults"
@@ -20,7 +19,9 @@ import (
 // SetLocal the context
 func SetLocal() {
 	config.Context.Remote = ""
-	config.Context.Token = apihelper.DefaultToken
+	config.Context.Username = "no-reply@wedeploy.com"
+	config.Context.Password = "cli-tool-password"
+	config.Context.Token = ""
 	config.Context.Endpoint = config.Global.LocalEndpoint
 	config.Context.RemoteAddress = "wedeploy.me"
 }

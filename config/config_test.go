@@ -57,7 +57,7 @@ func TestSetupAndTeardown(t *testing.T) {
 		t.Errorf("Wrong ReleaseChannel value")
 	}
 
-	if Global.LocalEndpoint != "http://localhost:8080/" {
+	if Global.LocalEndpoint != "http://localhost:3002/" {
 		t.Errorf("Wrong LocalEndpoint value")
 	}
 
@@ -178,7 +178,7 @@ username                         = other
 password                         = safe
 token                            = 
 local                            = true
-local_port                       = 8080
+local_port                       = 3002
 disable_autocomplete_autoinstall = false
 disable_colors                   = false
 notify_updates                   = true
@@ -249,7 +249,7 @@ username                         = other
 password                         = 
 token                            = 
 local                            = true
-local_port                       = 8080
+local_port                       = 3002
 disable_autocomplete_autoinstall = false
 disable_colors                   = false
 notify_updates                   = true
@@ -331,7 +331,7 @@ notify_updates                   = true
 release_channel                  = stable
 # commented vars remains even when empty
 next_version                     = 
-local_port                       = 8080
+local_port                       = 3002
 disable_autocomplete_autoinstall = false
 enable_analytics                 = false
 analytics_option_date            = 
