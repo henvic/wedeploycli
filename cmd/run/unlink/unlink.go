@@ -129,7 +129,17 @@ func (u *unlinker) isDone() bool {
 		return true
 	}
 
-	if u.container != "" && u.watcher.List.Projects[0].Containers[u.container] == nil {
+	var p = u.watcher.List.Projects[0]
+	var c, e = p.Services(context.Background())
+
+	if e != nil {
+		fmt.Fprintf(os.Stderr, "Can't verify if unlinking is done: %v\n", e)
+		return false
+	}
+
+	var _, ec = c.Get(u.container)
+
+	if u.container != "" && ec != nil {
 		u.watcher.Teardown = func() string {
 			return "Container unlinked successfully!\n"
 		}
