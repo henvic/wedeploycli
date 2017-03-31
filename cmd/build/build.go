@@ -77,20 +77,20 @@ func buildRun(cmd *cobra.Command, args []string) error {
 }
 
 func buildContainer(path string) error {
-	var container, err = containers.Read(path)
+	var cp, err = containers.Read(path)
 
 	if err != nil {
 		return err
 	}
 
-	if container.Hooks == nil || (container.Hooks.BeforeBuild == "" &&
-		container.Hooks.Build == "" &&
-		container.Hooks.AfterBuild == "") {
-		println("> [" + container.ID + "] has no build hooks")
+	if cp.Hooks == nil || (cp.Hooks.BeforeBuild == "" &&
+		cp.Hooks.Build == "" &&
+		cp.Hooks.AfterBuild == "") {
+		println("> [" + cp.ID + "] has no build hooks")
 		return nil
 	}
 
-	return container.Hooks.Run(hooks.Build, filepath.Join(path), container.ID)
+	return cp.Hooks.Run(hooks.Build, filepath.Join(path), cp.ID)
 }
 
 func checkProjectOrContainer() error {
