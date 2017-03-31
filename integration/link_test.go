@@ -52,8 +52,8 @@ func TestLink(t *testing.T) {
 
 	servertest.IntegrationMux.HandleFunc("/deploy",
 		func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "PUT" {
-				t.Errorf("Expected method to be PUT, got %v instead", r.Method)
+			if r.Method != "POST" {
+				t.Errorf("Expected method to be POST, got %v instead", r.Method)
 			}
 
 			var wantRequestURI = "containerId=container&projectId=app"
@@ -141,8 +141,8 @@ func TestLinkToProject(t *testing.T) {
 
 	servertest.IntegrationMux.HandleFunc("/deploy",
 		func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "PUT" {
-				t.Errorf("Expected method to be PUT, got %v instead", r.Method)
+			if r.Method != "POST" {
+				t.Errorf("Expected method to be POST, got %v instead", r.Method)
 			}
 
 			var wantRequestURI = "containerId=container&projectId=bar"
@@ -255,7 +255,7 @@ func TestLinkToProjectServerFailure(t *testing.T) {
 			fmt.Fprintf(w, "%v", tdata.FromFile("mocks/home/bucket/project/container/projects_post_response_alt_id.json"))
 		})
 
-	servertest.IntegrationMux.HandleFunc("/deploy",
+	servertest.IntegrationMux.HandleFunc("/projects/app/services",
 		func(w http.ResponseWriter, r *http.Request) {
 			// this is a hack to make the link test more robust
 			// a nicer approach would be to clear the strings and match, though
@@ -314,7 +314,7 @@ func TestLinkToProjectServerFailureQuiet(t *testing.T) {
 			fmt.Fprintf(w, "%v", tdata.FromFile("mocks/home/bucket/project/container/projects_post_response_alt_id.json"))
 		})
 
-	servertest.IntegrationMux.HandleFunc("/deploy",
+	servertest.IntegrationMux.HandleFunc("/projects/app/services",
 		func(w http.ResponseWriter, r *http.Request) {
 			// this is a hack to make the link test more robust
 			// a nicer approach would be to clear the strings and match, though
