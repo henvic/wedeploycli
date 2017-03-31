@@ -1,7 +1,6 @@
 package projects
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -15,18 +14,37 @@ import (
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/containers"
-	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 )
 
 // Project structure
 type Project struct {
-	ID            string                `json:"id"`
-	CustomDomains []string              `json:"customDomains,omitempty"`
-	Health        string                `json:"health,omitempty"`
-	HomeContainer string                `json:"homeContainer,omitempty"`
-	Description   string                `json:"description,omitempty"`
-	Containers    containers.Containers `json:"containers,omitempty"`
+	ProjectID     string   `json:"projectId"`
+	CustomDomains []string `json:"customDomains,omitempty"`
+	Health        string   `json:"health,omitempty"`
+	HomeService   string   `json:"homeService,omitempty"`
+	Description   string   `json:"description,omitempty"`
+}
+
+// ProjectPackage is the structure for project.json
+type ProjectPackage struct {
+	ID            string   `json:"id"`
+	CustomDomains []string `json:"customDomains,omitempty"`
+	HomeService   string   `json:"homeService,omitempty"`
+}
+
+// Project returns a Project type created taking project.json as base
+func (pp ProjectPackage) Project() Project {
+	return Project{
+		ProjectID:     pp.ID,
+		CustomDomains: pp.CustomDomains,
+		HomeService:   pp.HomeService,
+	}
+}
+
+// Services of a given project
+func (p *Project) Services(ctx context.Context) (containers.Containers, error) {
+	return containers.List(ctx, p.ProjectID)
 }
 
 var (
@@ -43,40 +61,60 @@ var (
 	ErrEmptyProjectID = errors.New("Can not get project: ID is empty")
 )
 
-// CreateFromJSON a project on WeDeploy
-func CreateFromJSON(ctx context.Context, filename string) error {
-	var p, err = ioutil.ReadFile(filename)
-
-	if err != nil {
-		return err
-	}
-
-	verbose.Debug("Creating project from definition:")
-	verbose.Debug(filename)
-
-	var req = apihelper.URL(ctx, "/projects")
-	apihelper.Auth(req)
-	req.Body(bytes.NewReader(p))
-
-	return apihelper.Validate(req, req.Post())
+type createRequestBody struct {
+	ProjectID     string   `json:"projectId,omitempty"`
+	HomeService   string   `json:"homeService,omitempty"`
+	CustomDomains []string `json:"customDomains,omitempty"`
 }
 
-// Create project. If id is empty, a random one is created by the backend
-func Create(ctx context.Context, id string) (project *Project, err error) {
+// Create on the backend
+func Create(ctx context.Context, project Project) (p Project, err error) {
 	var req = apihelper.URL(ctx, "/projects")
+	var reqBody = createRequestBody{
+		ProjectID:     project.ProjectID,
+		HomeService:   project.HomeService,
+		CustomDomains: project.CustomDomains,
+	}
 
 	apihelper.Auth(req)
 
-	if id != "" {
-		req.Param("id", id)
+	if err := apihelper.SetBody(req, reqBody); err != nil {
+		return p, err
 	}
 
 	if err := apihelper.Validate(req, req.Post()); err != nil {
-		return project, err
+		return p, err
 	}
 
-	err = apihelper.DecodeJSON(req, &project)
-	return project, err
+	err = apihelper.DecodeJSON(req, &p)
+	return p, err
+}
+
+type updateRequestBody struct {
+	HomeService   string   `json:"homeService,omitempty"`
+	CustomDomains []string `json:"customDomains,omitempty"`
+}
+
+// Update project
+func Update(ctx context.Context, project Project) (p Project, err error) {
+	var req = apihelper.URL(ctx, "/projects", url.QueryEscape(project.ProjectID))
+	var reqBody = updateRequestBody{
+		HomeService:   project.HomeService,
+		CustomDomains: project.CustomDomains,
+	}
+
+	apihelper.Auth(req)
+
+	if err := apihelper.SetBody(req, reqBody); err != nil {
+		return p, err
+	}
+
+	if err := apihelper.Validate(req, req.Patch()); err != nil {
+		return p, err
+	}
+
+	err = apihelper.DecodeJSON(req, &p)
+	return p, err
 }
 
 // AddDomain in project
@@ -146,9 +184,9 @@ func List(ctx context.Context) (list []Project, err error) {
 }
 
 // Read a project directory properties (defined by a project.json on it)
-func Read(path string) (*Project, error) {
+func Read(path string) (*ProjectPackage, error) {
 	var content, err = ioutil.ReadFile(filepath.Join(path, "project.json"))
-	var data Project
+	var data ProjectPackage
 
 	if err != nil {
 		return nil, readValidate(data, err)
@@ -195,13 +233,13 @@ Update your %v/project.json file to use:
 		removed)
 }
 
-func readValidate(project Project, err error) error {
+func readValidate(pp ProjectPackage, err error) error {
 	switch {
 	case os.IsNotExist(err):
 		return ErrProjectNotFound
 	case err != nil:
 		return err
-	case project.ID == "":
+	case pp.ID == "":
 		return ErrInvalidProjectID
 	default:
 		return err
@@ -210,7 +248,7 @@ func readValidate(project Project, err error) error {
 
 // Restart restarts a project
 func Restart(ctx context.Context, id string) error {
-	var req = apihelper.URL(ctx, "/restart/project?projectId="+url.QueryEscape(id))
+	var req = apihelper.URL(ctx, "/projects/"+url.QueryEscape(id)+"/restart")
 
 	apihelper.Auth(req)
 	return apihelper.Validate(req, req.Post())
@@ -224,13 +262,22 @@ func Unlink(ctx context.Context, projectID string) error {
 	return apihelper.Validate(req, req.Delete())
 }
 
+// CreateOrUpdate project
+func CreateOrUpdate(ctx context.Context, project Project) (pRec Project, created bool, err error) {
+	var _, errExisting = Get(ctx, project.ProjectID)
 
+	if errExisting == nil {
+		var pUpdated, errUpdate = Update(ctx, project)
+		return pUpdated, false, errUpdate
 	}
 
+	pRec, err = Create(ctx, project)
 
 	if err == nil {
+		created = true
 	}
 
+	return pRec, created, err
 }
 
 func doValidate(projectID string, req *wedeploy.WeDeploy) error {
