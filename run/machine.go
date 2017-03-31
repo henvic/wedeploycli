@@ -18,7 +18,8 @@ import (
 	"github.com/henvic/uilive"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/exechelper"
-	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/status"
+	"github.com/wedeploy/cli/user"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/waitlivemsg"
 )
@@ -200,18 +201,22 @@ func (dm *DockerMachine) Stop() error {
 
 var servicesPorts = tcpPortsStruct{
 	80,
-	6379,
-	8001,
-	8080,
-	9300,
-	24224}
+	3002,
 
-var debugPorts = tcpPortsStruct{
 	5001,
 	5005,
 	8500,
 	9200,
+
+	6379,
+	8001,
+	8080,
+	8081,
+	8082,
+	24224,
 }
+
+var debugPorts = tcpPortsStruct{}
 
 func (dm *DockerMachine) setupPorts() {
 	dm.tcpPorts = servicesPorts
@@ -252,28 +257,37 @@ func (dm *DockerMachine) waitReadyState() {
 
 	// Starting WeDeploy
 	for tries <= 100 || dm.WaitLiveMsg.Duration() < 300 {
-		var ctx, cancel = context.WithTimeout(context.Background(), 500*time.Millisecond)
-		var _, err = projects.List(ctx)
+		verbose.Debug(fmt.Sprintf("Trying #%v", tries))
+		tries++
+		var ctx, cancel = context.WithTimeout(context.Background(), time.Second)
 
+		var _, err = status.Get(ctx)
 		cancel()
 
-		if err == nil {
-			dm.WaitLiveMsg.Stop()
-			fmt.Fprintf(dm.livew, "WeDeploy is ready! %vs\n", dm.WaitLiveMsg.Duration())
-			_ = dm.livew.Flush()
-			dm.end <- true
-			return
+		if err != nil {
+			verbose.Debug("System not available:", err)
+			time.Sleep(100 * time.Millisecond)
+			continue
 		}
 
-		verbose.Debug(fmt.Sprintf("Trying to read projects tries #%v: %v", tries, err))
-		tries++
-		time.Sleep(1 * time.Second)
+	createUser:
+		_, err = user.Create(context.Background(), &user.User{
+			Email:    "no-reply@wedeploy.com",
+			Password: "cli-tool-password",
+			Name:     "CLI Tool",
+		})
+
+		if err != nil {
+			verbose.Debug(`Failed to authenticate:`, err)
+			goto createUser
+		}
+
+		fmt.Fprintf(dm.livew, "WeDeploy is ready! %vs\n", dm.WaitLiveMsg.Duration())
+		dm.WaitLiveMsg.Stop()
+		_ = dm.livew.Flush()
+		dm.end <- true
+		return
 	}
-
-	dm.WaitLiveMsg.Stop()
-
-	println("Failed to verify if WeDeploy is working correctly.")
-	dm.end <- true
 }
 
 func (dm *DockerMachine) endRun() {
@@ -289,6 +303,10 @@ func (dm *DockerMachine) start() (err error) {
 		println(running)
 	} else {
 		verbose.Debug(running)
+	}
+
+	if err = dm.maybeInitSwarm(); err != nil {
+		return err
 	}
 
 	if err = dm.checkPortsAreAvailable(); err != nil {
@@ -308,6 +326,29 @@ func (dm *DockerMachine) start() (err error) {
 	}
 
 	verbose.Debug("Docker container ID:", dm.Container)
+	return err
+}
+
+func (dm *DockerMachine) maybeInitSwarm() error {
+	var params = []string{
+		"swarm", "init",
+	}
+
+	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
+	var swarmErrBuf bytes.Buffer
+	var swarm = exec.Command(bin, params...)
+	swarm.Stderr = &swarmErrBuf
+	var err = swarm.Run()
+
+	if strings.Contains(swarmErrBuf.String(), "This node is already part of a swarm.") {
+		verbose.Debug("Skipping swarm initialization: host is already part of a swarm")
+		return nil
+	}
+
+	if swarmErrBuf.Len() != 0 {
+		fmt.Fprintf(os.Stderr, "%v", swarmErrBuf.String())
+	}
+
 	return err
 }
 
@@ -475,19 +516,37 @@ func (dm *DockerMachine) checkImage() {
 }
 
 func (dm *DockerMachine) getRunCommandEnv() []string {
-	var address = getWeDeployHost()
+	_ = getWeDeployHost()
 	var args = []string{"run"}
-
-	// fluentd might use either TCP or UDP, hence this special case
-	args = append(args, "-p", "24224:24224/udp")
 
 	args = append(args, dm.tcpPorts.expose()...)
 	args = append(args, []string{
-		"-v",
-		"/var/run/docker.sock:/var/run/docker-host.sock",
-		"--privileged",
-		"-e",
-		"WEDEPLOY_HOST_IP=" + address,
+		"--volume",
+		"/var/run/docker.sock:/var/run/docker.sock",
+		"--network",
+		DockerNetwork,
+		"--name",
+		"wedeploy-local",
+		"--network-alias",
+		"api",
+		"--network-alias",
+		"auth",
+		"--network-alias",
+		"data",
+		"--network-alias",
+		"email",
+		"--network-alias",
+		"wedeploy-conqueror",
+		"--network-alias",
+		"wedeploy-consul-server",
+		"--network-alias",
+		"wedeploy-elasticsearch-log",
+		"--network-alias",
+		"wedeploy-elasticsearch",
+		"--network-alias",
+		"wedeploy-redis-infrastructure",
+		"--label",
+		"com.wedeploy.local=true",
 		"--detach",
 		WeDeployImage,
 	}...)

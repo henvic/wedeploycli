@@ -24,7 +24,11 @@ import (
 // WeDeployImage is the docker image for the WeDeploy infrastructure
 var WeDeployImage = "wedeploy/local:" + defaults.WeDeployImageTag
 
+// DockerNetwork is the ID of the docker network
+var DockerNetwork = "wedeploy"
+
 var bin = "docker"
+var noSuchNetwork = "No such network:"
 
 type tcpPortsStruct []int
 
@@ -58,7 +62,7 @@ func (t tcpPortsStruct) getAvailability() (all bool, notAvailable []int) {
 func (t tcpPortsStruct) expose() []string {
 	var ports []string
 	for _, k := range t {
-		ports = append(ports, "-p", fmt.Sprintf("%v:%v", k, k))
+		ports = append(ports, "--publish", fmt.Sprintf("%v:%v", k, k))
 	}
 
 	return ports
@@ -68,21 +72,32 @@ func (t tcpPortsStruct) expose() []string {
 // This is a temporary solution and it is NOT reliable
 func GetWeDeployHost() (string, error) {
 	var params = []string{
-		"network", "inspect", "bridge", "--format", `{{(index (index .IPAM.Config 0) "Gateway")}}`,
+		"network", "inspect", DockerNetwork, "--format", `{{(index (index .IPAM.Config 0) "Gateway")}}`,
 	}
 
 	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
 	var gatewayBuf bytes.Buffer
+	var gatewayErrBuf bytes.Buffer
 	var gateway = exec.Command(bin, params...)
-	gateway.Stderr = os.Stderr
+	gateway.Stderr = &gatewayErrBuf
 	gateway.Stdout = &gatewayBuf
 
-	if err := gateway.Run(); err != nil {
-		return "", errwrap.Wrapf("Can not get docker network bridge gateway: {{err}}", err)
+	err := gateway.Run()
+
+	if strings.Contains(gatewayErrBuf.String(), noSuchNetwork) {
+		return "", fmt.Errorf("%v", gatewayErrBuf.String())
+	}
+
+	if gatewayErrBuf.Len() != 0 {
+		fmt.Fprintf(os.Stderr, "%v", gatewayErrBuf.String())
+	}
+
+	if err != nil {
+		return "", errwrap.Wrapf("Can not get docker network gateway: {{err}}", err)
 	}
 
 	var address = gatewayBuf.String()
-	verbose.Debug("docker network bridge gateway address:", address)
+	verbose.Debug("docker network gateway address:", address)
 	return strings.TrimSpace(address), nil
 }
 
@@ -193,8 +208,35 @@ Update it or download a new version from http://docker.com/
 	return nil
 }
 
+func createNetwork() error {
+	var params = []string{
+		"network",
+		"create",
+		"--driver",
+		"overlay",
+		"--attachable",
+		"--subnet",
+		"10.0.240.0/20",
+		DockerNetwork,
+	}
+
+	verbose.Debug(fmt.Sprintf("Running docker %v", strings.Join(params, " ")))
+	var create = exec.Command(bin, params...)
+	create.Stderr = os.Stderr
+	return create.Run()
+}
+
 func getWeDeployHost() string {
 	var address, err = GetWeDeployHost()
+
+	// in case no network is found
+	// try to create it and get again
+	if err != nil && strings.Contains(err.Error(), noSuchNetwork) {
+		verbose.Debug("Creating network", DockerNetwork)
+		if err = createNetwork(); err == nil {
+			address, err = GetWeDeployHost()
+		}
+	}
 
 	if err != nil {
 		println("Could not find a suitable host.")
@@ -229,8 +271,8 @@ func unlinkProjects() error {
 	}
 
 	for _, p := range list {
-		if err := projects.Unlink(context.Background(), p.ID); err != nil {
-			fmt.Fprintf(os.Stderr, "Unlinking project %v error: %v\n", p.ID, err)
+		if err := projects.Unlink(context.Background(), p.ProjectID); err != nil {
+			fmt.Fprintf(os.Stderr, "Unlinking project %v error: %v\n", p.ProjectID, err)
 		}
 	}
 
@@ -349,7 +391,7 @@ func rmOldInfrastructureImages() error {
 
 func getDockerContainers(onlyRunning bool) (cids []string, err error) {
 	var params = []string{
-		"ps", "--format", "{{.ID}}|{{.Image}}", "--no-trunc",
+		"ps", "--format", "{{.ID}}|{{.Image}}|{{.Names}}|{{.Labels}}", "--no-trunc",
 	}
 
 	if !onlyRunning {
@@ -376,7 +418,7 @@ func filterWeDeployDockerContainers(cs []string) []string {
 	for _, c := range cs {
 		var p = strings.SplitN(c, "|", 2)
 
-		if strings.HasPrefix(p[1], "wedeploy/") && len(p) == 2 {
+		if strings.Contains(p[1], "wedeploy") && len(p) == 2 {
 			filtered = append(filtered, p[0])
 		}
 	}
