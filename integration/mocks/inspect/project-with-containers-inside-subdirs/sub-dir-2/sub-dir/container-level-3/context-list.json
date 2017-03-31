@@ -3,22 +3,22 @@
     "ProjectRoot": "{{PATH}}",
     "ContainerRoot": "{{PATH}}/sub-dir-2/sub-dir/container-level-3",
     "ProjectID": "project-with-containers-inside-subdirs",
-    "ContainerID": "level-3",
+    "ServiceID": "level-3",
     "ProjectContainers": [
         {
-            "ID": "level-1",
+            "ServiceID": "level-1",
             "Location": "{{PATH}}/container-level-1"
         },
         {
-            "ID": "level-2",
+            "ServiceID": "level-2",
             "Location": "{{PATH}}/sub-dir/container-level-2"
         },
         {
-            "ID": "level-2-2",
+            "ServiceID": "level-2-2",
             "Location": "{{PATH}}/sub-dir-2/container-level-2-2"
         },
         {
-            "ID": "level-3",
+            "ServiceID": "level-3",
             "Location": "{{PATH}}/sub-dir-2/sub-dir/container-level-3"
         }
     ]

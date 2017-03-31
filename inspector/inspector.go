@@ -33,12 +33,12 @@ type ContextOverview struct {
 	ProjectRoot       string
 	ContainerRoot     string
 	ProjectID         string
-	ContainerID       string
+	ServiceID         string
 	ProjectContainers []containers.ContainerInfo
 }
 
-func (overview *ContextOverview) loadProject(directory string) error {
-	var projectPath, project, perr = getProject(directory)
+func (overview *ContextOverview) loadProjectPackage(directory string) error {
+	var projectPath, project, perr = getProjectPackage(directory)
 
 	switch {
 	case os.IsNotExist(perr):
@@ -70,7 +70,7 @@ func (overview *ContextOverview) loadProjectContainersList() error {
 }
 
 func (overview *ContextOverview) loadContainer(directory string) error {
-	var containerPath, container, cerr = getContainer(directory)
+	var containerPath, cp, cerr = getContainerPackage(directory)
 
 	switch {
 	case os.IsNotExist(cerr):
@@ -82,7 +82,7 @@ func (overview *ContextOverview) loadContainer(directory string) error {
 		}
 
 		overview.ContainerRoot = containerPath
-		overview.ContainerID = container.ID
+		overview.ServiceID = cp.ID
 	}
 
 	return nil
@@ -92,7 +92,7 @@ func (overview *ContextOverview) loadContainer(directory string) error {
 func (overview *ContextOverview) Load(directory string) error {
 	overview.Scope = usercontext.GlobalScope
 
-	if err := overview.loadProject(directory); err != nil {
+	if err := overview.loadProjectPackage(directory); err != nil {
 		return err
 	}
 
@@ -118,7 +118,7 @@ func InspectContext(format, directory string) (string, error) {
 
 // InspectProject on a given directory, filtering by format
 func InspectProject(format, directory string) (string, error) {
-	var projectPath, project, perr = getProject(directory)
+	var projectPath, project, perr = getProjectPackage(directory)
 
 	switch {
 	case os.IsNotExist(perr):
@@ -131,7 +131,7 @@ func InspectProject(format, directory string) (string, error) {
 	return templates.ExecuteOrList(format, project)
 }
 
-func getProject(directory string) (path string, project *projects.Project, err error) {
+func getProjectPackage(directory string) (path string, project *projects.ProjectPackage, err error) {
 	var projectPath, cerr = getProjectRootDirectory(directory)
 
 	if cerr != nil {
@@ -147,25 +147,25 @@ func getProject(directory string) (path string, project *projects.Project, err e
 	return projectPath, project, nil
 }
 
-func getContainer(directory string) (path string, container *containers.Container, err error) {
+func getContainerPackage(directory string) (path string, cp *containers.ContainerPackage, err error) {
 	var containerPath, cerr = getContainerRootDirectory(directory)
 
 	if cerr != nil {
 		return "", nil, cerr
 	}
 
-	container, err = containers.Read(containerPath)
+	cp, err = containers.Read(containerPath)
 
 	if err != nil {
 		return containerPath, nil, errwrap.Wrapf("Inspection failure on container: {{err}}", err)
 	}
 
-	return containerPath, container, nil
+	return containerPath, cp, nil
 }
 
 // InspectContainer on a given directory, filtering by format
 func InspectContainer(format, directory string) (string, error) {
-	var containerPath, container, cerr = getContainer(directory)
+	var containerPath, container, cerr = getContainerPackage(directory)
 
 	switch {
 	case os.IsNotExist(cerr):

@@ -3,10 +3,10 @@
     "ProjectRoot": "%v/mocks/inspect/my-project",
     "ContainerRoot": "",
     "ProjectID": "my-project",
-    "ContainerID": "",
+    "ServiceID": "",
     "ProjectContainers": [
         {
-            "ID": "email",
+            "ServiceID": "email",
             "Location": "%v/mocks/inspect/my-project/email"
         }
     ]

@@ -1,6 +1,6 @@
 {
     "id": "my-project",
-    "homeContainer": "email",
+    "homeService": "email",
     "customDomains": [
         "example.net"
     ]

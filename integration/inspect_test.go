@@ -24,9 +24,8 @@ func TestInspectPrintProjectStructure(t *testing.T) {
 	var want = `ID string
 CustomDomains []string
 Health string
-HomeContainer string
-Description string
-Containers containers.Containers`
+HomeService string
+Description string`
 
 	var e = &Expect{
 		ExitCode: 0,
@@ -50,9 +49,8 @@ func TestInspectPrintContainerStructure(t *testing.T) {
 	var want = `ID string
 		CustomDomains []string
 		Health string
-		HomeContainer string
-		Description string
-		Containers containers.Containers`
+		HomeService string
+		Description string`
 
 	var e = &Expect{
 		ExitCode: 0,
@@ -77,7 +75,7 @@ func TestInspectPrintContextStructure(t *testing.T) {
 ProjectRoot string
 ContainerRoot string
 ProjectID string
-ContainerID string
+ServiceID string
 ProjectContainers []containers.ContainerInfo`
 
 	var e = &Expect{
@@ -371,7 +369,7 @@ func TestInspectContextOnContainerContextFormat(t *testing.T) {
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"inspect", "context", "--format", "{{.ContainerID}}"},
+		Args: []string{"inspect", "context", "--format", "{{.ServiceID}}"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "./mocks/inspect/my-project/email",

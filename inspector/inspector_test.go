@@ -46,9 +46,8 @@ func TestGetSpecContextOverview(t *testing.T) {
 	var want = []string{`ID string`,
 		`CustomDomains []string`,
 		`Health string`,
-		`HomeContainer string`,
-		`Description string`,
-		`Containers containers.Containers`}
+		`HomeService string`,
+		`Description string`}
 
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("Wanted spec %v, got %v instead", want, got)
@@ -56,13 +55,11 @@ func TestGetSpecContextOverview(t *testing.T) {
 }
 
 func TestPrintContainerSpec(t *testing.T) {
-	var got = GetSpec(containers.Container{})
+	var got = GetSpec(containers.ContainerPackage{})
 	var want = []string{`ID string`,
-		`Health string`,
 		`Type string`,
 		`Hooks *hooks.Hooks`,
-		`Env map[string]string`,
-		`Scale int`}
+		`Env map[string]string`}
 
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("Wanted spec %v, got %v instead", want, got)
@@ -75,7 +72,7 @@ func TestPrintContextSpec(t *testing.T) {
 		`ProjectRoot string`,
 		`ContainerRoot string`,
 		`ProjectID string`,
-		`ContainerID string`,
+		`ServiceID string`,
 		`ProjectContainers []containers.ContainerInfo`}
 
 	if !reflect.DeepEqual(want, got) {
@@ -242,7 +239,7 @@ func TestInspectContextOverviewTypeGlobal(t *testing.T) {
 		ProjectRoot:   "",
 		ContainerRoot: "",
 		ProjectID:     "",
-		ContainerID:   "",
+		ServiceID:     "",
 	}
 
 	if !reflect.DeepEqual(want, overview) {
@@ -263,15 +260,15 @@ func TestInspectContextOverviewTypeProject(t *testing.T) {
 		ProjectRoot:   abs("./mocks/my-project"),
 		ContainerRoot: "",
 		ProjectID:     "my-project",
-		ContainerID:   "",
+		ServiceID:     "",
 		ProjectContainers: containers.ContainerInfoList{
 			containers.ContainerInfo{
-				ID:       "email",
-				Location: abs("./mocks/my-project/email"),
+				ServiceID: "email",
+				Location:  abs("./mocks/my-project/email"),
 			},
 			containers.ContainerInfo{
-				ID:       "other",
-				Location: abs("./mocks/my-project/other"),
+				ServiceID: "other",
+				Location:  abs("./mocks/my-project/other"),
 			},
 		},
 	}
@@ -296,7 +293,7 @@ func TestInspectContextOverviewTypeProjectWithDuplicatedContainers(t *testing.T)
 		ProjectRoot:   abs("./mocks/my-project-with-duplicated-containers"),
 		ContainerRoot: "",
 		ProjectID:     "my-project",
-		ContainerID:   "",
+		ServiceID:     "",
 	}
 
 	if !reflect.DeepEqual(want, overview) {
@@ -317,15 +314,15 @@ func TestInspectContextOverviewTypeContainer(t *testing.T) {
 		ProjectRoot:   abs("./mocks/my-project"),
 		ContainerRoot: abs("./mocks/my-project/email"),
 		ProjectID:     "my-project",
-		ContainerID:   "email",
+		ServiceID:     "email",
 		ProjectContainers: containers.ContainerInfoList{
 			containers.ContainerInfo{
-				ID:       "email",
-				Location: abs("./mocks/my-project/email"),
+				ServiceID: "email",
+				Location:  abs("./mocks/my-project/email"),
 			},
 			containers.ContainerInfo{
-				ID:       "other",
-				Location: abs("./mocks/my-project/other"),
+				ServiceID: "other",
+				Location:  abs("./mocks/my-project/other"),
 			},
 		},
 	}
@@ -347,7 +344,7 @@ func TestInspectContextOverviewTypeContainerOutsideProject(t *testing.T) {
 		Scope:             "global",
 		ContainerRoot:     abs("./mocks/container-outside-project"),
 		ProjectID:         "",
-		ContainerID:       "alone",
+		ServiceID:         "alone",
 		ProjectContainers: nil,
 	}
 
@@ -379,14 +376,14 @@ func TestInspectContextOverviewProject(t *testing.T) {
     "ProjectRoot": "%v",
     "ContainerRoot": "",
     "ProjectID": "my-project",
-    "ContainerID": "",
+    "ServiceID": "",
     "ProjectContainers": [
         {
-            "ID": "email",
+            "ServiceID": "email",
             "Location": "%v"
         },
         {
-            "ID": "other",
+            "ServiceID": "other",
             "Location": "%v"
         }
     ]
@@ -412,14 +409,14 @@ func TestInspectContextOverviewContainer(t *testing.T) {
     "ProjectRoot": "%v",
     "ContainerRoot": "%v",
     "ProjectID": "my-project",
-    "ContainerID": "email",
+    "ServiceID": "email",
     "ProjectContainers": [
         {
-            "ID": "email",
+            "ServiceID": "email",
             "Location": "%v"
         },
         {
-            "ID": "other",
+            "ServiceID": "other",
             "Location": "%v"
         }
     ]
