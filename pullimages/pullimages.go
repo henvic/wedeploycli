@@ -47,13 +47,13 @@ func getLocallyAvailableImagesList() (map[string]bool, error) {
 func getContainerTypesFromContainersDirectories(csDirs []string) (containersImages map[string]string, err error) {
 	containersImages = map[string]string{}
 	for _, c := range csDirs {
-		container, err := containers.Read(c)
+		cp, err := containers.Read(c)
 
 		if err != nil {
 			return nil, errwrap.Wrapf("Failure trying to read containers types availability: {{err}}", err)
 		}
 
-		containersImages[c] = container.Type
+		containersImages[c] = cp.Type
 	}
 
 	return containersImages, nil
