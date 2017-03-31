@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
-	"sort"
 	"strings"
 	"syscall"
 	"time"
@@ -185,45 +184,46 @@ func (l *List) printProject(p projects.Project) {
 	switch {
 	// TestLink: custom domain should not be shown for local
 	case len(p.CustomDomains) == 0 || config.Context.Remote == "":
-		word += fmt.Sprintf("%v", getProjectDomain(p.ID))
+		word += fmt.Sprintf("%v", getProjectDomain(p.ProjectID))
 	case !l.Detailed:
 		word += fmt.Sprintf("%v ", p.CustomDomains[0])
 	default:
 		word += fmt.Sprintf("%v ", p.CustomDomains[0])
-		word += fmt.Sprintf("(%v)", getProjectDomain(p.ID))
+		word += fmt.Sprintf("(%v)", getProjectDomain(p.ProjectID))
 	}
 
 	l.printf(word)
 	l.printf(formatter.CondPad(word, 55))
 	l.printf(getFormattedHealth(p.Health) + "\n")
-	l.printContainers(p.ID, p.Containers)
-}
 
-func (l *List) printContainers(projectID string, cs containers.Containers) {
-	var keys = make([]string, 0)
-	for k := range cs {
-		if len(l.Filter.Containers) != 0 && !inArray(k, l.Filter.Containers) {
-			continue
-		}
+	var services, err = p.Services(context.Background())
 
-		keys = append(keys, k)
-	}
-
-	if len(keys) == 0 {
-		l.printf(fmt.Sprintln(color.Format(color.FgHiRed, " (no container found)")))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n\n", errorhandling.Handle(err))
 		return
 	}
 
-	sort.Strings(keys)
+	l.printContainers(p.ProjectID, services)
+}
 
-	for _, k := range keys {
-		l.printContainer(projectID, cs[k])
+func (l *List) printContainers(projectID string, cs []containers.Container) {
+	for _, container := range cs {
+		if len(l.Filter.Containers) != 0 && !inArray(container.ServiceID, l.Filter.Containers) {
+			continue
+		}
+
+		l.printContainer(projectID, container)
+	}
+
+	if len(cs) == 0 {
+		l.printf(fmt.Sprintln(color.Format(color.FgHiRed, " (no container found)")))
+		return
 	}
 }
 
-func (l *List) printContainer(projectID string, c *containers.Container) {
+func (l *List) printContainer(projectID string, c containers.Container) {
 	l.printf(color.Format(getHealthForegroundColor(c.Health), " ● "))
-	containerDomain := getContainerDomain(projectID, c.ID)
+	containerDomain := getContainerDomain(projectID, c.ServiceID)
 	l.printf("%v", containerDomain)
 	l.printf(formatter.CondPad(containerDomain, 52))
 	l.printInstances(c.Scale)
