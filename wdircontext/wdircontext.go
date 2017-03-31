@@ -20,7 +20,7 @@ func GetProjectID() (id string, err error) {
 	}
 
 	var path = config.Context.ProjectRoot
-	var project *projects.Project
+	var project *projects.ProjectPackage
 
 	project, err = projects.Read(path)
 
@@ -58,13 +58,13 @@ func GetContainerID() (id string, err error) {
 	}
 
 	var path = config.Context.ContainerRoot
-	var container *containers.Container
+	var cp *containers.ContainerPackage
 
-	container, err = containers.Read(path)
+	cp, err = containers.Read(path)
 
 	if err != nil {
 		return "", err
 	}
 
-	return container.ID, err
+	return cp.ID, err
 }
