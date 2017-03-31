@@ -11,7 +11,7 @@
 	"health": "on",
 	"source": null,
 	"githubRepositories": [],
-	"homeContainer": null,
+	"homeService": null,
 	"ownerId": null,
 	"customDomains": [],
 	"users": [

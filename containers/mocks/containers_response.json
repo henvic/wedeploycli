@@ -1,18 +1,18 @@
-{
-  "search7606": {
+[
+  {
+    "serviceId": "search7606",
     "type": "cloudsearch",
     "basePath": "\/search",
     "scale": 7,
-    "id": "search7606",
     "health": "on",
     "maxInstances": 5
   },
-  "nodejs5143": {
+  {
+    "serviceId": "nodejs5143",
     "type": "nodejs",
     "basePath": "\/nodejs",
     "scale": 5,
-    "id": "nodejs5143",
     "health": "on",
     "maxInstances": 5
   }
-}
+]

@@ -10,7 +10,7 @@
 	},
 	"health": "up",
 	"source": null,
-	"homeContainer": "static",
+	"homeService": "static",
 	"ownerId": null,
 	"customDomains": [],
 	"users": [null],

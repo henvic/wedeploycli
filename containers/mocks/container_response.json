@@ -2,7 +2,7 @@
     "type": "cloudsearch",
     "basePath": "\/search",
     "scale": 7,
-    "id": "search7606",
+    "serviceId": "search7606",
     "health": "on",
     "maxInstances": 5
 }

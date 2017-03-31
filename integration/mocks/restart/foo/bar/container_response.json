@@ -1,5 +1,5 @@
 {
     "type": "nodejs",
-    "id": "bar",
+    "serviceId": "bar",
     "health": "on"
 }
