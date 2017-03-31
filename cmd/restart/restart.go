@@ -2,6 +2,8 @@ package cmdrestart
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"sync"
 
 	"github.com/spf13/cobra"
@@ -75,18 +77,30 @@ func (r *restart) isDone() bool {
 		return false
 	}
 
-	if r.container == "" && (r.list.Projects[0]).Health == "up" {
-		return true
-	}
+	var p = r.list.Projects[0]
 
-	c, ok := r.list.Projects[0].Containers[r.container]
-
-	if !ok {
-		verbose.Debug("Unexpected behavior: no container found.")
+	if p.Health != "up" {
 		return false
 	}
 
-	return c.Health == "up"
+	if r.container == "" {
+		return true
+	}
+
+	var cs, ec = p.Services(context.Background())
+
+	if ec != nil {
+		fmt.Fprintf(os.Stderr, "Can't check if containers are finished: %v\n", ec)
+		return false
+	}
+
+	for _, c := range cs {
+		if c.Health != "up" {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (r *restart) checkProjectOrContainerExists() error {
