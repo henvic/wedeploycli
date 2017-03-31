@@ -396,7 +396,9 @@ func TestEncodeJSON(t *testing.T) {
 
 	var got = b.String()
 
-	var want = `{"foo":"bar"}`
+	var want = `{
+    "foo": "bar"
+}`
 
 	if want != got {
 		t.Errorf("Wanted encoded JSON to be %v, got %v instead", want, got)
@@ -423,7 +425,9 @@ func TestEncodeJSONMap(t *testing.T) {
 
 	var got = b.String()
 
-	var want = `{"foo":"bar"}`
+	var want = `{
+    "foo": "bar"
+}`
 
 	if want != got {
 		t.Errorf("Wanted encoded JSON to be %v, got %v instead", want, got)
@@ -929,7 +933,9 @@ func TestSetBody(t *testing.T) {
 		t.Errorf("Wanted err to be nil, got %v instead", err)
 	}
 
-	var want = `{"foo":"bar"}`
+	var want = `{
+    "foo": "bar"
+}`
 
 	if want != got {
 		t.Errorf("Wanted encoded JSON to be %v, got %v instead", want, got)

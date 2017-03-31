@@ -182,7 +182,7 @@ func DecodeJSON(request *wedeploy.WeDeploy, data interface{}) error {
 // EncodeJSON encodes a object using its JSON annotations map
 // and creates a reader that can be used as body for requests, for example
 func EncodeJSON(data interface{}) (*bytes.Reader, error) {
-	var b, err = json.Marshal(data)
+	var b, err = json.MarshalIndent(data, "", "    ")
 	return bytes.NewReader(b), err
 }
 
