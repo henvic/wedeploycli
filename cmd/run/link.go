@@ -15,7 +15,9 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/link"
+	"github.com/wedeploy/cli/projectctx"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/prompt"
 	"github.com/wedeploy/cli/pullimages"
 	"github.com/wedeploy/cli/usercontext"
 	"github.com/wedeploy/cli/wdircontext"
@@ -47,21 +49,7 @@ func (l *linker) PreRun(cmd *cobra.Command, args []string) error {
 func (l *linker) Run(cmd *cobra.Command, args []string) error {
 	var projectID, errProjectID = l.getProject()
 
-	switch errProjectID {
-	case nil:
-	case projects.ErrProjectNotFound:
-		fmt.Fprintf(os.Stderr, "No project or container on the current context.\n")
-
-		if _, ec := containers.Read("."); ec == nil {
-			fmt.Fprintf(os.Stderr,
-				`container.json found: maybe you want to try "we run --project <project>" instead
-
-`)
-		}
-
-		fmt.Println(`See http://wedeploy.com/docs`)
-		return nil
-	default:
+	if errProjectID != nil {
 		return errProjectID
 	}
 
@@ -75,19 +63,14 @@ func (l *linker) Run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if config.Context.ProjectRoot != "" {
-		if err = l.setupLocallyExistingProject(config.Context.ProjectRoot); err != nil {
-			return err
-		}
-	} else {
-		projectID, err = projects.ValidateOrCreate(projectID)
+	var projectRec projects.Project
+	projectRec, err = projectctx.CreateOrUpdate(projectID)
 
-		if err != nil {
-			return err
-		}
+	if !checkProjectOK(err) {
+		return err
 	}
 
-	return l.linkMachineSetup(projectID, csDirs)
+	return l.linkMachineSetup(projectRec, csDirs)
 }
 
 func (l *linker) getContainersDirectoriesFromScope() ([]string, error) {
@@ -100,7 +83,10 @@ func (l *linker) getContainersDirectoriesFromScope() ([]string, error) {
 
 		_, err = containers.Read(wd)
 
-		if err != nil {
+		switch {
+		case err == containers.ErrContainerNotFound:
+			err = errwrap.Wrapf("Missing container.json on directory.", err)
+		case err != nil:
 			err = errwrap.Wrapf("Can not read container with no project: {{err}}", err)
 		}
 
@@ -126,8 +112,24 @@ func (l *linker) getContainersDirectoriesFromScope() ([]string, error) {
 	return absList, err
 }
 
-func (l *linker) getProject() (string, error) {
-	var projectID = setupHost.Project()
+func trySelectProject() (string, error) {
+	fmt.Fprintf(os.Stderr, `No project or container on the current context.
+Press Enter to cancel or type a project ID to use.
+
+`)
+
+	var id, err = prompt.Prompt("Project ID")
+
+	if len(id) == 0 {
+		fmt.Fprintf(os.Stderr, "\nSkipping creating project.\n")
+		return "", errors.New(`See http://wedeploy.com/docs`)
+	}
+
+	return id, err
+}
+
+func (l *linker) getProject() (projectID string, err error) {
+	projectID = setupHost.Project()
 
 	if (config.Context.Scope == usercontext.ProjectScope ||
 		config.Context.Scope == usercontext.ContainerScope) && projectID != "" {
@@ -138,11 +140,17 @@ func (l *linker) getProject() (string, error) {
 		return projectID, nil
 	}
 
-	return wdircontext.GetProjectID()
+	projectID, err = wdircontext.GetProjectID()
+
+	if err == projects.ErrProjectNotFound {
+		return trySelectProject()
+	}
+
+	return projectID, err
 }
 
-func (l *linker) linkMachineSetup(projectID string, csDirs []string) error {
-	l.Machine.ProjectID = projectID
+func (l *linker) linkMachineSetup(project projects.Project, csDirs []string) error {
+	l.Machine.ProjectID = project.ProjectID
 
 	if err := l.Machine.Setup(csDirs); err != nil {
 		return err
@@ -179,23 +187,10 @@ func (l *linker) getLinkMachineErrors() error {
 	return nil
 }
 
-func (l *linker) setupLocallyExistingProject(projectPath string) error {
-	project, err := projects.Read(projectPath)
-
-	if err != nil {
-		return err
-	}
-
-	created, err := projects.ValidateOrCreateFromJSON(
-		filepath.Join(projectPath, "project.json"))
-
+func checkProjectOK(err error) bool {
 	if ea, ok := err.(*apihelper.APIFault); ok && ea.Has("projectAlreadyExists") {
-		return nil
+		return true
 	}
 
-	if created {
-		fmt.Fprintf(os.Stdout, "New project %v created.\n", project.ID)
-	}
-
-	return err
+	return err == nil
 }
