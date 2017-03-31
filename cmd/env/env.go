@@ -50,27 +50,25 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	var container, err = containers.Get(context.Background(), setupHost.Project(), setupHost.Container())
+	var envs, err = containers.GetEnvironmentVariables(context.Background(),
+		setupHost.Project(),
+		setupHost.Container())
 
 	if err != nil {
 		return err
 	}
 
-	if container.Env == nil {
+	if envs == nil || len(envs) == 0 {
 		verbose.Debug("No environment variable found.")
 		return nil
 	}
 
-	var keys = make([]string, 0)
+	sort.Slice(envs, func(i, j int) bool {
+		return envs[i].Name < envs[j].Name
+	})
 
-	for k := range container.Env {
-		keys = append(keys, k)
-	}
-
-	sort.Strings(keys)
-
-	for _, k := range keys {
-		fmt.Printf("%v=%v\n", k, container.Env[k])
+	for _, v := range envs {
+		fmt.Printf("%v=%v\n", v.Name, v.Value)
 	}
 
 	return nil
