@@ -316,14 +316,14 @@ func TestGenerateContainerInsideAlreadyExistingProjectWithoutContainerBoilerplat
 		t.Errorf("Expected exit code to be 0, got %v instead", cmd.ExitCode)
 	}
 
-	var c, err = containers.Read("mocks/generate/foo/data")
+	var cp, err = containers.Read("mocks/generate/foo/data")
 
 	if err != nil {
 		t.Errorf("Expected reading container file, got error %v instead", err)
 	}
 
-	if c.ID != "data" {
-		t.Errorf(`Expected container to be generated with ID "data" got %v instead`, c.ID)
+	if cp.ID != "data" {
+		t.Errorf(`Expected container to be generated with ID "data" got %v instead`, cp.ID)
 	}
 }
 

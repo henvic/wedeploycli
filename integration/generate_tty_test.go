@@ -107,12 +107,12 @@ func TestGeneratePromptProjectAndContainerAtOnce(t *testing.T) {
 		t.Errorf("Expected project ID to be %v, got %v instead", wantProject, project.ID)
 	}
 
-	container, err := containers.Read("mocks/generate/example/auth")
+	cp, err := containers.Read("mocks/generate/example/auth")
 
 	var wantContainer = "auth"
 
-	if container.ID != wantContainer {
-		t.Errorf("Expected container ID to be %v, got %v instead", wantContainer, container.ID)
+	if cp.ID != wantContainer {
+		t.Errorf("Expected container ID to be %v, got %v instead", wantContainer, cp.ID)
 	}
 
 	if err != nil {
@@ -225,12 +225,12 @@ func testGeneratePromptContainer(t *testing.T) {
 		t.Errorf("we generate did not execute successfully")
 	}
 
-	container, err := containers.Read("mocks/generate/example/auth")
+	cp, err := containers.Read("mocks/generate/example/auth")
 
 	var wantContainer = "auth"
 
-	if container.ID != wantContainer {
-		t.Errorf("Expected container ID to be %v, got %v instead", wantContainer, container.ID)
+	if cp.ID != wantContainer {
+		t.Errorf("Expected container ID to be %v, got %v instead", wantContainer, cp.ID)
 	}
 
 	if err != nil {

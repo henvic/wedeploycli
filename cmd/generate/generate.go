@@ -365,7 +365,7 @@ func (r *runner) handleGenerateContainer() error {
 
 	var cc = &containerCreator{
 		ProjectDirectory: r.projectBase,
-		Container: &containers.Container{
+		ContainerPackage: &containers.ContainerPackage{
 			ID: r.container,
 		},
 		boilerplate:            r.boilerplate,
@@ -376,7 +376,7 @@ func (r *runner) handleGenerateContainer() error {
 }
 
 type containerCreator struct {
-	Container              *containers.Container
+	ContainerPackage       *containers.ContainerPackage
 	Registry               []containers.Register
 	Register               containers.Register
 	ProjectDirectory       string
@@ -395,7 +395,7 @@ func (cc *containerCreator) run() error {
 		return err
 	}
 
-	cc.ContainerDirectory = filepath.Join(cc.ProjectDirectory, cc.Container.ID)
+	cc.ContainerDirectory = filepath.Join(cc.ProjectDirectory, cc.ContainerPackage.ID)
 
 	if err := cc.handleBoilerplate(); err != nil {
 		return err
@@ -409,7 +409,7 @@ func (cc *containerCreator) run() error {
 		}
 	}
 
-	return cc.saveContainer()
+	return cc.saveContainerPackage()
 }
 
 func (cc *containerCreator) handleContainerType() error {
@@ -427,7 +427,7 @@ func (cc *containerCreator) handleContainerType() error {
 
 	for _, r := range cc.Registry {
 		if containerType == r.Type {
-			cc.Container.Type = r.Type
+			cc.ContainerPackage.Type = r.Type
 			return nil
 		}
 	}
@@ -436,7 +436,7 @@ func (cc *containerCreator) handleContainerType() error {
 	// by getting only possible matches from WeDeploy, without versions
 	for _, r := range cc.Registry {
 		if containerType == getBoilerplateContainerType(r.Type) {
-			cc.Container.Type = r.Type
+			cc.ContainerPackage.Type = r.Type
 			return nil
 		}
 	}
@@ -471,12 +471,12 @@ func (cc *containerCreator) chooseContainerType() error {
 	}
 
 	cc.Register = cc.Registry[option]
-	cc.Container.Type = cc.Register.Type
+	cc.ContainerPackage.Type = cc.Register.Type
 	return nil
 }
 
 func (cc *containerCreator) chooseContainerID() (err error) {
-	var container = cc.Container.ID
+	var container = cc.ContainerPackage.ID
 
 	if container == "" {
 		container, err = prompt.Prompt("Container ID [default: " + cc.Register.ID + "]")
@@ -497,7 +497,7 @@ func (cc *containerCreator) chooseContainerID() (err error) {
 		}
 	}
 
-	cc.Container.ID = container
+	cc.ContainerPackage.ID = container
 	return nil
 }
 
@@ -545,8 +545,8 @@ func (cc *containerCreator) handleBoilerplate() (err error) {
 	}
 
 	var (
-		container = cc.Container.ID
-		cType     = cc.Container.Type
+		container = cc.ContainerPackage.ID
+		cType     = cc.ContainerPackage.Type
 	)
 
 	var boilerplateType = getBoilerplateContainerType(cType)
@@ -605,17 +605,17 @@ func (cc *containerCreator) handleBoilerplate() (err error) {
 		return errwrap.Wrapf("Error removing .git ref file for container's boilerplate: {{err}}", err)
 	}
 
-	if cc.Container, err = containers.Read(cc.ContainerDirectory); err != nil {
+	if cc.ContainerPackage, err = containers.Read(cc.ContainerDirectory); err != nil {
 		return errwrap.Wrapf("Can not read boilerplate's container file: {{err}}", err)
 	}
 
-	cc.Container.ID = container
-	cc.Container.Type = cType
+	cc.ContainerPackage.ID = container
+	cc.ContainerPackage.Type = cType
 	return nil
 }
 
-func (cc *containerCreator) saveContainer() error {
-	bin, err := json.MarshalIndent(cc.Container, "", "    ")
+func (cc *containerCreator) saveContainerPackage() error {
+	bin, err := json.MarshalIndent(cc.ContainerPackage, "", "    ")
 
 	if err != nil {
 		return err
@@ -650,7 +650,7 @@ func (r *runner) newProject() (err error) {
 	}
 
 	var p = &projects.Project{
-		ID: r.project,
+		ProjectID: r.project,
 	}
 
 	if projectCustomDomain != "" {
