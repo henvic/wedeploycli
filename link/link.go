@@ -2,7 +2,9 @@ package link
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -52,14 +54,15 @@ func New(dir string) (*Link, error) {
 		ContainerPath: dir,
 	}
 
-	c, err := containers.Read(l.ContainerPath)
-	l.Container = c
+	cp, err := containers.Read(l.ContainerPath)
 
 	if err != nil {
 		return nil, err
 	}
 
-	verbose.Debug("Container ID " + c.ID + " for directory " + dir)
+	l.Container = cp.Container()
+
+	verbose.Debug("Container ServiceID " + cp.ID + " for directory " + dir)
 
 	return l, err
 }
@@ -74,8 +77,14 @@ func (le Errors) Error() string {
 	return fmt.Sprintf("Linking errors:\n%v", strings.Join(msgs, "\n"))
 }
 
+var errMissingProjectID = errors.New("Missing project ID for linking containers")
+
 // Setup the linking machine
 func (m *Machine) Setup(list []string) error {
+	if m.ProjectID == "" {
+		return errMissingProjectID
+	}
+
 	m.Errors = &Errors{
 		List: []ContainerError{},
 	}
@@ -92,7 +101,7 @@ func (m *Machine) Watch() {
 	var cs []string
 
 	for _, l := range m.Links {
-		cs = append(cs, l.Container.ID)
+		cs = append(cs, l.Container.ServiceID)
 	}
 
 	m.list = list.New(list.Filter{
@@ -117,10 +126,20 @@ func (m *Machine) isDone() bool {
 
 		var projectWatched = m.list.Projects[0]
 
-		for _, link := range m.Links {
-			c, ok := projectWatched.Containers[link.Container.ID]
+		if projectWatched.Health != "up" {
+			return false
+		}
 
-			if !ok || c.Health != "up" {
+		var cs, err = projectWatched.Services(context.Background())
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error watching containers for project %v: %v\n", projectWatched.ProjectID, err)
+		}
+
+		for _, link := range m.Links {
+			c, err := cs.Get(link.Container.ServiceID)
+
+			if err != nil || c.Health != "up" {
 				return false
 			}
 		}
@@ -155,7 +174,7 @@ func (m *Machine) doLink(cl *Link) {
 	switch err {
 	case nil:
 		if m.ErrStream != nil {
-			fmt.Fprintf(m.ErrStream, "Container %v linked.\n", cl.Container.ID)
+			fmt.Fprintf(m.ErrStream, "Container %v linked.\n", cl.Container.ServiceID)
 		}
 	default:
 		m.logError(cl.ContainerPath, err)
@@ -166,7 +185,10 @@ func (m *Machine) doLink(cl *Link) {
 
 func (m *Machine) link(l *Link) error {
 	m.dirMutex.Lock()
-	var err = containers.Link(context.Background(), m.ProjectID, l.Container.ID, l.ContainerPath)
+	var err = containers.Link(context.Background(),
+		m.ProjectID,
+		*l.Container,
+		l.ContainerPath)
 	m.dirMutex.Unlock()
 	runtime.Gosched()
 

@@ -3,13 +3,16 @@ package link
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"testing"
 
+	"github.com/wedeploy/api-go/jsonlib"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/configmock"
 	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/hooks"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/tdata"
 )
@@ -48,19 +51,48 @@ func TestErrors(t *testing.T) {
 	}
 }
 
+func TestMissingProject(t *testing.T) {
+	servertest.Setup()
+	configmock.Setup()
+
+	var m Machine
+	var err = m.Setup([]string{"mocks/myproject/mycontainer"})
+
+	if err != errMissingProjectID {
+		t.Errorf("Expected error to be %v, got %v instead", errMissingProjectID, err)
+	}
+
+	configmock.Teardown()
+	servertest.Teardown()
+}
+
 func TestAll(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	var wantSource = "mocks/myproject/mycontainer"
-	var gotSource string
-
-	servertest.Mux.HandleFunc("/deploy",
+	servertest.Mux.HandleFunc("/projects/foo/services",
 		func(w http.ResponseWriter, r *http.Request) {
-			gotSource = r.URL.Query().Get("source")
+			if r.Method != "POST" {
+				t.Errorf("Expected method to be PUT, got %v instead", r.Method)
+			}
+
+			var body, err = ioutil.ReadAll(r.Body)
+
+			if err != nil {
+				t.Errorf("Expected no error, got %v isntead", err)
+			}
+
+			jsonlib.AssertJSONMarshal(t, string(body), containers.Container{
+				ServiceID: "container",
+				Source:    "mocks/myproject/mycontainer",
+				Hooks:     &hooks.Hooks{},
+			})
 		})
 
-	var m Machine
+	var m = &Machine{
+		ProjectID: "foo",
+	}
+
 	var err = m.Setup([]string{"mocks/myproject/mycontainer"})
 
 	if err != nil {
@@ -73,10 +105,6 @@ func TestAll(t *testing.T) {
 		t.Errorf("Wanted list of errors to contain zero errors, got %v errors instead", m.Errors)
 	}
 
-	if wantSource != gotSource {
-		t.Errorf("Wanted source %v, got %v instead", wantSource, gotSource)
-	}
-
 	configmock.Teardown()
 	servertest.Teardown()
 }
@@ -85,15 +113,29 @@ func TestAllQuiet(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	var wantSource = "mocks/myproject/mycontainer"
-	var gotSource string
-
-	servertest.Mux.HandleFunc("/deploy",
+	servertest.Mux.HandleFunc("/projects/foo/services",
 		func(w http.ResponseWriter, r *http.Request) {
-			gotSource = r.URL.Query().Get("source")
+			if r.Method != "POST" {
+				t.Errorf("Expected method to be POST, got %v instead", r.Method)
+			}
+
+			var body, err = ioutil.ReadAll(r.Body)
+
+			if err != nil {
+				t.Errorf("Expected no error, got %v isntead", err)
+			}
+
+			jsonlib.AssertJSONMarshal(t, string(body), containers.Container{
+				ServiceID: "container",
+				Source:    "mocks/myproject/mycontainer",
+				Hooks:     &hooks.Hooks{},
+			})
 		})
 
-	var m Machine
+	var m = &Machine{
+		ProjectID: "foo",
+	}
+
 	var bufErrStream bytes.Buffer
 	m.ErrStream = &bufErrStream
 
@@ -114,10 +156,6 @@ func TestAllQuiet(t *testing.T) {
 		t.Errorf("Wanted list of errors to contain zero errors, got %v errors instead", m.Errors)
 	}
 
-	if wantSource != gotSource {
-		t.Errorf("Wanted source %v, got %v instead", wantSource, gotSource)
-	}
-
 	configmock.Teardown()
 	servertest.Teardown()
 }
@@ -126,7 +164,10 @@ func TestAllOnlyNewError(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	var m Machine
+	var m = &Machine{
+		ProjectID: "foo",
+	}
+
 	var err = m.Setup([]string{"mocks/myproject/nil"})
 
 	if err != nil {
@@ -159,10 +200,13 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	servertest.Mux.HandleFunc("/deploy",
+	servertest.Mux.HandleFunc("/projects/foo/services",
 		func(w http.ResponseWriter, r *http.Request) {})
 
-	var m Machine
+	var m = &Machine{
+		ProjectID: "foo",
+	}
+
 	var err = m.Setup(
 		[]string{"mocks/myproject/mycontainer", "mocks/myproject/nil", "mocks/myproject/nil2"})
 
@@ -198,12 +242,15 @@ func TestAllInstallContainerError(t *testing.T) {
 	servertest.Setup()
 	configmock.Setup()
 
-	servertest.Mux.HandleFunc("/deploy",
+	servertest.Mux.HandleFunc("/projects/foo/services",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(403)
 		})
 
-	var m Machine
+	var m = &Machine{
+		ProjectID: "foo",
+	}
+
 	var err = m.Setup([]string{"mocks/myproject/mycontainer"})
 
 	if err != nil {
