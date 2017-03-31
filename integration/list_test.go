@@ -54,7 +54,7 @@ func TestListContainerFromInsideProject(t *testing.T) {
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc(
-		"/projects/app/containers/container",
+		"/projects/app/services/container",
 		tdata.ServerJSONFileHandler("./mocks/home/bucket/project/container/container.json"))
 
 	servertest.IntegrationMux.HandleFunc(
@@ -80,7 +80,7 @@ func TestListContainerFromInsideProjectNotExists(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc("/projects/app/containers/container", func(w http.ResponseWriter, r *http.Request) {
+	servertest.IntegrationMux.HandleFunc("/projects/app/services/container", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "application/json; charset=UTF-8")
 		w.WriteHeader(404)
 		fmt.Fprintf(w, `{
