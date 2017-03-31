@@ -224,57 +224,13 @@ func Unlink(ctx context.Context, projectID string) error {
 	return apihelper.Validate(req, req.Delete())
 }
 
-// Validate project
-func Validate(ctx context.Context, projectID string) (err error) {
-	var req = apihelper.URL(ctx, "/validators/project/id")
-	err = doValidate(projectID, req)
 
-	if err == nil || err != wedeploy.ErrUnexpectedResponse {
-		return err
 	}
 
-	var errDoc apihelper.APIFault
-
-	err = apihelper.DecodeJSON(req, &errDoc)
-
-	if err != nil {
-		return err
-	}
-
-	return getValidateAPIFaultError(errDoc)
-}
-
-// ValidateOrCreate project
-func ValidateOrCreate(id string) (fid string, err error) {
-	project, err := Create(context.Background(), id)
 
 	if err == nil {
-		id = project.ID
-		return id, nil
 	}
 
-	_, err = validateOrCreate(err)
-	return id, err
-}
-
-// ValidateOrCreateFromJSON project
-func ValidateOrCreateFromJSON(filename string) (created bool, err error) {
-	return validateOrCreate(CreateFromJSON(context.Background(), filename))
-}
-
-func validateOrCreate(err error) (created bool, e error) {
-	switch err.(type) {
-	case nil:
-		return true, err
-	case *apihelper.APIFault:
-		var ae = err.(*apihelper.APIFault)
-
-		if ae.Has("invalidDocumentValue") {
-			return false, nil
-		}
-	}
-
-	return false, err
 }
 
 func doValidate(projectID string, req *wedeploy.WeDeploy) error {
@@ -286,15 +242,4 @@ func doValidate(projectID string, req *wedeploy.WeDeploy) error {
 
 	verbosereq.Feedback(req)
 	return err
-}
-
-func getValidateAPIFaultError(errDoc apihelper.APIFault) error {
-	switch {
-	case errDoc.Has("invalidProjectId"):
-		return ErrInvalidProjectID
-	case errDoc.Has("projectAlreadyExists"):
-		return ErrProjectAlreadyExists
-	}
-
-	return errDoc
 }
