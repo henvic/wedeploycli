@@ -20,6 +20,7 @@ import (
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/deployment"
 	"github.com/wedeploy/cli/inspector"
+	"github.com/wedeploy/cli/projectctx"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/usercontext"
 )
@@ -42,8 +43,9 @@ var setupHost = cmdflagsfromhost.SetupHost{
 }
 
 type deployCmd struct {
-	path      string
-	projectID string
+	path               string
+	projectID          string
+	containersInfoList containers.ContainerInfoList
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
@@ -141,11 +143,11 @@ func getPath() (path string, err error) {
 		return "", err
 	}
 
-	return wd, createContainerJSON(setupHost.Container(), wd)
+	return wd, createContainerPackage(setupHost.Container(), wd)
 }
 
-func createContainerJSON(id, path string) error {
-	var c = &containers.Container{
+func createContainerPackage(id, path string) error {
+	var c = &containers.ContainerPackage{
 		ID:   filepath.Base(path),
 		Type: "wedeploy/hosting",
 	}
@@ -174,18 +176,6 @@ func getProjectID() (string, error) {
 	}
 
 	return projectID, nil
-}
-
-func createProjectIfNotFound(ctx context.Context, id string) error {
-	var _, err = projects.Get(ctx, id)
-
-	if err == nil {
-		return nil
-	}
-
-	_, err = projects.Create(ctx, id)
-
-	return err
 }
 
 func run(cmd *cobra.Command, args []string) error {
@@ -222,7 +212,13 @@ func run(cmd *cobra.Command, args []string) error {
 
 	var ctx = context.Background()
 
-	if err := createProjectIfNotFound(ctx, projectID); err != nil {
+	if dc.containersInfoList, err = getContainersInfoListFromProject(dc.path); err != nil {
+		return err
+	}
+
+	_, err = projectctx.CreateOrUpdate(projectID)
+
+	if err != nil {
 		return err
 	}
 
@@ -255,35 +251,23 @@ func (dc *deployCmd) Feedback(err error) error {
 
 	switch {
 	case config.Context.Scope == usercontext.ProjectScope:
-		var containersInfoList, err = getContainersInfoListFromProject(dc.path)
-
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error reading containers after deployment: %v", err)
-		}
-
-		for _, c := range containersInfoList {
-			fmt.Println(dc.printAddress(c.ID))
+		for _, c := range dc.containersInfoList {
+			fmt.Println(dc.printAddress(c.ServiceID))
 		}
 	case config.Context.Scope == usercontext.ContainerScope:
-		var containersInfoList, err = getContainersInfoListFromProject(dc.path)
-
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error reading containers after deployment: %v", err)
-		}
-
-		for _, c := range containersInfoList {
+		for _, c := range dc.containersInfoList {
 			if c.Location == dc.path {
-				fmt.Println(dc.printAddress(c.ID))
+				fmt.Println(dc.printAddress(c.ServiceID))
 			}
 		}
 	default:
-		var c, err = containers.Read(dc.path)
+		var cp, err = containers.Read(dc.path)
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error reading container after deployment: %v", err)
 		}
 
-		fmt.Println(dc.printAddress(c.ID))
+		fmt.Println(dc.printAddress(cp.ID))
 	}
 
 	return nil
