@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/api-go"
@@ -180,6 +181,9 @@ func Get(ctx context.Context, id string) (project Project, err error) {
 // List projects
 func List(ctx context.Context) (list []Project, err error) {
 	err = apihelper.AuthGet(ctx, "/projects", &list)
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].ProjectID < list[j].ProjectID
+	})
 	return list, err
 }
 
