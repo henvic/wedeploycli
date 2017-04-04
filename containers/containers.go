@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/hashicorp/errwrap"
@@ -204,6 +205,9 @@ func (l *listFromDirectoryGetter) addFunc(cp *ContainerPackage, dir string) erro
 func List(ctx context.Context, projectID string) (Containers, error) {
 	var cs Containers
 	var err = apihelper.AuthGet(ctx, "/projects/"+url.QueryEscape(projectID)+"/services", &cs)
+	sort.Slice(cs, func(i, j int) bool {
+		return cs[i].ServiceID < cs[j].ServiceID
+	})
 	return cs, err
 }
 
