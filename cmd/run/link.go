@@ -2,7 +2,6 @@ package cmdrun
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
@@ -17,7 +16,6 @@ import (
 	"github.com/wedeploy/cli/link"
 	"github.com/wedeploy/cli/projectctx"
 	"github.com/wedeploy/cli/projects"
-	"github.com/wedeploy/cli/prompt"
 	"github.com/wedeploy/cli/pullimages"
 	"github.com/wedeploy/cli/usercontext"
 	"github.com/wedeploy/cli/wdircontext"
@@ -112,22 +110,6 @@ func (l *linker) getContainersDirectoriesFromScope() ([]string, error) {
 	return absList, err
 }
 
-func trySelectProject() (string, error) {
-	fmt.Fprintf(os.Stderr, `No project or container on the current context.
-Press Enter to cancel or type a project ID to use.
-
-`)
-
-	var id, err = prompt.Prompt("Project ID")
-
-	if len(id) == 0 {
-		fmt.Fprintf(os.Stderr, "\nSkipping creating project.\n")
-		return "", errors.New(`See http://wedeploy.com/docs`)
-	}
-
-	return id, err
-}
-
 func (l *linker) getProject() (projectID string, err error) {
 	projectID = setupHost.Project()
 
@@ -143,7 +125,7 @@ func (l *linker) getProject() (projectID string, err error) {
 	projectID, err = wdircontext.GetProjectID()
 
 	if err == projects.ErrProjectNotFound {
-		return trySelectProject()
+		return "", nil
 	}
 
 	return projectID, err
