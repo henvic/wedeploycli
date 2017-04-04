@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"os/signal"
 	"strconv"
@@ -25,6 +26,7 @@ import (
 type Logs struct {
 	ContainerID  string `json:"containerId"`
 	ContainerUID string `json:"containerUid"`
+	DeployUID    string `json:"deployUid"`
 	ProjectID    string `json:"projectId"`
 	Level        int    `json:"level"`
 	Message      string `json:"message"`
@@ -92,10 +94,29 @@ func GetLevel(severityOrLevel string) (int, error) {
 // GetList logs
 func GetList(ctx context.Context, filter *Filter) ([]Logs, error) {
 	var list []Logs
-	var req = apihelper.URL(ctx, "/logs/"+filter.Project)
+
+	var params = []string{
+		"/projects",
+		url.QueryEscape(filter.Project),
+	}
+
+	if filter.Container != "" {
+		params = append(params, "/services", url.QueryEscape(filter.Container))
+	}
+
+	params = append(params, "/logs")
+
+	var req = apihelper.URL(ctx, params...)
 
 	apihelper.Auth(req)
-	apihelper.ParamsFromJSON(req, filter)
+
+	if filter.Level != 0 {
+		req.Param("level", string(filter.Level))
+	}
+
+	if filter.Since != "" {
+		req.Param("start", filter.Since)
+	}
 
 	var err = apihelper.Validate(req, req.Get())
 
