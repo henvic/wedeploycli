@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"sync"
 
@@ -126,6 +127,10 @@ func (u *unlinker) isDone() bool {
 	}
 
 	if len(u.watcher.List.Projects) == 0 {
+		u.watcher.Teardown = func() string {
+			return "Project unlinked successfully!\n"
+		}
+
 		return true
 	}
 
@@ -133,7 +138,12 @@ func (u *unlinker) isDone() bool {
 	var c, e = p.Services(context.Background())
 
 	if e != nil {
-		fmt.Fprintf(os.Stderr, "Can't verify if unlinking is done: %v\n", e)
+		var eaf, ok = e.(*apihelper.APIFault)
+
+		if ok && eaf.Code == http.StatusNotFound {
+			return true
+		}
+
 		return false
 	}
 
@@ -153,7 +163,7 @@ func (u *unlinker) isDone() bool {
 func (u *unlinker) handleWatchRequestError(err error) string {
 	var ae, ok = err.(*apihelper.APIFault)
 
-	if !ok || ae.Code != 404 {
+	if !ok || !ae.Has("projectNotFound") {
 		fmt.Fprintf(os.Stderr, "%v", errorhandling.Handle(err))
 	}
 
