@@ -296,6 +296,10 @@ func (dm *DockerMachine) endRun() {
 }
 
 func (dm *DockerMachine) start() (err error) {
+	if err = dm.maybeInitSwarm(); err != nil {
+		return err
+	}
+
 	var args = dm.getRunCommandEnv()
 	var running = "docker " + strings.Join(args, " ")
 
@@ -303,10 +307,6 @@ func (dm *DockerMachine) start() (err error) {
 		println(running)
 	} else {
 		verbose.Debug(running)
-	}
-
-	if err = dm.maybeInitSwarm(); err != nil {
-		return err
 	}
 
 	if err = dm.checkPortsAreAvailable(); err != nil {
