@@ -38,10 +38,10 @@ var StopCmd = &cobra.Command{
 type unlinker struct {
 	project   string
 	container string
-	watcher   *list.Watcher
 	list      *list.List
 	end       bool
-	err       error
+	endMutex  sync.Mutex
+	err       chan error
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
@@ -78,6 +78,7 @@ func (u *unlinker) Run(cmd *cobra.Command, args []string) error {
 
 	u.project = project
 	u.container = container
+	u.err = make(chan error, 1)
 
 	if err := u.checkProjectOrContainerExists(); err != nil {
 		return err
@@ -85,79 +86,64 @@ func (u *unlinker) Run(cmd *cobra.Command, args []string) error {
 
 	if quiet {
 		u.do()
-		return nil
+		return <-u.err
 	}
 
 	var queue sync.WaitGroup
-
 	queue.Add(1)
-
-	go func() {
-		u.do()
-	}()
-
-	go func() {
-		u.watch()
-		queue.Done()
-	}()
-
+	go u.do()
+	go u.watch(queue.Done)
 	queue.Wait()
 
-	if u.err != nil {
-		return u.err
-	}
-
-	return nil
+	return <-u.err
 }
 
 func (u *unlinker) do() {
 	switch u.container {
 	case "":
-		u.err = projects.Unlink(context.Background(), u.project)
+		u.err <- projects.Unlink(context.Background(), u.project)
 	default:
-		u.err = containers.Unlink(context.Background(), u.project, u.container)
+		u.err <- containers.Unlink(context.Background(), u.project, u.container)
 	}
 
+	u.endMutex.Lock()
 	u.end = true
+	u.endMutex.Unlock()
+}
+
+func (u *unlinker) getAddress() string {
+	var address = fmt.Sprintf("%v.wedeploy.me", u.project)
+
+	if u.container != "" {
+		address = u.container + "." + address
+	}
+
+	return address
 }
 
 func (u *unlinker) isDone() bool {
-	if !u.end {
+	u.endMutex.Lock()
+	var end = u.end
+	u.endMutex.Unlock()
+
+	if !end {
 		return false
 	}
 
-	if len(u.watcher.List.Projects) == 0 {
-		u.watcher.Teardown = func() string {
-			return "Project unlinked successfully!\n"
-		}
-
+	if len(u.list.Projects) == 0 {
 		return true
 	}
 
-	var p = u.watcher.List.Projects[0]
+	var p = u.list.Projects[0]
 	var c, e = p.Services(context.Background())
 
 	if e != nil {
 		var eaf, ok = e.(*apihelper.APIFault)
-
-		if ok && eaf.Code == http.StatusNotFound {
-			return true
-		}
-
-		return false
+		return ok && eaf.Code == http.StatusNotFound
 	}
 
 	var _, ec = c.Get(u.container)
-
-	if u.container != "" && ec != nil {
-		u.watcher.Teardown = func() string {
-			return "Container unlinked successfully!\n"
-		}
-
-		return true
-	}
-
-	return false
+	return u.container != "" && ec != nil
 }
 
 func (u *unlinker) handleWatchRequestError(err error) string {
@@ -167,10 +153,10 @@ func (u *unlinker) handleWatchRequestError(err error) string {
 		fmt.Fprintf(os.Stderr, "%v", errorhandling.Handle(err))
 	}
 
-	return "Unlinked successfully\n"
+	return u.getAddress() + " is shutdown\n"
 }
 
-func (u *unlinker) watch() {
+func (u *unlinker) watch(done func()) {
 	var filter = list.Filter{}
 
 	filter.Project = u.project
@@ -178,10 +164,11 @@ func (u *unlinker) watch() {
 	if u.container != "" {
 		filter.Containers = []string{u.container}
 	}
-	u.watcher = list.NewWatcher(list.New(filter))
-	u.watcher.List.HandleRequestError = u.handleWatchRequestError
-	u.watcher.StopCondition = u.isDone
-	u.watcher.Start()
+	u.list = list.New(filter)
+	u.list.HandleRequestError = u.handleWatchRequestError
+	u.list.StopCondition = u.isDone
+	u.list.Start()
+	done()
 }
 
 func (u *unlinker) checkProjectOrContainerExists() error {

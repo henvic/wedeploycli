@@ -26,7 +26,6 @@ type Machine struct {
 	ErrorsMutex sync.Mutex
 	dirMutex    sync.Mutex
 	queue       sync.WaitGroup
-	Watcher     *list.Watcher
 	list        *list.List
 	end         bool
 }
@@ -109,9 +108,8 @@ func (m *Machine) Watch() {
 		Containers: cs,
 	})
 
-	m.Watcher = list.NewWatcher(m.list)
-	m.Watcher.StopCondition = m.isDone
-	m.Watcher.Start()
+	m.list.StopCondition = m.isDone
+	m.list.Start()
 }
 
 func (m *Machine) isDone() bool {

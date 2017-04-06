@@ -2,11 +2,13 @@ package cmdlist
 
 import (
 	"context"
+	"time"
 
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/list"
+	"github.com/wedeploy/cli/projects"
 
 	"github.com/spf13/cobra"
 )
@@ -50,13 +52,32 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if !watch && setupHost.Container() != "" {
-		if _, err := containers.Get(context.Background(), setupHost.Project(), setupHost.Container()); err != nil {
-			return err
-		}
+	if !watch {
+		return checkProjectOrContainerExists()
 	}
 
 	return nil
+}
+
+func checkProjectOrContainerExists() (err error) {
+	if setupHost.Container() != "" {
+		if _, err = containers.Get(context.Background(), setupHost.Project(), setupHost.Container()); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	if setupHost.Project() != "" {
+		_, err = projects.Get(context.Background(), setupHost.Project())
+		return err
+	}
+
+	return nil
+}
+
+func alwaysStop() bool {
+	return true
 }
 
 func listRun(cmd *cobra.Command, args []string) {
@@ -74,12 +95,12 @@ func listRun(cmd *cobra.Command, args []string) {
 
 	l.Detailed = detailed
 
-	if watch {
-		list.NewWatcher(l).Start()
-		return
+	if !watch {
+		l.PoolingInterval = time.Minute
+		l.StopCondition = alwaysStop
 	}
 
-	l.Print()
+	l.Start()
 }
 
 func init() {
