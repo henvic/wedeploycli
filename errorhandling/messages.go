@@ -6,16 +6,20 @@ var errorReasonMessage = messages{
 	"notFound":                  "Not found",
 	"projectNotFound":           "Not found",
 	"containerNotFound":         "Not found",
+	"serviceNotFound":           "Not found",
 	"badRequest":                "The API request is invalid or improperly formed",
 	"internalError":             "The request failed due to an internal error",
 	"projectQuotaExceeded":      "Project quota exceeded",
-	"invalidContainer":          "Invalid container",
+	"invalidContainer":          "Invalid service",
+	"invalidService":            "Invalid service",
 	"invalidProject":            "Invalid project",
 	"invalidAccountEmail":       "Invalid email account",
 	"emailAlreadyExists":        "Email already exists",
 	"invalidCollaboratorEmail":  "Invalid collaborator email",
-	"invalidContainerId":        "Invalid container ID",
-	"containerAlreadyExists":    "Container already exists",
+	"invalidContainerId":        "Invalid service ID",
+	"invalidServiceId":          "Invalid service ID",
+	"containerAlreadyExists":    "Service already exists",
+	"serviceAlreadyExists":      "Service already exists",
 	"customDomainAlreadyExists": "Custom domain already exists",
 	"invalidProjectId":          "Invalid project ID",
 	"projectAlreadyExists":      "Project already exists",
@@ -24,7 +28,8 @@ var errorReasonMessage = messages{
 var errorReasonCommandMessageOverrides = map[string]messages{
 	"run": messages{
 		"typeNotFound":                  "Container type not found",
-		"projectContainerQuotaExceeded": "Your quota for containers has exceeded",
+		"projectContainerQuotaExceeded": "Your quota for services has exceeded",
+		"projectServiceQuotaExceeded":   "Your quota for services has exceeded",
 		"exists":                        "Project is already linked",
 	},
 	"run stop": messages{
@@ -35,5 +40,6 @@ var errorReasonCommandMessageOverrides = map[string]messages{
 	},
 	"undeploy": messages{
 		"invalidContainer": "Not found",
+		"invalidService":   "Not found",
 	},
 }
