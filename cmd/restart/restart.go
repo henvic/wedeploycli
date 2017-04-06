@@ -160,8 +160,6 @@ func (r *restart) watch() {
 	}
 
 	r.list = list.New(filter)
-
-	var watcher = list.NewWatcher(r.list)
-	watcher.StopCondition = r.isDone
-	watcher.Start()
+	r.list.StopCondition = r.isDone
+	r.list.Start()
 }
