@@ -151,22 +151,15 @@ func RemoveDomain(ctx context.Context, projectID string, domain string) (err err
 	return updateDomains(ctx, projectID, customDomains)
 }
 
-type updateDomainsRequestBody struct {
-	CustomDomains []string `json:"customDomains,omitempty"`
-}
-
 func updateDomains(ctx context.Context, projectID string, domains []string) (err error) {
-	var req = apihelper.URL(ctx, "/projects", url.QueryEscape(projectID))
+	var req = apihelper.URL(ctx, "/projects", url.QueryEscape(projectID), "/custom-domains")
 
 	apihelper.Auth(req)
 
-	if err := apihelper.SetBody(req,
-		updateDomainsRequestBody{
-			domains,
-		}); err != nil {
+	if err := apihelper.SetBody(req, domains); err != nil {
 		return errwrap.Wrapf("Can not set body for domain: {{err}}", err)
 	}
-	return apihelper.Validate(req, req.Patch())
+	return apihelper.Validate(req, req.Put())
 }
 
 // Get project by ID
