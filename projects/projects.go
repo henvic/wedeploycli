@@ -129,14 +129,7 @@ func AddDomain(ctx context.Context, projectID string, domain string) (err error)
 	var customDomains = project.CustomDomains
 	customDomains = append(customDomains, domain)
 
-	var req = apihelper.URL(ctx, "/projects", url.QueryEscape(projectID), "/customDomains")
-
-	apihelper.Auth(req)
-
-	if err := apihelper.SetBody(req, customDomains); err != nil {
-		return errwrap.Wrapf("Can not set body for domain: {{err}}", err)
-	}
-	return apihelper.Validate(req, req.Put())
+	return updateDomains(ctx, projectID, customDomains)
 }
 
 // RemoveDomain in project
@@ -155,17 +148,25 @@ func RemoveDomain(ctx context.Context, projectID string, domain string) (err err
 		}
 	}
 
-	var req = apihelper.URL(ctx,
-		"/projects",
-		url.QueryEscape(projectID),
-		"/customDomains")
+	return updateDomains(ctx, projectID, customDomains)
+}
+
+type updateDomainsRequestBody struct {
+	CustomDomains []string `json:"customDomains,omitempty"`
+}
+
+func updateDomains(ctx context.Context, projectID string, domains []string) (err error) {
+	var req = apihelper.URL(ctx, "/projects", url.QueryEscape(projectID))
 
 	apihelper.Auth(req)
 
-	if err := apihelper.SetBody(req, customDomains); err != nil {
+	if err := apihelper.SetBody(req,
+		updateDomainsRequestBody{
+			domains,
+		}); err != nil {
 		return errwrap.Wrapf("Can not set body for domain: {{err}}", err)
 	}
-	return apihelper.Validate(req, req.Put())
+	return apihelper.Validate(req, req.Patch())
 }
 
 // Get project by ID
