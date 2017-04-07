@@ -82,6 +82,11 @@ Please, set up a WeDeploy password first at
 }
 
 func loginRun(cmd *cobra.Command, args []string) error {
+	if config.Global.Username != "" {
+		return fmt.Errorf(`Already logged in as %v
+Logout first with "we logout"`, config.Global.Username)
+	}
+
 	if noLaunchBrowser {
 		println("OAuth implemented trough Basic Auth")
 		return basicAuthLogin()
