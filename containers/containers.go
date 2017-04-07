@@ -360,12 +360,16 @@ func SetEnvironmentVariable(ctx context.Context, projectID, containerID, key, va
 		url.QueryEscape(projectID),
 		"/services",
 		url.QueryEscape(containerID),
-		"/env/"+
+		"/environment-variables/"+
 			url.QueryEscape(key))
 
 	apihelper.Auth(req)
 
-	if err := apihelper.SetBody(req, value); err != nil {
+	b := map[string]string{
+		"value": value,
+	}
+
+	if err := apihelper.SetBody(req, b); err != nil {
 		return errwrap.Wrapf("Can not set body for setting environment variable: {{err}}", err)
 	}
 
