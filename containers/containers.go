@@ -43,6 +43,7 @@ type Container struct {
 	Hooks     *hooks.Hooks      `json:"hooks,omitempty"`
 	Env       map[string]string `json:"env,omitempty"`
 	Scale     int               `json:"scale,omitempty"`
+	HealthUID string            `json:"healthUid,omitempty"`
 }
 
 // ContainerPackage is the structure for container.json

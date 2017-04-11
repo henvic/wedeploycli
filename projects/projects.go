@@ -25,6 +25,7 @@ type Project struct {
 	Health        string   `json:"health,omitempty"`
 	HomeService   string   `json:"homeService,omitempty"`
 	Description   string   `json:"description,omitempty"`
+	HealthUID     string   `json:"healthUid,omitempty"`
 }
 
 // ProjectPackage is the structure for project.json
