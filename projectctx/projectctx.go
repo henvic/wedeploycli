@@ -34,7 +34,7 @@ func CreateOrUpdate(projectIDIfNoCtx string) (projectRec projects.Project, err e
 	projectRec, created, err = projects.CreateOrUpdate(context.Background(), project)
 
 	if created {
-		fmt.Fprintf(os.Stdout, "New project %v created.\n", project.ProjectID)
+		fmt.Fprintf(os.Stdout, "New project %v created.\n", projectRec.ProjectID)
 	}
 
 	return projectRec, err
