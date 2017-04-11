@@ -1,10 +1,10 @@
 package cmdrun
 
 import (
+	"context"
 	"errors"
 	"os"
 	"path/filepath"
-	"sync"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
@@ -132,32 +132,24 @@ func (l *linker) getProject() (projectID string, err error) {
 }
 
 func (l *linker) linkMachineSetup(project projects.Project, csDirs []string) error {
-	l.Machine.ProjectID = project.ProjectID
+	l.Machine.Project = project
+
+	if quiet {
+		l.Machine.ErrStream = os.Stderr
+	}
 
 	if err := l.Machine.Setup(csDirs); err != nil {
 		return err
 	}
 
-	if quiet {
-		l.Machine.ErrStream = os.Stderr
-		l.Machine.Run()
-		return l.getLinkMachineErrors()
+	var ctx, end = context.WithCancel(context.Background())
+	go l.Machine.Run(end)
+
+	if !quiet {
+		l.Machine.Watch()
 	}
 
-	var queue sync.WaitGroup
-
-	queue.Add(1)
-
-	go func() {
-		l.Machine.Run()
-	}()
-
-	go func() {
-		l.Machine.Watch()
-		queue.Done()
-	}()
-
-	queue.Wait()
+	<-ctx.Done()
 	return l.getLinkMachineErrors()
 }
 

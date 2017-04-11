@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -14,12 +13,13 @@ import (
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/list"
+	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/verbose"
 )
 
 // Machine structure
 type Machine struct {
-	ProjectID   string
+	Project     projects.Project
 	Links       []*Link
 	ErrStream   io.Writer
 	Errors      *Errors
@@ -27,7 +27,9 @@ type Machine struct {
 	dirMutex    sync.Mutex
 	queue       sync.WaitGroup
 	list        *list.List
+	RWList      list.RestartWatchList
 	end         bool
+	endMutex    sync.RWMutex
 }
 
 // Link holds the information of container to be linked
@@ -79,19 +81,42 @@ func (le Errors) Error() string {
 var errMissingProjectID = errors.New("Missing project ID for linking containers")
 
 // Setup the linking machine
-func (m *Machine) Setup(list []string) error {
-	if m.ProjectID == "" {
+func (m *Machine) Setup(containersList []string) error {
+	if m.Project.ProjectID == "" {
 		return errMissingProjectID
+	}
+
+	if err := m.initializeHealthUIDTable(); err != nil {
+		return err
 	}
 
 	m.Errors = &Errors{
 		List: []ContainerError{},
 	}
 
-	for _, dir := range list {
+	for _, dir := range containersList {
 		m.mount(dir)
 	}
 
+	return nil
+}
+
+func (m *Machine) initializeHealthUIDTable() error {
+	m.RWList.SetInitialProjectHealthUID(m.Project.HealthUID)
+
+	var existingServices, err = m.Project.Services(context.Background())
+
+	if err != nil {
+		return err
+	}
+
+	var mt = map[string]string{}
+
+	for _, s := range existingServices {
+		mt[s.ServiceID] = s.HealthUID
+	}
+
+	m.RWList.SetInitialContainersHealthUID(mt)
 	return nil
 }
 
@@ -103,57 +128,30 @@ func (m *Machine) Watch() {
 		cs = append(cs, l.Container.ServiceID)
 	}
 
-	m.list = list.New(list.Filter{
-		Project:    m.ProjectID,
-		Containers: cs,
-	})
+	m.RWList = list.RestartWatchList{
+		Project:        m.Project.ProjectID,
+		Containers:     cs,
+		IsStillRunning: m.hasLinkingFinished,
+	}
 
-	m.list.StopCondition = m.isDone
-	m.list.Start()
+	m.RWList.Watch()
 }
 
-func (m *Machine) isDone() bool {
-	if !m.end {
-		return false
-	}
-
-	if len(m.Errors.List) == 0 {
-		if len(m.list.Projects) == 0 {
-			return false
-		}
-
-		var projectWatched = m.list.Projects[0]
-
-		if projectWatched.Health != "up" {
-			return false
-		}
-
-		var cs, err = projectWatched.Services(context.Background())
-
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error watching containers for project %v: %v\n", projectWatched.ProjectID, err)
-		}
-
-		for _, link := range m.Links {
-			c, err := cs.Get(link.Container.ServiceID)
-
-			if err != nil || c.Health != "up" {
-				return false
-			}
-		}
-	} else {
-		println("Killing linking watcher after linking errors (use \"we list\" to see what is up).")
-	}
-
-	return true
+func (m *Machine) hasLinkingFinished() bool {
+	m.endMutex.RLock()
+	defer m.endMutex.RUnlock()
+	return m.end
 }
 
 // Run links the containers of the list input
-func (m *Machine) Run() {
+func (m *Machine) Run(cancel func()) {
 	m.queue.Add(len(m.Links))
 	m.linkAll()
 	m.queue.Wait()
+	m.endMutex.Lock()
 	m.end = true
+	m.endMutex.Unlock()
+	cancel()
 }
 
 func (m *Machine) linkAll() {
@@ -184,7 +182,7 @@ func (m *Machine) doLink(cl *Link) {
 func (m *Machine) link(l *Link) error {
 	m.dirMutex.Lock()
 	var err = containers.Link(context.Background(),
-		m.ProjectID,
+		m.Project.ProjectID,
 		*l.Container,
 		l.ContainerPath)
 	m.dirMutex.Unlock()

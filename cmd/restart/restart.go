@@ -2,8 +2,6 @@ package cmdrestart
 
 import (
 	"context"
-	"fmt"
-	"os"
 	"sync"
 
 	"github.com/spf13/cobra"
@@ -11,7 +9,6 @@ import (
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
-	"github.com/wedeploy/cli/verbose"
 )
 
 // RestartCmd is used for getting restart
@@ -52,8 +49,10 @@ type restart struct {
 	project   string
 	container string
 	list      *list.List
+	rwl       list.RestartWatchList
 	err       error
 	end       bool
+	endMutex  sync.RWMutex
 }
 
 func (r *restart) do() {
@@ -64,54 +63,66 @@ func (r *restart) do() {
 		r.err = containers.Restart(context.Background(), r.project, r.container)
 	}
 
+	r.endMutex.Lock()
 	r.end = true
-}
-
-func (r *restart) isDone() bool {
-	if !r.end {
-		return false
-	}
-
-	if len(r.list.Projects) == 0 {
-		verbose.Debug("Unexpected behavior: no projects found.")
-		return false
-	}
-
-	var p = r.list.Projects[0]
-
-	if p.Health != "up" {
-		return false
-	}
-
-	if r.container == "" {
-		return true
-	}
-
-	var cs, ec = p.Services(context.Background())
-
-	if ec != nil {
-		fmt.Fprintf(os.Stderr, "Can't check if containers are finished: %v\n", ec)
-		return false
-	}
-
-	for _, c := range cs {
-		if c.Health != "up" {
-			return false
-		}
-	}
-
-	return true
+	r.endMutex.Unlock()
 }
 
 func (r *restart) checkProjectOrContainerExists() error {
-	var err error
-	if r.container == "" {
-		_, err = projects.Get(context.Background(), r.project)
-	} else {
-		_, err = containers.Get(context.Background(), r.project, r.container)
+	var p, err = projects.Get(context.Background(), r.project)
+	r.rwl.SetInitialProjectHealthUID(p.HealthUID)
+
+	switch {
+	case err != nil:
+		return err
+	case r.container == "":
+		return r.getContainerListForProjectRestart(p)
+	default:
+		return r.checkContainerExists()
+	}
+}
+
+func (r *restart) getContainerListForProjectRestart(p projects.Project) error {
+	var services, err = p.Services(context.Background())
+
+	if err != nil {
+		return err
 	}
 
+	var m = map[string]string{}
+
+	for _, s := range services {
+		m[s.ServiceID] = s.HealthUID
+	}
+
+	r.rwl.SetInitialContainersHealthUID(m)
+
+	return nil
+}
+
+func (r *restart) checkContainerExists() error {
+	var c, err = containers.Get(context.Background(), r.project, r.container)
+	r.rwl.SetInitialContainersHealthUID(map[string]string{
+		r.container: c.HealthUID,
+	})
 	return err
+}
+
+func (r *restart) watch() {
+	r.rwl.Project = r.project
+	r.rwl.IsStillRunning = r.hasRestartFinished
+
+	if r.container != "" {
+		r.rwl.Containers = []string{r.container}
+	}
+
+	r.rwl.Watch()
+}
+
+func (r *restart) hasRestartFinished() bool {
+	r.endMutex.Lock()
+	defer r.endMutex.Unlock()
+	return r.end
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
@@ -128,38 +139,13 @@ func restartRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if quiet {
-		r.do()
-		return r.err
-	}
+	go r.do()
 
-	var queue sync.WaitGroup
-
-	queue.Add(1)
-
-	go func() {
-		r.do()
-	}()
-
-	go func() {
+	if !quiet {
 		r.watch()
-		queue.Done()
-	}()
-
-	queue.Wait()
-	return r.err
-}
-
-func (r *restart) watch() {
-	var filter = list.Filter{}
-
-	filter.Project = r.project
-
-	if r.container != "" {
-		filter.Containers = []string{r.container}
 	}
 
-	r.list = list.New(filter)
-	r.list.StopCondition = r.isDone
-	r.list.Start()
+	r.endMutex.RLock()
+	defer r.endMutex.RUnlock()
+	return r.err
 }
