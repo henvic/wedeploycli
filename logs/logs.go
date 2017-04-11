@@ -85,7 +85,7 @@ func GetLevel(severityOrLevel string) (int, error) {
 	var i, err = strconv.Atoi(severityOrLevel)
 
 	if err != nil {
-		err = errwrap.Wrapf("Can not translate log severity param to level: {{err}}", err)
+		err = errwrap.Wrapf(fmt.Sprintf(`Unknown log level "%v"`, severityOrLevel), err)
 	}
 
 	return i, err
@@ -111,7 +111,7 @@ func GetList(ctx context.Context, filter *Filter) ([]Logs, error) {
 	apihelper.Auth(req)
 
 	if filter.Level != 0 {
-		req.Param("level", string(filter.Level))
+		req.Param("level", fmt.Sprintf("%d", filter.Level))
 	}
 
 	if filter.Since != "" {
