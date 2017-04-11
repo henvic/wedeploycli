@@ -1,6 +1,5 @@
 {
     "id": "my-project",
-    "homeService": "email",
     "customDomains": [
         "example.net"
     ]

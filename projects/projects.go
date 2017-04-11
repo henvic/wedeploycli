@@ -23,7 +23,6 @@ type Project struct {
 	ProjectID     string   `json:"projectId"`
 	CustomDomains []string `json:"customDomains,omitempty"`
 	Health        string   `json:"health,omitempty"`
-	HomeService   string   `json:"homeService,omitempty"`
 	Description   string   `json:"description,omitempty"`
 	HealthUID     string   `json:"healthUid,omitempty"`
 }
@@ -32,7 +31,6 @@ type Project struct {
 type ProjectPackage struct {
 	ID            string   `json:"id"`
 	CustomDomains []string `json:"customDomains,omitempty"`
-	HomeService   string   `json:"homeService,omitempty"`
 }
 
 // Project returns a Project type created taking project.json as base
@@ -40,7 +38,6 @@ func (pp ProjectPackage) Project() Project {
 	return Project{
 		ProjectID:     pp.ID,
 		CustomDomains: pp.CustomDomains,
-		HomeService:   pp.HomeService,
 	}
 }
 
@@ -65,7 +62,6 @@ var (
 
 type createRequestBody struct {
 	ProjectID     string   `json:"projectId,omitempty"`
-	HomeService   string   `json:"homeService,omitempty"`
 	CustomDomains []string `json:"customDomains,omitempty"`
 }
 
@@ -74,7 +70,6 @@ func Create(ctx context.Context, project Project) (p Project, err error) {
 	var req = apihelper.URL(ctx, "/projects")
 	var reqBody = createRequestBody{
 		ProjectID:     project.ProjectID,
-		HomeService:   project.HomeService,
 		CustomDomains: project.CustomDomains,
 	}
 
@@ -93,7 +88,6 @@ func Create(ctx context.Context, project Project) (p Project, err error) {
 }
 
 type updateRequestBody struct {
-	HomeService   string   `json:"homeService,omitempty"`
 	CustomDomains []string `json:"customDomains,omitempty"`
 }
 
@@ -101,7 +95,6 @@ type updateRequestBody struct {
 func Update(ctx context.Context, project Project) (p Project, err error) {
 	var req = apihelper.URL(ctx, "/projects", url.QueryEscape(project.ProjectID))
 	var reqBody = updateRequestBody{
-		HomeService:   project.HomeService,
 		CustomDomains: project.CustomDomains,
 	}
 

@@ -10,7 +10,6 @@
 	},
 	"health": "up",
 	"source": null,
-	"homeService": "static",
 	"ownerId": null,
 	"customDomains": ["wechat.liferay.io"],
 	"users": [null],

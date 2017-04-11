@@ -46,7 +46,6 @@ func TestGetSpecContextOverview(t *testing.T) {
 	var want = []string{`ID string`,
 		`CustomDomains []string`,
 		`Health string`,
-		`HomeService string`,
 		`Description string`}
 
 	if !reflect.DeepEqual(want, got) {

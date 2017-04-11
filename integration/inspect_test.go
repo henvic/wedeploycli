@@ -24,7 +24,6 @@ func TestInspectPrintProjectStructure(t *testing.T) {
 	var want = `ID string
 CustomDomains []string
 Health string
-HomeService string
 Description string`
 
 	var e = &Expect{
@@ -49,7 +48,6 @@ func TestInspectPrintContainerStructure(t *testing.T) {
 	var want = `ID string
 		CustomDomains []string
 		Health string
-		HomeService string
 		Description string`
 
 	var e = &Expect{
