@@ -43,4 +43,7 @@ var errorReasonCommandMessageOverrides = map[string]messages{
 		"invalidContainer": "Not found",
 		"invalidService":   "Not found",
 	},
+	"login": messages{
+		"validationError": "Invalid credentials",
+	},
 }
