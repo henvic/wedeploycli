@@ -21,7 +21,7 @@ var RestartCmd = &cobra.Command{
 we restart --container data
 we restart --project chat --container data
 we restart --project chat --container data --remote cloud
-we restart --url data.chat.wedeploy.me`,
+we restart --url data-chat.wedeploy.me`,
 }
 
 var quiet bool

@@ -19,8 +19,8 @@ var ListCmd = &cobra.Command{
 	Example: `we list --project chat --container data
 we list --container data
 we list --project chat --container data
-we list --url data.chat.wedeploy.me
-we list --url data.chat.wedeploy.io`,
+we list --url data-chat.wedeploy.me
+we list --url data-chat.wedeploy.io`,
 	Short:   "List projects and containers running",
 	PreRunE: preRun,
 	Run:     listRun,

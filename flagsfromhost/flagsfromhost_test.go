@@ -11,7 +11,7 @@ var defaultRemotesList = remotesList
 
 func TestParseNoRemoteList(t *testing.T) {
 	defer resetDefaults()
-	parsed, err := ParseRemoteAddress("foo.bar.wedeploy.me")
+	parsed, err := ParseRemoteAddress("foo-bar.wedeploy.me")
 
 	if parsed != "" {
 		t.Errorf("Expected remote to be empty, got %v instead", parsed)
@@ -31,7 +31,7 @@ func TestParseNoRemoteList(t *testing.T) {
 func TestParseRemoteAddressNotFoundForAddress(t *testing.T) {
 	defer resetDefaults()
 	remotesList = &remotes.List{}
-	parsed, err := ParseRemoteAddress("foo.bar.wedeploy.me")
+	parsed, err := ParseRemoteAddress("foo-bar.wedeploy.me")
 
 	if parsed != "" {
 		t.Errorf("Expected remote to be empty, got %v instead", parsed)
@@ -43,7 +43,7 @@ func TestParseRemoteAddressNotFoundForAddress(t *testing.T) {
 		t.Errorf("Expected error to be due to remote not found for address, got %v instead", err)
 	}
 
-	if err.Error() != "Found no remote for address foo.bar.wedeploy.me" {
+	if err.Error() != "Found no remote for address foo-bar.wedeploy.me" {
 		t.Errorf("Wrong error message for parsing when no remote list is loaded")
 	}
 }
@@ -52,14 +52,14 @@ func TestParseRemoteAddressMultipleRemote(t *testing.T) {
 	defer resetDefaults()
 	remotesList = &remotes.List{
 		"foo": remotes.Entry{
-			URL: "foo.bar.wedeploy.me",
+			URL: "foo-bar.wedeploy.me",
 		},
 		"bar": remotes.Entry{
-			URL: "foo.bar.wedeploy.me",
+			URL: "foo-bar.wedeploy.me",
 		},
 	}
 
-	parsed, err := ParseRemoteAddress("foo.bar.wedeploy.me")
+	parsed, err := ParseRemoteAddress("foo-bar.wedeploy.me")
 
 	if parsed != "" {
 		t.Errorf("Expected remote to be empty, got %v instead", parsed)
@@ -71,7 +71,7 @@ func TestParseRemoteAddressMultipleRemote(t *testing.T) {
 		t.Errorf("Expected error to be due to multiple remotes found, got %v instead", err)
 	}
 
-	if err.Error() != "Found multiple remotes for address foo.bar.wedeploy.me: bar, foo" {
+	if err.Error() != "Found multiple remotes for address foo-bar.wedeploy.me: bar, foo" {
 		t.Errorf("Wrong error message for parsing when no remote list is loaded")
 	}
 }
@@ -80,7 +80,7 @@ func TestParseLocalRemoteAddress(t *testing.T) {
 	defer resetDefaults()
 	remotesList = &remotes.List{
 		"foo": remotes.Entry{
-			URL: "foo.bar.wedeploy.me",
+			URL: "foo-bar.wedeploy.me",
 		},
 	}
 
@@ -200,7 +200,7 @@ func TestContainerWithMissingProject(t *testing.T) {
 func TestParseErrorMultiModeProject(t *testing.T) {
 	defer resetDefaults()
 	var parsed, err = Parse(ParseFlags{
-		Host:    "foo.bar.wedeploy.com",
+		Host:    "foo-bar.wedeploy.com",
 		Project: "a",
 	})
 
@@ -218,7 +218,7 @@ func TestParseErrorMultiModeProject(t *testing.T) {
 func TestParseErrorMultiModeContainer(t *testing.T) {
 	defer resetDefaults()
 	var parsed, err = Parse(ParseFlags{
-		Host:      "foo.bar.wedeploy.com",
+		Host:      "foo-bar.wedeploy.com",
 		Container: "b",
 	})
 
@@ -246,7 +246,7 @@ func TestParseHostWithErrorRemoteFlagAndHost(t *testing.T) {
 	}
 
 	var parsed, err = Parse(ParseFlags{
-		Host:   "foo.bar.wedeploy.com",
+		Host:   "foo-bar.wedeploy.com",
 		Remote: "remote",
 	})
 
@@ -356,7 +356,7 @@ var parseMocks = []parseMock{
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "projector.cinema.example.com",
+			Host:      "projector-cinema.example.com",
 			Project:   "",
 			Container: "",
 			Remote:    "",
@@ -370,7 +370,7 @@ var parseMocks = []parseMock{
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "projector.cinema",
+			Host:      "projector-cinema",
 			Project:   "",
 			Container: "",
 			Remote:    "foo",
@@ -434,7 +434,7 @@ var parseMocks = []parseMock{
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "def.abc.11.22.33.44:5555",
+			Host:      "def-abc.11.22.33.44:5555",
 			Project:   "",
 			Container: "",
 			Remote:    "",
@@ -588,7 +588,7 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
-			Host:      "projector.cinema.example.com",
+			Host:      "projector-cinema.example.com",
 			Project:   "",
 			Container: "",
 			Remote:    "",
@@ -602,7 +602,7 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
-			Host:          "projector.cinema",
+			Host:          "projector-cinema",
 			Project:       "",
 			Container:     "",
 			Remote:        "foo",
@@ -669,7 +669,7 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
-			Host:      "def.abc.11.22.33.44:5555",
+			Host:      "def-abc.11.22.33.44:5555",
 			Project:   "",
 			Container: "",
 			Remote:    "",
@@ -731,7 +731,7 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
-			Host:      "container.project.wedeploy.me",
+			Host:      "container-project.wedeploy.me",
 			Project:   "",
 			Container: "",
 			Remote:    "",

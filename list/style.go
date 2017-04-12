@@ -151,7 +151,7 @@ func getFormattedHealth(s string) string {
 
 func getContainerDomain(projectID, containerID string) string {
 	return fmt.Sprintf("%v.%v", color.Format(
-		color.Bold, "%v.%v", containerID, projectID), config.Context.RemoteAddress)
+		color.Bold, "%v-%v", containerID, projectID), config.Context.RemoteAddress)
 }
 
 func inArray(key string, haystack []string) bool {

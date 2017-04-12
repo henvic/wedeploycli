@@ -194,7 +194,7 @@ func printList(list []Logs) {
 	for _, log := range list {
 		iw := instancesWheel.Get(log.ContainerUID)
 		fd := color.Format(iw,
-			log.ContainerID+"."+
+			log.ContainerID+"-"+
 				log.ProjectID+"."+
 				config.Context.RemoteAddress+
 				"["+trim(log.ContainerUID, 7)+"]")

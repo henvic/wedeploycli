@@ -221,36 +221,39 @@ func parseWithHost(host, remoteFromFlag string) (*FlagsFromHost, error) {
 }
 
 func parseHost(host string) (*FlagsFromHost, error) {
-	var parseWithoutProject = strings.SplitN(host, ".", 2)
-	var parseWithProject = strings.SplitN(host, ".", 3)
-
-	switch len(parseWithProject) {
-	case 1:
-		return &FlagsFromHost{
-			container: parseWithProject[0],
-		}, nil
-	case 2:
-		return &FlagsFromHost{
-			project:   parseWithProject[1],
-			container: parseWithProject[0],
-		}, nil
-	}
-
-	// a host "a.b.c.d" might translate into either
-	// project: "a", container: "" (empty), remote address: "b.c.d"
 	var (
-		project     = parseWithProject[0]
-		container   = ""
-		remote, err = ParseRemoteAddress(parseWithoutProject[1])
+		parseDot    = strings.SplitN(host, ".", 2)
+		parseHyphen = strings.SplitN(parseDot[0], "-", 2)
+		project     string
+		container   string
 	)
 
-	// or project: "a", container: "b", remote address: "c.d"
-	if err != nil {
-		project = parseWithProject[1]
-		container = parseWithProject[0]
-		remote, err = ParseRemoteAddress(parseWithProject[2])
+	if len(parseDot) == 1 {
+		if len(parseHyphen) == 1 {
+			return &FlagsFromHost{
+				container: parseHyphen[0],
+			}, nil
+		}
+
+		return &FlagsFromHost{
+			container: parseHyphen[0],
+			project:   parseHyphen[1],
+		}, nil
 	}
 
+	switch len(parseHyphen) {
+	case 1:
+		project = parseHyphen[0]
+	default:
+		container = parseHyphen[0]
+		project = parseHyphen[1]
+	}
+
+	return parseHostWithRemote(project, container, host, parseDot[1])
+}
+
+func parseHostWithRemote(project, container, host, remoteHost string) (*FlagsFromHost, error) {
+	var remote, err = ParseRemoteAddress(remoteHost)
 	// notice that the logic above implies we MUST NOT
 	// have a immediate foo.bar if bar is already a remote address
 	// or it is going to have an ambiguity and always choose the longest host
