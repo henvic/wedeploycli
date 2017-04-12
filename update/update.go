@@ -18,8 +18,6 @@ import (
 	"github.com/wedeploy/cli/verbose"
 )
 
-const lucFormat = "Mon Jan _2 15:04:05 MST 2006"
-
 var cacheNonAvailabilityDays = 1
 
 // AppID is Equinox's app ID for this tool
@@ -58,7 +56,7 @@ func canVerify() bool {
 }
 
 func canVerifyAgain() bool {
-	var luc, luce = time.Parse(lucFormat, config.Global.LastUpdateCheck)
+	var luc, luce = time.Parse(time.RubyDate, config.Global.LastUpdateCheck)
 
 	if luce == nil && time.Since(luc).Hours() < float64(cacheNonAvailabilityDays*24) {
 		return false
@@ -163,7 +161,7 @@ func check(channel string) (*equinox.Response, error) {
 }
 
 func getCurrentTime() string {
-	return time.Now().Format(lucFormat)
+	return time.Now().Format(time.RubyDate)
 }
 
 func handleUpdateCheckError(err error) error {

@@ -40,8 +40,6 @@ var (
 const (
 	// MetricsSubmissionTimeout is the timeout for a metrics submission request
 	MetricsSubmissionTimeout = 45 * time.Second
-
-	unixTimeFormat = "Mon Jan _2 15:04:05 MST 2006"
 )
 
 // SetPID enhances real PID with prefix to distinguish between repeating PIDs
@@ -103,7 +101,7 @@ func RecOrFail(e Event) (saved bool, err error) {
 		Extra:   e.Extra,
 		PID:     pid,
 		SID:     config.Global.AnalyticsID,
-		Time:    time.Now().Format(unixTimeFormat),
+		Time:    time.Now().Format(time.RubyDate),
 		Scope:   string(config.Context.Scope),
 		Version: defaults.Version,
 		OS:      runtime.GOOS,
@@ -150,7 +148,7 @@ func tryAskEnable() (bool, error) {
 // Enable metrics
 func Enable() error {
 	config.Global.EnableAnalytics = true
-	config.Global.AnalyticsOption = time.Now().Format(unixTimeFormat)
+	config.Global.AnalyticsOption = time.Now().Format(time.RubyDate)
 
 	if config.Global.AnalyticsID == "" {
 		config.Global.AnalyticsID = newAnalyticsID()
@@ -162,7 +160,7 @@ func Enable() error {
 // Disable metrics
 func Disable() error {
 	config.Global.EnableAnalytics = false
-	config.Global.AnalyticsOption = time.Now().Format(unixTimeFormat)
+	config.Global.AnalyticsOption = time.Now().Format(time.RubyDate)
 	return config.Global.Save()
 }
 

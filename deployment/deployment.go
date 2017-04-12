@@ -19,10 +19,6 @@ import (
 	"github.com/wedeploy/cli/verbose"
 )
 
-const (
-	unixTimeFormat = "Mon Jan _2 15:04:05 MST 2006"
-)
-
 var (
 	outStream io.Writer = os.Stdout
 	errStream io.Writer = os.Stderr
@@ -138,7 +134,7 @@ func (d *Deploy) Commit() (commit string, err error) {
 		return "", errwrap.Wrapf("Trying to stage all files: {{err}}", err)
 	}
 
-	var msg = fmt.Sprintf("Deployment at %v", time.Now().Format(unixTimeFormat))
+	var msg = fmt.Sprintf("Deployment at %v", time.Now().Format(time.RubyDate))
 	var params = []string{"commit", "--allow-empty", "--message", msg}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)

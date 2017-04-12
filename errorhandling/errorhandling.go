@@ -19,8 +19,6 @@ import (
 	"github.com/wedeploy/cli/defaults"
 )
 
-const timeFormat = "Mon Jan _2 15:04:05 MST 2006"
-
 const panicTemplate = `An unrecoverable error has occurred.
 Please report this error at
 https://github.com/wedeploy/cli/issues/
@@ -145,7 +143,7 @@ func Info() {
 
 	fmt.Fprintln(os.Stderr, color.Format(color.FgRed, panicTemplate,
 		version,
-		time.Now().Format(timeFormat), systemInfo()))
+		time.Now().Format(time.RubyDate), systemInfo()))
 }
 
 func systemInfo() string {
