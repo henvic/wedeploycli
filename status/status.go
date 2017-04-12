@@ -8,12 +8,16 @@ import (
 
 // Status of the Backend
 type Status struct {
-	Version string `json:"version"`
+	Status string `json:"status"`
 }
 
 // Get current status
-func Get(ctx context.Context) (Status, error) {
-	var status Status
-	var err = apihelper.AuthGet(ctx, "/", &status)
-	return status, err
+func Get(ctx context.Context) (s Status, err error) {
+	var request = apihelper.URL(ctx, "/")
+	if err = apihelper.Validate(request, request.Get()); err != nil {
+		return s, err
+	}
+
+	err = apihelper.DecodeJSON(request, &s)
+	return s, err
 }

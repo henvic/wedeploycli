@@ -85,7 +85,7 @@ func (dm *DockerMachine) checkDockerDebug() (ok bool, err error) {
 	return ok, err
 }
 
-// Run executes the WeDeploy infraestruture
+// Run executes the WeDeploy infrastruture
 func (dm *DockerMachine) Run() (err error) {
 	dm.Context, dm.contextCancel = context.WithCancel(dm.Context)
 
@@ -153,8 +153,25 @@ To run the infrastructure with debug mode:
 	go dm.dockerWait()
 	go dm.waitReadyState()
 	<-dm.end
+	return dm.createUser()
+}
 
-	return nil
+func (dm *DockerMachine) createUser() (err error) {
+	_, err = user.Create(context.Background(), &user.User{
+		Email:    "no-reply@wedeploy.com",
+		Password: "cli-tool-password",
+		Name:     "CLI Tool",
+	})
+
+	if err != nil {
+		return errwrap.Wrapf("Failed to authenticate: {{err}}", err)
+	}
+
+	fmt.Fprintf(dm.livew, "WeDeploy is ready! %vs\n", dm.WaitLiveMsg.Duration())
+	dm.WaitLiveMsg.Stop()
+	_ = dm.livew.Flush()
+
+	return err
 }
 
 func (dm *DockerMachine) dockerWait() {
@@ -260,33 +277,16 @@ func (dm *DockerMachine) waitReadyState() {
 		verbose.Debug(fmt.Sprintf("Trying #%v", tries))
 		tries++
 		var ctx, cancel = context.WithTimeout(context.Background(), time.Second)
-
-		var _, err = status.Get(ctx)
+		var status, err = status.Get(ctx)
 		cancel()
 
-		if err != nil {
-			verbose.Debug("System not available:", err)
+		if err != nil || status.Status != "up" {
+			verbose.Debug("System not available:", status, err)
 			time.Sleep(100 * time.Millisecond)
 			continue
 		}
 
-	createUser:
-		_, err = user.Create(context.Background(), &user.User{
-			Email:    "no-reply@wedeploy.com",
-			Password: "cli-tool-password",
-			Name:     "CLI Tool",
-		})
-
-		if err != nil {
-			verbose.Debug(`Failed to authenticate:`, err)
-			goto createUser
-		}
-
-		fmt.Fprintf(dm.livew, "WeDeploy is ready! %vs\n", dm.WaitLiveMsg.Duration())
-		dm.WaitLiveMsg.Stop()
-		_ = dm.livew.Flush()
 		dm.end <- true
-		return
 	}
 }
 
