@@ -18,7 +18,7 @@ import (
 	"github.com/wedeploy/cli/verbose"
 )
 
-var cacheNonAvailabilityDays = 1
+var cacheNonAvailabilityHours = 12
 
 // AppID is Equinox's app ID for this tool
 var AppID = "app_g12mjgk2k9D"
@@ -58,7 +58,7 @@ func canVerify() bool {
 func canVerifyAgain() bool {
 	var luc, luce = time.Parse(time.RubyDate, config.Global.LastUpdateCheck)
 
-	if luce == nil && time.Since(luc).Hours() < float64(cacheNonAvailabilityDays*24) {
+	if luce == nil && time.Since(luc).Hours() < float64(cacheNonAvailabilityHours) {
 		return false
 	}
 
