@@ -60,8 +60,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 }
 
 const (
-	customDomainForProjectMessage = "Custom domain for project"
-	containerTypeMessage          = "Container type"
+	containerTypeMessage = "Container type"
 )
 
 func init() {
@@ -77,12 +76,6 @@ func init() {
 		"directory",
 		"",
 		"Overrides current working directory")
-
-	GenerateCmd.Flags().StringVar(
-		&projectCustomDomain,
-		"project-custom-domain",
-		"",
-		customDomainForProjectMessage)
 
 	GenerateCmd.Flags().StringVar(
 		&containerType,
@@ -643,18 +636,8 @@ Some tips:
 }
 
 func (r *runner) newProject() (err error) {
-	if r.askWithPrompt {
-		if projectCustomDomain, err = prompt.Prompt(customDomainForProjectMessage); err != nil {
-			return err
-		}
-	}
-
 	var p = &projects.Project{
 		ProjectID: r.project,
-	}
-
-	if projectCustomDomain != "" {
-		p.CustomDomains = []string{projectCustomDomain}
 	}
 
 	return r.saveProject(p)

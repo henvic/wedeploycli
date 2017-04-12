@@ -37,30 +37,33 @@ func (cs Containers) Get(id string) (c Container, err error) {
 
 // Container structure
 type Container struct {
-	ServiceID string            `json:"serviceId,omitempty"`
-	Health    string            `json:"health,omitempty"`
-	Type      string            `json:"type,omitempty"`
-	Hooks     *hooks.Hooks      `json:"hooks,omitempty"`
-	Env       map[string]string `json:"env,omitempty"`
-	Scale     int               `json:"scale,omitempty"`
-	HealthUID string            `json:"healthUid,omitempty"`
+	ServiceID     string            `json:"serviceId,omitempty"`
+	Health        string            `json:"health,omitempty"`
+	Type          string            `json:"type,omitempty"`
+	Hooks         *hooks.Hooks      `json:"hooks,omitempty"`
+	CustomDomains []string          `json:"customDomains,omitempty"`
+	Env           map[string]string `json:"env,omitempty"`
+	Scale         int               `json:"scale,omitempty"`
+	HealthUID     string            `json:"healthUid,omitempty"`
 }
 
 // ContainerPackage is the structure for container.json
 type ContainerPackage struct {
-	ID    string            `json:"id,omitempty"`
-	Type  string            `json:"type,omitempty"`
-	Hooks *hooks.Hooks      `json:"hooks,omitempty"`
-	Env   map[string]string `json:"env,omitempty"`
+	ID            string            `json:"id,omitempty"`
+	Type          string            `json:"type,omitempty"`
+	Hooks         *hooks.Hooks      `json:"hooks,omitempty"`
+	CustomDomains []string          `json:"customDomains,omitempty"`
+	Env           map[string]string `json:"env,omitempty"`
 }
 
 // Container returns a Container type created taking container.json as base
 func (cp ContainerPackage) Container() *Container {
 	return &Container{
-		ServiceID: cp.ID,
-		Type:      cp.Type,
-		Hooks:     cp.Hooks,
-		Env:       cp.Env,
+		ServiceID:     cp.ID,
+		Type:          cp.Type,
+		Hooks:         cp.Hooks,
+		CustomDomains: cp.CustomDomains,
+		Env:           cp.Env,
 	}
 }
 
@@ -228,6 +231,58 @@ func Get(ctx context.Context, projectID, containerID string) (c Container, err e
 		"/services/"+
 		url.QueryEscape(containerID), &c)
 	return c, err
+}
+
+// AddDomain in project
+func AddDomain(ctx context.Context, projectID, serviceID string, domain string) (err error) {
+	var service, perr = Get(context.Background(), projectID, serviceID)
+
+	if perr != nil {
+		return errwrap.Wrapf("Can not get current domains: {{err}}", perr)
+	}
+
+	var customDomains = service.CustomDomains
+	customDomains = append(customDomains, domain)
+
+	return updateDomains(ctx, projectID, serviceID, customDomains)
+}
+
+// RemoveDomain in project
+func RemoveDomain(ctx context.Context, projectID string, serviceID, domain string) (err error) {
+	var service, perr = Get(context.Background(), projectID, serviceID)
+
+	if perr != nil {
+		return errwrap.Wrapf("Can not get current domains: {{err}}", perr)
+	}
+
+	var customDomains = []string{}
+
+	for _, d := range service.CustomDomains {
+		if domain != d {
+			customDomains = append(customDomains, d)
+		}
+	}
+
+	return updateDomains(ctx, projectID, serviceID, customDomains)
+}
+
+type updateDomainsReq struct {
+	Value []string `json:"value"`
+}
+
+func updateDomains(ctx context.Context, projectID, serviceID string, domains []string) (err error) {
+	var req = apihelper.URL(ctx, "/projects",
+		url.QueryEscape(projectID),
+		"/services",
+		url.QueryEscape(serviceID),
+		"/custom-domains")
+
+	apihelper.Auth(req)
+
+	if err := apihelper.SetBody(req, updateDomainsReq{domains}); err != nil {
+		return errwrap.Wrapf("Can not set body for domain: {{err}}", err)
+	}
+	return apihelper.Validate(req, req.Put())
 }
 
 // EnvironmentVariable of a container

@@ -1,6 +1,5 @@
 {
     "id": "project-fine",
-    "description": "App example project",
-    "customDomains": ["app.liferay.io"]
+    "description": "App example project"
 }
 

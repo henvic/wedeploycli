@@ -9,7 +9,6 @@
     "githubToken": null,
     "maxContainers": 5,
     "githubRepository": null,
-    "customDomains": null,
     "githubHookId": null,
     "invitations": {},
     "containers": {},

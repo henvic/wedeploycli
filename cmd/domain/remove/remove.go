@@ -6,24 +6,26 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/containers"
 )
 
 // Cmd for removing a domain
 var Cmd = &cobra.Command{
 	Use:     "rm",
-	Short:   "Remove custom domain of a given project",
+	Short:   "Remove custom domain of a given service",
 	Example: "we domain rm example.com",
 	PreRunE: preRun,
 	RunE:    run,
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern:             cmdflagsfromhost.ProjectAndRemotePattern,
-	UseProjectDirectory: true,
+	Pattern:               cmdflagsfromhost.FullHostPattern,
+	UseProjectDirectory:   true,
+	UseContainerDirectory: true,
 	Requires: cmdflagsfromhost.Requires{
-		Auth:    true,
-		Project: true,
+		Auth:      true,
+		Project:   true,
+		Container: true,
 	},
 }
 
@@ -40,8 +42,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	return projects.RemoveDomain(
+	return containers.RemoveDomain(
 		context.Background(),
 		setupHost.Project(),
+		setupHost.Container(),
 		args[0])
 }

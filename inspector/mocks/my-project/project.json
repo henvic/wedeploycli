@@ -1,6 +1,3 @@
 {
-    "id": "my-project",
-    "customDomains": [
-        "example.net"
-    ]
+    "id": "my-project"
 }

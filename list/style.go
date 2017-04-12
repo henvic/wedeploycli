@@ -32,18 +32,7 @@ func (l *List) printProjects() {
 func (l *List) printProject(p projects.Project) {
 	var word string
 
-	switch {
-	// TestLink: custom domain should not be shown for local!!!
-	case len(p.CustomDomains) == 0 || config.Context.Remote == "":
-		word += fmt.Sprintf("%v", getProjectDomain(p.ProjectID))
-	case !l.Detailed:
-		word += fmt.Sprintf("%v ", p.CustomDomains[0])
-	default:
-		word += fmt.Sprintf("%v ", p.CustomDomains[0])
-		word += fmt.Sprintf("(%v)", getProjectDomain(p.ProjectID))
-	}
-
-	l.Printf(word)
+	l.Printf(p.ProjectID)
 	l.Printf(formatter.CondPad(word, 55))
 	l.Printf(getFormattedHealth(p.Health) + "\n")
 
@@ -158,11 +147,6 @@ func getFormattedHealth(s string) string {
 
 	p := pad(padding)
 	return color.Format(color.FgBlack, getHealthBackgroundColor(s), strings.ToUpper(p+s+p))
-}
-
-func getProjectDomain(projectID string) string {
-	return fmt.Sprintf("%v", color.Format(
-		color.Bold, "%v.%v", projectID, config.Context.RemoteAddress))
 }
 
 func getContainerDomain(projectID, containerID string) string {

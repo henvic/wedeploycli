@@ -4,14 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/containers"
@@ -20,24 +18,21 @@ import (
 
 // Project structure
 type Project struct {
-	ProjectID     string   `json:"projectId"`
-	CustomDomains []string `json:"customDomains,omitempty"`
-	Health        string   `json:"health,omitempty"`
-	Description   string   `json:"description,omitempty"`
-	HealthUID     string   `json:"healthUid,omitempty"`
+	ProjectID   string `json:"projectId"`
+	Health      string `json:"health,omitempty"`
+	Description string `json:"description,omitempty"`
+	HealthUID   string `json:"healthUid,omitempty"`
 }
 
 // ProjectPackage is the structure for project.json
 type ProjectPackage struct {
-	ID            string   `json:"id"`
-	CustomDomains []string `json:"customDomains,omitempty"`
+	ID string `json:"id"`
 }
 
 // Project returns a Project type created taking project.json as base
 func (pp ProjectPackage) Project() Project {
 	return Project{
-		ProjectID:     pp.ID,
-		CustomDomains: pp.CustomDomains,
+		ProjectID: pp.ID,
 	}
 }
 
@@ -61,16 +56,14 @@ var (
 )
 
 type createRequestBody struct {
-	ProjectID     string   `json:"projectId,omitempty"`
-	CustomDomains []string `json:"customDomains,omitempty"`
+	ProjectID string `json:"projectId,omitempty"`
 }
 
 // Create on the backend
 func Create(ctx context.Context, project Project) (p Project, err error) {
 	var req = apihelper.URL(ctx, "/projects")
 	var reqBody = createRequestBody{
-		ProjectID:     project.ProjectID,
-		CustomDomains: project.CustomDomains,
+		ProjectID: project.ProjectID,
 	}
 
 	apihelper.Auth(req)
@@ -87,16 +80,12 @@ func Create(ctx context.Context, project Project) (p Project, err error) {
 	return p, err
 }
 
-type updateRequestBody struct {
-	CustomDomains []string `json:"customDomains,omitempty"`
-}
+type updateRequestBody struct{}
 
 // Update project
 func Update(ctx context.Context, project Project) (p Project, err error) {
 	var req = apihelper.URL(ctx, "/projects", url.QueryEscape(project.ProjectID))
-	var reqBody = updateRequestBody{
-		CustomDomains: project.CustomDomains,
-	}
+	var reqBody = updateRequestBody{}
 
 	apihelper.Auth(req)
 
@@ -110,50 +99,6 @@ func Update(ctx context.Context, project Project) (p Project, err error) {
 
 	err = apihelper.DecodeJSON(req, &p)
 	return p, err
-}
-
-// AddDomain in project
-func AddDomain(ctx context.Context, projectID string, domain string) (err error) {
-	var project, perr = Get(context.Background(), projectID)
-
-	if perr != nil {
-		return errwrap.Wrapf("Can not get current domains: {{err}}", perr)
-	}
-
-	var customDomains = project.CustomDomains
-	customDomains = append(customDomains, domain)
-
-	return updateDomains(ctx, projectID, customDomains)
-}
-
-// RemoveDomain in project
-func RemoveDomain(ctx context.Context, projectID string, domain string) (err error) {
-	var project, perr = Get(context.Background(), projectID)
-
-	if perr != nil {
-		return errwrap.Wrapf("Can not get current domains: {{err}}", perr)
-	}
-
-	var customDomains = []string{}
-
-	for _, d := range project.CustomDomains {
-		if domain != d {
-			customDomains = append(customDomains, d)
-		}
-	}
-
-	return updateDomains(ctx, projectID, customDomains)
-}
-
-func updateDomains(ctx context.Context, projectID string, domains []string) (err error) {
-	var req = apihelper.URL(ctx, "/projects", url.QueryEscape(projectID), "/custom-domains")
-
-	apihelper.Auth(req)
-
-	if err := apihelper.SetBody(req, domains); err != nil {
-		return errwrap.Wrapf("Can not set body for domain: {{err}}", err)
-	}
-	return apihelper.Validate(req, req.Put())
 }
 
 // Get project by ID
@@ -188,41 +133,7 @@ func Read(path string) (*ProjectPackage, error) {
 		return nil, err
 	}
 
-	err = checkRemovedCustomDomain(path, content)
-
 	return &data, err
-}
-
-func checkRemovedCustomDomain(path string, content []byte) error {
-	var mapProject map[string]interface{}
-
-	if err := json.Unmarshal(content, &mapProject); err != nil {
-		// silently bail
-		return nil
-	}
-
-	var removedInterface, ok = mapProject["customDomain"]
-	var removed string
-
-	switch removedInterface.(type) {
-	case nil:
-		return nil
-	case string:
-		removed = removedInterface.(string)
-	default:
-		return fmt.Errorf("Invalid value for removed customDomain on %v", path)
-	}
-
-	if !ok || removed == "" {
-		return nil
-	}
-
-	return fmt.Errorf(`CustomDomain string support was removed in favor of CustomDomains []string
-Update your %v/project.json file to use:
-"customDomains": ["%v"] instead of "customDomain": "%v".`,
-		path,
-		removed,
-		removed)
 }
 
 func readValidate(pp ProjectPackage, err error) error {

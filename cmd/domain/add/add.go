@@ -6,24 +6,26 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/containers"
 )
 
 // Cmd for adding a domain
 var Cmd = &cobra.Command{
 	Use:     "add",
-	Short:   "Add custom domain to a given project",
+	Short:   "Add custom domain to a given service",
 	Example: "we domain add example.com",
 	PreRunE: preRun,
 	RunE:    run,
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern:             cmdflagsfromhost.ProjectAndRemotePattern,
-	UseProjectDirectory: true,
+	Pattern:               cmdflagsfromhost.FullHostPattern,
+	UseProjectDirectory:   true,
+	UseContainerDirectory: true,
 	Requires: cmdflagsfromhost.Requires{
-		Auth:    true,
-		Project: true,
+		Auth:      true,
+		Project:   true,
+		Container: true,
 	},
 }
 
@@ -40,8 +42,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	return projects.AddDomain(
+	return containers.AddDomain(
 		context.Background(),
 		setupHost.Project(),
+		setupHost.Container(),
 		args[0])
 }

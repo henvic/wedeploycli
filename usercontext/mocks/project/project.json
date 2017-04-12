@@ -1,7 +1,6 @@
 {
     "id": "app",
     "description": "App example project",
-    "customDomains": ["app.liferay.io"],
     "environment": {
         "TOKEN": "1234567890"
     },

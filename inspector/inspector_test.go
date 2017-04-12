@@ -44,7 +44,6 @@ func TestMain(m *testing.M) {
 func TestGetSpecContextOverview(t *testing.T) {
 	var got = GetSpec(projects.Project{})
 	var want = []string{`ID string`,
-		`CustomDomains []string`,
 		`Health string`,
 		`Description string`}
 
@@ -58,7 +57,9 @@ func TestPrintContainerSpec(t *testing.T) {
 	var want = []string{`ID string`,
 		`Type string`,
 		`Hooks *hooks.Hooks`,
-		`Env map[string]string`}
+		`Env map[string]string`,
+		`CustomDomains []string`,
+	}
 
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("Wanted spec %v, got %v instead", want, got)
