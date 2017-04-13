@@ -7,7 +7,10 @@ import (
 )
 
 const (
-	Up   = "up"
+	// Up status
+	Up = "up"
+
+	// Down status
 	Down = "down"
 )
 
