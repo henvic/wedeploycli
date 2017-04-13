@@ -7,12 +7,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"os/signal"
 	"runtime"
 	"strings"
-	"sync"
-	"syscall"
 	"time"
+
+	"sync"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/henvic/uilive"
@@ -35,14 +34,15 @@ type DockerMachine struct {
 	Container      string
 	Image          string
 	Flags          Flags
-	WaitLiveMsg    *waitlivemsg.WaitLiveMsg
+	waitLiveMsg    waitlivemsg.WaitLiveMsg
 	livew          *uilive.Writer
 	end            chan bool
 	started        chan bool
 	Context        context.Context
 	contextCancel  context.CancelFunc
-	selfStopSignal bool
 	tcpPorts       tcpPortsStruct
+	terminate      bool
+	terminateMutex sync.RWMutex
 }
 
 // Run runs the WeDeploy infrastructure
@@ -57,18 +57,6 @@ func Run(ctx context.Context, flags Flags) error {
 	}
 
 	return dm.Run()
-}
-
-// Stop stops the WeDeploy infrastructure
-func Stop() error {
-	if err := checkDockerAvailable(); err != nil {
-		return err
-	}
-
-	var dm = &DockerMachine{
-		Context: context.Background(),
-	}
-	return dm.Stop()
 }
 
 func (dm *DockerMachine) checkDockerDebug() (ok bool, err error) {
@@ -143,7 +131,7 @@ To run the infrastructure with debug mode:
 		}
 	}
 
-	dm.stopListener()
+	dm.beginStopListener()
 
 	if err = dm.start(); err != nil {
 		return err
@@ -153,11 +141,18 @@ To run the infrastructure with debug mode:
 	go dm.dockerWait()
 	go dm.waitReadyState()
 	<-dm.end
+
+	defer dm.terminateMutex.Unlock()
+	dm.terminateMutex.Lock()
+	if dm.terminate {
+		return nil
+	}
+
 	return dm.createUser()
 }
 
 func (dm *DockerMachine) createUser() (err error) {
-	_, err = user.Create(context.Background(), &user.User{
+	_, err = user.Create(dm.Context, &user.User{
 		Email:    "no-reply@wedeploy.com",
 		Password: "cli-tool-password",
 		Name:     "CLI Tool",
@@ -167,8 +162,8 @@ func (dm *DockerMachine) createUser() (err error) {
 		return errwrap.Wrapf("Failed to authenticate: {{err}}", err)
 	}
 
-	fmt.Fprintf(dm.livew, "WeDeploy is ready! %vs\n", dm.WaitLiveMsg.Duration())
-	dm.WaitLiveMsg.Stop()
+	dm.waitLiveMsg.Stop()
+	fmt.Fprintf(dm.livew, "WeDeploy is ready! %vs\n", dm.waitLiveMsg.Duration())
 	_ = dm.livew.Flush()
 
 	return err
@@ -179,41 +174,12 @@ func (dm *DockerMachine) dockerWait() {
 	exechelper.AddCommandToNewProcessGroup(docker)
 	_ = docker.Run()
 	dm.contextCancel()
-	fmt.Fprintf(os.Stderr, "Infrastructure terminated unexpectedly.\n")
+
+	if !dm.terminating() {
+		fmt.Fprintf(os.Stderr, "Infrastructure terminated unexpectedly.\n")
+	}
+
 	dm.end <- true
-}
-
-// Stop stops the machine
-func (dm *DockerMachine) Stop() error {
-	dm.livew = uilive.New()
-	stopMsg := waitlivemsg.WaitLiveMsg{
-		Msg:    "Stopping WeDeploy.",
-		Stream: dm.livew,
-	}
-
-	go stopMsg.Wait()
-
-	if err := dm.LoadDockerInfo(); err != nil {
-		return err
-	}
-
-	if dm.Container == "" {
-		verbose.Debug("No infrastructure container detected.")
-	}
-
-	if err := unlinkProjects(); err != nil &&
-		!strings.Contains(err.Error(), "local infrastructure is not running") {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-	}
-
-	if err := cleanupEnvironment(); err != nil {
-		return err
-	}
-
-	stopMsg.Stop()
-	fmt.Println("WeDeploy is shutdown.")
-
-	return nil
 }
 
 var servicesPorts = tcpPortsStruct{
@@ -265,34 +231,27 @@ func (dm *DockerMachine) checkPortsAreAvailable() error {
 func (dm *DockerMachine) waitReadyState() {
 	fmt.Println("WeDeploy is not running yet... Please wait.")
 	var tries = 1
-	dm.WaitLiveMsg = &waitlivemsg.WaitLiveMsg{
-		Msg:    "Starting WeDeploy",
-		Stream: dm.livew,
-	}
+	dm.waitLiveMsg.SetMessage("Starting WeDeploy")
+	dm.waitLiveMsg.SetStream(dm.livew)
 
-	go dm.WaitLiveMsg.Wait()
+	go dm.waitLiveMsg.Wait()
 
 	// Starting WeDeploy
-	for tries <= 100 || dm.WaitLiveMsg.Duration() < 300 {
+	for tries <= 100 || dm.waitLiveMsg.Duration() < 300 {
 		verbose.Debug(fmt.Sprintf("Trying #%v", tries))
 		tries++
-		var ctx, cancel = context.WithTimeout(context.Background(), time.Second)
-		var status, err = status.Get(ctx)
+		var ctx, cancel = context.WithTimeout(dm.Context, time.Second)
+		var s, err = status.Get(ctx)
 		cancel()
 
-		if err != nil || status.Status != "up" {
-			verbose.Debug("System not available:", status, err)
+		if err != nil || s.Status != status.Up {
+			verbose.Debug("System not available:", s, err)
 			time.Sleep(100 * time.Millisecond)
 			continue
 		}
 
 		dm.end <- true
 	}
-}
-
-func (dm *DockerMachine) endRun() {
-	fmt.Println("WeDeploy is shutdown.")
-	dm.end <- true
 }
 
 func (dm *DockerMachine) start() (err error) {
@@ -371,64 +330,6 @@ Download it from http://docker.com/`
 	}
 
 	return errors.New(m)
-}
-
-func (dm *DockerMachine) stopListener() {
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	go dm.stopEvent(sigs)
-}
-
-func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
-	<-sigs
-	verbose.Debug("WeDeploy stop event called. Waiting started signal.")
-	<-dm.started
-	verbose.Debug("Started end signal received.")
-
-	dm.WaitLiveMsg.Stop()
-	dm.selfStopSignal = true
-	fmt.Println("")
-
-	stopMsg := waitlivemsg.WaitLiveMsg{
-		Msg:    "Stopping WeDeploy.",
-		Stream: dm.livew,
-	}
-
-	go stopMsg.Wait()
-
-	var killListenerStarted sync.WaitGroup
-	killListenerStarted.Add(1)
-
-	go func() {
-		killListenerStarted.Done()
-		<-sigs
-		println("Cleaning up running infrastructure. Please wait.")
-		<-sigs
-		println("To kill this window (not recommended), try again in 60 seconds.")
-		var gracefulExitLoopTimeout = time.Now().Add(1 * time.Minute)
-	killLoop:
-		<-sigs
-
-		if time.Now().After(gracefulExitLoopTimeout) {
-			println("\n\"we run\" killed awkwardly. Use \"we run --shutdown-infra\" to kill ghosts.")
-			os.Exit(1)
-		}
-
-		goto killLoop
-	}()
-
-	killListenerStarted.Wait()
-
-	if err := unlinkProjects(); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-	}
-
-	if err := cleanupEnvironment(); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-	}
-
-	stopMsg.Stop()
-	dm.endRun()
 }
 
 func (dm *DockerMachine) checkDashboardIsOnOnHost() (string, error) {
