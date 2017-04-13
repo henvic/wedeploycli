@@ -50,6 +50,7 @@ type Container struct {
 // ContainerPackage is the structure for container.json
 type ContainerPackage struct {
 	ID            string            `json:"id,omitempty"`
+	Scale         int               `json:"scale,omitempty"`
 	Type          string            `json:"type,omitempty"`
 	Hooks         *hooks.Hooks      `json:"hooks,omitempty"`
 	CustomDomains []string          `json:"customDomains,omitempty"`
@@ -60,6 +61,7 @@ type ContainerPackage struct {
 func (cp ContainerPackage) Container() *Container {
 	return &Container{
 		ServiceID:     cp.ID,
+		Scale:         cp.Scale,
 		Type:          cp.Type,
 		Hooks:         cp.Hooks,
 		CustomDomains: cp.CustomDomains,
