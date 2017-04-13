@@ -9,7 +9,9 @@ import (
 	"github.com/wedeploy/cli/cmd/run/unlink"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/run"
+	"github.com/wedeploy/cli/status"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -52,9 +54,37 @@ func maybeShutdown() (err error) {
 	return run.Stop()
 }
 
+func checkInfrastructureIsUp() bool {
+	var try = 0
+
+checkStatus:
+	var s, err = status.Get(context.Background())
+
+	if err == nil && s.Status == status.Up {
+		return true
+	}
+
+	if try < 3 {
+		try++
+		goto checkStatus
+	}
+
+	return false
+}
+
 func maybeStartInfrastructure() error {
 	if skipInfra {
 		verbose.Debug("Skipping setting up infra-structure.")
+		return nil
+	}
+
+	if up := checkInfrastructureIsUp(); up {
+		verbose.Debug("Skipping setting up infra-structure: already running.")
+		if runFlags.Debug {
+			fmt.Fprintf(os.Stderr, "%v\n",
+				color.Format(color.BgRed, color.Bold,
+					" debug flag ignored: already running infrastructure "))
+		}
 		return nil
 	}
 
