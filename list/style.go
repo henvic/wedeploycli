@@ -102,6 +102,7 @@ func getType(t string) string {
 
 func getHealthForegroundColor(s string) color.Attribute {
 	var foregroundMap = map[string]color.Attribute{
+		"empty":   color.FgGreen,
 		"up":      color.FgHiGreen,
 		"warn":    color.FgHiYellow,
 		"down":    color.FgHiRed,
@@ -119,6 +120,7 @@ func getHealthForegroundColor(s string) color.Attribute {
 
 func getHealthBackgroundColor(s string) color.Attribute {
 	var backgroundMap = map[string]color.Attribute{
+		"empty":   color.BgGreen,
 		"up":      color.BgHiGreen,
 		"warn":    color.BgHiYellow,
 		"down":    color.BgHiRed,
