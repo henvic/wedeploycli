@@ -6,6 +6,11 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 )
 
+const (
+	Up   = "up"
+	Down = "down"
+)
+
 // Status of the Backend
 type Status struct {
 	Status string `json:"status"`
