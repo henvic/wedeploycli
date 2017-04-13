@@ -336,6 +336,10 @@ func Link(ctx context.Context, projectID string, container Container, source str
 		Source:    source,
 	}
 
+	if reqBody.Scale == 0 {
+		reqBody.Scale = 1
+	}
+
 	reqBody.Image, reqBody.Version, err = extractType(container)
 
 	if err != nil {
