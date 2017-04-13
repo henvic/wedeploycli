@@ -220,10 +220,23 @@ func parseWithHost(host, remoteFromFlag string) (*FlagsFromHost, error) {
 	return flagsFromHost, err
 }
 
+func splitHyphenedHostPart(s string) []string {
+	var p = strings.LastIndex(s, "-")
+
+	if p == -1 {
+		return []string{s}
+	}
+
+	return []string{
+		s[0:p],
+		s[p+1:],
+	}
+}
+
 func parseHost(host string) (*FlagsFromHost, error) {
 	var (
 		parseDot    = strings.SplitN(host, ".", 2)
-		parseHyphen = strings.SplitN(parseDot[0], "-", 2)
+		parseHyphen = splitHyphenedHostPart(parseDot[0])
 		project     string
 		container   string
 	)
