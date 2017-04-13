@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/run/unlink"
@@ -97,6 +99,7 @@ func maybeStartInfrastructure() error {
 			defaultImage)
 	}
 
+	defer signal.Ignore(syscall.SIGINT, syscall.SIGTERM)
 	return run.Run(context.Background(), runFlags)
 }
 
