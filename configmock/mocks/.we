@@ -3,7 +3,6 @@
 username          = admin
 password          = safe
 token             = safe123
-local             = false
 disable_colors    = false
 notify_updates    = true
 release_channel   = stable

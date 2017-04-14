@@ -27,7 +27,6 @@ func Setup() {
 	global.Username = "admin"
 	global.Password = "safe"
 	global.Token = "mock_token"
-	global.Local = false
 	global.NoColor = false
 	global.NotifyUpdates = true
 	global.ReleaseChannel = "stable"

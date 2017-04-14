@@ -24,7 +24,6 @@ type Config struct {
 	Username        string       `ini:"username"`
 	Password        string       `ini:"password"`
 	Token           string       `ini:"token"`
-	Local           bool         `ini:"local"`
 	LocalPort       int          `ini:"local_port"`
 	NoAutocomplete  bool         `ini:"disable_autocomplete_autoinstall"`
 	NoColor         bool         `ini:"disable_colors"`
@@ -145,7 +144,6 @@ func Setup() error {
 }
 
 func (c *Config) setDefaults() {
-	c.Local = true
 	c.LocalPort = 3002
 	c.NotifyUpdates = true
 	c.ReleaseChannel = "stable"

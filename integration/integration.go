@@ -216,7 +216,6 @@ func setupLoginHome() {
 	mock.LocalPort = getIntegrationServerPort()
 	mock.Username = "foo"
 	mock.Password = "bar"
-	mock.Local = false
 	mock.AnalyticsOption = "Sat Dec  5 01:23:45 PST 2016"
 	if err := mock.Save(); err != nil {
 		panic(err)

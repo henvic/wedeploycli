@@ -45,10 +45,6 @@ func TestSetupAndTeardown(t *testing.T) {
 		t.Errorf("Wrong password")
 	}
 
-	if Global.Local != true {
-		t.Errorf("Wrong local value")
-	}
-
 	if Global.NotifyUpdates != true {
 		t.Errorf("Wrong NotifyUpdate value")
 	}
@@ -177,7 +173,6 @@ func TestSave(t *testing.T) {
 username                         = other
 password                         = safe
 token                            = 
-local                            = true
 local_port                       = 3002
 disable_autocomplete_autoinstall = false
 disable_colors                   = false
@@ -248,7 +243,6 @@ func TestSaveAfterCreation(t *testing.T) {
 username                         = other
 password                         = 
 token                            = 
-local                            = true
 local_port                       = 3002
 disable_autocomplete_autoinstall = false
 disable_colors                   = false

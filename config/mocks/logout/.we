@@ -6,7 +6,6 @@ last_update_check =
 next_version      = 
 notify_updates    = true
 no_color          = false
-local             = false
 username          = 
 password          = 
 token             = 

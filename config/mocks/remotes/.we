@@ -1,7 +1,6 @@
 username        = fool
 password        = safe
 token           = 
-local           = true
 disable_colors  = false
 notify_updates  = true
 release_channel = stable
