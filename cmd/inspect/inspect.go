@@ -22,6 +22,7 @@ var InspectCmd = &cobra.Command{
 	Short: "Inspect environment info",
 	Long: `Use "we inspect" to peek inside a project or a container on your file system.
 <type> = context | project | container`,
+	Hidden:  true,
 	PreRunE: cmdargslen.ValidateCmd(0, 1),
 	RunE:    inspectRun,
 	Example: `we inspect context
