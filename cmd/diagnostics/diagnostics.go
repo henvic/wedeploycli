@@ -31,6 +31,7 @@ var DiagnosticsCmd = &cobra.Command{
 	Short:   "Diagnose & Feedback",
 	PreRunE: cmdargslen.ValidateCmd(0, 0),
 	RunE:    diagnosticsRun,
+	Hidden:  true,
 }
 
 func diagnosticsRun(cmd *cobra.Command, args []string) error {
