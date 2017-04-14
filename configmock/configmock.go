@@ -30,7 +30,7 @@ func Setup() {
 	global.NoColor = false
 	global.NotifyUpdates = true
 	global.ReleaseChannel = "stable"
-	global.LastUpdateCheck = "Sat Jun  4 04:47:03 BRT 2016"
+	global.LastUpdateCheck = "Sat Jun  4 04:47:03 -0300 2016"
 	config.Global = global
 
 	config.Context = &usercontext.Context{
