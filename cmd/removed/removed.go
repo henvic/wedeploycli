@@ -72,7 +72,7 @@ var unlinkCmd = &cobra.Command{
 	DisableFlagParsing: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Fprintln(os.Stderr,
-			"Use instead: "+color.Format(color.FgHiRed, "we run stop %v", strings.Join(args, " ")))
+			"Use instead: "+color.Format(color.FgHiRed, "we remove %v", strings.Join(args, " ")))
 		os.Exit(1)
 	},
 }

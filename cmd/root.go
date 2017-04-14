@@ -20,11 +20,11 @@ import (
 	"github.com/wedeploy/cli/cmd/logout"
 	"github.com/wedeploy/cli/cmd/metrics"
 	"github.com/wedeploy/cli/cmd/remote"
+	"github.com/wedeploy/cli/cmd/remove"
 	"github.com/wedeploy/cli/cmd/removed"
 	"github.com/wedeploy/cli/cmd/restart"
 	"github.com/wedeploy/cli/cmd/run"
 	"github.com/wedeploy/cli/cmd/start"
-	"github.com/wedeploy/cli/cmd/undeploy"
 	"github.com/wedeploy/cli/cmd/update"
 	"github.com/wedeploy/cli/cmd/version"
 	"github.com/wedeploy/cli/cmd/who"
@@ -57,9 +57,9 @@ var commands = []*cobra.Command{
 	cmddomain.DomainCmd,
 	cmdenv.EnvCmd,
 	cmdrestart.RestartCmd,
+	cmdremove.RemoveCmd,
 	cmdlogin.LoginCmd,
 	cmdlogout.LogoutCmd,
-	cmdundeploy.UndeployCmd,
 	cmdrun.RunCmd,
 	cmdautocomplete.AutocompleteCmd,
 	cmdgenerate.GenerateCmd,

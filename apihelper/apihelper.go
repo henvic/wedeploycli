@@ -21,6 +21,7 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 )
@@ -260,7 +261,7 @@ func handleURLError(ue *url.Error) error {
 	switch {
 	case verbose.Enabled:
 		s += "\n{{err}}"
-	case config.Context.Remote == "":
+	case config.Context.Remote == defaults.LocalRemote:
 		s += " local infrastructure is not running\n"
 		s += `tip: try running "we run" and then run this command again`
 	default:

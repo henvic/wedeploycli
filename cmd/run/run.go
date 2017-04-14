@@ -8,7 +8,6 @@ import (
 	"syscall"
 
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmd/run/unlink"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/color"
@@ -42,7 +41,6 @@ var RunCmd = &cobra.Command{
 	PreRunE: preRun,
 	RunE:    runRun,
 	Example: `  we run
-  we run stop
   we run --project chat
   we run --start-infra to startup only the local infrastructure
   we run --shutdown-infra to shutdown the local infrastructure`,
@@ -164,7 +162,6 @@ func init() {
 	}
 
 	loadCommandInit()
-	RunCmd.AddCommand(cmdunlink.StopCmd)
 }
 
 func loadCommandInit() {

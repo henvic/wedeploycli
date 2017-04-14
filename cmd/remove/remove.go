@@ -1,4 +1,4 @@
-package cmdunlink
+package cmdremove
 
 import (
 	"context"
@@ -19,48 +19,49 @@ import (
 )
 
 var (
-	quiet        bool
-	stopUnlinker = &unlinker{}
+	quiet bool
 )
 
-// StopCmd is the stop command to unlink a project or container
-var StopCmd = &cobra.Command{
-	Use:     "stop",
-	Short:   "Stop a project or container",
-	PreRunE: stopUnlinker.PreRun,
-	RunE:    stopUnlinker.Run,
-	Example: `  we run stop
-  we run stop --project chat
-  we run stop --project chat --container data
-  we run stop --container data`,
+// RemoveCmd is the remove command to undeploy a project or container
+var RemoveCmd = &cobra.Command{
+	Use:     "remove",
+	Short:   "Remove a project or container",
+	PreRunE: preRun,
+	RunE:    run,
+	Example: `  we run remove
+  we run remove --project chat
+  we run remove --project chat --container data
+  we run remove --container data`,
 }
 
-type unlinker struct {
-	project   string
-	container string
-	list      *list.List
-	end       bool
-	endMutex  sync.Mutex
-	err       chan error
+type undeployer struct {
+	context       context.Context
+	project       string
+	container     string
+	remoteAddress string
+	list          *list.List
+	end           bool
+	endMutex      sync.Mutex
+	err           chan error
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern:               cmdflagsfromhost.ProjectAndContainerPattern,
+	Pattern:               cmdflagsfromhost.FullHostPattern,
 	UseProjectDirectory:   true,
 	UseContainerDirectory: true,
 	Requires: cmdflagsfromhost.Requires{
 		Project: true,
-		Local:   true,
+		Auth:    true,
 	},
 }
 
 func init() {
-	StopCmd.Flags().BoolVarP(&quiet, "quiet", "q", false,
-		"Unlink without watching status")
-	setupHost.Init(StopCmd)
+	RemoveCmd.Flags().BoolVarP(&quiet, "quiet", "q", false,
+		"undeploy without watching status")
+	setupHost.Init(RemoveCmd)
 }
 
-func (u *unlinker) PreRun(cmd *cobra.Command, args []string) error {
+func preRun(cmd *cobra.Command, args []string) error {
 	if len(args) != 0 {
 		return errors.New("Invalid number of arguments.")
 	}
@@ -72,38 +73,34 @@ func (u *unlinker) PreRun(cmd *cobra.Command, args []string) error {
 	return setupHost.Process()
 }
 
-func (u *unlinker) Run(cmd *cobra.Command, args []string) error {
-	var project = setupHost.Project()
-	var container = setupHost.Container()
-
-	u.project = project
-	u.container = container
-	u.err = make(chan error, 1)
+func run(cmd *cobra.Command, args []string) error {
+	var u = undeployer{
+		context:       context.Background(),
+		project:       setupHost.Project(),
+		container:     setupHost.Container(),
+		remoteAddress: setupHost.RemoteAddress(),
+		err:           make(chan error, 1),
+	}
 
 	if err := u.checkProjectOrContainerExists(); err != nil {
 		return err
 	}
 
-	if quiet {
-		u.do()
-		return <-u.err
-	}
-
-	var queue sync.WaitGroup
-	queue.Add(1)
 	go u.do()
-	go u.watch(queue.Done)
-	queue.Wait()
+
+	if !quiet {
+		u.watch()
+	}
 
 	return <-u.err
 }
 
-func (u *unlinker) do() {
+func (u *undeployer) do() {
 	switch u.container {
 	case "":
-		u.err <- projects.Unlink(context.Background(), u.project)
+		u.err <- projects.Unlink(u.context, u.project)
 	default:
-		u.err <- containers.Unlink(context.Background(), u.project, u.container)
+		u.err <- containers.Unlink(u.context, u.project, u.container)
 	}
 
 	u.endMutex.Lock()
@@ -111,8 +108,8 @@ func (u *unlinker) do() {
 	u.endMutex.Unlock()
 }
 
-func (u *unlinker) getAddress() string {
-	var address = fmt.Sprintf("%v.wedeploy.me", u.project)
+func (u *undeployer) getAddress() string {
+	var address = fmt.Sprintf("%v.%v", u.project, u.remoteAddress)
 
 	if u.container != "" {
 		address = u.container + "." + address
@@ -121,7 +118,7 @@ func (u *unlinker) getAddress() string {
 	return address
 }
 
-func (u *unlinker) isDone() bool {
+func (u *undeployer) isDone() bool {
 	u.endMutex.Lock()
 	var end = u.end
 	u.endMutex.Unlock()
@@ -135,7 +132,7 @@ func (u *unlinker) isDone() bool {
 	}
 
 	var p = u.list.Projects[0]
-	var c, e = p.Services(context.Background())
+	var c, e = p.Services(u.context)
 
 	if e != nil {
 		var eaf, ok = e.(*apihelper.APIFault)
@@ -146,7 +143,7 @@ func (u *unlinker) isDone() bool {
 	return u.container != "" && ec != nil
 }
 
-func (u *unlinker) handleWatchRequestError(err error) string {
+func (u *undeployer) handleWatchRequestError(err error) string {
 	var ae, ok = err.(*apihelper.APIFault)
 
 	if !ok || !ae.Has("projectNotFound") {
@@ -156,7 +153,17 @@ func (u *unlinker) handleWatchRequestError(err error) string {
 	return u.getAddress() + " is shutdown\n"
 }
 
-func (u *unlinker) watch(done func()) {
+func (u *undeployer) watch() {
+	var queue sync.WaitGroup
+	queue.Add(1)
+	go func() {
+		u.watchRoutine()
+		queue.Done()
+	}()
+	queue.Wait()
+}
+
+func (u *undeployer) watchRoutine() {
 	var filter = list.Filter{}
 
 	filter.Project = u.project
@@ -164,19 +171,18 @@ func (u *unlinker) watch(done func()) {
 	if u.container != "" {
 		filter.Containers = []string{u.container}
 	}
+
 	u.list = list.New(filter)
 	u.list.HandleRequestError = u.handleWatchRequestError
 	u.list.StopCondition = u.isDone
 	u.list.Start()
-	done()
 }
 
-func (u *unlinker) checkProjectOrContainerExists() error {
-	var err error
+func (u *undeployer) checkProjectOrContainerExists() (err error) {
 	if u.container == "" {
-		_, err = projects.Get(context.Background(), u.project)
+		_, err = projects.Get(u.context, u.project)
 	} else {
-		_, err = containers.Get(context.Background(), u.project, u.container)
+		_, err = containers.Get(u.context, u.project, u.container)
 	}
 
 	return err
