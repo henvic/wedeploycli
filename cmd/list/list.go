@@ -21,7 +21,7 @@ we list --container data
 we list --project chat --container data
 we list --url data-chat.wedeploy.me
 we list --url data-chat.wedeploy.io`,
-	Short:   "List projects and containers running",
+	Short:   "List deployments",
 	PreRunE: preRun,
 	Run:     listRun,
 }

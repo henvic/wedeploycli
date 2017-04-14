@@ -15,8 +15,8 @@ import (
 var DomainCmd = &cobra.Command{
 	Use:     "domain",
 	Aliases: []string{"set"},
-	Short:   "Configure custom domains for services",
-	Long: `Configure custom domains for services
+	Short:   "Manages your domain names",
+	Long: `Manages your domain names
 
 use "we domain" to list domains on the infrastructure.
 
