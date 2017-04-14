@@ -37,12 +37,9 @@ import (
 
 // RootCmd is the main command for the CLI
 var RootCmd = &cobra.Command{
-	Use:   "we",
-	Short: "WeDeploy CLI tool",
-	Long: `WeDeploy Command Line Interface
-Version ` + defaults.Version + `
-Copyright 2016 Liferay, Inc.
-http://wedeploy.com`,
+	Use:               "we",
+	Short:             "WeDeploy CLI tool",
+	Long:              `● we [command] [flags]`,
 	PersistentPreRunE: persistentPreRun,
 	Run:               run,
 	SilenceErrors:     true,
@@ -54,21 +51,21 @@ var (
 )
 
 var commands = []*cobra.Command{
-	cmdautocomplete.AutocompleteCmd,
-	cmdlogin.LoginCmd,
-	cmdlogout.LogoutCmd,
-	cmdremote.RemoteCmd,
-	cmdgenerate.GenerateCmd,
 	cmddeploy.DeployCmd,
-	cmdundeploy.UndeployCmd,
-	cmdrun.RunCmd,
-	cmdbuild.BuildCmd,
-	cmddomain.DomainCmd,
-	cmdenv.EnvCmd,
 	cmdlist.ListCmd,
 	cmdlog.LogCmd,
-	cmdstart.StartCmd,
+	cmddomain.DomainCmd,
+	cmdenv.EnvCmd,
 	cmdrestart.RestartCmd,
+	cmdlogin.LoginCmd,
+	cmdlogout.LogoutCmd,
+	cmdundeploy.UndeployCmd,
+	cmdrun.RunCmd,
+	cmdautocomplete.AutocompleteCmd,
+	cmdgenerate.GenerateCmd,
+	cmdbuild.BuildCmd,
+	cmdstart.StartCmd,
+	cmdremote.RemoteCmd,
 	cmdmetrics.MetricsCmd,
 	cmdupdate.UpdateCmd,
 	cmdversion.VersionCmd,
