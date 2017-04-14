@@ -182,56 +182,6 @@ func TestLinkToProject(t *testing.T) {
 	e.Assert(t, cmd)
 }
 
-func TestLinkToProjectErrorProjectContextAndProjectFlag(t *testing.T) {
-	defer Teardown()
-	Setup()
-
-	var cmd = &Command{
-		Args: []string{"run", "--skip-infra", "--project", "bar", "--no-color"},
-		Env: []string{
-			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
-		Dir: "mocks/home/bucket/project",
-	}
-
-	cmd.Run()
-
-	if cmd.ExitCode != 1 {
-		t.Errorf("Unexpected exit code: %v", cmd.ExitCode)
-	}
-
-	var want = "Can not use \"we run --project\" when inside a project\n"
-	var got = cmd.Stderr.String()
-
-	if want != got {
-		t.Errorf("Expected stderr to be %v, got %v instead", want, got)
-	}
-}
-
-func TestLinkToProjectOnContainerErrorProjectContextAndProjectFlag(t *testing.T) {
-	defer Teardown()
-	Setup()
-
-	var cmd = &Command{
-		Args: []string{"run", "--skip-infra", "--project", "bar", "--no-color"},
-		Env: []string{
-			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
-		Dir: "mocks/home/bucket/project/container",
-	}
-
-	cmd.Run()
-
-	if cmd.ExitCode != 1 {
-		t.Errorf("Unexpected exit code: %v", cmd.ExitCode)
-	}
-
-	var want = "Can not use \"we run --project\" when inside a project\n"
-	var got = cmd.Stderr.String()
-
-	if want != got {
-		t.Errorf("Expected stderr to be %v, got %v instead", want, got)
-	}
-}
-
 func TestLinkToProjectServerFailure(t *testing.T) {
 	if !checkDockerIsUp() {
 		t.Skipf("Docker is not up")

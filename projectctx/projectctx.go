@@ -2,21 +2,18 @@ package projectctx
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"os"
 
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/projects"
 )
 
 // CreateOrUpdate project using context or passed projectID
-func CreateOrUpdate(projectIDIfNoCtx string) (projectRec projects.Project, err error) {
-	var project projects.Project
-	switch config.Context.ProjectRoot {
-	case "":
-		project.ProjectID = projectIDIfNoCtx
-	default:
+func CreateOrUpdate(projectIDOverride string) (projectRec projects.Project, err error) {
+	var project = projects.Project{
+		ProjectID: projectIDOverride,
+	}
+
+	if config.Context.ProjectRoot != "" && projectIDOverride == "" {
 		var pp, err = projects.Read(config.Context.ProjectRoot)
 
 		if err != nil {
@@ -24,18 +21,8 @@ func CreateOrUpdate(projectIDIfNoCtx string) (projectRec projects.Project, err e
 		}
 
 		project = pp.Project()
-
-		if project.ProjectID != projectIDIfNoCtx {
-			return projectRec, errors.New("Project ID received does not match context's Project ID")
-		}
 	}
 
-	var created bool
-	projectRec, created, err = projects.CreateOrUpdate(context.Background(), project)
-
-	if created {
-		fmt.Fprintf(os.Stdout, "New project %v created.\n", projectRec.ProjectID)
-	}
-
+	projectRec, _, err = projects.CreateOrUpdate(context.Background(), project)
 	return projectRec, err
 }

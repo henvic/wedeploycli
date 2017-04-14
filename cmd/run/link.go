@@ -2,7 +2,6 @@ package cmdrun
 
 import (
 	"context"
-	"errors"
 	"os"
 	"path/filepath"
 
@@ -17,7 +16,6 @@ import (
 	"github.com/wedeploy/cli/projectctx"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/pullimages"
-	"github.com/wedeploy/cli/usercontext"
 	"github.com/wedeploy/cli/wdircontext"
 )
 
@@ -112,11 +110,6 @@ func (l *linker) getContainersDirectoriesFromScope() ([]string, error) {
 
 func (l *linker) getProject() (projectID string, err error) {
 	projectID = setupHost.Project()
-
-	if (config.Context.Scope == usercontext.ProjectScope ||
-		config.Context.Scope == usercontext.ContainerScope) && projectID != "" {
-		return "", errors.New(`Can not use "we run --project" when inside a project`)
-	}
 
 	if projectID != "" {
 		return projectID, nil
