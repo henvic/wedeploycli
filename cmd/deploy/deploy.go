@@ -18,6 +18,7 @@ import (
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/deployment"
 	"github.com/wedeploy/cli/inspector"
 	"github.com/wedeploy/cli/projectctx"
@@ -53,7 +54,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if setupHost.Remote() == "" {
+	if setupHost.Remote() == defaults.LocalRemote {
 		return errors.New(`You can not deploy in the local infrastructure. Use "we run" instead`)
 	}
 
@@ -179,7 +180,7 @@ func getProjectID() (string, error) {
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	if setupHost.Remote() == "" {
+	if setupHost.Remote() == defaults.LocalRemote {
 		return errors.New(`You can not deploy in the local infrastructure. Use "we run" instead`)
 	}
 

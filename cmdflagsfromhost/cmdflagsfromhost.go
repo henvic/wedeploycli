@@ -18,7 +18,7 @@ import (
 
 // SetLocal the context
 func SetLocal() {
-	config.Context.Remote = ""
+	config.Context.Remote = "local"
 	config.Context.Username = "no-reply@wedeploy.com"
 	config.Context.Password = "cli-tool-password"
 	config.Context.Token = ""
@@ -187,7 +187,7 @@ func (s *SetupHost) addURLFlag(cmd *cobra.Command) {
 func (s *SetupHost) addRemoteFlag(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(
 		&s.remote,
-		"remote", "r", "wedeploy", "Remote to use")
+		"remote", "r", "default", "Remote to use")
 }
 
 func (s *SetupHost) addProjectFlag(cmd *cobra.Command) {
@@ -247,11 +247,11 @@ func (s *SetupHost) loadValues() (err error) {
 	var project = s.parsed.Project()
 	var remote = s.parsed.Remote()
 
-	if remote == defaults.LocalRemote {
-		remote = ""
+	if remote == "" {
+		remote = defaults.LocalRemote
 	}
 
-	if s.Pattern&RemotePattern == 0 && remote != "" {
+	if s.Pattern&RemotePattern == 0 && remote != defaults.LocalRemote {
 		return errors.New("Remote is not allowed for this command")
 	}
 
@@ -289,11 +289,11 @@ func (s *SetupHost) loadValues() (err error) {
 		return errors.New("Project is required")
 	}
 
-	if s.Requires.Remote && remote == "" {
+	if s.Requires.Remote && remote == defaults.LocalRemote {
 		return errors.New("Remote is required")
 	}
 
-	if s.Requires.Local && remote != "" {
+	if s.Requires.Local && remote != defaults.LocalRemote {
 		return errors.New("Remote parameter is not allowed for this command")
 	}
 
@@ -309,7 +309,7 @@ func (s *SetupHost) verifyCmdReqAuth() error {
 		return nil
 	}
 
-	if s.Remote() == "" {
+	if s.Remote() == defaults.LocalRemote {
 		return nil
 	}
 
@@ -325,7 +325,7 @@ func (s *SetupHost) verifyCmdReqAuth() error {
 }
 
 func (s *SetupHost) setEndpoint() error {
-	if s.Remote() == "" {
+	if s.Remote() == defaults.LocalRemote {
 		SetLocal()
 		return nil
 	}

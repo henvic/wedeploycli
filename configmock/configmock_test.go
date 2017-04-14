@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/defaults"
 )
 
 func TestConfigMock(t *testing.T) {
@@ -31,7 +32,7 @@ func TestConfigMock(t *testing.T) {
 func TestConfigMockDefaultContext(t *testing.T) {
 	Setup()
 
-	if config.Context.Remote != "" {
+	if config.Context.Remote != defaults.LocalRemote {
 		t.Errorf("Unexpected remote for default [local] context")
 	}
 
