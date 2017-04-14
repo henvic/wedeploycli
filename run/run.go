@@ -30,19 +30,25 @@ var DockerNetwork = "wedeploy"
 var bin = "docker"
 var noSuchNetwork = "No such network:"
 
-type tcpPortsStruct []int
+type tcpPortsMap []TCPPort
 
-func (t tcpPortsStruct) getAvailability() (all bool, notAvailable []int) {
+// TCPPort is used to control the exposed ports
+type TCPPort struct {
+	Internal int
+	Expose   int
+}
+
+func (t tcpPortsMap) getAvailability() (all bool, notAvailable []int) {
 	all = true
 	for _, k := range t {
 		// there is a small chance of a port being in use by a process, but not
 		// responding. We ignore this risk here for simplicity.
-		var con, err = net.Dial("tcp", fmt.Sprintf(":%v", k))
+		var con, err = net.Dial("tcp", fmt.Sprintf(":%v", k.Expose))
 
 		if con != nil {
 			_ = con.Close()
 			all = false
-			notAvailable = append(notAvailable, k)
+			notAvailable = append(notAvailable, k.Expose)
 			continue
 		}
 
@@ -59,10 +65,10 @@ func (t tcpPortsStruct) getAvailability() (all bool, notAvailable []int) {
 	return all, notAvailable
 }
 
-func (t tcpPortsStruct) expose() []string {
+func (t tcpPortsMap) expose() []string {
 	var ports []string
 	for _, k := range t {
-		ports = append(ports, "--publish", fmt.Sprintf("%v:%v", k, k))
+		ports = append(ports, "--publish", fmt.Sprintf("%v:%v", k.Expose, k.Internal))
 	}
 
 	return ports

@@ -31,11 +31,25 @@ func TestExistsDependency(t *testing.T) {
 }
 
 func TestTCPPortsExpose(t *testing.T) {
-	var tcpPorts = tcpPortsStruct{80, 8000, 9000}
+	var tcpPorts = tcpPortsMap{
+		TCPPort{
+			Internal: 80,
+			Expose:   80,
+		},
+		TCPPort{
+			Internal: 8000,
+			Expose:   8000,
+		},
+		TCPPort{
+			Internal: 9001,
+			Expose:   9002,
+		},
+	}
+
 	var de = []string{
-		"-p", "80:80",
-		"-p", "8000:8000",
-		"-p", "9000:9000",
+		"--publish", "80:80",
+		"--publish", "8000:8000",
+		"--publish", "9002:9001",
 	}
 
 	if !reflect.DeepEqual(tcpPorts.expose(), de) {
@@ -44,7 +58,7 @@ func TestTCPPortsExpose(t *testing.T) {
 }
 
 func TestTCPPortsAvailableNone(t *testing.T) {
-	var tcpPorts = tcpPortsStruct{}
+	var tcpPorts = tcpPortsMap{}
 
 	var all, notAvailable = tcpPorts.getAvailability()
 
@@ -71,7 +85,12 @@ func TestTCPPortsAvailableNotFree(t *testing.T) {
 		panic(ea)
 	}
 
-	var tcpPorts = tcpPortsStruct{port}
+	var tcpPorts = tcpPortsMap{
+		TCPPort{
+			Internal: port,
+			Expose:   port,
+		},
+	}
 
 	var all, notAvailable = tcpPorts.getAvailability()
 
@@ -108,7 +127,12 @@ func TestTCPPortsAvailableFree(t *testing.T) {
 		panic(err)
 	}
 
-	var tcpPorts = tcpPortsStruct{port}
+	var tcpPorts = tcpPortsMap{
+		TCPPort{
+			Internal: port,
+			Expose:   port,
+		},
+	}
 
 	var all, notAvailable = tcpPorts.getAvailability()
 

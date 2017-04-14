@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/henvic/uilive"
 	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/exechelper"
 	"github.com/wedeploy/cli/status"
 	"github.com/wedeploy/cli/user"
@@ -40,7 +41,7 @@ type DockerMachine struct {
 	started        chan bool
 	Context        context.Context
 	contextCancel  context.CancelFunc
-	tcpPorts       tcpPortsStruct
+	tcpPorts       tcpPortsMap
 	terminate      bool
 	terminateMutex sync.RWMutex
 }
@@ -182,27 +183,63 @@ func (dm *DockerMachine) dockerWait() {
 	dm.end <- true
 }
 
-var servicesPorts = tcpPortsStruct{
-	80,
-	3002,
+var servicesPorts = tcpPortsMap{
+	TCPPort{
+		Internal: 80,
+		Expose:   80,
+	},
+	TCPPort{
+		Internal: 5001,
+		Expose:   5001,
+	},
+	TCPPort{
+		Internal: 5005,
+		Expose:   5005,
+	},
+	TCPPort{
+		Internal: 8500,
+		Expose:   8500,
+	},
+	TCPPort{
+		Internal: 9200,
+		Expose:   9200,
+	},
 
-	5001,
-	5005,
-	8500,
-	9200,
-
-	6379,
-	8001,
-	8080,
-	8081,
-	8082,
-	24224,
+	TCPPort{
+		Internal: 6379,
+		Expose:   6379,
+	},
+	TCPPort{
+		Internal: 8001,
+		Expose:   8001,
+	},
+	TCPPort{
+		Internal: 8080,
+		Expose:   8080,
+	},
+	TCPPort{
+		Internal: 8081,
+		Expose:   8081,
+	},
+	TCPPort{
+		Internal: 8082,
+		Expose:   8082,
+	},
+	TCPPort{
+		Internal: 24224,
+		Expose:   24224,
+	},
 }
 
-var debugPorts = tcpPortsStruct{}
+var debugPorts = tcpPortsMap{}
 
 func (dm *DockerMachine) setupPorts() {
 	dm.tcpPorts = servicesPorts
+
+	dm.tcpPorts = append(dm.tcpPorts, TCPPort{
+		Internal: 3002,
+		Expose:   config.Global.LocalPort,
+	})
 
 	if dm.Flags.Debug {
 		dm.tcpPorts = append(dm.tcpPorts, debugPorts...)

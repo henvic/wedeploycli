@@ -39,4 +39,7 @@ var (
 
 	// LocalRemote is the local infrastructure remote name
 	LocalRemote = "local"
+
+	// LocalPort is the default port used to expose the infrastructure locally
+	LocalPort = 3000
 )
