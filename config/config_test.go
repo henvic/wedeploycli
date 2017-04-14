@@ -173,7 +173,7 @@ func TestSave(t *testing.T) {
 username                         = other
 password                         = safe
 token                            = 
-local_port                       = 3002
+local_http_port                  = 80
 disable_autocomplete_autoinstall = false
 disable_colors                   = false
 notify_updates                   = true
@@ -243,7 +243,7 @@ func TestSaveAfterCreation(t *testing.T) {
 username                         = other
 password                         = 
 token                            = 
-local_port                       = 3002
+local_http_port                  = 80
 disable_autocomplete_autoinstall = false
 disable_colors                   = false
 notify_updates                   = true
@@ -325,7 +325,7 @@ notify_updates                   = true
 release_channel                  = stable
 # commented vars remains even when empty
 next_version                     = 
-local_port                       = 3002
+local_http_port                  = 80
 disable_autocomplete_autoinstall = false
 enable_analytics                 = false
 analytics_option_date            = 

@@ -185,10 +185,6 @@ func (dm *DockerMachine) dockerWait() {
 
 var servicesPorts = tcpPortsMap{
 	TCPPort{
-		Internal: 80,
-		Expose:   80,
-	},
-	TCPPort{
 		Internal: 5001,
 		Expose:   5001,
 	},
@@ -231,14 +227,19 @@ var servicesPorts = tcpPortsMap{
 	},
 }
 
-var debugPorts = tcpPortsMap{}
+var debugPorts = tcpPortsMap{
+	TCPPort{
+		Internal: 3002,
+		Expose:   3002,
+	},
+}
 
 func (dm *DockerMachine) setupPorts() {
 	dm.tcpPorts = servicesPorts
 
 	dm.tcpPorts = append(dm.tcpPorts, TCPPort{
-		Internal: 3002,
-		Expose:   config.Global.LocalPort,
+		Internal: 80,
+		Expose:   config.Global.LocalHTTPPort,
 	})
 
 	if dm.Flags.Debug {

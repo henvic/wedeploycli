@@ -24,7 +24,7 @@ type Config struct {
 	Username        string       `ini:"username"`
 	Password        string       `ini:"password"`
 	Token           string       `ini:"token"`
-	LocalPort       int          `ini:"local_port"`
+	LocalHTTPPort   int          `ini:"local_http_port"`
 	NoAutocomplete  bool         `ini:"disable_autocomplete_autoinstall"`
 	NoColor         bool         `ini:"disable_colors"`
 	NotifyUpdates   bool         `ini:"notify_updates"`
@@ -144,7 +144,7 @@ func Setup() error {
 }
 
 func (c *Config) setDefaults() {
-	c.LocalPort = defaults.LocalPort
+	c.LocalHTTPPort = defaults.LocalHTTPPort
 	c.NotifyUpdates = true
 	c.ReleaseChannel = "stable"
 
@@ -311,7 +311,14 @@ func setupGlobal() error {
 		return err
 	}
 
-	Global.LocalEndpoint = fmt.Sprintf("http://localhost:%d/", Global.LocalPort)
+	var endpoint = "http://api.wedeploy.me"
+
+	if Global.LocalHTTPPort != 80 {
+		endpoint += fmt.Sprintf(":%d", Global.LocalHTTPPort)
+	}
+
+	endpoint += "/"
+	Global.LocalEndpoint = endpoint
 	return nil
 }
 
