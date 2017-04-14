@@ -101,12 +101,6 @@ func (l *List) finish() {
 	if l.Teardown != nil {
 		l.Teardown(l)
 	}
-
-	l.killLock.Lock()
-	if l.killed {
-		fmt.Fprintf(os.Stdout, "\n")
-	}
-	l.killLock.Unlock()
 }
 
 func (l *List) watch() {
