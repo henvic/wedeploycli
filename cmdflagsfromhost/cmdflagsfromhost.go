@@ -47,7 +47,6 @@ type SetupHost struct {
 	project                         string
 	container                       string
 	remote                          string
-	remoteAddress                   string
 	cmd                             *cobra.Command
 	parsed                          *flagsfromhost.FlagsFromHost
 }
@@ -88,7 +87,7 @@ func (s *SetupHost) Remote() string {
 
 // RemoteAddress of the parsed flags or host
 func (s *SetupHost) RemoteAddress() string {
-	return s.remoteAddress
+	return config.Global.Remotes[s.remote].URL
 }
 
 // Init flags on a given command
