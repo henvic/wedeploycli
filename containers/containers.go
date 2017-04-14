@@ -243,10 +243,19 @@ func AddDomain(ctx context.Context, projectID, serviceID string, domain string) 
 		return errwrap.Wrapf("Can not get current domains: {{err}}", perr)
 	}
 
-	var customDomains = service.CustomDomains
-	customDomains = append(customDomains, domain)
-
+	var customDomains = maybeAppendDomain(service.CustomDomains, domain)
 	return updateDomains(ctx, projectID, serviceID, customDomains)
+}
+
+func maybeAppendDomain(customDomains []string, domain string) []string {
+	for _, k := range customDomains {
+		if k == domain {
+			return customDomains
+		}
+	}
+
+	customDomains = append(customDomains, domain)
+	return customDomains
 }
 
 // RemoveDomain in project
