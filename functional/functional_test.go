@@ -301,7 +301,7 @@ var weRunFirstTimeTimeout = 15 * time.Minute
 
 func assertReadyState(cmd *cmdrunner.Command, t *testing.T) bool {
 	if cmd == nil {
-		t.Fatalf(`Can not assert ready state: not invoked after "we run --start-infra"`)
+		t.Fatalf(`Can not assert ready state: not invoked after "we deploy --start-local-infra"`)
 	}
 
 	var out = cmd.Stdout.String()
@@ -333,7 +333,7 @@ func (s *scenario) linkContainer(t *testing.T) {
 
 	chdir("sample-wechat")
 
-	if err := cmdrunner.Run("we run"); err != nil {
+	if err := cmdrunner.Run("we remove"); err != nil {
 		t.Fatalf("Error trying to link sample-wechat: %v", err)
 	}
 
@@ -397,7 +397,7 @@ var feTestCases = []feTestCase{
 			[]string{"undeploy", "--project", "foo", "-r", "local"},
 			[]string{"undeploy", "--project", "foo", "--remote", "local"},
 		},
-		`You can not run undeploy in the local infrastructure. Use "we run stop" instead`,
+		`You can not run undeploy in the local infrastructure. Use "we remove" instead`,
 	},
 	feTestCase{
 		[][]string{
@@ -490,12 +490,12 @@ func (s *scenario) testLinkedChatAfter5Seconds(t *testing.T) {
 func (s *scenario) testRun(t *testing.T) {
 	s.runCmd = &cmdrunner.Command{
 		Name:    "we",
-		Args:    []string{"run", "--start-infra"},
+		Args:    []string{"run", "--start-local-infra"},
 		TeePipe: true,
 	}
 
 	go func() {
-		log(`Executing "we run --start-infra"`)
+		log(`Executing "we deploy --start-local-infra"`)
 		s.runCmd.Start()
 	}()
 
@@ -506,7 +506,7 @@ loop:
 	var now = time.Now()
 
 	if now.After(timeout) {
-		t.Fatalf(`Timeout: %v seconds since "we run" started.`,
+		t.Fatalf(`Timeout: %v seconds since "we deploy" started.`,
 			(int)(-start.Sub(time.Now()).Seconds()))
 	}
 
@@ -518,7 +518,7 @@ loop:
 
 func (s *scenario) testShutdownGracefully(t *testing.T) {
 	var ctx, cancel = context.WithTimeout(context.Background(), 20*time.Second)
-	var shutdown = exec.CommandContext(ctx, "we", "run", "--shutdown-infra")
+	var shutdown = exec.CommandContext(ctx, "we", "run", "--stop-local-infra")
 
 	shutdown.Stderr = os.Stderr
 	shutdown.Stdout = os.Stdout
@@ -527,12 +527,12 @@ func (s *scenario) testShutdownGracefully(t *testing.T) {
 	cancel()
 
 	if err != nil {
-		t.Fatalf("we run --shutdown-infra did not exit properly: %v.", err)
+		t.Fatalf("we deploy --stop-local-infra did not exit properly: %v.", err)
 	}
 }
 
 func (s *scenario) testShutdownGracefullyAfter5Seconds(t *testing.T) {
-	log("Waiting 5s to invoke we run --shutdown-infra")
+	log("Waiting 5s to invoke we deploy --stop-local-infra")
 	time.Sleep(5 * time.Second)
 	s.testShutdownGracefully(t)
 }

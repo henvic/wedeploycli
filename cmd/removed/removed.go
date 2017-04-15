@@ -36,7 +36,7 @@ var runCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Fprintln(os.Stderr,
 			color.Format(color.FgHiRed, "we run")+
-				" is no longer required to try WeDeploy locally.")
+				` is no longer required to try WeDeploy locally: use "we deploy -u wedeploy.me".`)
 		os.Exit(1)
 	},
 }
@@ -49,7 +49,7 @@ var stopCmd = &cobra.Command{
 		fmt.Fprintln(os.Stderr,
 			color.Format(color.FgHiRed, "we stop")+
 				" has been replaced by "+
-				color.Format(color.FgHiRed, "we run --shutdown-infra")+".")
+				color.Format(color.FgHiRed, "we run --stop-local-infra")+".")
 		os.Exit(1)
 	},
 }

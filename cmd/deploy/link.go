@@ -1,4 +1,4 @@
-package cmdrun
+package cmddeploy
 
 import (
 	"context"
@@ -6,10 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/cmdargslen"
-	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/link"
@@ -23,26 +20,7 @@ type linker struct {
 	Machine link.Machine
 }
 
-func (l *linker) Init() {
-	setupHost = cmdflagsfromhost.SetupHost{
-		Pattern: cmdflagsfromhost.ProjectPattern,
-		Requires: cmdflagsfromhost.Requires{
-			Local: true,
-		},
-	}
-
-	setupHost.Init(RunCmd)
-}
-
-func (l *linker) PreRun(cmd *cobra.Command, args []string) error {
-	if err := cmdargslen.Validate(args, 0, 0); err != nil {
-		return err
-	}
-
-	return setupHost.Process()
-}
-
-func (l *linker) Run(cmd *cobra.Command, args []string) error {
+func (l *linker) Run() error {
 	var projectID, errProjectID = l.getProject()
 
 	if errProjectID != nil {

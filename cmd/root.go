@@ -23,7 +23,6 @@ import (
 	"github.com/wedeploy/cli/cmd/remove"
 	"github.com/wedeploy/cli/cmd/removed"
 	"github.com/wedeploy/cli/cmd/restart"
-	"github.com/wedeploy/cli/cmd/run"
 	"github.com/wedeploy/cli/cmd/start"
 	"github.com/wedeploy/cli/cmd/update"
 	"github.com/wedeploy/cli/cmd/version"
@@ -60,7 +59,6 @@ var commands = []*cobra.Command{
 	cmdremove.RemoveCmd,
 	cmdlogin.LoginCmd,
 	cmdlogout.LogoutCmd,
-	cmdrun.RunCmd,
 	cmdautocomplete.AutocompleteCmd,
 	cmdgenerate.GenerateCmd,
 	cmdbuild.BuildCmd,

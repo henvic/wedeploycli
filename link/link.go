@@ -75,7 +75,7 @@ func (le Errors) Error() string {
 		msgs = append(msgs, fmt.Sprintf("%v: %v", e.ContainerPath, e.Error.Error()))
 	}
 
-	return fmt.Sprintf("Linking errors:\n%v", strings.Join(msgs, "\n"))
+	return fmt.Sprintf("Local deployment errors:\n%v", strings.Join(msgs, "\n"))
 }
 
 var errMissingProjectID = errors.New("Missing project ID for linking containers")
@@ -170,7 +170,7 @@ func (m *Machine) doLink(cl *Link) {
 	switch err {
 	case nil:
 		if m.ErrStream != nil {
-			fmt.Fprintf(m.ErrStream, "Container %v linked.\n", cl.Container.ServiceID)
+			fmt.Fprintf(m.ErrStream, "Container %v deployed locally.\n", cl.Container.ServiceID)
 		}
 	default:
 		m.logError(cl.ContainerPath, err)

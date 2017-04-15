@@ -118,7 +118,7 @@ func killLoop(sigs chan os.Signal) {
 		<-sigs
 
 		if time.Now().After(gracefulExitLoopTimeout) {
-			println("\n\"we run\" killed awkwardly. Use \"we run --shutdown-infra\" to kill ghosts.")
+			println("\n\"we deploy\" killed awkwardly. Use \"we deploy --stop-local-infra\" to kill ghosts.")
 			os.Exit(1)
 		}
 

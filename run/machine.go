@@ -113,8 +113,8 @@ func (dm *DockerMachine) Run() (err error) {
 
 				fmt.Fprintf(os.Stderr, "%v\n", `
 To run the infrastructure with debug mode:
-	1. Shutdown with "we run --shutdown-infra"
-	2. Run with "we run --infra --debug"
+	1. Shutdown with "we deploy --stop-local-infra"
+	2. Run with "we deploy --infra --debug"
 	3. Run any project or containers you want`)
 			}
 		}

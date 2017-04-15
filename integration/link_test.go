@@ -78,7 +78,7 @@ func TestLink(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"run", "--skip-infra", "--no-color"},
+		Args: []string{"run", "--skip-local-infra", "--no-color"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
@@ -102,7 +102,7 @@ func TestLinkEmptyJSON(t *testing.T) {
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"run", "--skip-infra", "--project", "foo", "--no-color"},
+		Args: []string{"run", "--skip-local-infra", "--project", "foo", "--no-color"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/link/empty-json",
 	}
@@ -167,7 +167,7 @@ func TestLinkToProject(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"run", "--skip-infra", "--project", "bar", "--no-color"},
+		Args: []string{"run", "--skip-local-infra", "--project", "bar", "--no-color"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/container-outside-project",
@@ -214,7 +214,7 @@ func TestLinkToProjectServerFailure(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"run", "--skip-infra", "--no-color"},
+		Args: []string{"run", "--skip-local-infra", "--no-color"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
@@ -273,7 +273,7 @@ func TestLinkToProjectServerFailureQuiet(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"run", "--skip-infra", "--no-color", "--quiet"},
+		Args: []string{"run", "--skip-local-infra", "--no-color", "--quiet"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
@@ -304,7 +304,7 @@ func TestLinkRemoteError(t *testing.T) {
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"run", "--skip-infra", "--remote=foo"},
+		Args: []string{"run", "--skip-local-infra", "--remote=foo"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
@@ -329,7 +329,7 @@ func TestLinkRemoteShortcutError(t *testing.T) {
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"run", "--skip-infra", "-r=foo"},
+		Args: []string{"run", "--skip-local-infra", "-r=foo"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
@@ -354,7 +354,7 @@ func TestLinkHostWithContainerError(t *testing.T) {
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"run", "--skip-infra", "--project", "foo", "--container", "bar"},
+		Args: []string{"run", "--skip-local-infra", "--project", "foo", "--container", "bar"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/project/container",
