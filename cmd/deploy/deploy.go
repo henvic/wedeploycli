@@ -124,7 +124,7 @@ func runRun(cmd *cobra.Command, args []string) (err error) {
 
 func init() {
 	DeployCmd.Flags().BoolVarP(&quiet, "quiet", "q", false,
-		"Link without watching status")
+		"Deploy without watching status")
 
 	setupHost.Init(DeployCmd)
 }
