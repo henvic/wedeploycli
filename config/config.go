@@ -25,6 +25,7 @@ type Config struct {
 	Password        string       `ini:"password"`
 	Token           string       `ini:"token"`
 	LocalHTTPPort   int          `ini:"local_http_port"`
+	LocalHTTPSPort  int          `ini:"local_https_port"`
 	NoAutocomplete  bool         `ini:"disable_autocomplete_autoinstall"`
 	NoColor         bool         `ini:"disable_colors"`
 	NotifyUpdates   bool         `ini:"notify_updates"`
@@ -145,6 +146,7 @@ func Setup() error {
 
 func (c *Config) setDefaults() {
 	c.LocalHTTPPort = defaults.LocalHTTPPort
+	c.LocalHTTPSPort = defaults.LocalHTTPSPort
 	c.NotifyUpdates = true
 	c.ReleaseChannel = "stable"
 

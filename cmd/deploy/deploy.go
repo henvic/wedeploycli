@@ -83,7 +83,8 @@ func checkNonRemoteSet(cmd *cobra.Command) error {
 func hasActionLocalFlag() bool {
 	return isCommand("--dry-run-local-infra") ||
 		isCommand("--start-local-infra") ||
-		isCommand("--stop-local-infra")
+		isCommand("--stop-local-infra") ||
+		isCommand("--https")
 }
 
 func checkNoLocalOnlyFlags(cmd *cobra.Command) error {
@@ -94,6 +95,7 @@ func checkNoLocalOnlyFlags(cmd *cobra.Command) error {
 		"stop-local-infra",
 		"skip-local-infra",
 		"experimental-image",
+		"https",
 	}
 
 	for _, k := range localOnlyFlags {

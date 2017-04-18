@@ -24,6 +24,7 @@ var (
 
 func init() {
 	var df = DeployCmd.Flags()
+	df.BoolVar(&runFlags.HTTPS, "https", false, "Enable HTTPS on local remote")
 	df.BoolVar(&runFlags.Debug, "debug", false, "Open local infrastructure debug ports")
 	df.BoolVar(&runFlags.DryRun, "dry-run-local-infra", false, "Dry-run the local infrastructure")
 	df.BoolVar(&infra, "start-local-infra", true, "Start local infrastructure")

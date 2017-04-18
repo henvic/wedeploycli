@@ -28,6 +28,7 @@ import (
 type Flags struct {
 	Debug  bool
 	DryRun bool
+	HTTPS  bool
 }
 
 // DockerMachine for the run command
@@ -241,6 +242,13 @@ func (dm *DockerMachine) setupPorts() {
 		Internal: 80,
 		Expose:   config.Global.LocalHTTPPort,
 	})
+
+	if dm.Flags.HTTPS {
+		dm.tcpPorts = append(dm.tcpPorts, TCPPort{
+			Internal: 443,
+			Expose:   config.Global.LocalHTTPSPort,
+		})
+	}
 
 	if dm.Flags.Debug {
 		dm.tcpPorts = append(dm.tcpPorts, debugPorts...)

@@ -42,4 +42,7 @@ var (
 
 	// LocalHTTPPort is the default port used to expose WeDeploy locally
 	LocalHTTPPort = 80
+
+	// LocalHTTPSPort is the default port used to expose WeDeploy locally over HTTPS
+	LocalHTTPSPort = 443
 )
