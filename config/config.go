@@ -24,6 +24,7 @@ type Config struct {
 	Username        string       `ini:"username"`
 	Password        string       `ini:"password"`
 	Token           string       `ini:"token"`
+	DefaultRemote   string       `ini:"default_remote"`
 	LocalHTTPPort   int          `ini:"local_http_port"`
 	LocalHTTPSPort  int          `ini:"local_https_port"`
 	NoAutocomplete  bool         `ini:"disable_autocomplete_autoinstall"`
@@ -72,8 +73,7 @@ func (c *Config) Load() error {
 	}
 
 	c.loadDefaultRemotes()
-
-	return nil
+	return c.validateDefaultRemote()
 }
 
 func (c *Config) loadDefaultRemotes() {
@@ -92,6 +92,19 @@ func (c *Config) loadDefaultRemotes() {
 	default:
 		println(color.Format(color.FgHiRed, "Warning: Non-standard local cloud detected"))
 	}
+}
+
+func (c *Config) validateDefaultRemote() error {
+	var keys = c.Remotes.Keys()
+
+	for _, k := range keys {
+		if c.DefaultRemote == k {
+			return nil
+		}
+	}
+
+	return fmt.Errorf(`Remote "%v" is set as default, but not found.
+Please fix your ~/.we file`, c.DefaultRemote)
 }
 
 // Save the configuration
@@ -149,6 +162,7 @@ func (c *Config) setDefaults() {
 	c.LocalHTTPSPort = defaults.LocalHTTPSPort
 	c.NotifyUpdates = true
 	c.ReleaseChannel = "stable"
+	c.DefaultRemote = defaults.CloudRemote
 
 	// By design Windows users should see no color unless they enable it
 	// Issue #51.

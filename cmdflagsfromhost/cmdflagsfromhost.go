@@ -145,7 +145,8 @@ func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 			Container:     s.container,
 			Remote:        remoteFlagValue,
 			RemoteChanged: remoteFlagChanged,
-		}))
+		},
+		config.Global.DefaultRemote))
 }
 
 func (s *SetupHost) applyParseFlagsFilters(f *flagsfromhost.FlagsFromHost, err error) (
@@ -289,7 +290,7 @@ func (s *SetupHost) loadValues() (err error) {
 	}
 
 	if s.Requires.Remote && remote == defaults.LocalRemote {
-		return errors.New("Remote is required")
+		return errors.New(`Remote is required and can not be "local"`)
 	}
 
 	if s.Requires.Local && remote != defaults.LocalRemote {

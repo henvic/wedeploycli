@@ -68,7 +68,13 @@ func remoteRun(cmd *cobra.Command, args []string) error {
 
 	for _, k := range remotes.Keys() {
 		var key, _ = remotes[k]
-		fmt.Printf("%s%s%s\n", k, formatter.CondPad(k, 15), key.URL)
+		fmt.Printf("%s%s%s", k, formatter.CondPad(k, 15), key.URL)
+
+		if k == config.Global.DefaultRemote {
+			fmt.Printf(" (default)")
+		}
+
+		fmt.Printf("\n")
 	}
 
 	return nil
@@ -125,6 +131,11 @@ func removeRun(cmd *cobra.Command, args []string) error {
 
 	if name == defaults.LocalRemote {
 		fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Removed default local remote "local" will be recreated with its default value`))
+	}
+
+	if name == global.DefaultRemote && name != defaults.CloudRemote && name != defaults.LocalRemote {
+		global.DefaultRemote = defaults.CloudRemote
+		fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Default remote reset to "wedeploy"`))
 	}
 
 	return global.Save()

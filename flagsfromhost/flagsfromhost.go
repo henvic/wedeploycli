@@ -141,7 +141,7 @@ type ParseFlagsWithDefaultCustomRemote struct {
 }
 
 // ParseWithDefaultCustomRemote parses the flags using a custom default remote value
-func ParseWithDefaultCustomRemote(pf ParseFlagsWithDefaultCustomRemote) (*FlagsFromHost, error) {
+func ParseWithDefaultCustomRemote(pf ParseFlagsWithDefaultCustomRemote, customRemote string) (*FlagsFromHost, error) {
 	if !pf.RemoteChanged {
 		pf.Remote = ""
 	}
@@ -158,7 +158,7 @@ func ParseWithDefaultCustomRemote(pf ParseFlagsWithDefaultCustomRemote) (*FlagsF
 		case f.remote == "" && (pf.RemoteChanged || f.IsRemoteFromHost()):
 			f.remote = defaults.LocalRemote
 		case !f.IsRemoteFromHost() && !pf.RemoteChanged:
-			f.remote = defaults.CloudRemote
+			f.remote = customRemote
 		}
 	}
 

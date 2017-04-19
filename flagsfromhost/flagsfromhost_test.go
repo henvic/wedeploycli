@@ -798,7 +798,7 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 }
 
 func testParseWithDefaultCustomRemote(pm parseMockWithDefaultCustomRemote, t *testing.T) {
-	var parsed, err = ParseWithDefaultCustomRemote(pm.Flags)
+	var parsed, err = ParseWithDefaultCustomRemote(pm.Flags, "wedeploy")
 
 	if err != pm.Want.Err {
 		t.Errorf("Expected error to be %v on parsing, got %v instead", pm.Want.Err, err)
