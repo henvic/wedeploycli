@@ -75,10 +75,6 @@ func remoteRun(cmd *cobra.Command, args []string) error {
 }
 
 func setRun(cmd *cobra.Command, args []string) error {
-	if len(args) != 2 {
-		return errors.New("Invalid number of arguments.")
-	}
-
 	var global = config.Global
 	var remotes = global.Remotes
 	var name = args[0]
@@ -92,10 +88,6 @@ func setRun(cmd *cobra.Command, args []string) error {
 }
 
 func renameRun(cmd *cobra.Command, args []string) error {
-	if len(args) != 2 {
-		return errors.New("Invalid number of arguments.")
-	}
-
 	var global = config.Global
 	var remotes = global.Remotes
 	var old = args[0]
@@ -117,10 +109,6 @@ func renameRun(cmd *cobra.Command, args []string) error {
 }
 
 func removeRun(cmd *cobra.Command, args []string) error {
-	if len(args) != 1 {
-		return errors.New("This command takes 1 argument.")
-	}
-
 	var global = config.Global
 	var remotes = global.Remotes
 	var name = args[0]
@@ -143,10 +131,6 @@ func removeRun(cmd *cobra.Command, args []string) error {
 }
 
 func getURLRun(cmd *cobra.Command, args []string) error {
-	if len(args) != 1 {
-		return errors.New("This command takes 1 argument.")
-	}
-
 	var remotes = config.Global.Remotes
 	var name = args[0]
 	var remote, ok = remotes[name]
@@ -160,10 +144,6 @@ func getURLRun(cmd *cobra.Command, args []string) error {
 }
 
 func setURLRun(cmd *cobra.Command, args []string) error {
-	if len(args) != 2 {
-		return errors.New("This command takes 2 arguments.")
-	}
-
 	var global = config.Global
 	var remotes = global.Remotes
 	var name = args[0]
