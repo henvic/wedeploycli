@@ -6,15 +6,11 @@ import (
 	"fmt"
 	"time"
 
-	"net/http"
-
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/logs"
-	"github.com/wedeploy/cli/verbose"
 )
 
 var (
@@ -95,24 +91,11 @@ func logRun(cmd *cobra.Command, args []string) error {
 		})
 	default:
 		if err = logs.List(context.Background(), filter); err != nil {
-			return workaroundBackendError(err)
+			return err
 		}
 	}
 
 	return nil
-}
-
-func workaroundBackendError(err error) error {
-	var ea = errwrap.GetType(err, &apihelper.APIFault{})
-	var eaf, ok = ea.(*apihelper.APIFault)
-
-	if ok && eaf.Code == http.StatusForbidden && len(eaf.Errors) == 0 {
-		verbose.Debug("Using workaround related to issue https://github.com/wedeploy/dashboard/issues/662")
-		verbose.Debug(err)
-		return errors.New("Not found")
-	}
-
-	return err
 }
 
 func getSince() (string, error) {
