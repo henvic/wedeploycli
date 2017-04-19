@@ -67,6 +67,10 @@ func (rwl *RestartWatchList) isDone() bool {
 
 	var p = rwl.list.Projects[0]
 
+	if p.Health == "empty" {
+		return true
+	}
+
 	if p.Health != "up" || p.HealthUID == rwl.projectHealthUID {
 		return false
 	}
