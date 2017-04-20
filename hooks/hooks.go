@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/verbose"
@@ -136,4 +137,9 @@ func runHook(steps []step, notes []string) (err error) {
 func Run(command string) error {
 	verbose.Debug("> " + command)
 	return run(command)
+}
+
+func checkShExists() bool {
+	_, err := exec.LookPath("sh")
+	return err == nil
 }
