@@ -84,7 +84,7 @@ func TestListContainerFromInsideProjectNotExists(t *testing.T) {
 		w.Header().Set("Content-type", "application/json; charset=UTF-8")
 		w.WriteHeader(404)
 		fmt.Fprintf(w, `{
-    "code": 404,
+    "status": 404,
     "message": "Not Found",
     "errors": [
         {

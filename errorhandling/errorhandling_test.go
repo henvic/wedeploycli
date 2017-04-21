@@ -86,7 +86,7 @@ func TestHandleAPIFaultGenericErrorMessageNotFound(t *testing.T) {
 	var err = &apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
-		Code:    404,
+		Status:  404,
 		Message: "Not Found",
 		Errors: apihelper.APIFaultErrors{
 			apihelper.APIFaultError{
@@ -123,7 +123,7 @@ func TestHandleWrappedAPIFaultGenericErrorMessageNotFound(t *testing.T) {
 	var err = errwrap.Wrapf("Wrapped: {{err}}", &apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
-		Code:    404,
+		Status:  404,
 		Message: "Not Found",
 		Errors: apihelper.APIFaultErrors{
 			apihelper.APIFaultError{
@@ -163,7 +163,7 @@ func TestHandleAPIFaultGenericErrorFound(t *testing.T) {
 	var err = &apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
-		Code:    404,
+		Status:  404,
 		Message: "Payment Not Found",
 		Errors: apihelper.APIFaultErrors{
 			apihelper.APIFaultError{
@@ -202,7 +202,7 @@ func TestHandleAPIWrappedFaultGenericErrorFound(t *testing.T) {
 	var err = errwrap.Wrapf("Wrapped error: {{err}}", &apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
-		Code:    404,
+		Status:  404,
 		Message: "Payment Not Found",
 		Errors: apihelper.APIFaultErrors{
 			apihelper.APIFaultError{
@@ -245,7 +245,7 @@ func TestHandleAPIWrappedFaultGenericErrorFoundNested(t *testing.T) {
 	var err = errwrap.Wrapf("Wrapped error: {{err}}", &apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
-		Code:    404,
+		Status:  404,
 		Message: "Payment Not Found",
 		Errors: apihelper.APIFaultErrors{
 			apihelper.APIFaultError{
@@ -292,7 +292,7 @@ func TestHandleAPIWrappedFaultGenericErrorFoundDeepNested(t *testing.T) {
 	var err = errwrap.Wrapf("Wrapped error: {{err}}", &apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
-		Code:    404,
+		Status:  404,
 		Message: "Payment Not Found",
 		Errors: apihelper.APIFaultErrors{
 			apihelper.APIFaultError{
@@ -337,7 +337,7 @@ func TestHandleAPIWrappedFaultGenericErrorFoundDeepNestedNoOverride(t *testing.T
 	var err = errwrap.Wrapf("Wrapped error: {{err}}", &apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
-		Code:    404,
+		Status:  404,
 		Message: "Payment Not Found",
 		Errors: apihelper.APIFaultErrors{
 			apihelper.APIFaultError{
@@ -380,7 +380,7 @@ func TestHandleAPIFaultCommandOverridesErrorMessage(t *testing.T) {
 	var err = &apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
-		Code:    403,
+		Status:  403,
 		Message: "Invalid credential",
 		Errors: apihelper.APIFaultErrors{
 			apihelper.APIFaultError{

@@ -169,7 +169,7 @@ func TestAuthTokenBearer(t *testing.T) {
 
 func TestAPIError(t *testing.T) {
 	var e error = &APIFault{
-		Code:    404,
+		Status:  404,
 		Message: "Resource Not Found",
 	}
 
@@ -180,7 +180,7 @@ func TestAPIError(t *testing.T) {
 
 func TestAPIFaultGet(t *testing.T) {
 	var e = &APIFault{
-		Code:    404,
+		Status:  404,
 		Message: "Resource Not Found",
 		Errors: APIFaultErrors{
 			APIFaultError{
@@ -207,7 +207,7 @@ func TestAPIFaultGet(t *testing.T) {
 
 func TestAPIFaultGetNotFound(t *testing.T) {
 	var e = &APIFault{
-		Code:    404,
+		Status:  404,
 		Message: "Resource Not Found",
 		Errors:  APIFaultErrors{},
 	}
@@ -221,7 +221,7 @@ func TestAPIFaultGetNotFound(t *testing.T) {
 
 func TestAPIFaultGetNil(t *testing.T) {
 	var e = &APIFault{
-		Code:    404,
+		Status:  404,
 		Message: "Resource Not Found",
 	}
 
@@ -234,7 +234,7 @@ func TestAPIFaultGetNil(t *testing.T) {
 
 func TestAPIFaultHas(t *testing.T) {
 	var e = &APIFault{
-		Code:    404,
+		Status:  404,
 		Message: "Resource Not Found",
 		Errors: APIFaultErrors{
 			APIFaultError{
@@ -1003,7 +1003,7 @@ func TestValidateUnexpectedResponse(t *testing.T) {
 		w.Header().Set("Content-type", "application/json; charset=UTF-8")
 		w.WriteHeader(403)
 		fmt.Fprintf(w, `{
-    "code": 403,
+    "status": 403,
     "message": "Forbidden",
     "errors": [
         {

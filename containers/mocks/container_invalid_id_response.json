@@ -1,5 +1,5 @@
 {
-    "code": 400,
+    "status": 400,
     "message": "Bad Request",
     "errors": [
         {
