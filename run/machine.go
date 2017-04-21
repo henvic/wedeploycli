@@ -284,11 +284,11 @@ func (dm *DockerMachine) waitReadyState() {
 		verbose.Debug(fmt.Sprintf("Trying #%v", tries))
 		tries++
 		var ctx, cancel = context.WithTimeout(dm.Context, time.Second)
-		var s, err = status.Get(ctx)
+		var isUp = status.IsUp(ctx)
 		cancel()
 
-		if err != nil || s.Status != status.Up {
-			verbose.Debug("System not available:", s, err)
+		if !isUp {
+			verbose.Debug("System not available")
 			time.Sleep(100 * time.Millisecond)
 			continue
 		}

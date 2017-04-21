@@ -60,9 +60,7 @@ func checkInfrastructureIsUp() bool {
 	var try = 0
 
 checkStatus:
-	var s, err = status.Get(context.Background())
-
-	if err == nil && s.Status == status.Up {
+	if status.IsUp(context.Background()) {
 		return true
 	}
 
