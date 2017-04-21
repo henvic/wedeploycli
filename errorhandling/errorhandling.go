@@ -105,7 +105,7 @@ func (h *handler) handleAPIFaultError() error {
 			anyFriendly = true
 			msgs = append(msgs, rtm)
 		} else {
-			msgs = append(msgs, e.Reason+": "+e.Message)
+			msgs = append(msgs, e.Reason+": "+e.Context.Message())
 		}
 
 	}

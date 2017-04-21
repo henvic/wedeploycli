@@ -90,8 +90,10 @@ func TestHandleAPIFaultGenericErrorMessageNotFound(t *testing.T) {
 		Message: "Not Found",
 		Errors: apihelper.APIFaultErrors{
 			apihelper.APIFaultError{
-				Reason:  "documentNotFound",
-				Message: "Document not found",
+				Reason: "documentNotFound",
+				Context: apihelper.APIFaultErrorContext{
+					"message": "Document not found",
+				},
 			},
 		},
 	}
@@ -125,8 +127,10 @@ func TestHandleWrappedAPIFaultGenericErrorMessageNotFound(t *testing.T) {
 		Message: "Not Found",
 		Errors: apihelper.APIFaultErrors{
 			apihelper.APIFaultError{
-				Reason:  "documentNotFound",
-				Message: "Document not found",
+				Reason: "documentNotFound",
+				Context: apihelper.APIFaultErrorContext{
+					"message": "Document not found",
+				},
 			},
 		},
 	})
@@ -163,8 +167,10 @@ func TestHandleAPIFaultGenericErrorFound(t *testing.T) {
 		Message: "Payment Not Found",
 		Errors: apihelper.APIFaultErrors{
 			apihelper.APIFaultError{
-				Reason:  "invalidCredential",
-				Message: "Credential not valid",
+				Reason: "invalidCredential",
+				Context: apihelper.APIFaultErrorContext{
+					"message": "Credential not valid",
+				},
 			},
 		},
 	}
@@ -200,8 +206,10 @@ func TestHandleAPIWrappedFaultGenericErrorFound(t *testing.T) {
 		Message: "Payment Not Found",
 		Errors: apihelper.APIFaultErrors{
 			apihelper.APIFaultError{
-				Reason:  "invalidCredential",
-				Message: "Credential not valid",
+				Reason: "invalidCredential",
+				Context: apihelper.APIFaultErrorContext{
+					"message": "Credential not valid",
+				},
 			},
 		},
 	})
@@ -241,8 +249,10 @@ func TestHandleAPIWrappedFaultGenericErrorFoundNested(t *testing.T) {
 		Message: "Payment Not Found",
 		Errors: apihelper.APIFaultErrors{
 			apihelper.APIFaultError{
-				Reason:  "invalidCredential",
-				Message: "Credential not valid",
+				Reason: "invalidCredential",
+				Context: apihelper.APIFaultErrorContext{
+					"message": "Credential not valid",
+				},
 			},
 		},
 	})
@@ -286,8 +296,10 @@ func TestHandleAPIWrappedFaultGenericErrorFoundDeepNested(t *testing.T) {
 		Message: "Payment Not Found",
 		Errors: apihelper.APIFaultErrors{
 			apihelper.APIFaultError{
-				Reason:  "invalidCredential",
-				Message: "Credential not valid",
+				Reason: "invalidCredential",
+				Context: apihelper.APIFaultErrorContext{
+					"message": "Credential not valid",
+				},
 			},
 		},
 	})
@@ -329,8 +341,10 @@ func TestHandleAPIWrappedFaultGenericErrorFoundDeepNestedNoOverride(t *testing.T
 		Message: "Payment Not Found",
 		Errors: apihelper.APIFaultErrors{
 			apihelper.APIFaultError{
-				Reason:  "invalidCredential",
-				Message: "Credential not valid",
+				Reason: "invalidCredential",
+				Context: apihelper.APIFaultErrorContext{
+					"message": "Credential not valid",
+				},
 			},
 		},
 	})
@@ -370,8 +384,10 @@ func TestHandleAPIFaultCommandOverridesErrorMessage(t *testing.T) {
 		Message: "Invalid credential",
 		Errors: apihelper.APIFaultErrors{
 			apihelper.APIFaultError{
-				Reason:  "documentNotFound",
-				Message: "Document not found",
+				Reason: "documentNotFound",
+				Context: apihelper.APIFaultErrorContext{
+					"message": "Document not found",
+				},
 			},
 		},
 	}

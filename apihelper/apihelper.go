@@ -81,7 +81,7 @@ func (a APIFault) Get(reason string) (bool, string) {
 
 	for _, ed := range a.Errors {
 		if ed.Reason == reason {
-			return true, ed.Message
+			return true, ed.Context.Message()
 		}
 	}
 
@@ -102,7 +102,7 @@ func (a APIFault) getErrorMessages() string {
 	}
 
 	for _, value := range a.Errors {
-		s = append(s, fmt.Sprintf("\n\t%v: %v", value.Message, value.Reason))
+		s = append(s, fmt.Sprintf("\n\t%v: %v", value.Context.Message(), value.Reason))
 	}
 
 	return strings.Join(s, "")
@@ -113,8 +113,20 @@ type APIFaultErrors []APIFaultError
 
 // APIFaultError is the error structure for the errors described by a fault
 type APIFaultError struct {
-	Reason  string `json:"reason"`
-	Message string `json:"message"`
+	Reason  string               `json:"reason"`
+	Context APIFaultErrorContext `json:"context"`
+}
+
+// APIFaultErrorContext map
+type APIFaultErrorContext map[string]string
+
+// Message for a given APIFaultError
+func (c APIFaultErrorContext) Message() string {
+	if c == nil {
+		return ""
+	}
+
+	return c["message"]
 }
 
 var (
@@ -322,8 +334,10 @@ func reportHTTPErrorNotJSON(
 
 	if len(body) != 0 {
 		fault.Errors = append(fault.Errors, APIFaultError{
-			Reason:  string(body),
-			Message: "body",
+			Reason: string(body),
+			Context: APIFaultErrorContext{
+				"message": "Response Body is not JSON",
+			},
 		})
 	}
 

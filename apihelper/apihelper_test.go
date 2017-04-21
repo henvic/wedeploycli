@@ -184,8 +184,10 @@ func TestAPIFaultGet(t *testing.T) {
 		Message: "Resource Not Found",
 		Errors: APIFaultErrors{
 			APIFaultError{
-				Reason:  "x",
-				Message: "y",
+				Reason: "x",
+				Context: APIFaultErrorContext{
+					"message": "y",
+				},
 			},
 		},
 	}
@@ -236,8 +238,10 @@ func TestAPIFaultHas(t *testing.T) {
 		Message: "Resource Not Found",
 		Errors: APIFaultErrors{
 			APIFaultError{
-				Reason:  "x",
-				Message: "y",
+				Reason: "x",
+				Context: APIFaultErrorContext{
+					"message": "y",
+				},
 			},
 		},
 	}
@@ -1004,7 +1008,9 @@ func TestValidateUnexpectedResponse(t *testing.T) {
     "errors": [
         {
             "reason": "The requested operation failed because you do not have access.",
-            "message": "forbidden"
+			"context": {
+				"message": "forbidden"
+			}
         }
     ]
 }`)
@@ -1110,5 +1116,18 @@ func TestValidateUnexpectedResponseNonBody(t *testing.T) {
 
 	if err.Error() != want {
 		t.Errorf("Wanted %v, got %v", want, err.Error())
+	}
+}
+
+func TestAPIFaultErrorContext(t *testing.T) {
+	var c APIFaultErrorContext
+
+	if c != nil {
+		// err... pretty obvious it is...
+		t.Errorf("Expected %v to be nil", c)
+	}
+
+	if c.Message() != "" {
+		t.Errorf("Expected no error when testing for message of nil context")
 	}
 }
