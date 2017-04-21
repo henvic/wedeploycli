@@ -32,7 +32,7 @@ func (dm *DockerMachine) Stop() error {
 	}
 
 	dm.waitLiveMsg.ResetDuration()
-	dm.waitLiveMsg.SetMessage("Stopping WeDeploy.")
+	dm.waitLiveMsg.SetMessage("WeDeploy is stopping")
 	dm.waitLiveMsg.SetStream(dm.livew)
 
 	go dm.waitLiveMsg.Wait()
@@ -51,8 +51,7 @@ func (dm *DockerMachine) Stop() error {
 		return err
 	}
 
-	dm.waitLiveMsg.Stop()
-	fmt.Println("WeDeploy is shutdown.")
+	dm.waitLiveMsg.StopWithMessage("WeDeploy is stopped.")
 
 	return nil
 }
@@ -72,7 +71,7 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 	dm.waitLiveMsg.Stop()
 
 	dm.waitLiveMsg.ResetDuration()
-	dm.waitLiveMsg.SetMessage("Stopping WeDeploy.")
+	dm.waitLiveMsg.SetMessage("WeDeploy is stopping")
 	dm.waitLiveMsg.SetStream(dm.livew)
 	go dm.waitLiveMsg.Wait()
 
@@ -87,12 +86,11 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 	}
 
-	dm.waitLiveMsg.Stop()
+	dm.waitLiveMsg.StopWithMessage("WeDeploy is stopped")
 	dm.endRun()
 }
 
 func (dm *DockerMachine) endRun() {
-	fmt.Println("WeDeploy is shutdown.")
 	dm.end <- true
 	dm.terminateMutex.RLock()
 	dm.terminate = true

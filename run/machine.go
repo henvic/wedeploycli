@@ -157,8 +157,7 @@ func (dm *DockerMachine) createUser() (err error) {
 		return err
 	}
 
-	dm.waitLiveMsg.Stop()
-	fmt.Fprintf(dm.livew, "WeDeploy is ready! %vs\n", dm.waitLiveMsg.Duration())
+	dm.waitLiveMsg.StopWithMessage(fmt.Sprintf("WeDeploy is ready! %vs", dm.waitLiveMsg.Duration()))
 	_ = dm.livew.Flush()
 
 	return err
@@ -266,11 +265,10 @@ func (dm *DockerMachine) checkPortsAreAvailable() error {
 }
 
 func (dm *DockerMachine) waitReadyState() {
-	fmt.Println("WeDeploy is not running yet... Please wait.")
 	var tries = 1
-	dm.waitLiveMsg.SetMessage("Starting WeDeploy")
-	dm.waitLiveMsg.SetStream(dm.livew)
 
+	dm.waitLiveMsg.SetStream(dm.livew)
+	dm.waitLiveMsg.SetMessage("WeDeploy is starting")
 	go dm.waitLiveMsg.Wait()
 
 	// Starting WeDeploy

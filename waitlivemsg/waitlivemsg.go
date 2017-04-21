@@ -9,19 +9,12 @@ import (
 	"github.com/henvic/uilive"
 )
 
-const (
-	// WarmupOn symbol
-	WarmupOn = '○'
-
-	// WarmupOff symbol
-	WarmupOff = '●'
-)
-
 // WaitLiveMsg is used for "waiting" live message
 type WaitLiveMsg struct {
 	msg          string
 	stream       *uilive.Writer
-	printMutex   sync.RWMutex
+	streamMutex  sync.RWMutex
+	msgMutex     sync.RWMutex
 	start        time.Time
 	tickerd      chan bool
 	tickerdMutex sync.Mutex
@@ -31,22 +24,21 @@ type WaitLiveMsg struct {
 
 // SetMessage to display
 func (w *WaitLiveMsg) SetMessage(msg string) {
-	w.printMutex.Lock()
+	w.msgMutex.Lock()
 	w.msg = msg
-	w.printMutex.Unlock()
+	w.msgMutex.Unlock()
 }
 
 // SetStream to output to
 func (w *WaitLiveMsg) SetStream(ws *uilive.Writer) {
-	w.printMutex.Lock()
+	w.streamMutex.Lock()
 	w.stream = ws
-	w.printMutex.Unlock()
+	w.streamMutex.Unlock()
 }
 
 // Wait starts the waiting message
 func (w *WaitLiveMsg) Wait() {
 	w.waitEnd.Add(1)
-	var ticker = time.NewTicker(time.Second)
 	w.tickerdMutex.Lock()
 	w.tickerd = make(chan bool, 1)
 	w.tickerdMutex.Unlock()
@@ -54,16 +46,27 @@ func (w *WaitLiveMsg) Wait() {
 	w.start = time.Now()
 	w.startMutex.Unlock()
 
+	w.waitLoop()
+
+	w.msgMutex.RLock()
+	w.print(w.msg, 0)
+	w.msgMutex.RUnlock()
+	w.waitEnd.Done()
+}
+
+func (w *WaitLiveMsg) waitLoop() {
+	var ticker = time.NewTicker(150 * time.Millisecond)
+	var counter = 0
 	for {
 		select {
-		case t := <-ticker.C:
-			w.printMutex.Lock()
-			w.print(t)
-			w.printMutex.Unlock()
+		case _ = <-ticker.C:
+			w.msgMutex.RLock()
+			w.print(w.msg, counter)
+			counter = (counter + 1) % 4
+			w.msgMutex.RUnlock()
 		case <-w.tickerd:
 			ticker.Stop()
 			ticker = nil
-			w.waitEnd.Done()
 			return
 		}
 	}
@@ -75,6 +78,12 @@ func (w *WaitLiveMsg) Stop() {
 	w.tickerd <- true
 	w.tickerdMutex.Unlock()
 	w.waitEnd.Wait()
+}
+
+// StopWithMessage sets the last message and stops
+func (w *WaitLiveMsg) StopWithMessage(msg string) {
+	w.SetMessage(msg)
+	w.Stop()
 }
 
 // ResetDuration to restart counter
@@ -92,14 +101,9 @@ func (w *WaitLiveMsg) Duration() int {
 	return duration
 }
 
-func (w *WaitLiveMsg) print(t time.Time) {
-	var p = WarmupOn
-	if t.Second()%2 == 0 {
-		p = WarmupOff
-	}
-
-	var dots = strings.Repeat(".", t.Second()%3+1)
-
-	fmt.Fprintf(w.stream, "%c %v%s %ds\n", p, w.msg, dots, w.Duration())
+func (w *WaitLiveMsg) print(msg string, dots int) {
+	w.streamMutex.Lock()
+	fmt.Fprintf(w.stream, "%v%v\n", w.msg, strings.Repeat(".", dots))
 	_ = w.stream.Flush()
+	w.streamMutex.Unlock()
 }
