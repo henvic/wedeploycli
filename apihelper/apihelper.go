@@ -39,7 +39,6 @@ type APIFault struct {
 // DefaultToken for the API server
 var DefaultToken = "1"
 
-var errJSONDecodeFailure = errors.New("Can not decode JSON, fallback to body content")
 var errMissingResponse = errors.New("Request is not fulfilled by a response")
 
 func (a APIFault) Error() string {
@@ -290,29 +289,30 @@ func reportHTTPError(request *wedeploy.WeDeploy) error {
 		return err
 	}
 
-	switch err = reportHTTPErrorTryJSON(request, body); err {
-	case nil, errJSONDecodeFailure:
+	var jsonErr bool
+	jsonErr, err = reportHTTPErrorTryJSON(request, body)
+
+	if err == nil || jsonErr {
 		return reportHTTPErrorNotJSON(request, body)
-	default:
-		return err
 	}
+
+	return err
 }
 
-func reportHTTPErrorTryJSON(request *wedeploy.WeDeploy, body []byte) error {
+func reportHTTPErrorTryJSON(request *wedeploy.WeDeploy, body []byte) (bool, error) {
 	var response = request.Response
 	var contentType = response.Header.Get("Content-Type")
 	var af APIFault
 
 	if !strings.Contains(contentType, "application/json") {
-		return nil
+		return true, nil
 	}
 
 	if ed := json.Unmarshal(body, &af); ed != nil {
-		fmt.Fprintf(errStream, "Failure decoding JSON error: %v", ed)
-		return errJSONDecodeFailure
+		return true, ed
 	}
 
-	return reportHTTPErrorJSON(request, af)
+	return false, reportHTTPErrorJSON(request, af)
 }
 
 func reportHTTPErrorJSON(request *wedeploy.WeDeploy, af APIFault) error {
