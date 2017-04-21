@@ -136,7 +136,7 @@ func (u *undeployer) isDone() bool {
 
 	if e != nil {
 		var eaf, ok = e.(*apihelper.APIFault)
-		return ok && eaf.Code == http.StatusNotFound
+		return ok && eaf.Status == http.StatusNotFound
 	}
 
 	var _, ec = c.Get(u.container)

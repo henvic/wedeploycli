@@ -31,7 +31,7 @@ import (
 type APIFault struct {
 	Method  string
 	URL     string
-	Code    int            `json:"code"`
+	Status  int            `json:"status"`
 	Message string         `json:"message"`
 	Errors  APIFaultErrors `json:"errors"`
 }
@@ -52,8 +52,8 @@ func (a APIFault) Error() string {
 func (a APIFault) getErrorMessage() string {
 	var s string
 
-	if a.Code != 0 {
-		s += fmt.Sprintf(" %v", a.Code)
+	if a.Status != 0 {
+		s += fmt.Sprintf(" %v", a.Status)
 	}
 
 	if a.Message != "" {
@@ -315,7 +315,7 @@ func reportHTTPErrorNotJSON(
 	var fault = &APIFault{
 		Method:  request.Request.Method,
 		URL:     request.URL,
-		Code:    response.StatusCode,
+		Status:  response.StatusCode,
 		Message: http.StatusText(response.StatusCode),
 		Errors:  APIFaultErrors{},
 	}

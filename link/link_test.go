@@ -262,7 +262,7 @@ func TestAllInstallContainerError(t *testing.T) {
 	var el = m.Errors.List
 	var af = el[0].Error.(*apihelper.APIFault)
 
-	if m.Errors == nil || af.Code != 403 {
+	if m.Errors == nil || af.Status != 403 {
 		t.Errorf("Expected 403 Forbidden error, got %v instead", m.Errors)
 	}
 
