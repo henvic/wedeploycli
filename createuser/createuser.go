@@ -7,6 +7,7 @@ import (
 	"github.com/wedeploy/cli/user"
 )
 
+// Try to create user
 func Try(ctx context.Context) (err error) {
 	_, err = user.Create(ctx, &user.User{
 		Email:    "no-reply@wedeploy.com",
