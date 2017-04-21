@@ -2,6 +2,7 @@ package cmddeploy
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/createuser"
 	"github.com/wedeploy/cli/link"
 	"github.com/wedeploy/cli/projectctx"
 	"github.com/wedeploy/cli/projects"
@@ -20,7 +22,27 @@ type linker struct {
 	Machine link.Machine
 }
 
+func maybeCreateLocalUser(ctx context.Context) error {
+	var _, err = projects.List(ctx)
+
+	if err == nil {
+		return nil
+	}
+
+	ea, ok := err.(*apihelper.APIFault)
+
+	if !ok || ea.Status != http.StatusUnauthorized {
+		return err
+	}
+
+	return createuser.Try(ctx)
+}
+
 func (l *linker) Run() error {
+	if err := maybeCreateLocalUser(context.Background()); err != nil {
+		return nil
+	}
+
 	var projectID, errProjectID = l.getProject()
 
 	if errProjectID != nil {

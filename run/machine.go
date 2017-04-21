@@ -17,9 +17,9 @@ import (
 	"github.com/henvic/uilive"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/createuser"
 	"github.com/wedeploy/cli/exechelper"
 	"github.com/wedeploy/cli/status"
-	"github.com/wedeploy/cli/user"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/waitlivemsg"
 )
@@ -153,14 +153,8 @@ To run the infrastructure with debug mode:
 }
 
 func (dm *DockerMachine) createUser() (err error) {
-	_, err = user.Create(dm.Context, &user.User{
-		Email:    "no-reply@wedeploy.com",
-		Password: "cli-tool-password",
-		Name:     "CLI Tool",
-	})
-
-	if err != nil {
-		return errwrap.Wrapf("Failed to authenticate: {{err}}", err)
+	if err := createuser.Try(dm.Context); err != nil {
+		return err
 	}
 
 	dm.waitLiveMsg.Stop()
