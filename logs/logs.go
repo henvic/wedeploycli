@@ -130,7 +130,23 @@ func GetList(ctx context.Context, filter *Filter) ([]Logs, error) {
 		return list, errwrap.Wrapf("Can not decode logs JSON: {{err}}", err)
 	}
 
-	return list, err
+	return filterInstanceInLogs(list, filter.Instance), nil
+}
+
+func filterInstanceInLogs(list []Logs, instance string) []Logs {
+	if instance == "" {
+		return list
+	}
+
+	var l = []Logs{}
+
+	for _, il := range list {
+		if strings.HasPrefix(il.ContainerUID, instance) {
+			l = append(l, il)
+		}
+	}
+
+	return l
 }
 
 // List logs
