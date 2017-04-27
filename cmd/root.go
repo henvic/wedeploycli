@@ -112,6 +112,7 @@ func init() {
 
 	cmdmanager.HideVersionFlag(RootCmd)
 	cmdmanager.HideNoVerboseRequestsFlag(RootCmd)
+	cmdmanager.HideNoColorFlag(RootCmd)
 
 	for _, c := range commands {
 		RootCmd.AddCommand(c)

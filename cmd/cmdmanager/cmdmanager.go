@@ -16,6 +16,13 @@ func HideNoVerboseRequestsFlag(rootCmd *cobra.Command) {
 	}
 }
 
+// HideNoColorFlag hides the --no-color global flag
+func HideNoColorFlag(rootCmd *cobra.Command) {
+	if err := rootCmd.PersistentFlags().MarkHidden("no-color"); err != nil {
+		panic(err)
+	}
+}
+
 func filterArguments(args []string) []string {
 	if len(args) == 0 {
 		return []string{}
