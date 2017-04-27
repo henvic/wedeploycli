@@ -2,12 +2,25 @@ package waitlivemsg
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/henvic/uilive"
+	"github.com/wedeploy/cli/color"
 )
+
+var spinners = []string{
+	"⠋",
+	"⠙",
+	"⠹",
+	"⠸",
+	"⠼",
+	"⠴",
+	"⠦",
+	"⠧",
+	"⠇",
+	"⠏",
+}
 
 // WaitLiveMsg is used for "waiting" live message
 type WaitLiveMsg struct {
@@ -49,7 +62,7 @@ func (w *WaitLiveMsg) Wait() {
 	w.waitLoop()
 
 	w.msgMutex.RLock()
-	w.print(w.msg, 0)
+	w.print(w.msg, "✔")
 	w.msgMutex.RUnlock()
 	w.waitEnd.Done()
 }
@@ -61,8 +74,8 @@ func (w *WaitLiveMsg) waitLoop() {
 		select {
 		case _ = <-ticker.C:
 			w.msgMutex.RLock()
-			w.print(w.msg, counter)
-			counter = (counter + 1) % 4
+			w.print(w.msg, spinners[counter])
+			counter = (counter + 1) % len(spinners)
 			w.msgMutex.RUnlock()
 		case <-w.tickerd:
 			ticker.Stop()
@@ -101,9 +114,12 @@ func (w *WaitLiveMsg) Duration() int {
 	return duration
 }
 
-func (w *WaitLiveMsg) print(msg string, dots int) {
+func (w *WaitLiveMsg) print(msg string, symbol string) {
 	w.streamMutex.Lock()
-	fmt.Fprintf(w.stream, "%v%v\n", w.msg, strings.Repeat(".", dots))
+	fmt.Fprintf(w.stream,
+		"%v %v\n",
+		color.Format(color.FgBlue, symbol),
+		w.msg)
 	_ = w.stream.Flush()
 	w.streamMutex.Unlock()
 }
