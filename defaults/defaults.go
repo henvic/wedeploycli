@@ -45,4 +45,7 @@ var (
 
 	// LocalHTTPSPort is the default port used to expose WeDeploy locally over HTTPS
 	LocalHTTPSPort = 443
+
+	// SupportEmail value
+	SupportEmail = "support@wedeploy.com"
 )
