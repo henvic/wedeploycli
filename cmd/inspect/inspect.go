@@ -25,15 +25,9 @@ var InspectCmd = &cobra.Command{
 	Hidden:  true,
 	PreRunE: cmdargslen.ValidateCmd(0, 1),
 	RunE:    inspectRun,
-	Example: `we inspect context
-we inspect context --fields
-we inspect context --format "{{.Scope}}"
-we inspect project
-we inspect project --fields
-we inspect project --format "{{.ID}}"
-we inspect container
-we inspect container --fields
-we inspect container --format "{{.Type}}"`,
+	Example: `  we inspect context
+  we inspect project
+  we inspect container --format "{{.ID}}"`,
 }
 
 var (
@@ -43,7 +37,7 @@ var (
 )
 
 func init() {
-	InspectCmd.Flags().StringVar(&directory, "directory", "", "Overrides current working directory")
+	InspectCmd.Flags().StringVar(&directory, "directory", "", "Run the command on another directory")
 	InspectCmd.Flags().StringVarP(&format, "format", "f", "", "Format the output using the given go template")
 	InspectCmd.Flags().BoolVar(&showTypeFields, "fields", false, "Show type field names")
 }

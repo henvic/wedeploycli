@@ -13,7 +13,7 @@ import (
 var Cmd = &cobra.Command{
 	Use:     "rm",
 	Short:   "Remove an environment variable for a given container",
-	Example: "we env rm foo",
+	Example: "  we env rm foo",
 	PreRunE: preRun,
 	RunE:    run,
 }

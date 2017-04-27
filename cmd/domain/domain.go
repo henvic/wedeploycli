@@ -13,17 +13,15 @@ import (
 
 // DomainCmd controls the domains for a given project
 var DomainCmd = &cobra.Command{
-	Use:     "domain",
-	Short:   "Manages your domain names",
+	Use:   "domain",
+	Short: "Manages your domain names",
 	Long: `Manages your domain names
-
-use "we domain" to list domains on the infrastructure.
 
 Changing these values does not change container.json hard coded values.
 
 Information about name servers configuration at
 http://wedeploy.com/docs/intro/custom-domains.html`,
-	Example: `  we domain
+	Example: `  we domain (to list domains)
   we domain add foo.com
   we domain rm foo.com`,
 	PreRunE: preRun,

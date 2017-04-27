@@ -40,11 +40,11 @@ var LogCmd = &cobra.Command{
 	Short:   "Show deployment logs",
 	PreRunE: preRun,
 	RunE:    logRun,
-	Example: `we log --project chat --container data
-we log --container data
-we log --project chat --container data
-we log --url data-chat.wedeploy.me
-we log --url data-chat.wedeploy.io --instance abc`,
+	Example: `  we log --project chat --container data
+  we log --container data
+  we log --project chat --container data
+  we log --url data-chat.wedeploy.me
+  we log --url data-chat.wedeploy.io --instance abc`,
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
@@ -114,7 +114,7 @@ func getSince() (string, error) {
 }
 
 func init() {
-	LogCmd.Flags().StringVar(&instanceArg, "instance", "", `Instance ID or hash`)
+	LogCmd.Flags().StringVar(&instanceArg, "instance", "", `Instance (node) UID`)
 	LogCmd.Flags().StringVar(&severityArg, "level", "0", `Severity (critical, error, warning, info (default), debug)`)
 	LogCmd.Flags().StringVar(&sinceArg, "since", "", "Show since moment (i.e., 20min, 3h, UNIX timestamp)")
 	LogCmd.Flags().BoolVarP(&watchArg, "watch", "w", false, "Watch / follow log output")

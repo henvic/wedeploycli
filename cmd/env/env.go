@@ -19,11 +19,9 @@ var EnvCmd = &cobra.Command{
 	Short: "Environment variables for containers",
 	Long: `Environment variables for containers
 
-Use "we env" to list environment variables on the infrastructure.
-
 Changing these values does not change container.json hard coded values.
 You must restart containers for changed values to apply.`,
-	Example: `  we env
+	Example: `  we env (to list environment variables)
   we env set foo bar
   we env rm foo`,
 	PreRunE: preRun,
