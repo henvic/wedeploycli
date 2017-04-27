@@ -187,7 +187,7 @@ func (s *SetupHost) addURLFlag(cmd *cobra.Command) {
 func (s *SetupHost) addRemoteFlag(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(
 		&s.remote,
-		"remote", "r", "default", "Remote to use")
+		"remote", "r", "current", "Remote to use")
 }
 
 func (s *SetupHost) addProjectFlag(cmd *cobra.Command) {
