@@ -147,14 +147,12 @@ func (c *Config) IsEndpoint(host string) bool {
 // Setup the environment
 func Setup() error {
 	if err := setupGlobal(); err != nil {
-		return errwrap.Wrapf("Error setting up global config: {{err}}", err)
+		verbose.Debug("Error setting up global config")
+		return err
 	}
 
-	if err := setupContext(); err != nil {
-		return errwrap.Wrapf("Error setting up context: {{err}}", err)
-	}
-
-	return nil
+	Context = &usercontext.Context{}
+	return Context.Load()
 }
 
 func (c *Config) setDefaults() {
@@ -306,16 +304,6 @@ func (c *Config) updateRemotes() {
 func (c *Config) banner() {
 	c.file.Section("DEFAULT").Comment = `# Configuration file for WeDeploy CLI
 # https://wedeploy.com`
-}
-
-func setupContext() (err error) {
-	Context = &usercontext.Context{}
-
-	if err = Context.Load(); err != nil {
-		err = errwrap.Wrapf("Fatal context setup failure: {{err}}", err)
-	}
-
-	return err
 }
 
 func setupGlobal() error {
