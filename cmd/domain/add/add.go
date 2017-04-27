@@ -12,6 +12,7 @@ import (
 // Cmd for adding a domain
 var Cmd = &cobra.Command{
 	Use:     "add",
+	Aliases: []string{"set"},
 	Short:   "Add custom domain to a given service",
 	Example: "we domain add example.com",
 	PreRunE: preRun,

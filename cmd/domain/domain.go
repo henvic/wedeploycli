@@ -14,7 +14,6 @@ import (
 // DomainCmd controls the domains for a given project
 var DomainCmd = &cobra.Command{
 	Use:     "domain",
-	Aliases: []string{"set"},
 	Short:   "Manages your domain names",
 	Long: `Manages your domain names
 
