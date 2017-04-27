@@ -97,7 +97,17 @@ func printError(e error) {
 		defaults.SupportEmail)
 }
 
+func hideHelpFlag() {
+	// 'help' can be used here as persistent given that it exists in all commands
+	// with consistent behavior. If it wasn't like this, I couldn't as it might affect
+	// subcommands.
+	var x bool
+	cmd.RootCmd.PersistentFlags().BoolVarP(&x, "help", "h", false, "")
+	cmd.RootCmd.PersistentFlags().MarkHidden("help")
+}
+
 func (m *mainProgram) executeCommand() {
+	hideHelpFlag()
 	m.cmd, m.cmdErr = cmd.RootCmd.ExecuteC()
 	m.cmdFriendlyErr = errorhandling.Handle(m.cmdErr)
 
