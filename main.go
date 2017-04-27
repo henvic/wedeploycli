@@ -21,6 +21,7 @@ import (
 	"github.com/wedeploy/cli/cmd"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/flagsfromhost"
 	"github.com/wedeploy/cli/formatter"
@@ -87,12 +88,21 @@ func (m *mainProgram) setupMetrics() {
 	metrics.SetPath(filepath.Join(userhome.GetHomeDir(), ".we_metrics"))
 }
 
+func printError(e error) {
+	fmt.Fprintf(os.Stderr,
+		"%v %v\n%v %v\n",
+		color.Format(color.FgRed, "Error:"),
+		e,
+		color.Format(color.FgRed, "Contact us:"),
+		defaults.SupportEmail)
+}
+
 func (m *mainProgram) executeCommand() {
 	m.cmd, m.cmdErr = cmd.RootCmd.ExecuteC()
 	m.cmdFriendlyErr = errorhandling.Handle(m.cmdErr)
 
 	if m.cmdErr != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", m.cmdFriendlyErr)
+		printError(m.cmdFriendlyErr)
 	}
 
 	m.reportCommand()
@@ -165,7 +175,7 @@ type configLoader struct {
 
 func (cl *configLoader) loadConfig() {
 	if err := config.Setup(); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", errorhandling.Handle(err))
+		printError(errorhandling.Handle(err))
 		os.Exit(1)
 	}
 
