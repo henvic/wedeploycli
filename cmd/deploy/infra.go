@@ -27,7 +27,7 @@ func init() {
 	df.BoolVar(&runFlags.Debug, "debug", false, "Open local infrastructure debug ports")
 	df.BoolVar(&runFlags.DryRun, "dry-run-local-infra", false, "Dry-run the local infrastructure")
 	df.BoolVar(&infra, "start-local-infra", true, "Start local infrastructure")
-	df.BoolVar(&stopLocalInfraTmp, "stop-local-infra", false, "")
+	df.BoolVar(&stopLocalInfraTmp, "stop-local-infra", false, "Stop local infrastructure")
 	df.BoolVar(&skipInfra, "skip-local-infra", false, "")
 	df.StringVar(&image, "experimental-image", "", "Experimental image to run")
 
