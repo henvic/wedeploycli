@@ -28,10 +28,9 @@ var RemoveCmd = &cobra.Command{
 	Short:   "Remove a project or container",
 	PreRunE: preRun,
 	RunE:    run,
-	Example: `  we remove
+	Example: `  we remove --url data.chat.wedeploy.me
   we remove --project chat
-  we remove --project chat --container data
-  we remove --container data`,
+  we remove --project chat --container data`,
 }
 
 type undeployer struct {
