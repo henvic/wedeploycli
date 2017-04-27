@@ -1,5 +1,5 @@
 hash: 6de00a35e093a0ec5613adad5fc80114ccc3677684e67e4d7fb01489f9e3c570
-updated: 2017-02-14T10:36:18.983871462-08:00
+updated: 2017-04-26T22:23:53.06162885-03:00
 imports:
 - name: github.com/coreos/go-semver
   version: 8ab6407b697782a06568d4b7f1db25550ec2e4c6
@@ -35,7 +35,7 @@ imports:
   - diff
   - pretty
 - name: github.com/mattn/go-isatty
-  version: 66b8e73f3f5cda9f96b69efd03dd3d7fc4a5cdb8
+  version: fc9e8d8ef48496124e79ae0df75490096eccf6fe
 - name: github.com/mitchellh/go-wordwrap
   version: ad45545899c7b13c020ea92b2072220eefad42b8
 - name: github.com/pkg/browser
@@ -47,11 +47,11 @@ imports:
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/spf13/cobra
-  version: de09d9ce07d0d8a74442cfeaa91628cf9492cc23
+  version: 3d7bff8a321b0a0f88b115558bb7e21bec9124ab
   subpackages:
   - doc
 - name: github.com/spf13/pflag
-  version: 25f8b5b07aece3207895bf19f7ab517eb3b22a40
+  version: f1d95a35e132e8a1868023a08932b14f0b8b8fcb
 - name: github.com/wedeploy/api-go
   version: e4258f3d87609e819bd8a9f998ca31c5d538f19e
   subpackages:
@@ -71,7 +71,7 @@ imports:
   subpackages:
   - unix
 - name: gopkg.in/ini.v1
-  version: 6e4869b434bd001f6983749881c7ead3545887d8
+  version: e7fea39b01aea8d5671f6858f0532f56e8bff3a5
 testImports:
 - name: github.com/kr/pty
   version: ce7fa45920dc37a92de8377972e52bc55ffa8d57
