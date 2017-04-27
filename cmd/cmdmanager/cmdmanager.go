@@ -2,23 +2,16 @@ package cmdmanager
 
 import "github.com/spf13/cobra"
 
-// HideVersionFlag hides the global version flag
-func HideVersionFlag(rootCmd *cobra.Command) {
-	if err := rootCmd.Flags().MarkHidden("version"); err != nil {
+// HideFlag hides a flag
+func HideFlag(flag string, rootCmd *cobra.Command) {
+	if err := rootCmd.Flags().MarkHidden(flag); err != nil {
 		panic(err)
 	}
 }
 
-// HideNoVerboseRequestsFlag hides the --no-verbose-requests global flag
-func HideNoVerboseRequestsFlag(rootCmd *cobra.Command) {
-	if err := rootCmd.PersistentFlags().MarkHidden("no-verbose-requests"); err != nil {
-		panic(err)
-	}
-}
-
-// HideNoColorFlag hides the --no-color global flag
-func HideNoColorFlag(rootCmd *cobra.Command) {
-	if err := rootCmd.PersistentFlags().MarkHidden("no-color"); err != nil {
+// HidePersistentFlag hides a flag
+func HidePersistentFlag(flag string, rootCmd *cobra.Command) {
+	if err := rootCmd.PersistentFlags().MarkHidden(flag); err != nil {
 		panic(err)
 	}
 }

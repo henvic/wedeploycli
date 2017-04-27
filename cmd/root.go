@@ -38,7 +38,7 @@ import (
 var RootCmd = &cobra.Command{
 	Use:               "we",
 	Short:             "WeDeploy CLI tool",
-	Long:              `● we [command] [flags]`,
+	Long:              "WeDeploy CLI tool wedeploy.com",
 	PersistentPreRunE: persistentPreRun,
 	Run:               run,
 	SilenceErrors:     true,
@@ -110,9 +110,9 @@ func init() {
 		&version,
 		"version", false, "Print version information and quit")
 
-	cmdmanager.HideVersionFlag(RootCmd)
-	cmdmanager.HideNoVerboseRequestsFlag(RootCmd)
-	cmdmanager.HideNoColorFlag(RootCmd)
+	cmdmanager.HideFlag("version", RootCmd)
+	cmdmanager.HidePersistentFlag("no-verbose-requests", RootCmd)
+	cmdmanager.HidePersistentFlag("no-color", RootCmd)
 
 	for _, c := range commands {
 		RootCmd.AddCommand(c)
