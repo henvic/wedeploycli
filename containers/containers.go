@@ -39,7 +39,8 @@ func (cs Containers) Get(id string) (c Container, err error) {
 type Container struct {
 	ServiceID     string            `json:"serviceId,omitempty"`
 	Health        string            `json:"health,omitempty"`
-	Type          string            `json:"type,omitempty"`
+	Image         string            `json:"image,omitempty"`
+	Version       string            `json:"version,omitempty"`
 	Hooks         *hooks.Hooks      `json:"hooks,omitempty"`
 	CustomDomains []string          `json:"customDomains,omitempty"`
 	Env           map[string]string `json:"env,omitempty"`
@@ -59,10 +60,13 @@ type ContainerPackage struct {
 
 // Container returns a Container type created taking container.json as base
 func (cp ContainerPackage) Container() *Container {
+	var image, version = extractType(cp)
+
 	return &Container{
 		ServiceID:     cp.ID,
 		Scale:         cp.Scale,
-		Type:          cp.Type,
+		Image:         image,
+		Version:       version,
 		Hooks:         cp.Hooks,
 		CustomDomains: cp.CustomDomains,
 		Env:           cp.Env,
@@ -312,18 +316,14 @@ func GetEnvironmentVariables(ctx context.Context, projectID, containerID string)
 	return envs, err
 }
 
-func extractType(container Container) (image, version string, err error) {
-	var s = strings.SplitN(container.Type, ":", 2)
+func extractType(cp ContainerPackage) (image, version string) {
+	var s = strings.SplitN(cp.Type, ":", 2)
 
 	if len(s) == 1 {
-		return s[0], "", nil
+		return s[0], ""
 	}
 
-	if strings.Contains(s[1], ":") {
-		return s[0], s[1], fmt.Errorf(`Invalid container type: "%s"`, container.Type)
-	}
-
-	return s[0], s[1], nil
+	return s[0], s[1]
 }
 
 type linkRequestBody struct {
@@ -340,19 +340,15 @@ type linkRequestBody struct {
 func Link(ctx context.Context, projectID string, container Container, source string) (err error) {
 	var reqBody = linkRequestBody{
 		ServiceID: container.ServiceID,
+		Image:     container.Image,
 		Scale:     container.Scale,
 		Env:       container.Env,
+		Version:   container.Version,
 		Source:    source,
 	}
 
 	if reqBody.Scale == 0 {
 		reqBody.Scale = 1
-	}
-
-	reqBody.Image, reqBody.Version, err = extractType(container)
-
-	if err != nil {
-		return err
 	}
 
 	verbose.Debug("Linking container " + container.ServiceID + " to project " + projectID)
