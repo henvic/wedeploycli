@@ -15,12 +15,10 @@ import (
 
 // ListCmd is used for getting a list of projects and containers
 var ListCmd = &cobra.Command{
-	Use: "list <host> or --project <project> --container <container>",
-	Example: `we list --project chat --container data
-we list --container data
-we list --project chat --container data
-we list --url data-chat.wedeploy.me
-we list --url data-chat.wedeploy.io`,
+	Use: "list --url <host>",
+	Example: `  we list --project chat --container data
+  we list --url data-chat.wedeploy.me
+  we list --url data-chat.wedeploy.io`,
 	Short:   "List deployments",
 	PreRunE: preRun,
 	Run:     listRun,
