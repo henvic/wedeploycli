@@ -23,7 +23,7 @@ var (
 	Docs = "http://wedeploy.com/docs/"
 
 	// Hub for the system
-	Hub = "http://api.dashboard.wedeploy.io"
+	Hub = "http://api.wedeploy.io"
 
 	// WeDeployImageTag is the WeDeploy image tag for docker
 	WeDeployImageTag = "beta"

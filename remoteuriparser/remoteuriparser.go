@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	remoteAPIPrefix = "api.dashboard."
+	remoteAPIPrefix = "api."
 	defaultScheme   = "http"
 )
 
