@@ -3,14 +3,12 @@ package list
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/errorhandling"
-	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/projects"
 )
 
@@ -30,11 +28,8 @@ func (l *List) printProjects() {
 }
 
 func (l *List) printProject(p projects.Project) {
-	var word string
-
-	l.Printf(p.ProjectID)
-	l.Printf(formatter.CondPad(word, 55))
-	l.Printf(getFormattedHealth(p.Health) + "\n")
+	l.Printf(color.Format(getHealthForegroundColor(p.Health), "• "))
+	l.Printf("Project: %v\n", color.Format(color.FgBlue, p.ProjectID))
 
 	var services, err = p.Services(context.Background())
 
@@ -56,20 +51,17 @@ func (l *List) printContainers(projectID string, cs []containers.Container) {
 	}
 
 	if len(cs) == 0 {
-		l.Printf(fmt.Sprintln(color.Format(color.FgHiRed, " (no container found)")))
+		l.Printf(fmt.Sprintln(color.Format(color.FgHiRed, "✖") + " no container found"))
 		return
 	}
 }
 
 func (l *List) printContainer(projectID string, c containers.Container) {
-	l.Printf(color.Format(getHealthForegroundColor(c.Health), " ● "))
+	l.Printf(color.Format(getHealthForegroundColor(c.Health), "• "))
 	containerDomain := getContainerDomain(projectID, c.ServiceID)
-	l.Printf("%v", containerDomain)
-	l.Printf(formatter.CondPad(containerDomain, 52))
+	l.Printf("%v\t", containerDomain)
 	l.printInstances(c.Scale)
-	t := getType(c.Type)
-	l.Printf(color.Format(color.FgHiBlack, "%v", t))
-	l.Printf(formatter.CondPad(t, 23))
+	l.Printf(color.Format(color.FgHiBlack, "%v\t", c.Image))
 	l.Printf("%v\n", c.Health)
 }
 
@@ -86,18 +78,7 @@ func (l *List) printInstances(instances int) {
 		l.Printf("s")
 	}
 
-	l.Printf(formatter.CondPad(s, 15))
-}
-
-func getType(t string) string {
-	var r = regexp.MustCompile(`(.+?)(\:[^:]*$|$)`)
-	var matches = r.FindStringSubmatch(t)
-
-	if len(matches) < 2 {
-		return ""
-	}
-
-	return matches[1]
+	l.Printf("\t")
 }
 
 func getHealthForegroundColor(s string) color.Attribute {
@@ -138,17 +119,6 @@ func getHealthBackgroundColor(s string) color.Attribute {
 
 func pad(space int) string {
 	return strings.Join(make([]string, space), " ")
-}
-
-func getFormattedHealth(s string) string {
-	padding := (12 - len(s)) / 2
-
-	if padding < 2 {
-		padding = 2
-	}
-
-	p := pad(padding)
-	return color.Format(color.FgBlack, getHealthBackgroundColor(s), strings.ToUpper(p+s+p))
 }
 
 func getContainerDomain(projectID, containerID string) string {

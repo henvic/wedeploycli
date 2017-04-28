@@ -12,6 +12,7 @@ import (
 	"github.com/henvic/uilive"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/errorhandling"
+	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/projects"
 )
 
@@ -33,6 +34,7 @@ type List struct {
 	end                chan bool
 	livew              *uilive.Writer
 	outStream          io.Writer
+	w                  *formatter.TabWriter
 	retry              int
 	killed             bool
 	killLock           sync.Mutex
@@ -51,10 +53,11 @@ func New(filter Filter) *List {
 
 // Printf list
 func (l *List) Printf(format string, a ...interface{}) {
-	fmt.Fprintf(l.outStream, format, a...)
+	fmt.Fprintf(l.w, format, a...)
 }
 
 func (l *List) printList() {
+	l.w.Init(l.outStream)
 	var ps, err = l.fetch()
 	l.Projects = ps
 
@@ -65,11 +68,12 @@ func (l *List) printList() {
 
 	l.retry = 0
 	l.printProjects()
+	l.w.Flush()
 }
 
 func (l *List) handleRequestError(err error) string {
 	l.retry++
-	return fmt.Sprintf(color.Format(color.FgHiRed, "%v #%d\n", errorhandling.Handle(err), l.retry))
+	return fmt.Sprintf("%v %v #%d\n", color.Format(color.FgRed, "Error:"), errorhandling.Handle(err), l.retry)
 }
 
 // Start for the list
@@ -81,6 +85,7 @@ func (l *List) Start() {
 
 	l.livew = uilive.New()
 	l.outStream = l.livew
+	l.w = formatter.NewTabWriter(l.outStream)
 
 	go l.watch()
 	go l.watchKill(sigs)
