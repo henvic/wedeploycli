@@ -1,50 +1,71 @@
 package formatter
 
-import "testing"
+import (
+	"bytes"
+	"fmt"
+	"testing"
+)
 
 func TestPadding(t *testing.T) {
-	t.Run("testPaddingMachineFriendly", testPaddingMachineFriendly)
+	t.Run("testMachineFriendlyFormat", testMachineFriendlyFormat)
 	Human = true
 	defer func() {
 		Human = false
 	}()
-	t.Run("testPaddingHumanFriendly", testPaddingHumanFriendly)
+	t.Run("testHumanFriendlyFormat", testHumanFriendlyFormat)
 }
 
-func testPaddingMachineFriendly(t *testing.T) {
+func testMachineFriendlyFormat(t *testing.T) {
 	if Human {
 		t.Errorf("Expected padding to be machine-friendly by default")
 	}
 
-	if CondPad("dog", 10) != "\t" {
-		t.Errorf("Expected conditional padding to be tab, got something else instead")
+	var b bytes.Buffer
+
+	var tw = NewTabWriter(&b)
+	var text = "ABC\tDEFGH\tIJKLMNOPQRSTUVWXYZ\n012345\t6789\n"
+	_, err := fmt.Fprintf(tw, text)
+
+	if err != nil {
+		t.Errorf("Error printing: %v", err)
+	}
+
+	if err := tw.Flush(); err != nil {
+		t.Errorf("Error flushing: %v", err)
+	}
+
+	var got = b.String()
+
+	if got != text {
+		t.Errorf(`Expected text to be original "%v", got "%v" instead`, text, got)
 	}
 }
 
-type padProvider struct {
-	word      string
-	threshold int
-	want      string
-}
+func testHumanFriendlyFormat(t *testing.T) {
+	if !Human {
+		t.Errorf("Expected padding to be human-friendly")
+	}
 
-var padCases = []padProvider{
-	padProvider{"dog", -1, " "},
-	padProvider{"dog", 0, " "},
-	padProvider{"cat", 1, " "},
-	padProvider{"fox", 2, " "},
-	padProvider{"rex", 3, " "},
-	padProvider{"ted", 4, " "},
-	padProvider{"cup", 5, "  "},
-	padProvider{"mom", 6, "   "},
-	padProvider{"pop", 7, "    "},
-	padProvider{"token", 3, " "},
-	padProvider{"crop", 10, "      "},
-}
+	var b bytes.Buffer
 
-func testPaddingHumanFriendly(t *testing.T) {
-	for _, c := range padCases {
-		if s := CondPad(c.word, c.threshold); s != c.want {
-			t.Errorf(`Expected conditional padding of "%v" to be "%v", got "%v" instead`, c.word, c.want, s)
-		}
+	var tw = NewTabWriter(&b)
+	var text = "ABC\tDEFGH\tIJKLMNOPQRSTUVWXYZ\n012345\t6789\n"
+	_, err := fmt.Fprintf(tw, text)
+
+	if err != nil {
+		t.Errorf("Error printing: %v", err)
+	}
+
+	if err := tw.Flush(); err != nil {
+		t.Errorf("Error flushing: %v", err)
+	}
+
+	var want = `ABC       DEFGH    IJKLMNOPQRSTUVWXYZ
+012345    6789
+`
+	var got = b.String()
+
+	if got != want {
+		t.Errorf(`Expected text to be "%v", got "%v" instead`, want, got)
 	}
 }

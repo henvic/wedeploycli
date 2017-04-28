@@ -1,26 +1,42 @@
 package formatter
 
-import "strings"
+import (
+	"io"
+	"text/tabwriter"
+)
 
 // Human tells if the default formatting strategy should be human or machine friendly
 var Human = false
 
-// CondPad is a conditional padding function
-func CondPad(word string, threshold int) string {
-	if !Human {
-		return "\t"
-	}
-
-	var wl = len(word)
-	var space = " "
-
-	if threshold > wl {
-		space = pad(threshold - wl + 1)
-	}
-
-	return space
+// TabWriter for formatting text
+type TabWriter struct {
+	output    io.Writer
+	tabwriter tabwriter.Writer
 }
 
-func pad(space int) string {
-	return strings.Join(make([]string, space), " ")
+// NewTabWriter creates a TabWriter
+func NewTabWriter(output io.Writer) *TabWriter {
+	var t = &TabWriter{}
+	t.Init(output)
+	return t
+}
+
+// Init TabWriter
+func (t *TabWriter) Init(output io.Writer) {
+	t.output = output
+	t.tabwriter.Init(output, 4, 0, 4, ' ', 0)
+}
+
+// Flush the TabWriter
+func (t *TabWriter) Flush() error {
+	return t.tabwriter.Flush()
+}
+
+// Write content
+func (t *TabWriter) Write(buf []byte) (n int, err error) {
+	if Human {
+		return t.tabwriter.Write(buf)
+	}
+
+	return t.output.Write(buf)
 }
