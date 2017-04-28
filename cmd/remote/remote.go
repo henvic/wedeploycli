@@ -65,17 +65,20 @@ var setURLCmd = &cobra.Command{
 
 func remoteRun(cmd *cobra.Command, args []string) error {
 	var remotes = config.Global.Remotes
+	var w = formatter.NewTabWriter(os.Stdout)
 
 	for _, k := range remotes.Keys() {
 		var key, _ = remotes[k]
-		fmt.Printf("%s%s%s", k, formatter.CondPad(k, 15), key.URL)
+		fmt.Fprintf(w, "%s\t%s", k, key.URL)
 
 		if k == config.Global.DefaultRemote {
-			fmt.Printf(" (default)")
+			fmt.Fprintf(w, " (default)")
 		}
 
-		fmt.Printf("\n")
+		fmt.Fprintf(w, "\n")
 	}
+
+	w.Flush()
 
 	return nil
 }
