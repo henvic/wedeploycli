@@ -68,7 +68,7 @@ func (w *WaitLiveMsg) Wait() {
 }
 
 func (w *WaitLiveMsg) waitLoop() {
-	var ticker = time.NewTicker(150 * time.Millisecond)
+	var ticker = time.NewTicker(60 * time.Millisecond)
 	var counter = 0
 	for {
 		select {
