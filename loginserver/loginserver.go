@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/errwrap"
 	wedeploy "github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/verbose"
 )
@@ -173,8 +174,9 @@ func (s *Service) homeHandler(w http.ResponseWriter, r *http.Request) {
 	referer, _ := url.Parse(r.Header.Get("Referer"))
 
 	// this is a compromise
-	if referer.Host != "" && referer.Host != defaults.DashboardAddress {
-		s.err = errors.New("Token origin is not wedeploy.com dashboard")
+	var dashboard = defaults.DashboardAddressPrefix + config.Context.RemoteAddress
+	if referer.Host != "" && referer.Host != dashboard {
+		s.err = errors.New("Token origin is not from given dashboard")
 		safeErrorHandler(w, "403 Forbidden", http.StatusForbidden)
 		s.ctxCancel()
 		return
@@ -226,8 +228,14 @@ type accessToken struct {
 }
 
 // OAuthTokenFromBasicAuth gets a token from a Basic Auth flow
-func OAuthTokenFromBasicAuth(username, password string) (token string, err error) {
-	var request = wedeploy.URL(defaults.OAuthTokenEndpoint)
+func OAuthTokenFromBasicAuth(remoteAddress, username, password string) (token string, err error) {
+	var u = url.URL{
+		Scheme: "http",
+		Host:   fmt.Sprintf("auth-dashboard.%s", remoteAddress),
+		Path:   "/oauth/token",
+	}
+
+	var request = wedeploy.URL(u.String())
 
 	request.Param("username", username)
 	request.Param("password", password)

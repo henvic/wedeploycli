@@ -313,9 +313,9 @@ func (s *SetupHost) verifyCmdReqAuth() error {
 		return nil
 	}
 
-	var g = config.Global
+	var c = config.Context
 
-	var hasAuth = (g.Token != "") || (g.Username != "" && g.Password != "")
+	var hasAuth = (c.Token != "") || (c.Username != "" && c.Password != "")
 
 	if hasAuth {
 		return nil
@@ -344,9 +344,9 @@ func SetRemote(remote string) (err error) {
 	config.Context.Remote = remote
 	config.Context.RemoteAddress = getRemoteAddress(r.URL)
 	config.Context.Endpoint = remoteuriparser.Parse(r.URL)
-	config.Context.Username = config.Global.Username
-	config.Context.Password = config.Global.Password
-	config.Context.Token = config.Global.Token
+	config.Context.Username = r.Username
+	config.Context.Password = r.Password
+	config.Context.Token = r.Token
 	return nil
 }
 

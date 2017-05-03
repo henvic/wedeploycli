@@ -71,18 +71,18 @@ func diagnosticsRun(cmd *cobra.Command, args []string) error {
 }
 
 func printUsername() string {
-	if config.Global == nil || config.Global.Username == "" {
+	if config.Global == nil || config.Context.Username == "" {
 		return "not logged in"
 	}
 
-	return config.Global.Username
+	return config.Context.Username
 }
 
 func submit(report diagnostics.Report) error {
 	var username string
 
 	if config.Global != nil {
-		username = config.Global.Username
+		username = config.Context.Username
 	}
 
 	var entry = diagnostics.Entry{

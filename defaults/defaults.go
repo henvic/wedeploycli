@@ -10,14 +10,11 @@ var (
 	// BuildTime is the time when the build was generated
 	BuildTime = ""
 
-	// DashboardAddress for the system (global)
-	DashboardAddress = "dashboard.wedeploy.com"
+	// DashboardAddressPrefix for a given remote
+	DashboardAddressPrefix = "dashboard."
 
-	// Dashboard for the system (global)
-	Dashboard = "http://" + DashboardAddress
-
-	// OAuthTokenEndpoint for generating OAuth tokens
-	OAuthTokenEndpoint = "http://auth.dashboard.wedeploy.com/oauth/token"
+	// DashboardURLPrefix for a given remote
+	DashboardURLPrefix = "http://" + DashboardAddressPrefix
 
 	// Docs page
 	Docs = "http://wedeploy.com/docs/"

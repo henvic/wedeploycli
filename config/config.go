@@ -21,9 +21,6 @@ import (
 
 // Config of the application
 type Config struct {
-	Username        string       `ini:"username"`
-	Password        string       `ini:"password"`
-	Token           string       `ini:"token"`
 	DefaultRemote   string       `ini:"default_remote"`
 	LocalHTTPPort   int          `ini:"local_http_port"`
 	LocalHTTPSPort  int          `ini:"local_https_port"`
@@ -80,7 +77,10 @@ func (c *Config) loadDefaultRemotes() {
 	switch c.Remotes[defaults.CloudRemote].URL {
 	case "wedeploy.io":
 	case "":
-		c.Remotes.Set(defaults.CloudRemote, "wedeploy.io", "Default cloud remote")
+		c.Remotes.Set(defaults.CloudRemote, remotes.Entry{
+			URL:        "wedeploy.io",
+			URLComment: "Default cloud remote",
+		})
 	default:
 		println(color.Format(color.FgHiRed, "Warning: Non-standard wedeploy remote cloud detected"))
 	}
@@ -88,7 +88,10 @@ func (c *Config) loadDefaultRemotes() {
 	switch c.Remotes[defaults.LocalRemote].URL {
 	case "wedeploy.me":
 	case "":
-		c.Remotes.Set(defaults.LocalRemote, "wedeploy.me", "Default local remote")
+		c.Remotes.Set(defaults.LocalRemote, remotes.Entry{
+			URL:        "wedeploy.me",
+			URLComment: "Default local remote",
+		})
 	default:
 		println(color.Format(color.FgHiRed, "Warning: Non-standard local cloud detected"))
 	}
@@ -245,13 +248,21 @@ func (c *Config) readRemotes() {
 	for _, k := range c.listRemotes() {
 		s := c.getRemote(k)
 		u := s.Key("url")
-		URLComment := strings.TrimPrefix(u.Comment, "#")
-		comment := strings.TrimPrefix(s.Comment, "#")
+		username := s.Key("username")
+		password := s.Key("password")
+		token := s.Key("token")
+		comment := s.Comment
 
 		c.Remotes[k] = remotes.Entry{
-			URL:        u.String(),
-			URLComment: strings.TrimSpace(URLComment),
-			Comment:    strings.TrimSpace(comment),
+			URL:             strings.TrimSpace(u.String()),
+			URLComment:      strings.TrimSpace(u.Comment),
+			Comment:         strings.TrimSpace(comment),
+			Username:        strings.TrimSpace(username.String()),
+			UsernameComment: strings.TrimSpace(username.Comment),
+			Password:        strings.TrimSpace(password.String()),
+			PasswordComment: strings.TrimSpace(password.Comment),
+			Token:           strings.TrimSpace(token.String()),
+			TokenComment:    strings.TrimSpace(token.Comment),
 		}
 	}
 }
@@ -280,6 +291,15 @@ func (c *Config) simplifyRemotes() {
 		if len(s.Keys()) == 0 && s.Comment == "" {
 			c.deleteRemote(k)
 		}
+
+		var omitempty = []string{"username", "password", "token"}
+
+		for _, k := range omitempty {
+			var key = s.Key(k)
+			if key.Value() == "" && key.Comment == "" {
+				s.DeleteKey(k)
+			}
+		}
 	}
 }
 
@@ -294,8 +314,21 @@ func (c *Config) updateRemotes() {
 		s := c.getRemote(k)
 		key := s.Key("url")
 		key.SetValue(v.URL)
-		key.Comment = v.URLComment
-		s.Comment = v.Comment
+		key.Comment = normalizeComment(v.URLComment)
+
+		keyUsername := s.Key("username")
+		keyUsername.SetValue(v.Username)
+		keyUsername.Comment = normalizeComment(v.UsernameComment)
+
+		keyPassword := s.Key("password")
+		keyPassword.SetValue(v.Password)
+		keyPassword.Comment = normalizeComment(v.PasswordComment)
+
+		keyToken := s.Key("token")
+		keyToken.SetValue(v.Token)
+		keyToken.Comment = normalizeComment(v.TokenComment)
+
+		s.Comment = normalizeComment(v.Comment)
 	}
 
 	c.simplifyRemotes()
@@ -338,4 +371,12 @@ func teardownContext() {
 
 func teardownGlobal() {
 	Global = nil
+}
+
+func normalizeComment(s string) string {
+	if !strings.HasPrefix(s, "; ") {
+		return s
+	}
+
+	return "# " + s[2:]
 }

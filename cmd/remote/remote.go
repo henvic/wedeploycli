@@ -11,6 +11,7 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/formatter"
+	"github.com/wedeploy/cli/remotes"
 )
 
 // RemoteCmd runs the WeDeploy structure for development locally
@@ -85,35 +86,38 @@ func remoteRun(cmd *cobra.Command, args []string) error {
 
 func setRun(cmd *cobra.Command, args []string) error {
 	var global = config.Global
-	var remotes = global.Remotes
+	var r = global.Remotes
 	var name = args[0]
 
-	if _, ok := remotes[name]; ok {
-		remotes.Del(name)
+	if _, ok := r[name]; ok {
+		r.Del(name)
 	}
 
-	remotes.Set(name, args[1])
+	r.Set(name, remotes.Entry{
+		URL: args[1],
+	})
+
 	return global.Save()
 }
 
 func renameRun(cmd *cobra.Command, args []string) error {
 	var global = config.Global
-	var remotes = global.Remotes
+	var r = global.Remotes
 	var old = args[0]
 	var name = args[1]
 
-	var oldRemote, ok = remotes[old]
+	var oldRemote, ok = r[old]
 
 	if !ok {
 		return errors.New("fatal: remote " + old + " does not exists.")
 	}
 
-	if _, ok := remotes[name]; ok {
+	if _, ok := r[name]; ok {
 		return errors.New("fatal: remote " + name + " already exists.")
 	}
 
-	remotes.Set(name, oldRemote.URL, oldRemote.Comment)
-	remotes.Del(old)
+	r.Del(old)
+	r.Set(name, oldRemote)
 	return global.Save()
 }
 
@@ -159,15 +163,17 @@ func getURLRun(cmd *cobra.Command, args []string) error {
 
 func setURLRun(cmd *cobra.Command, args []string) error {
 	var global = config.Global
-	var remotes = global.Remotes
+	var r = global.Remotes
 	var name = args[0]
 	var uri = args[1]
 
-	if _, ok := remotes[name]; !ok {
+	if _, ok := r[name]; !ok {
 		return errors.New("fatal: remote " + name + " does not exists.")
 	}
 
-	remotes.Set(name, uri)
+	r.Set(name, remotes.Entry{
+		URL: uri,
+	})
 	return global.Save()
 }
 

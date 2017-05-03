@@ -1,15 +1,18 @@
 package remotes
 
-import (
-	"sort"
-	"strings"
-)
+import "sort"
 
 // Entry for a remote
 type Entry struct {
-	URL        string
-	URLComment string
-	Comment    string
+	URL             string
+	URLComment      string
+	Username        string
+	UsernameComment string
+	Password        string
+	PasswordComment string
+	Token           string
+	TokenComment    string
+	Comment         string
 }
 
 // List of remotes
@@ -28,16 +31,8 @@ func (l List) Keys() []string {
 }
 
 // Set a remote
-func (l List) Set(name string, url string, comment ...string) {
-	// make sure to use # by default, instead of ;
-	if len(comment) != 0 {
-		comment = append([]string{"#"}, comment...)
-	}
-
-	l[name] = Entry{
-		URL:     url,
-		Comment: strings.Join(comment, " "),
-	}
+func (l List) Set(name string, entry Entry) {
+	l[name] = entry
 }
 
 // Del deletes a remote by name

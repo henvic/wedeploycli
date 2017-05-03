@@ -2,6 +2,7 @@ package cmdlogin
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
+	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
@@ -24,11 +26,16 @@ var noLaunchBrowser bool
 var LoginCmd = &cobra.Command{
 	Use:     "login",
 	Short:   "Authenticate on WeDeploy",
-	PreRunE: cmdargslen.ValidateCmd(0, 0),
+	PreRunE: preRun,
 	RunE:    loginRun,
 }
 
+var setupHost = cmdflagsfromhost.SetupHost{
+	Pattern: cmdflagsfromhost.RemotePattern,
+}
+
 func init() {
+	setupHost.Init(LoginCmd)
 	LoginCmd.Flags().BoolVar(&noLaunchBrowser, "no-launch-browser", false, "Do not launch browser for authentication")
 }
 
@@ -55,13 +62,15 @@ func basicAuthLogin() error {
 		password string
 		token    string
 		err      error
+
+		remoteAddress = config.Context.RemoteAddress
 	)
 
 	fmt.Println(`Your email and password are your Basic Auth credentials.
 
 Have you signed up with an authentication provider such as Google or GitHub?
 Please, set up a WeDeploy password first at
-` + color.Format(color.FgHiRed, "http://dashboard.wedeploy.com/password/reset") +
+` + color.Format(color.FgHiRed, "http://dashboard.%v/password/reset", remoteAddress) +
 		"\nor you won't be able to continue.\n")
 	if username, err = prompt.Prompt("Username"); err != nil {
 		return err
@@ -71,7 +80,7 @@ Please, set up a WeDeploy password first at
 		return err
 	}
 
-	token, err = loginserver.OAuthTokenFromBasicAuth(username, password)
+	token, err = loginserver.OAuthTokenFromBasicAuth(remoteAddress, username, password)
 
 	if err != nil {
 		return err
@@ -81,10 +90,22 @@ Please, set up a WeDeploy password first at
 	return saveUser(username, token)
 }
 
+func preRun(cmd *cobra.Command, args []string) error {
+	if err := cmdargslen.Validate(args, 0, 0); err != nil {
+		return err
+	}
+
+	return setupHost.Process()
+}
+
 func loginRun(cmd *cobra.Command, args []string) error {
-	if config.Global.Username != "" {
-		return fmt.Errorf(`Already logged in as %v
-Logout first with "we logout"`, config.Global.Username)
+	if config.Context.Remote == defaults.LocalRemote {
+		return errors.New("Local remote does not require logging in")
+	}
+
+	if config.Context.Username != "" {
+		return fmt.Errorf(`Already logged in as %v on %v (%v)
+Logout first with "we logout"`, config.Context.Username, config.Context.Remote, config.Context.RemoteAddress)
 	}
 
 	if noLaunchBrowser {
@@ -99,7 +120,11 @@ Logout first with "we logout"`, config.Global.Username)
 		return err
 	}
 
-	var loginURL = defaults.Dashboard + "/login?redirect_uri=" + url.QueryEscape(host)
+	var loginURL = fmt.Sprintf("%s%s%s%s",
+		defaults.DashboardURLPrefix,
+		config.Context.RemoteAddress,
+		"/login?redirect_uri=",
+		url.QueryEscape(host))
 	maybeOpenBrowser(loginURL)
 
 	if err = service.Serve(); err != nil {
@@ -117,17 +142,19 @@ Logout first with "we logout"`, config.Global.Username)
 
 func saveUser(username, token string) (err error) {
 	var g = config.Global
+	var remote = g.Remotes[config.Context.Remote]
+	remote.Username = username
+	remote.Password = ""
+	remote.Token = token
 
-	g.Username = username
-	g.Password = ""
-	g.Token = token
+	g.Remotes[config.Context.Remote] = remote
 
 	if err = g.Save(); err != nil {
 		return err
 	}
 
 	fmt.Println(color.Format(color.FgHiCyan, `
-You are now logged in as %s
-Go to http://wedeploy.com/docs/ to learn how to use WeDeploy`, g.Username))
+You are now logged in as %s on %s
+Go to http://wedeploy.com/docs/ to learn how to use WeDeploy`, username, remote.URL))
 	return nil
 }

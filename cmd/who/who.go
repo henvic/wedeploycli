@@ -18,10 +18,11 @@ var WhoCmd = &cobra.Command{
 }
 
 func whoRun(cmd *cobra.Command, args []string) error {
-	var g = config.Global
-
-	if g.Username != "" {
-		fmt.Println(g.Username)
+	if config.Context.Username != "" {
+		fmt.Printf("%s in %s (%s)\n",
+			config.Context.Username,
+			config.Context.Remote,
+			config.Context.RemoteAddress)
 		return nil
 	}
 

@@ -44,7 +44,7 @@ func getAuthCredentials() string {
 }
 
 func getRepoAuthorization() (string, error) {
-	if config.Global.Username == "" {
+	if config.Context.Username == "" {
 		return "", errors.New("User is not configured yet")
 	}
 
