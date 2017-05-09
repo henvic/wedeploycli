@@ -5,7 +5,7 @@
 `alias i="go run $HOME/projects/gocode/src/github.com/wedeploy/cli/main.go $1"`
 
 # Run go tests and generate test coverage for the current directory
-alias gotest='go test -coverprofile=coverage.out && go tool cover -html coverage.out -o coverage.html'
+alias gotest='go test -race -coverprofile=coverage.out && go tool cover -html coverage.out -o coverage.html'
 
 # Open go tests coverage report for the current directory
 alias goreport="open coverage.html"
