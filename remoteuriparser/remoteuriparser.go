@@ -7,7 +7,7 @@ import (
 
 const (
 	remoteAPIPrefix = "api."
-	defaultScheme   = "http"
+	defaultScheme   = "https"
 )
 
 // Parse address for extracting remote API

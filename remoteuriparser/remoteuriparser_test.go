@@ -10,15 +10,19 @@ type cases struct {
 var casesProvider = []cases{
 	cases{
 		uri:  "address",
-		want: "http://api.dashboard.address",
+		want: "https://api.address",
 	},
 	cases{
 		uri:  "address:100",
-		want: "http://api.dashboard.address:100",
+		want: "https://api.address:100",
 	},
 	cases{
 		uri:  "http://address",
-		want: "http://api.dashboard.address",
+		want: "http://api.address",
+	},
+	cases{
+		uri:  "https://address",
+		want: "https://api.address",
 	},
 	cases{
 		uri:  "http://4.4.4.4",
@@ -26,43 +30,43 @@ var casesProvider = []cases{
 	},
 	cases{
 		uri:  "4.4.4.4",
-		want: "http://4.4.4.4",
+		want: "https://4.4.4.4",
 	},
 	cases{
 		uri:  "4.4.4.4/",
-		want: "http://4.4.4.4",
+		want: "https://4.4.4.4",
 	},
 	cases{
 		uri:  "4.4.4.4:8000/",
-		want: "http://4.4.4.4:8000",
+		want: "https://4.4.4.4:8000",
 	},
 	cases{
 		uri:  "wedeploy.io",
-		want: "http://api.dashboard.wedeploy.io",
+		want: "https://api.wedeploy.io",
 	},
 	cases{
 		uri:  "https://wedeploy.io",
-		want: "https://api.dashboard.wedeploy.io",
+		want: "https://api.wedeploy.io",
 	},
 	cases{
 		uri:  "wedeploy.io:8080/",
-		want: "http://api.dashboard.wedeploy.io:8080",
+		want: "https://api.wedeploy.io:8080",
 	},
 	cases{
 		uri:  "wedeploy.io:8080",
-		want: "http://api.dashboard.wedeploy.io:8080",
+		want: "https://api.wedeploy.io:8080",
 	},
 	cases{
 		uri:  "http://wedeploy.io:8080",
-		want: "http://api.dashboard.wedeploy.io:8080",
+		want: "http://api.wedeploy.io:8080",
 	},
 	cases{
 		uri:  "https://wedeploy.io:8080",
-		want: "https://api.dashboard.wedeploy.io:8080",
+		want: "https://api.wedeploy.io:8080",
 	},
 	cases{
 		uri:  "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-		want: "http://2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+		want: "https://2001:0db8:85a3:0000:0000:8a2e:0370:7334",
 	},
 	cases{
 		uri:  "https://2001:0db8:85a3:0000:0000:8a2e:0370:7334",
