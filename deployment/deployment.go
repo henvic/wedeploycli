@@ -218,6 +218,7 @@ func (d *Deploy) Push() error {
 // AddRemote on project
 func (d *Deploy) AddRemote() error {
 	var params = []string{"remote", "add", d.getGitRemote(), d.GitRemoteAddress}
+	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
 	cmd.Dir = d.Path
