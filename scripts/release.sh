@@ -142,9 +142,9 @@ function runTests() {
   echo "Running tests (may take a while)."
 
   if [[ $skipIntegrationTests == true ]] ; then
-    go test $(go list ./... | grep -v /vendor/ | grep -v /integration$)
+    go test $(go list ./... | grep -v /vendor/ | grep -v /integration$) -race
   else
-    go test $(go list ./... | grep -v /vendor/)
+    go test $(go list ./... | grep -v /vendor/) -race
   fi
 }
 
