@@ -8,53 +8,208 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/remotes"
 	"github.com/wedeploy/cli/tdata"
 )
 
 func TestUnset(t *testing.T) {
 	if Global != nil {
-		t.Errorf("Expected config.Global to be null")
+		t.Errorf("Expected Global to be null")
 	}
 
 	if Context != nil {
-		t.Errorf("Expected config.Context to be null")
+		t.Errorf("Expected Context to be null")
 	}
 }
 
-func TestSetupAndTeardown(t *testing.T) {
-	setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/home"))
+func TestSetupNonExistingConfigFileAndTeardown(t *testing.T) {
+	if Global != nil {
+		t.Errorf("Expected Global to be null")
+	}
+
+	if Context != nil {
+		t.Errorf("Expected Context to be null")
+	}
+
+	if err := Setup("./mocks/invalid/.we"); err != nil {
+		panic(err)
+	}
+
+	if err := SetEndpointContext(defaults.CloudRemote); err != nil {
+		panic(err)
+	}
+
+	if Global == nil {
+		t.Error("Expected global config to be mocked")
+	}
+
+	var (
+		wantUsername      = ""
+		wantPassword      = ""
+		wantToken         = ""
+		wantRemote        = "wedeploy"
+		wantRemoteAddress = "wedeploy.io"
+	)
+
+	if len(Global.Remotes) != 2 {
+		t.Errorf("Expected to have 2 remotes, got %v", Global.Remotes)
+	}
+
+	if Context.Username != wantUsername {
+		t.Errorf("Wanted username to be %v, got %v instead", wantUsername, Context.Username)
+	}
+
+	if Context.Password != wantPassword {
+		t.Errorf("Wanted password to be %v, got %v instead", wantPassword, Context.Password)
+	}
+
+	if Context.Token != wantToken {
+		t.Errorf("Wanted token to be %v, got %v instead", wantToken, Context.Token)
+	}
+
+	if Context.Remote != wantRemote {
+		t.Errorf("Wanted remote to be %v, got %v instead", wantRemote, Context.Remote)
+	}
+
+	if Context.RemoteAddress != wantRemoteAddress {
+		t.Errorf("Wanted remoteAddress to be %v, got %v instead", wantRemoteAddress, Context.RemoteAddress)
+	}
+
+	Teardown()
 
 	if Global != nil {
-		t.Errorf("Expected config.Global to be null")
+		t.Errorf("Expected Global to be null")
+	}
+
+	if Context != nil {
+		t.Errorf("Expected Context to be null")
+	}
+}
+
+func TestSetupLocalAndTeardown(t *testing.T) {
+	if Global != nil {
+		t.Errorf("Expected Global to be null")
+	}
+
+	if Context != nil {
+		t.Errorf("Expected Context to be null")
+	}
+
+	if err := Setup("./mocks/home/.we"); err != nil {
+		panic(err)
+	}
+
+	if err := SetEndpointContext(defaults.LocalRemote); err != nil {
+		panic(err)
+	}
+
+	if Global == nil {
+		t.Error("Expected global config to be mocked")
+	}
+
+	var (
+		wantUsername      = "foo@example.com"
+		wantPassword      = ""
+		wantToken         = "mock_token"
+		wantRemote        = "local"
+		wantRemoteAddress = "wedeploy.me"
+	)
+
+	if len(Global.Remotes) != 3 {
+		t.Errorf("Expected to have 3 remotes, got %v", Global.Remotes)
+	}
+
+	if Context.Username != wantUsername {
+		t.Errorf("Wanted username to be %v, got %v instead", wantUsername, Context.Username)
+	}
+
+	if Context.Password != wantPassword {
+		t.Errorf("Wanted password to be %v, got %v instead", wantPassword, Context.Password)
+	}
+
+	if Context.Token != wantToken {
+		t.Errorf("Wanted token to be %v, got %v instead", wantToken, Context.Token)
+	}
+
+	if Context.Remote != wantRemote {
+		t.Errorf("Wanted remote to be %v, got %v instead", wantRemote, Context.Remote)
+	}
+
+	if Context.RemoteAddress != wantRemoteAddress {
+		t.Errorf("Wanted remoteAddress to be %v, got %v instead", wantRemoteAddress, Context.RemoteAddress)
+	}
+
+	Teardown()
+
+	if Global != nil {
+		t.Errorf("Expected Global to be null")
+	}
+
+	if Context != nil {
+		t.Errorf("Expected Context to be null")
+	}
+}
+
+func TestSetupRemoteAndTeardown(t *testing.T) {
+	if Global != nil {
+		t.Errorf("Expected Global to be null")
 	}
 
 	if Context != nil {
 		t.Errorf("Expected config.Context to be null")
 	}
 
-	if err := Setup(); err != nil {
+	if err := Setup("./mocks/home/.we"); err != nil {
 		panic(err)
 	}
 
-	if Global.Username != "admin" {
-		t.Errorf("Wrong username")
+	if err := SetEndpointContext(defaults.CloudRemote); err != nil {
+		panic(err)
 	}
 
-	if Global.Password != "safe" {
-		t.Errorf("Wrong password")
+	if Global == nil {
+		t.Error("Expected global config to be mocked")
 	}
 
-	if Global.NotifyUpdates != true {
+	var (
+		wantUsername      = "foo@example.com"
+		wantPassword      = "bar"
+		wantToken         = ""
+		wantRemote        = "wedeploy"
+		wantRemoteAddress = "wedeploy.io"
+	)
+
+	if len(Global.Remotes) != 3 {
+		t.Errorf("Expected to have 3 remotes, got %v", Global.Remotes)
+	}
+
+	if Context.Username != wantUsername {
+		t.Errorf("Wanted username to be %v, got %v instead", wantUsername, Context.Username)
+	}
+
+	if Context.Password != wantPassword {
+		t.Errorf("Wanted password to be %v, got %v instead", wantPassword, Context.Password)
+	}
+
+	if Context.Token != wantToken {
+		t.Errorf("Wanted token to be %v, got %v instead", wantToken, Context.Token)
+	}
+
+	if Context.Remote != wantRemote {
+		t.Errorf("Wanted remote to be %v, got %v instead", wantRemote, Context.Remote)
+	}
+
+	if Context.RemoteAddress != wantRemoteAddress {
+		t.Errorf("Wanted remoteAddress to be %v, got %v instead", wantRemoteAddress, Context.RemoteAddress)
+	}
+
+	if Global.NotifyUpdates {
 		t.Errorf("Wrong NotifyUpdate value")
 	}
 
 	if Global.ReleaseChannel != "stable" {
 		t.Errorf("Wrong ReleaseChannel value")
-	}
-
-	if Global.LocalEndpoint != "http://localhost:3002/" {
-		t.Errorf("Wrong LocalEndpoint value")
 	}
 
 	if Context.Scope != "global" {
@@ -69,11 +224,10 @@ func TestSetupAndTeardown(t *testing.T) {
 		t.Errorf("Expected Context.ContainerRoot to be empty")
 	}
 
-	unsetenv("WEDEPLOY_CUSTOM_HOME")
 	Teardown()
 
 	if Global != nil {
-		t.Errorf("Expected config.Global to be null")
+		t.Errorf("Expected Global to be null")
 	}
 
 	if Context != nil {
@@ -82,14 +236,13 @@ func TestSetupAndTeardown(t *testing.T) {
 }
 
 func TestSetupAndTeardownProject(t *testing.T) {
-	setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/home"))
 	var workingDir, _ = os.Getwd()
 
 	if err := os.Chdir(filepath.Join(workingDir, "mocks/project/non-container")); err != nil {
 		t.Error(err)
 	}
 
-	if err := Setup(); err != nil {
+	if err := Setup("../../home/.we"); err != nil {
 		panic(err)
 	}
 
@@ -109,19 +262,17 @@ func TestSetupAndTeardownProject(t *testing.T) {
 		panic(err)
 	}
 
-	unsetenv("WEDEPLOY_CUSTOM_HOME")
 	Teardown()
 }
 
 func TestSetupAndTeardownProjectAndContainer(t *testing.T) {
-	setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/home"))
 	var workingDir, _ = os.Getwd()
 
 	if err := os.Chdir(filepath.Join(workingDir, "mocks/project/container/inside")); err != nil {
 		t.Error(err)
 	}
 
-	if err := Setup(); err != nil {
+	if err := Setup("../../../home/.we"); err != nil {
 		panic(err)
 	}
 
@@ -141,13 +292,11 @@ func TestSetupAndTeardownProjectAndContainer(t *testing.T) {
 		panic(err)
 	}
 
-	unsetenv("WEDEPLOY_CUSTOM_HOME")
 	Teardown()
 }
 
 func TestSave(t *testing.T) {
-	setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/home"))
-	if err := Setup(); err != nil {
+	if err := Setup("mocks/home/.we"); err != nil {
 		panic(err)
 	}
 
@@ -160,108 +309,39 @@ func TestSave(t *testing.T) {
 	// save in a different location
 	Global.Path = tmp.Name()
 
-	Global.Username = "other"
-
 	if err := Global.Save(); err != nil {
 		panic(err)
 	}
 
 	var got = tdata.FromFile(Global.Path)
 	var want = []string{
-		`# Configuration file for WeDeploy CLI
-# https://wedeploy.com
-username                         = other
-password                         = safe
-token                            = 
-local_http_port                  = 80
-disable_autocomplete_autoinstall = false
-disable_colors                   = false
-notify_updates                   = true
-release_channel                  = stable
-enable_analytics                 = false
-analytics_option_date            = 
-analytics_id                     = 
+		`; Configuration file for WeDeploy CLI
+; https://wedeploy.com`,
+		`default_remote                   = wedeploy`,
+		`local_http_port                  = 80`,
+		`local_https_port                 = 443`,
+		`disable_autocomplete_autoinstall = true`,
+		`disable_colors                   = false`,
+		`notify_updates                   = false`,
+		`release_channel                  = stable`,
+		`enable_analytics                 = false`,
+		`[remote "wedeploy"]
+    ; Default cloud remote
+    url      = wedeploy.io
+    username = foo@example.com
+    password = bar
 `,
-		`
-# Default cloud remote
-[remote "wedeploy"]
-    url = wedeploy.io
+		`[remote "local"]
+    ; Default local remote
+    url      = wedeploy.me
+    username = foo@example.com
+    token    = mock_token
 `,
-		`
-# Default local remote
-[remote "local"]
-    url = wedeploy.me
-
-`}
-	for _, w := range want {
-		if !strings.Contains(got, w) {
-			t.Errorf("Expected string does not exists in generated configuration file: %v", w)
-		}
+		`[remote "xyz"]
+    url      = wedeploy.xyz
+    username = foobar@example.net
+    password = 123`,
 	}
-
-	if err = tmp.Close(); err != nil {
-		panic(err)
-	}
-
-	if err = os.Remove(tmp.Name()); err != nil {
-		panic(err)
-	}
-
-	unsetenv("WEDEPLOY_CUSTOM_HOME")
-	Teardown()
-}
-
-func TestSaveAfterCreation(t *testing.T) {
-	setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/homeless"))
-	if err := Setup(); err != nil {
-		panic(err)
-	}
-
-	var tmp, err = ioutil.TempFile(os.TempDir(), "we")
-
-	if err != nil {
-		panic(err)
-	}
-
-	if Global.Remotes == nil {
-		t.Error("Remotes should be initialized, not nil")
-	}
-
-	// save in a different location
-	Global.Path = tmp.Name()
-
-	Global.Username = "other"
-
-	if err := Global.Save(); err != nil {
-		panic(err)
-	}
-
-	var got = tdata.FromFile(Global.Path)
-	var want = []string{
-		`# Configuration file for WeDeploy CLI
-# https://wedeploy.com
-username                         = other
-password                         = 
-token                            = 
-local_http_port                  = 80
-disable_autocomplete_autoinstall = false
-disable_colors                   = false
-notify_updates                   = true
-release_channel                  = stable
-enable_analytics                 = false
-analytics_option_date            = 
-analytics_id                     = 
-`,
-		`# Default cloud remote
-[remote "wedeploy"]
-    url = wedeploy.io
-`,
-		`
-# Default local remote
-[remote "local"]
-    url = wedeploy.me
-
-`}
 
 	for _, w := range want {
 		if !strings.Contains(got, w) {
@@ -277,18 +357,15 @@ analytics_id                     =
 		panic(err)
 	}
 
-	unsetenv("WEDEPLOY_CUSTOM_HOME")
 	Teardown()
 }
 
 func TestRemotes(t *testing.T) {
-	setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/remotes"))
-
 	if Global != nil {
-		t.Errorf("Expected config.Global to be null")
+		t.Errorf("Expected Global to be null")
 	}
 
-	if err := Setup(); err != nil {
+	if err := Setup("./mocks/remotes/.we"); err != nil {
 		panic(err)
 	}
 
@@ -298,13 +375,27 @@ func TestRemotes(t *testing.T) {
 		panic(err)
 	}
 
-	Global.Username = "fool"
-	Global.Remotes.Set("staging", "https://staging.example.net/")
-	Global.Remotes.Set("beta", "https://beta.example.com/", "remote for beta testing")
-	Global.Remotes.Set("new", "http://foo/")
+	Global.Remotes.Set("staging", remotes.Entry{
+		URL: "https://staging.example.net/",
+	})
+
+	Global.Remotes.Set("beta", remotes.Entry{
+		URL:     "https://beta.example.com/",
+		Comment: "remote for beta testing",
+	})
+
+	Global.Remotes.Set("new", remotes.Entry{
+		URL: "http://foo/",
+	})
+
 	Global.Remotes.Del("temporary")
-	Global.Remotes.Set("remain", "", "commented vars remains even when empty")
-	Global.Remotes.Set("dontremain", "")
+
+	Global.Remotes.Set("remain", remotes.Entry{
+		Comment: "commented vars remains even when empty",
+	})
+
+	Global.Remotes.Set("dontremain", remotes.Entry{})
+
 	Global.Remotes.Del("dontremain2")
 
 	// save in a different location
@@ -315,23 +406,7 @@ func TestRemotes(t *testing.T) {
 	}
 
 	var got = tdata.FromFile(Global.Path)
-	var want = []string{
-		`username                         = fool
-password                         = safe
-token                            = 
-local                            = true
-disable_colors                   = false
-notify_updates                   = true
-release_channel                  = stable
-# commented vars remains even when empty
-next_version                     = 
-local_http_port                  = 80
-disable_autocomplete_autoinstall = false
-enable_analytics                 = false
-analytics_option_date            = 
-analytics_id                     = 
-`,
-		`
+	var want = []string{`
 [remote "alternative"]
     url = http://example.net/
 `,
@@ -340,22 +415,24 @@ analytics_id                     =
     url = https://staging.example.net/
 `,
 		`
-# remote for beta testing
+; remote for beta testing
 [remote "beta"]
     url = https://beta.example.com/
 `,
 		`
-# commented vars remains even when empty
+; commented vars remains even when empty
 [remote "remain"]
 `,
 		`
-# Default local remote
 [remote "local"]
-    url = wedeploy.me
+    ; Default local remote
+    url      = wedeploy.me
+    username = no-reply@wedeploy.com
+    password = cli-tool-password
 `,
 		`
-# Default cloud remote
 [remote "wedeploy"]
+    ; Default cloud remote
     url = wedeploy.io
 `,
 		`
@@ -377,37 +454,32 @@ analytics_id                     =
 		panic(err)
 	}
 
-	if Global.Username != "fool" {
-		t.Errorf("Wrong username")
-	}
-
-	unsetenv("WEDEPLOY_CUSTOM_HOME")
 	Teardown()
 
 	if Global != nil {
-		t.Errorf("Expected config.Global to be null")
+		t.Errorf("Expected Global to be null")
 	}
 }
 
 func TestRemotesListAndGet(t *testing.T) {
-	setenv("WEDEPLOY_CUSTOM_HOME", abs("./mocks/remotes"))
-
 	if Global != nil {
-		t.Errorf("Expected config.Global to be null")
+		t.Errorf("Expected Global to be null")
 	}
 
-	if err := Setup(); err != nil {
+	if err := Setup("./mocks/remotes/.we"); err != nil {
 		panic(err)
 	}
 
 	var wantOriginalRemotes = remotes.List{
 		"wedeploy": remotes.Entry{
-			URL:     "wedeploy.io",
-			Comment: "# Default cloud remote",
+			URL:        "wedeploy.io",
+			URLComment: "Default cloud remote",
 		},
 		"local": remotes.Entry{
-			URL:     "wedeploy.me",
-			Comment: "# Default local remote",
+			URL:        "wedeploy.me",
+			URLComment: "Default local remote",
+			Username:   "no-reply@wedeploy.com",
+			Password:   "cli-tool-password",
 		},
 		"alternative": remotes.Entry{
 			URL: "http://example.net/",
@@ -417,22 +489,29 @@ func TestRemotesListAndGet(t *testing.T) {
 		},
 		"beta": remotes.Entry{
 			URL:        "http://beta.example.com/",
-			URLComment: "my beta comment",
+			URLComment: "; my beta comment",
 		},
 		"remain": remotes.Entry{
 			URL:     "http://localhost/",
-			Comment: "commented vars remains even when empty",
+			Comment: "; commented vars remains even when empty",
 		},
 		"dontremain": remotes.Entry{
-			URL: "http://localhost/",
+			URL:     "http://localhost/",
+			Comment: "; commented vars remains even when empty",
 		},
 		"dontremain2": remotes.Entry{
 			URL: "http://localhost/",
 		},
 	}
 
-	if !reflect.DeepEqual(wantOriginalRemotes, Global.Remotes) {
-		t.Errorf("Remotes does not match expected value")
+	if len(wantOriginalRemotes) != len(Global.Remotes) {
+		t.Errorf("Number of remotes doesn't match: wanted %v, got %v instead", len(wantOriginalRemotes), len(Global.Remotes))
+	}
+
+	for k := range wantOriginalRemotes {
+		if wantOriginalRemotes[k] != Global.Remotes[k] {
+			t.Errorf("Expected remote doesn't match for %v: %+v instead of %+v", k, Global.Remotes[k], wantOriginalRemotes[k])
+		}
 	}
 
 	var wantList = []string{
@@ -454,7 +533,7 @@ func TestRemotesListAndGet(t *testing.T) {
 
 	var wantRemain = remotes.Entry{
 		URL:     "http://localhost/",
-		Comment: "commented vars remains even when empty",
+		Comment: "; commented vars remains even when empty",
 	}
 
 	var gotRemain, gotRemainOK = Global.Remotes["remain"]
@@ -467,11 +546,10 @@ func TestRemotesListAndGet(t *testing.T) {
 		t.Errorf("Wanted gotRemainOK to be true")
 	}
 
-	unsetenv("WEDEPLOY_CUSTOM_HOME")
 	Teardown()
 
 	if Global != nil {
-		t.Errorf("Expected config.Global to be null")
+		t.Errorf("Expected Global to be null")
 	}
 }
 
@@ -483,20 +561,4 @@ func abs(path string) string {
 	}
 
 	return abs
-}
-
-func setenv(key, value string) {
-	var err = os.Setenv(key, value)
-
-	if err != nil {
-		panic(err)
-	}
-}
-
-func unsetenv(key string) {
-	var err = os.Unsetenv(key)
-
-	if err != nil {
-		panic(err)
-	}
 }

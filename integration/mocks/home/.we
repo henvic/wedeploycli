@@ -1,5 +1,5 @@
-# Configuration file for WeDeploy CLI
-# https://wedeploy.com
+; Configuration file for WeDeploy CLI
+; https://wedeploy.com
 username          = admin
 password          = safe
 

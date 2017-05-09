@@ -1,11 +1,8 @@
-username        = fool
-password        = safe
-token           = 
 disable_colors  = false
 notify_updates  = true
 release_channel = stable
 last_update_check = 
-# commented vars remains even when empty
+; commented vars remains even when empty
 next_version      = 
 
 [remote "alternative"]
@@ -13,11 +10,12 @@ next_version      =
 [remote "staging"]
     url = http://staging.example.net/
 [remote "beta"]
-    # my beta comment
+    ; my beta comment
     url = http://beta.example.com/
-# commented vars remains even when empty
+; commented vars remains even when empty
 [remote "remain"]
     url = http://localhost/
+; commented vars remains even when empty
 [remote "dontremain"]
     url = http://localhost/
 [remote "dontremain2"]

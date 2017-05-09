@@ -14,8 +14,8 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/remotes"
+	"github.com/wedeploy/cli/remoteuriparser"
 	"github.com/wedeploy/cli/usercontext"
-	"github.com/wedeploy/cli/userhome"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -34,7 +34,6 @@ type Config struct {
 	EnableAnalytics bool         `ini:"enable_analytics"`
 	AnalyticsOption string       `ini:"analytics_option_date"`
 	AnalyticsID     string       `ini:"analytics_id"`
-	LocalEndpoint   string       `ini:"-"`
 	Path            string       `ini:"-"`
 	Remotes         remotes.List `ini:"-"`
 	file            *ini.File    `ini:"-"`
@@ -52,15 +51,8 @@ var (
 
 // Load the configuration
 func (c *Config) Load() error {
-	switch c.configExists() {
-	case true:
-		if err := c.read(); err != nil {
-			return err
-		}
-	default:
-		verbose.Debug("Config file not found.")
-		c.file = ini.Empty()
-		c.banner()
+	if err := c.openOrCreate(); err != nil {
+		return err
 	}
 
 	c.load()
@@ -71,6 +63,17 @@ func (c *Config) Load() error {
 
 	c.loadDefaultRemotes()
 	return c.validateDefaultRemote()
+}
+
+func (c *Config) openOrCreate() error {
+	if c.configExists() {
+		return c.read()
+	}
+
+	verbose.Debug("Config file not found.")
+	c.file = ini.Empty()
+	c.banner()
+	return nil
 }
 
 func (c *Config) loadDefaultRemotes() {
@@ -91,6 +94,8 @@ func (c *Config) loadDefaultRemotes() {
 		c.Remotes.Set(defaults.LocalRemote, remotes.Entry{
 			URL:        "wedeploy.me",
 			URLComment: "Default local remote",
+			Username:   "no-reply@wedeploy.com",
+			Password:   "cli-tool-password",
 		})
 	default:
 		println(color.Format(color.FgHiRed, "Warning: Non-standard local cloud detected"))
@@ -133,10 +138,6 @@ func (c *Config) Save() error {
 
 // IsEndpoint returns a boolean telling whether the URL is within a WeDeploy endpoint or not
 func (c *Config) IsEndpoint(host string) bool {
-	if host == c.LocalEndpoint {
-		return true
-	}
-
 	for _, remote := range c.Remotes {
 		// this could be improved
 		if len(remote.URL) != 0 && strings.Contains(remote.URL, host) {
@@ -148,14 +149,56 @@ func (c *Config) IsEndpoint(host string) bool {
 }
 
 // Setup the environment
-func Setup() error {
-	if err := setupGlobal(); err != nil {
+func Setup(path string) (err error) {
+	path, err = filepath.Abs(path)
+
+	if err != nil {
+		return err
+	}
+
+	Global = &Config{
+		Path: path,
+	}
+
+	if err = Global.Load(); err != nil {
 		verbose.Debug("Error setting up global config")
 		return err
 	}
 
 	Context = &usercontext.Context{}
 	return Context.Load()
+}
+
+// SetEndpointContext for a given remote
+func SetEndpointContext(remote string) error {
+	var r, ok = Global.Remotes[remote]
+
+	if !ok {
+		return fmt.Errorf(`Error loading selected remote "%v"`, remote)
+	}
+
+	Context.Remote = remote
+	Context.RemoteAddress = getRemoteAddress(r.URL)
+	Context.Endpoint = remoteuriparser.Parse(r.URL)
+	Context.Username = r.Username
+	Context.Password = r.Password
+	Context.Token = r.Token
+	return nil
+}
+
+func getRemoteAddress(address string) string {
+	var removePrefixes = []string{
+		"http://",
+		"https://",
+	}
+
+	for _, prefix := range removePrefixes {
+		if strings.HasPrefix(address, prefix) {
+			return strings.TrimPrefix(address, prefix)
+		}
+	}
+
+	return address
 }
 
 func (c *Config) setDefaults() {
@@ -312,42 +355,34 @@ func (c *Config) updateRemotes() {
 
 	for k, v := range c.Remotes {
 		s := c.getRemote(k)
-		key := s.Key("url")
-		key.SetValue(v.URL)
-		key.Comment = normalizeComment(v.URLComment)
+		keyURL := s.Key("url")
+		keyURL.SetValue(v.URL)
+		keyURL.Comment = v.URLComment
 
 		keyUsername := s.Key("username")
 		keyUsername.SetValue(v.Username)
-		keyUsername.Comment = normalizeComment(v.UsernameComment)
+		keyUsername.Comment = v.UsernameComment
 
 		keyPassword := s.Key("password")
 		keyPassword.SetValue(v.Password)
-		keyPassword.Comment = normalizeComment(v.PasswordComment)
+		keyPassword.Comment = v.PasswordComment
 
 		keyToken := s.Key("token")
 		keyToken.SetValue(v.Token)
-		keyToken.Comment = normalizeComment(v.TokenComment)
+		keyToken.Comment = v.TokenComment
 
-		s.Comment = normalizeComment(v.Comment)
+		s.Comment = v.Comment
 	}
 
 	c.simplifyRemotes()
 }
 
 func (c *Config) banner() {
-	c.file.Section("DEFAULT").Comment = `# Configuration file for WeDeploy CLI
-# https://wedeploy.com`
+	c.file.Section("DEFAULT").Comment = `; Configuration file for WeDeploy CLI
+; https://wedeploy.com`
 }
 
-func setupGlobal() error {
-	Global = &Config{
-		Path: filepath.Join(userhome.GetHomeDir(), ".we"),
-	}
-
-	if err := Global.Load(); err != nil {
-		return err
-	}
-
+func getLocalEndpoint() string {
 	var endpoint = "http://api.wedeploy.me"
 
 	if Global.LocalHTTPPort != 80 {
@@ -355,28 +390,11 @@ func setupGlobal() error {
 	}
 
 	endpoint += "/"
-	Global.LocalEndpoint = endpoint
-	return nil
+	return endpoint
 }
 
 // Teardown resets the configuration environment
 func Teardown() {
-	teardownGlobal()
-	teardownContext()
-}
-
-func teardownContext() {
-	Context = nil
-}
-
-func teardownGlobal() {
 	Global = nil
-}
-
-func normalizeComment(s string) string {
-	if !strings.HasPrefix(s, "; ") {
-		return s
-	}
-
-	return "# " + s[2:]
+	Context = nil
 }

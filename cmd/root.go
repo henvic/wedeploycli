@@ -27,8 +27,8 @@ import (
 	"github.com/wedeploy/cli/cmd/update"
 	"github.com/wedeploy/cli/cmd/version"
 	"github.com/wedeploy/cli/cmd/who"
-	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
@@ -121,7 +121,7 @@ func init() {
 
 func persistentPreRun(cmd *cobra.Command, args []string) error {
 	// load default cloud remote on config context
-	return cmdflagsfromhost.SetRemote(defaults.CloudRemote)
+	return config.SetEndpointContext(defaults.CloudRemote)
 }
 
 func run(cmd *cobra.Command, args []string) {

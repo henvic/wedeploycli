@@ -184,7 +184,8 @@ type configLoader struct {
 }
 
 func (cl *configLoader) loadConfig() {
-	if err := config.Setup(); err != nil {
+	var path = filepath.Join(userhome.GetHomeDir(), ".we")
+	if err := config.Setup(path); err != nil {
 		printError(errorhandling.Handle(err))
 		os.Exit(1)
 	}

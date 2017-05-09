@@ -2,8 +2,6 @@ package cmdflagsfromhost
 
 import (
 	"errors"
-	"fmt"
-	"strings"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
@@ -12,19 +10,8 @@ import (
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/flagsfromhost"
 	"github.com/wedeploy/cli/projects"
-	"github.com/wedeploy/cli/remoteuriparser"
 	"github.com/wedeploy/cli/wdircontext"
 )
-
-// SetLocal the context
-func SetLocal() {
-	config.Context.Remote = "local"
-	config.Context.Username = "no-reply@wedeploy.com"
-	config.Context.Password = "cli-tool-password"
-	config.Context.Token = ""
-	config.Context.Endpoint = config.Global.LocalEndpoint
-	config.Context.RemoteAddress = "wedeploy.me"
-}
 
 // Requires configuration for the host and flags
 type Requires struct {
@@ -301,7 +288,7 @@ func (s *SetupHost) loadValues() (err error) {
 	s.project = project
 	s.remote = remote
 
-	return s.setEndpoint()
+	return config.SetEndpointContext(s.Remote())
 }
 
 func (s *SetupHost) verifyCmdReqAuth() error {
@@ -322,45 +309,4 @@ func (s *SetupHost) verifyCmdReqAuth() error {
 	}
 
 	return errors.New(`Please run "we login" before using "we ` + s.cmd.Name() + `".`)
-}
-
-func (s *SetupHost) setEndpoint() error {
-	if s.Remote() == defaults.LocalRemote {
-		SetLocal()
-		return nil
-	}
-
-	return SetRemote(s.Remote())
-}
-
-// SetRemote sets the remote for the current context
-func SetRemote(remote string) (err error) {
-	var r, ok = config.Global.Remotes[remote]
-
-	if !ok {
-		return fmt.Errorf(`Error loading selected remote "%v"`, remote)
-	}
-
-	config.Context.Remote = remote
-	config.Context.RemoteAddress = getRemoteAddress(r.URL)
-	config.Context.Endpoint = remoteuriparser.Parse(r.URL)
-	config.Context.Username = r.Username
-	config.Context.Password = r.Password
-	config.Context.Token = r.Token
-	return nil
-}
-
-func getRemoteAddress(address string) string {
-	var removePrefixes = []string{
-		"http://",
-		"https://",
-	}
-
-	for _, prefix := range removePrefixes {
-		if strings.HasPrefix(address, prefix) {
-			return strings.TrimPrefix(address, prefix)
-		}
-	}
-
-	return address
 }
