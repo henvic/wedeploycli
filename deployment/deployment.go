@@ -194,7 +194,7 @@ func (d *Deploy) Push() error {
 		d.verboseOnPush()
 		params = append([]string{
 			"-c",
-			"http." + d.GitRemoteAddress + ".extraHeader=Authorization: " + d.RepoAuthorization,
+			"https." + d.GitRemoteAddress + ".extraHeader=Authorization: " + d.RepoAuthorization,
 		}, params...)
 	}
 
