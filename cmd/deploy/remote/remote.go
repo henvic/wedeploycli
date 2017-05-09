@@ -56,8 +56,6 @@ func (rd *RemoteDeployment) getPath() (path string, err error) {
 		switch {
 		case rd.ProjectID != "" && rd.ServiceID != "":
 			return "", errors.New("--project and --container can not be used inside this context")
-		case rd.ProjectID != "":
-			return "", errors.New("--project can not be used inside this context")
 		case rd.ServiceID != "":
 			return "", errors.New("--container can not be used inside this context")
 		}
