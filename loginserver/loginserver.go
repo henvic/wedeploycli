@@ -12,7 +12,6 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/hashicorp/errwrap"
-	wedeploy "github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
@@ -229,13 +228,7 @@ type accessToken struct {
 
 // OAuthTokenFromBasicAuth gets a token from a Basic Auth flow
 func OAuthTokenFromBasicAuth(remoteAddress, username, password string) (token string, err error) {
-	var u = url.URL{
-		Scheme: "http",
-		Host:   fmt.Sprintf("auth-dashboard.%s", remoteAddress),
-		Path:   "/oauth/token",
-	}
-
-	var request = wedeploy.URL(u.String())
+	var request = apihelper.URL(context.Background(), "/oauth/token")
 
 	request.Param("username", username)
 	request.Param("password", password)
