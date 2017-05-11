@@ -1,2 +1,2 @@
-WeDeploy API error: 403 Forbidden (GET https://api.wedeploy.me/foo/bah)
+WeDeploy API error: 403 Forbidden (GET https://api.wedeploy.io/foo/bah)
 	Response Body is not JSON: Error message.

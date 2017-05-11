@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"strings"
+
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/color"
@@ -70,7 +72,13 @@ func remoteRun(cmd *cobra.Command, args []string) error {
 
 	for _, k := range remotes.Keys() {
 		var key, _ = remotes[k]
-		fmt.Fprintf(w, "%s\t%s", k, key.URL)
+		var u = key.URL
+
+		if k == defaults.LocalRemote {
+			u = strings.TrimPrefix(u, "http://")
+		}
+
+		fmt.Fprintf(w, "%s\t%s", k, u)
 
 		if k == config.Global.DefaultRemote {
 			fmt.Fprintf(w, " (default)")

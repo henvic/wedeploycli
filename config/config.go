@@ -37,6 +37,7 @@ type Config struct {
 	Path            string       `ini:"-"`
 	Remotes         remotes.List `ini:"-"`
 	file            *ini.File    `ini:"-"`
+	saveLocalRemote bool         // use custom local Remote
 }
 
 var (
@@ -88,24 +89,22 @@ func (c *Config) loadDefaultRemotes() {
 		println(color.Format(color.FgHiRed, "Warning: Non-standard wedeploy remote cloud detected"))
 	}
 
-	var localRemoteURL = c.Remotes[defaults.LocalRemote].URL
+	var (
+		localRemoteURL       = c.Remotes[defaults.LocalRemote].URL
+		currentLocalEndpoint = getLocalEndpoint()
+	)
 
 	switch localRemoteURL {
 	case "":
 		c.Remotes.Set(defaults.LocalRemote, remotes.Entry{
-			URL:        "http://wedeploy.me",
+			URL:        currentLocalEndpoint,
 			URLComment: "Default local remote",
 			Username:   "no-reply@wedeploy.com",
 			Password:   "cli-tool-password",
 		})
-	case "http://wedeploy.me":
-		var currentLocalEndpoint = getLocalEndpoint()
-		if c.LocalHTTPPort != 80 && currentLocalEndpoint == fmt.Sprintf("%v:%v", localRemoteURL, c.LocalHTTPPort) {
-			println(color.Format(color.FgHiRed, `Warning: local remote should probably be set to %v
-Use "we remote set-url local %v" to configure it properly.`, currentLocalEndpoint, currentLocalEndpoint))
-		}
 	default:
-		println(color.Format(color.FgHiRed, "Warning: Non-standard local cloud detected"))
+		println(color.Format(color.FgHiRed, "Warning: Custom local remote detected"))
+		c.saveLocalRemote = true
 	}
 }
 
@@ -361,6 +360,10 @@ func (c *Config) updateRemotes() {
 	}
 
 	for k, v := range c.Remotes {
+		if !c.saveLocalRemote && k == defaults.LocalRemote {
+			continue
+		}
+
 		s := c.getRemote(k)
 		keyURL := s.Key("url")
 		keyURL.SetValue(v.URL)

@@ -17,7 +17,7 @@ enable_analytics                 = false
 
 [remote "local"]
     ; Default local remote
-    url      = wedeploy.me
+    url      = http://wedeploy.me
     username = foo@example.com
     token    = mock_token
 

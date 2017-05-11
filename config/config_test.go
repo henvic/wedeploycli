@@ -333,7 +333,7 @@ func TestSave(t *testing.T) {
 `,
 		`[remote "local"]
     ; Default local remote
-    url      = wedeploy.me
+    url      = http://wedeploy.me
     username = foo@example.com
     token    = mock_token
 `,
@@ -426,7 +426,7 @@ func TestRemotes(t *testing.T) {
 		`
 [remote "local"]
     ; Default local remote
-    url      = wedeploy.me
+    url      = http://wedeploy.me
     username = no-reply@wedeploy.com
     password = cli-tool-password
 `,
@@ -476,7 +476,7 @@ func TestRemotesListAndGet(t *testing.T) {
 			URLComment: "Default cloud remote",
 		},
 		"local": remotes.Entry{
-			URL:        "wedeploy.me",
+			URL:        "http://wedeploy.me",
 			URLComment: "Default local remote",
 			Username:   "no-reply@wedeploy.com",
 			Password:   "cli-tool-password",
