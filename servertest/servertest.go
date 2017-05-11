@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/api-go"
 )
 
@@ -22,19 +23,30 @@ var (
 	server            *httptest.Server
 )
 
+var mockServerURL *url.URL
+
+type proxy struct{}
+
+func (p *proxy) RoundTrip(r *http.Request) (w *http.Response, err error) {
+	r.URL.Scheme = mockServerURL.Scheme
+	r.URL.Host = mockServerURL.Host
+
+	return (&http.Client{}).Do(r)
+}
+
 // Setup the mock server and setup WeDeploy client setup with it
 func Setup() {
 	Mux = http.NewServeMux()
 	server = httptest.NewServer(Mux)
+	var err error
+	mockServerURL, err = url.Parse(server.URL)
 
-	transport := &http.Transport{
-		Proxy: func(req *http.Request) (*url.URL, error) {
-			return url.Parse(server.URL)
-		},
+	if err != nil {
+		panic(errwrap.Wrapf("Can not route to mock server: {{err}}", err))
 	}
 
 	defaultHTTPClient = wedeploy.Client
-	wedeploy.Client = &http.Client{Transport: transport}
+	wedeploy.Client = &http.Client{Transport: &proxy{}}
 }
 
 // SetupIntegration sets up the integration tests mock server
