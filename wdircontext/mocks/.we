@@ -1,0 +1,27 @@
+; Configuration file for WeDeploy CLI
+; https://wedeploy.com
+default_remote                   = wedeploy
+local_http_port                  = 80
+local_https_port                 = 443
+disable_autocomplete_autoinstall = true
+disable_colors                   = false
+notify_updates                   = false
+release_channel                  = stable
+enable_analytics                 = false
+
+[remote "wedeploy"]
+    ; Default cloud remote
+    url      = wedeploy.io
+    username = foo@example.com
+    password = bar
+
+[remote "local"]
+    ; Default local remote
+    url      = wedeploy.me
+    username = foo@example.com
+    token    = mock_token
+
+[remote "xyz"]
+    url      = wedeploy.xyz
+    username = foobar@example.net
+    password = 123

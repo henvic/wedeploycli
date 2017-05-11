@@ -11,7 +11,7 @@ import (
 func TestGetProjectID(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 	chdir("./mocks/project/")
-	if err := config.Setup(); err != nil {
+	if err := config.Setup("mocks/.we"); err != nil {
 		panic(err)
 	}
 
@@ -45,7 +45,7 @@ func TestGetProjectIDInvalidContext(t *testing.T) {
 func TestGetProjectIDWithInvalidProject(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 	chdir("./mocks/invalid-project/")
-	if err := config.Setup(); err != nil {
+	if err := config.Setup("mocks/.we"); err != nil {
 		panic(err)
 	}
 
@@ -82,7 +82,7 @@ func TestGetProjectOrContainerIDInvalidContext(t *testing.T) {
 func TestGetProjectOrContainerID(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 	chdir("./mocks/project/")
-	if err := config.Setup(); err != nil {
+	if err := config.Setup("mocks/.we"); err != nil {
 		panic(err)
 	}
 
@@ -108,7 +108,7 @@ func TestGetProjectOrContainerID(t *testing.T) {
 func TestGetProjectOrContainerIDWithContainer(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 	chdir("./mocks/project/container")
-	if err := config.Setup(); err != nil {
+	if err := config.Setup("mocks/.we"); err != nil {
 		panic(err)
 	}
 
@@ -135,7 +135,7 @@ func TestGetProjectOrContainerIDWithContainer(t *testing.T) {
 func TestGetProjectOrContainerIDInvalidContainer(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 	chdir("./mocks/project/invalid-container")
-	if err := config.Setup(); err != nil {
+	if err := config.Setup("mocks/.we"); err != nil {
 		panic(err)
 	}
 
@@ -161,7 +161,7 @@ func TestGetProjectOrContainerIDInvalidContainer(t *testing.T) {
 func TestGetContainerID(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 	chdir("./mocks/project/container")
-	if err := config.Setup(); err != nil {
+	if err := config.Setup("mocks/.we"); err != nil {
 		panic(err)
 	}
 
