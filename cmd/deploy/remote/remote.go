@@ -107,12 +107,12 @@ func createContainerPackage(id, path string) error {
 }
 
 func (rd *RemoteDeployment) getProjectID() (string, error) {
-	var project, err = projects.Read(config.Context.ProjectRoot)
+	var pp, err = projects.Read(config.Context.ProjectRoot)
 	var projectID = rd.ProjectID
 
 	switch {
 	case err == nil:
-		projectID = project.ID
+		projectID = pp.ID
 	case err != projects.ErrProjectNotFound:
 		return "", errwrap.Wrapf("Error trying to read project: {{err}}", err)
 	}
