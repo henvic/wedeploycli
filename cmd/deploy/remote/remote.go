@@ -121,7 +121,12 @@ func (rd *RemoteDeployment) getProjectID() (string, error) {
 		return "", errwrap.Wrapf("You can not use a different id on --project from inside a project directory", err)
 	}
 
-	return projectID, nil
+	if projectID != "" {
+		return projectID, nil
+	}
+
+	var p, ep = projects.Create(context.Background(), projects.Project{})
+	return p.ProjectID, ep
 }
 
 // Run does the remote deployment procedures
