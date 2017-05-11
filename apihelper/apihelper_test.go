@@ -19,7 +19,7 @@ import (
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/configmock"
+	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/stringlib"
 	"github.com/wedeploy/cli/tdata"
@@ -39,11 +39,13 @@ func TestMain(m *testing.M) {
 	var defaultErrStream = errStream
 	errStream = &bufErrStream
 
-	configmock.Setup()
-	configmock.SetupRemoteContext()
+	if err := config.Setup("mocks/.we"); err != nil {
+		panic(err)
+	}
+
+	config.SetEndpointContext(defaults.LocalRemote)
 
 	ec := m.Run()
-	configmock.Teardown()
 
 	errStream = defaultErrStream
 
@@ -51,7 +53,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestAuth(t *testing.T) {
-	defaultContextToken := config.Context.Token
 	r := wedeploy.URL("http://localhost/")
 
 	Auth(r)
@@ -62,25 +63,32 @@ func TestAuth(t *testing.T) {
 	if want != got {
 		t.Errorf("Wrong auth header. Expected %s, got %s instead", want, got)
 	}
-
-	config.Context.Token = defaultContextToken
 }
 
-func TestAuthLocal(t *testing.T) {
-	configmock.SetupLocalContext()
+func TestAuthPassword(t *testing.T) {
+	var (
+		defaultPassword = config.Context.Password
+		defaultToken    = config.Context.Token
+	)
+
+	config.Context.Password = "cli-tool-password"
 	config.Context.Token = ""
+
+	defer func() {
+		config.Context.Password = defaultPassword
+		config.Context.Token = defaultToken
+	}()
+
 	r := wedeploy.URL("http://localhost/")
 
 	Auth(r)
 
-	var want = "Basic bm8tcmVwbHlAd2VkZXBsb3kuY29tOmNsaS10b29sLXBhc3N3b3Jk"
+	var want = "Basic Zm9vQGV4YW1wbGUuY29tOmNsaS10b29sLXBhc3N3b3Jk"
 	var got = r.Headers.Get("Authorization")
 
 	if want != got {
 		t.Errorf("Wrong auth header. Expected %s, got %s instead", want, got)
 	}
-
-	configmock.SetupRemoteContext()
 }
 
 func TestAuthGet(t *testing.T) {
@@ -536,7 +544,7 @@ func TestRequestVerboseFeedback(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> GET http://www.example.com/foo HTTP/1.1",
+		"> GET https://api.wedeploy.me/foo HTTP/1.1",
 		"Content-Type: text/plain; charset=utf-8",
 		"Accept: [application/json text/plain]",
 		"X-Test-Multiple: [a b]",
@@ -592,7 +600,7 @@ func TestRequestVerboseFeedbackUpload(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> GET http://www.example.com/foo HTTP/1.1",
+		"> GET https://api.wedeploy.me/foo HTTP/1.1",
 		"Sending file as request body:\nmocks/config.json",
 	}
 
@@ -639,7 +647,7 @@ func TestRequestVerboseFeedbackStringReader(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> GET http://www.example.com/foo HTTP/1.1",
+		"> GET https://api.wedeploy.me/foo HTTP/1.1",
 		"\ncustom body\n",
 	}
 
@@ -695,7 +703,7 @@ func TestRequestVerboseFeedbackBytesReader(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> GET http://www.example.com/foo HTTP/1.1",
+		"> GET https://api.wedeploy.me/foo HTTP/1.1",
 		"\ncustom body\n",
 	}
 
@@ -746,7 +754,7 @@ func TestRequestVerboseFeedbackOtherReader(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> GET http://www.example.com/foo HTTP/1.1",
+		"> GET https://api.wedeploy.me/foo HTTP/1.1",
 		"\n(request body: *io.teeReader)\n",
 	}
 
@@ -808,7 +816,7 @@ func TestRequestVerboseFeedbackJSONResponse(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> POST http://www.example.com/foo HTTP/1.1",
+		"> POST https://api.wedeploy.me/foo HTTP/1.1",
 		`{"bar":"one"}`,
 		"{\n    \"Hello\": \"World\"\n}",
 	}
@@ -892,7 +900,7 @@ func TestRequestVerboseFeedbackNotComplete(t *testing.T) {
 	}
 
 	stringlib.AssertSimilar(t,
-		"> (wait) http://www.example.com/foo",
+		"> (wait) https://api.wedeploy.me/foo",
 		bufErrStream.String())
 
 	verbose.Enabled = defaultVerboseEnabled
@@ -949,7 +957,7 @@ func TestSetBody(t *testing.T) {
 
 func TestURL(t *testing.T) {
 	var request = URL(context.Background(), "x", "y", "z/k")
-	var want = "http://www.example.com/x/y/z/k"
+	var want = "https://api.wedeploy.me/x/y/z/k"
 
 	if request.URL != want {
 		t.Errorf("Wanted URL %v, got %v instead", want, request.URL)
@@ -957,6 +965,12 @@ func TestURL(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
+	config.SetEndpointContext(defaults.CloudRemote)
+
+	defer func() {
+		config.SetEndpointContext(defaults.LocalRemote)
+	}()
+
 	var want = `WeDeploy platform error: could not connect to remote infrastructure`
 
 	r := wedeploy.URL("x://localhost/")
@@ -1016,7 +1030,7 @@ func TestValidateUnexpectedResponse(t *testing.T) {
 }`)
 	})
 
-	var want = "WeDeploy API error: 403 Forbidden (GET http://www.example.com/foo/bah)\n\t" +
+	var want = "WeDeploy API error: 403 Forbidden (GET https://api.wedeploy.me/foo/bah)\n\t" +
 		"forbidden: The requested operation failed because you do not have access."
 
 	r := URL(context.Background(), "/foo/bah")
@@ -1105,7 +1119,7 @@ func TestValidateUnexpectedResponseNonBody(t *testing.T) {
 		w.WriteHeader(403)
 	})
 
-	var want = `WeDeploy API error: 403 Forbidden (GET http://www.example.com/foo/bah)`
+	var want = `WeDeploy API error: 403 Forbidden (GET https://api.wedeploy.me/foo/bah)`
 
 	r := URL(context.Background(), "/foo/bah")
 	err := Validate(r, r.Get())
