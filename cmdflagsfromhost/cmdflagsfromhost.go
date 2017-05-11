@@ -2,6 +2,7 @@ package cmdflagsfromhost
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
@@ -308,5 +309,7 @@ func (s *SetupHost) verifyCmdReqAuth() error {
 		return nil
 	}
 
-	return errors.New(`Please run "we login" before using "we ` + s.cmd.Name() + `".`)
+	return fmt.Errorf(`not logged on remote "%v". Please run "we login" before using "we %v"`,
+		s.Remote(),
+		s.cmd.Name())
 }
