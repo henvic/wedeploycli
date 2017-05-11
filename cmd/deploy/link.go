@@ -40,7 +40,7 @@ func maybeCreateLocalUser(ctx context.Context) error {
 
 func (l *linker) Run() error {
 	if err := maybeCreateLocalUser(context.Background()); err != nil {
-		return nil
+		return err
 	}
 
 	var projectID, errProjectID = l.getProject()
