@@ -37,7 +37,7 @@ func GetReleaseChannel() string {
 	var channel = config.Global.ReleaseChannel
 
 	if channel == "" {
-		channel = "stable"
+		channel = defaults.StableReleaseChannel
 	}
 
 	return channel
@@ -196,12 +196,13 @@ func notify() {
 	var channel = config.Global.ReleaseChannel
 	var cmd = "we update"
 
-	if channel != "" && channel != "stable" {
+	if channel != config.Global.ReleaseChannel {
 		cmd += " --channel " + channel
 	}
 
-	println(color.Format(color.FgRed,
-		`WARNING: WeDeploy CLI tool is outdated. Run "`+cmd+`".`))
+	println(color.Format(color.FgBlue,
+		`INFO: New version available. Please run "%v".`,
+		cmd))
 }
 
 func stopOutdatedImage(nextImage string) (err error) {

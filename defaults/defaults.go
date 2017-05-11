@@ -45,4 +45,7 @@ var (
 
 	// SupportEmail value
 	SupportEmail = "support@wedeploy.com"
+
+	// StableReleaseChannel for the distribution of the CLI tool
+	StableReleaseChannel = "stable"
 )

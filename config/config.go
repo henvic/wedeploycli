@@ -211,7 +211,7 @@ func (c *Config) setDefaults() {
 	c.LocalHTTPPort = defaults.LocalHTTPPort
 	c.LocalHTTPSPort = defaults.LocalHTTPSPort
 	c.NotifyUpdates = true
-	c.ReleaseChannel = "stable"
+	c.ReleaseChannel = defaults.StableReleaseChannel
 	c.DefaultRemote = defaults.CloudRemote
 
 	// By design Windows users should see no color unless they enable it
