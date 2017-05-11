@@ -1,4 +1,5 @@
 {
     "id": "email",
-    "type": "wedeploy/email:latest"
+    "type": "wedeploy/email:latest",
+    "customDomains": ["example.net"]
 }

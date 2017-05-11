@@ -43,9 +43,10 @@ func TestMain(m *testing.M) {
 
 func TestGetSpecContextOverview(t *testing.T) {
 	var got = GetSpec(projects.Project{})
-	var want = []string{`ID string`,
+	var want = []string{`ProjectID string`,
 		`Health string`,
-		`Description string`}
+		`Description string`,
+		`HealthUID string`}
 
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("Wanted spec %v, got %v instead", want, got)
@@ -55,10 +56,11 @@ func TestGetSpecContextOverview(t *testing.T) {
 func TestPrintContainerSpec(t *testing.T) {
 	var got = GetSpec(containers.ContainerPackage{})
 	var want = []string{`ID string`,
+		`Scale int`,
 		`Type string`,
 		`Hooks *hooks.Hooks`,
-		`Env map[string]string`,
 		`CustomDomains []string`,
+		`Env map[string]string`,
 	}
 
 	if !reflect.DeepEqual(want, got) {
@@ -92,11 +94,11 @@ func TestInspectProjectList(t *testing.T) {
 		t.Errorf("Expected error to be nil, got %v instead", err)
 	}
 
-	jsonlib.AssertJSONMarshal(t, tdata.FromFile("./mocks/my-project/expect.json"), m)
+	jsonlib.AssertJSONMarshal(t, `{"id": "my-project"}`, m)
 }
 
-func TestInspectProjectCustomDomain(t *testing.T) {
-	var got, err = InspectProject("{{(index .CustomDomains 0)}}", "./mocks/my-project")
+func TestInspectContainerCustomDomain(t *testing.T) {
+	var got, err = InspectContainer("{{(index .CustomDomains 0)}}", "./mocks/my-project/email")
 
 	if err != nil {
 		t.Errorf("Expected error to be nil, got %v instead", err)
