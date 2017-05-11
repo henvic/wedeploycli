@@ -88,15 +88,22 @@ func (c *Config) loadDefaultRemotes() {
 		println(color.Format(color.FgHiRed, "Warning: Non-standard wedeploy remote cloud detected"))
 	}
 
-	switch c.Remotes[defaults.LocalRemote].URL {
-	case "wedeploy.me":
+	var localRemoteURL = c.Remotes[defaults.LocalRemote].URL
+
+	switch localRemoteURL {
 	case "":
 		c.Remotes.Set(defaults.LocalRemote, remotes.Entry{
-			URL:        "wedeploy.me",
+			URL:        "http://wedeploy.me",
 			URLComment: "Default local remote",
 			Username:   "no-reply@wedeploy.com",
 			Password:   "cli-tool-password",
 		})
+	case "http://wedeploy.me":
+		var currentLocalEndpoint = getLocalEndpoint()
+		if c.LocalHTTPPort != 80 && currentLocalEndpoint == fmt.Sprintf("%v:%v", localRemoteURL, c.LocalHTTPPort) {
+			println(color.Format(color.FgHiRed, `Warning: local remote should probably be set to %v
+Use "we remote set-url local %v" to configure it properly.`, currentLocalEndpoint, currentLocalEndpoint))
+		}
 	default:
 		println(color.Format(color.FgHiRed, "Warning: Non-standard local cloud detected"))
 	}
@@ -383,13 +390,12 @@ func (c *Config) banner() {
 }
 
 func getLocalEndpoint() string {
-	var endpoint = "http://api.wedeploy.me"
+	var endpoint = "http://wedeploy.me"
 
 	if Global.LocalHTTPPort != 80 {
 		endpoint += fmt.Sprintf(":%d", Global.LocalHTTPPort)
 	}
 
-	endpoint += "/"
 	return endpoint
 }
 
