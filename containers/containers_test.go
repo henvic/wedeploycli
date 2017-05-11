@@ -16,10 +16,20 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 	"github.com/wedeploy/api-go/jsonlib"
 	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/configmock"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/tdata"
 )
+
+func TestMain(m *testing.M) {
+	if err := config.Setup("mocks/.we"); err != nil {
+		panic(err)
+	}
+
+	config.SetEndpointContext(defaults.LocalRemote)
+	os.Exit(m.Run())
+}
 
 func TestGetListFromDirectory(t *testing.T) {
 	var containers, err = GetListFromDirectory("mocks/app")
@@ -170,12 +180,11 @@ func TestGetListFromDirectoryNotExists(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	var want = Container{
 		ServiceID: "search7606",
 		Health:    "on",
-		Type:      "cloudsearch",
+		Image:     "wedeploy/data",
 		Scale:     7,
 	}
 
@@ -194,7 +203,6 @@ func TestGet(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestGetEmptyContainerID(t *testing.T) {
@@ -223,20 +231,17 @@ func TestGetEmptyProjectAndContainerID(t *testing.T) {
 
 func TestList(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	var want = []Container{
 		Container{
-			ServiceID: "search7606",
-			Health:    "on",
-			Type:      "cloudsearch",
-			Scale:     7,
-		},
-		Container{
 			ServiceID: "nodejs5143",
 			Health:    "on",
-			Type:      "nodejs",
 			Scale:     5,
+		},
+		Container{
+			ServiceID: "search7606",
+			Health:    "on",
+			Scale:     7,
 		},
 	}
 
@@ -255,13 +260,29 @@ func TestList(t *testing.T) {
 		t.Errorf(pretty.Compare(want, got))
 	}
 
+	switch c, err := got.Get("search7606"); {
+	case err != nil:
+		t.Errorf("Expected no error filtering container, got %v instead", err)
+	case c.ServiceID != "search7606":
+		t.Errorf("Got wrong container ID: %+v", c)
+	}
+
+	switch c, err := got.Get("nodejs5143"); {
+	case err != nil:
+		t.Errorf("Expected no error filtering container, got %v instead", err)
+	case c.ServiceID != "nodejs5143":
+		t.Errorf("Got wrong container ID: %+v", c)
+	}
+
+	if _, err := got.Get("not_found"); err == nil {
+		t.Errorf("Expected container not to be found, got %v instead", err)
+	}
+
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestLink(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc(
 		"/projects/sound/services",
@@ -276,7 +297,7 @@ func TestLink(t *testing.T) {
 				t.Error(err)
 			}
 
-			var data map[string]string
+			var data map[string]json.RawMessage
 
 			err = json.Unmarshal(body, &data)
 
@@ -285,23 +306,21 @@ func TestLink(t *testing.T) {
 			}
 
 			jsonlib.AssertJSONMarshal(t,
-				`{"serviceId":"speaker", "type": "nodejs", "source": "mocks/app/speaker"}`,
+				`{"serviceId":"speaker", "scale": 1, "source": "mocks/app/speaker"}`,
 				data)
 		})
 
-	var err = Link(context.Background(), "sound", "speaker", "mocks/app/speaker")
+	var err = Link(context.Background(), "sound", Container{ServiceID: "speaker"}, "mocks/app/speaker")
 
 	if err != nil {
 		t.Errorf("Unexpected error on Install: %v", err)
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestRegistry(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc(
 		"/registry",
@@ -318,7 +337,6 @@ func TestRegistry(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestRead(t *testing.T) {
@@ -360,7 +378,6 @@ func TestReadCorrupted(t *testing.T) {
 func TestSetEnvironmentVariable(t *testing.T) {
 	t.Skipf("Skipping until https://github.com/wedeploy/cli/issues/186 is closed")
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects/foo/services/bar/env/xyz",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -386,13 +403,11 @@ func TestSetEnvironmentVariable(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestUnsetEnvironmentVariable(t *testing.T) {
 	t.Skipf("Skipping until https://github.com/wedeploy/cli/issues/186 is closed")
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects/foo/services/bar/env/xyz",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -406,12 +421,10 @@ func TestUnsetEnvironmentVariable(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestRestart(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects/foo/services/bar/restart",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -423,12 +436,10 @@ func TestRestart(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestUnlink(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects/foo/services/bar", func(w http.ResponseWriter, r *http.Request) {
 		var wantMethod = "DELETE"
@@ -444,12 +455,10 @@ func TestUnlink(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestValidate(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/validators/services/id",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -467,12 +476,10 @@ func TestValidate(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestValidateAlreadyExists(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/validators/services/id",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -486,12 +493,10 @@ func TestValidateAlreadyExists(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestValidateInvalidID(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/validators/services/id",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -505,12 +510,10 @@ func TestValidateInvalidID(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestValidateError(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/validators/services/id",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -528,12 +531,10 @@ func TestValidateError(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestValidateInvalidError(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/validators/services/id",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -548,7 +549,6 @@ func TestValidateInvalidError(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 type TestNormalizePathToUnixProvider struct {
