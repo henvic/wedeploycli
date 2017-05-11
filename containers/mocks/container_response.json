@@ -3,6 +3,7 @@
     "basePath": "\/search",
     "scale": 7,
     "serviceId": "search7606",
+    "image": "wedeploy/data",
     "health": "on",
     "maxInstances": 5
 }
