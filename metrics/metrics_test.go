@@ -18,7 +18,6 @@ import (
 
 	"github.com/kylelemons/godebug/pretty"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/configmock"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/tdata"
@@ -26,14 +25,13 @@ import (
 
 func TestMain(m *testing.M) {
 	removeMetricsFile()
-	configmock.Setup()
-	config.Global.Path = abs("mocks/.we")
+	config.Setup("mocks/.we")
 	config.Global.EnableAnalytics = true
 	resetMetricsSetup()
 	ec := m.Run()
 	SetPID(0)
 	SetPath("")
-	configmock.Teardown()
+	config.Teardown()
 	os.Exit(ec)
 }
 
@@ -381,7 +379,7 @@ func testRecCheckMetrics(t *testing.T, line string, expected event) {
 		t.Errorf("Expected SID to have 36 characters and be registered, got event.SID = %v) instead", e.SID)
 	}
 
-	if _, errt := time.Parse(unixTimeFormat, e.Time); errt != nil {
+	if _, errt := time.Parse(time.RubyDate, e.Time); errt != nil {
 		t.Errorf("Unexpected time parsing error for %v", e.Time)
 	}
 
@@ -440,7 +438,7 @@ func (te *testStatusMetricsStory) testDisable(t *testing.T) {
 		t.Errorf("Analytics should be disabled")
 	}
 
-	ti, errt := time.Parse(unixTimeFormat, config.Global.AnalyticsOption)
+	ti, errt := time.Parse(time.RubyDate, config.Global.AnalyticsOption)
 
 	if time.Now().Add(2 * time.Second).Before(ti) {
 		t.Errorf("Time of disabling should be within seconds")
@@ -461,7 +459,7 @@ func (te *testStatusMetricsStory) testEnableAndRecording(t *testing.T) {
 		t.Errorf("Expected no error while re-enabling analytics, got %v instead", err)
 	}
 
-	ti, errt := time.Parse(unixTimeFormat, config.Global.AnalyticsOption)
+	ti, errt := time.Parse(time.RubyDate, config.Global.AnalyticsOption)
 
 	if errt != nil {
 		t.Errorf("Unexpected time parsing error for %v", config.Global.AnalyticsOption)
