@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/deploy/remote"
 	"github.com/wedeploy/cli/cmdargslen"
@@ -73,7 +74,9 @@ func checkNonRemoteSet(cmd *cobra.Command) error {
 	}
 
 	if !remoteChanged && !urlChanged && hasActionLocalFlag() {
-		cmd.Flag("remote").Value.Set(defaults.LocalRemote)
+		if err := cmd.Flag("remote").Value.Set(defaults.LocalRemote); err != nil {
+			return errwrap.Wrapf("error setting remote to local: {{err}}", err)
+		}
 		cmd.Flag("remote").Changed = true
 	}
 
