@@ -1,23 +1,4 @@
 {
-	"color": "e64545",
-	"auth": {
-		"loginAuthenticationUrl": null,
-		"loginRedirectPageUrl": null,
-		"loginPageUrl": null,
-		"logoutAuthenticationUrl": null,
-		"containerAuthenticationProvider": null,
-		"logoutRedirectPageUrl": null
-	},
-	"health": "on",
-	"source": null,
-	"githubRepositories": [],
-	"ownerId": null,
-	"customDomains": [],
-	"users": [
-		null
-	],
-	"invitations": {},
-	"containers": {},
-	"id": "banach30",
-	"masterToken": "1455300a-ada2-4d1f-8811-6690dae4455a"
+	"projectId": "banach30",
+	"health": "on"
 }

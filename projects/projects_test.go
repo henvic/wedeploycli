@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"os"
 	"reflect"
@@ -13,52 +11,34 @@ import (
 
 	"github.com/wedeploy/api-go/jsonlib"
 	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/configmock"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/tdata"
 )
 
-func TestCreateFromJSON(t *testing.T) {
-	defer servertest.Teardown()
-	servertest.Setup()
-	configmock.Setup()
-
-	servertest.Mux.HandleFunc("/projects",
-		func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "POST" {
-				t.Errorf("Unexpected method %v", r.Method)
-			}
-		})
-
-	err := CreateFromJSON(context.Background(), "mocks/little/project.json")
-
-	if err != nil {
-		t.Errorf("Wanted err to be nil, got %v instead", err)
+func TestMain(m *testing.M) {
+	if err := config.Setup("mocks/.we"); err != nil {
+		panic(err)
 	}
 
-	configmock.Teardown()
-}
-
-func TestCreateFromJSONFailureNotFound(t *testing.T) {
-	var err = CreateFromJSON(context.Background(),
-		fmt.Sprintf("foo-%d.json", rand.Int()))
-
-	if !os.IsNotExist(err) {
-		t.Errorf("Wanted err to be due to file not found, got %v instead", err)
+	if err := config.SetEndpointContext(defaults.LocalRemote); err != nil {
+		panic(err)
 	}
+
+	os.Exit(m.Run())
 }
 
 func TestCreate(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects",
 		tdata.ServerJSONFileHandler("mocks/new_response.json"))
 
-	var project, err = Create(context.Background(), "")
+	var project, err = Create(context.Background(), Project{})
 
-	if project.ID != "tesla36" {
-		t.Errorf("Wanted project ID to be tesla36, got %v instead", project.ID)
+	if project.ProjectID != "tesla36" {
+		t.Errorf("Wanted project ID to be tesla36, got %v instead", project.ProjectID)
 	}
 
 	if project.Health != "on" {
@@ -70,20 +50,21 @@ func TestCreate(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestCreateNamed(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects",
 		tdata.ServerJSONFileHandler("mocks/new_named_response.json"))
 
-	var project, err = Create(context.Background(), "banach30")
+	var project, err = Create(context.Background(),
+		Project{
+			ProjectID: "banach30",
+		})
 
-	if project.ID != "banach30" {
-		t.Errorf("Wanted project ID to be banach30, got %v instead", project.ID)
+	if project.ProjectID != "banach30" {
+		t.Errorf("Wanted project ID to be banach30, got %v instead", project.ProjectID)
 	}
 
 	if err != nil {
@@ -91,18 +72,12 @@ func TestCreateNamed(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestCreateError(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
-	var project, err = Create(context.Background(), "")
-
-	if project != nil {
-		t.Errorf("Wanted project to be nil, got %v instead", project)
-	}
+	var _, err = Create(context.Background(), Project{})
 
 	switch err.(type) {
 	case *apihelper.APIFault:
@@ -111,64 +86,10 @@ func TestCreateError(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
-}
-
-func TestAddDomain(t *testing.T) {
-	t.Skipf("Skipping until https://github.com/wedeploy/cli/issues/187 is closed")
-	servertest.Setup()
-	configmock.Setup()
-
-	servertest.Mux.HandleFunc("/projects/foo/customDomains",
-		func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != http.MethodPatch {
-				t.Errorf("Expected method %v, got %v instead", http.MethodPatch, r.Method)
-			}
-
-			var body, err = ioutil.ReadAll(r.Body)
-
-			if err != nil {
-				t.Errorf("Error parsing response")
-			}
-
-			var wantBody = `"example.com"`
-
-			if string(body) != wantBody {
-				t.Errorf("Wanted body to be %v, got %v instead", wantBody, string(body))
-			}
-		})
-
-	if err := AddDomain(context.Background(), "foo", "example.com"); err != nil {
-		t.Errorf("Expected no error when adding domains, got %v instead", err)
-	}
-
-	servertest.Teardown()
-	configmock.Teardown()
-}
-
-func TestRemoveDomain(t *testing.T) {
-	t.Skipf("Skipping until https://github.com/wedeploy/cli/issues/187 is closed")
-	servertest.Setup()
-	configmock.Setup()
-
-	servertest.Mux.HandleFunc("/projects/foo/customDomains/example.com",
-		func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != http.MethodDelete {
-				t.Errorf("Expected method %v, got %v instead", http.MethodDelete, r.Method)
-			}
-		})
-
-	if err := RemoveDomain(context.Background(), "foo", "example.com"); err != nil {
-		t.Errorf("Expected no error when adding domains, got %v instead", err)
-	}
-
-	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestGet(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc(
 		"/projects/images",
@@ -177,8 +98,8 @@ func TestGet(t *testing.T) {
 	var list, err = Get(context.Background(), "images")
 
 	var want = Project{
-		ID:     "images",
-		Health: "on",
+		ProjectID: "images",
+		Health:    "on",
 	}
 
 	if !reflect.DeepEqual(want, list) {
@@ -190,7 +111,6 @@ func TestGet(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestGetEmpty(t *testing.T) {
@@ -203,7 +123,6 @@ func TestGetEmpty(t *testing.T) {
 
 func TestList(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc(
 		"/projects",
@@ -213,8 +132,8 @@ func TestList(t *testing.T) {
 
 	var want = []Project{
 		Project{
-			ID:     "images",
-			Health: "on",
+			ProjectID: "images",
+			Health:    "on",
 		},
 	}
 
@@ -227,7 +146,6 @@ func TestList(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestRead(t *testing.T) {
@@ -240,26 +158,6 @@ func TestRead(t *testing.T) {
 	jsonlib.AssertJSONMarshal(t, tdata.FromFile(
 		"mocks/little/project_ref.json"),
 		c)
-}
-
-func TestReadLegacyCustomDomain(t *testing.T) {
-	var c, err = Read("mocks/little-legacy")
-
-	jsonlib.AssertJSONMarshal(t, tdata.FromFile(
-		"mocks/little-legacy/project_ref.json"),
-		c)
-
-	if err == nil {
-		t.Fatalf("Expected error not to be null")
-	}
-
-	var wantErr = `CustomDomain string support was removed in favor of CustomDomains []string
-Update your mocks/little-legacy/project.json file to use:
-"customDomains": ["foo.com"] instead of "customDomain": "foo.com".`
-
-	if err.Error() != wantErr {
-		t.Errorf("Wanted err to be %v, got %v instead", wantErr, err)
-	}
 }
 
 func TestReadFileNotFound(t *testing.T) {
@@ -289,26 +187,18 @@ func TestReadCorrupted(t *testing.T) {
 func TestRestart(t *testing.T) {
 	defer servertest.Teardown()
 	servertest.Setup()
-	configmock.Setup()
 
-	servertest.Mux.HandleFunc("/restart/project", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.RawQuery != "projectId=foo" {
-			t.Error("Wrong query parameters for restart method")
-		}
-
+	servertest.Mux.HandleFunc("/projects/foo/restart", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `"on"`)
 	})
 
 	if err := Restart(context.Background(), "foo"); err != nil {
 		t.Errorf("Unexpected error on project restart: %v", err)
 	}
-
-	configmock.Teardown()
 }
 
 func TestUnlink(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects/foo", func(w http.ResponseWriter, r *http.Request) {
 		var wantMethod = "DELETE"
@@ -324,5 +214,4 @@ func TestUnlink(t *testing.T) {
 	}
 
 	servertest.Teardown()
-	configmock.Teardown()
 }
