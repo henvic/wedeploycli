@@ -65,11 +65,14 @@ func TestGetAndDelete(t *testing.T) {
 func TestSet(t *testing.T) {
 	var list = List{}
 
-	list.Set("alternative", "http://example.net/", "123")
+	list.Set("alternative", Entry{
+		URL:     "http://example.net/",
+		Comment: "123",
+	})
 
 	alt, ok := list["alternative"]
 
-	if !ok || alt.URL != "http://example.net/" || alt.Comment != "# 123" {
-		t.Errorf("Expected values ((http://example.net/, # 123), true), got (%v, %v) instead", alt, ok)
+	if !ok || alt.URL != "http://example.net/" || alt.Comment != "123" {
+		t.Errorf("Expected values ((http://example.net/, 123), true), got (%v, %v) instead", alt, ok)
 	}
 }
