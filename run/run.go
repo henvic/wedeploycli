@@ -135,7 +135,8 @@ func StopOutdatedImage(nextImage string) error {
 	println("The infrastructure must be stopped before updating the CLI tool.")
 
 	if !terminal.IsTerminal(int(os.Stdin.Fd())) {
-		return errors.New("No terminal (/dev/tty) detected for asking to stop the infrastructure. Exiting.")
+		println(color.Format(color.FgHiRed, "No terminal (/dev/tty) detected. Skipping stopping infrastructure."))
+		return nil
 	}
 
 	if nextImage == "latest" {
