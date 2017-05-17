@@ -11,7 +11,7 @@ var (
 	BuildTime = ""
 
 	// DashboardAddressPrefix for a given remote
-	DashboardAddressPrefix = "dashboard."
+	DashboardAddressPrefix = "console."
 
 	// DashboardURLPrefix for a given remote
 	DashboardURLPrefix = "http://" + DashboardAddressPrefix
