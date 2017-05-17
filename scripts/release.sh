@@ -141,10 +141,10 @@ function runTests() {
   go vet $(go list ./... | grep -v /vendor/)
   echo "Running tests (may take a while)."
 
-  if [[ $skipIntegrationTests == true ]] ; then
-    go test $(go list ./... | grep -v /vendor/ | grep -v /integration$) -race
-  else
-    go test $(go list ./... | grep -v /vendor/) -race
+  # skip integration testing with -race because pseudoterm has some data race condition at this time
+  go test $(go list ./... | grep -v /vendor/ | grep -v /integration$) -race
+  if [[ $skipIntegrationTests != true ]] ; then
+    go test $(go list ./... | grep /integration)
   fi
 }
 
