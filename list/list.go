@@ -68,7 +68,7 @@ func (l *List) printList() {
 
 	l.retry = 0
 	l.printProjects()
-	l.w.Flush()
+	_ = l.w.Flush()
 }
 
 func (l *List) handleRequestError(err error) string {

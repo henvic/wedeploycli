@@ -87,7 +87,7 @@ func remoteRun(cmd *cobra.Command, args []string) error {
 		fmt.Fprintf(w, "\n")
 	}
 
-	w.Flush()
+	_ = w.Flush()
 
 	return nil
 }
