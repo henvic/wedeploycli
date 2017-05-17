@@ -114,7 +114,7 @@ func (h *handler) handleAPIFaultError() error {
 		return err
 	}
 
-	return errors.New(strings.Join(msgs, "\n"))
+	return errwrap.Wrap(errors.New(strings.Join(msgs, "\n")), err)
 }
 
 // GetTypes get a list of error types separated by ":"

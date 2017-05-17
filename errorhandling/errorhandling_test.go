@@ -2,6 +2,7 @@ package errorhandling
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/hashicorp/errwrap"
@@ -263,6 +264,16 @@ func TestHandleAPIWrappedFaultGenericErrorFoundNested(t *testing.T) {
 
 	if want != got.Error() {
 		t.Errorf("Wanted %v, got %v instead", want, got)
+	}
+
+	if reflect.TypeOf(got).String() != "*errwrap.wrappedError" {
+		t.Errorf("Expected error to be wrapped")
+	}
+
+	var af = errwrap.GetType(got, &apihelper.APIFault{})
+
+	if af == nil {
+		t.Errorf("Expected error to be of apihelper.APIFault{} time")
 	}
 }
 
