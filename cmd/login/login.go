@@ -70,7 +70,7 @@ func basicAuthLogin() error {
 
 Have you signed up with an authentication provider such as Google or GitHub?
 Please, set up a WeDeploy password first at
-` + color.Format(color.FgHiRed, "http://dashboard.%v/password/reset", remoteAddress) +
+` + color.Format(color.FgHiRed, "http://%v.%v/password/reset", defaults.DashboardAddressPrefix, remoteAddress) +
 		"\nor you won't be able to continue.\n")
 	if username, err = prompt.Prompt("Username"); err != nil {
 		return err
