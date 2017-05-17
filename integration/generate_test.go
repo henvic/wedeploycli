@@ -1,7 +1,6 @@
 package integration
 
 import (
-	"reflect"
 	"strings"
 	"testing"
 
@@ -75,38 +74,6 @@ func TestGenerateProjectAlreadyExists(t *testing.T) {
 	}
 }
 
-func TestGenerateProjectAlreadyExistsAttribute(t *testing.T) {
-	var cmd = &Command{
-		Args: []string{"generate",
-			"--project",
-			"foo",
-			"--directory",
-			"mocks/generate",
-			"--project-custom-domain",
-			"example.com",
-			"--container",
-			"bar",
-			"--no-color"},
-	}
-
-	cmd.Run()
-
-	if cmd.Stdout.Len() != 0 {
-		t.Errorf("Expected stdout to be empty, got %v instead", cmd.Stdout)
-	}
-
-	var wantErr = `Jumping creation of project foo (already exists)
-Project flags (--project-custom-domain) can only be used on new projects`
-
-	if !strings.Contains(cmd.Stderr.String(), wantErr) {
-		t.Errorf("Wanted stderr to have %v, got %v instead", wantErr, cmd.Stderr)
-	}
-
-	if cmd.ExitCode == 0 {
-		t.Errorf("Expected exit code to be not 0, got %v instead", cmd.ExitCode)
-	}
-}
-
 func TestGenerateProjectAlreadyExistsInsideBase(t *testing.T) {
 	var cmd = &Command{
 		Args: []string{"generate",
@@ -114,8 +81,6 @@ func TestGenerateProjectAlreadyExistsInsideBase(t *testing.T) {
 			"foo",
 			"--directory",
 			"mocks/generate/foo",
-			"--project-custom-domain",
-			"example.com",
 			"--container",
 			"bar",
 			"--no-color"},
@@ -170,60 +135,10 @@ func TestGenerateProject(t *testing.T) {
 	if p.ID != "example" {
 		t.Errorf(`Expected project to be generated with ID "example" got %v instead`, p.ID)
 	}
-
-	if len(p.CustomDomains) != 0 {
-		t.Errorf("Expected no custom domain for project, got %v instead", p.CustomDomains)
-	}
 }
 
-func TestGenerateProjectWithCustomDomain(t *testing.T) {
-	removeAll("mocks/generate/example")
-	defer removeAll("mocks/generate/example")
-
-	var cmd = &Command{
-		Args: []string{"generate",
-			"--project",
-			"example",
-			"--project-custom-domain",
-			"example.com",
-			"--directory",
-			"mocks/generate",
-		},
-	}
-
-	cmd.Run()
-
-	var want = "Project generated at"
-	if !strings.Contains(cmd.Stdout.String(), want) {
-		t.Errorf("Wanted stdout to have %v, got %v instead", want, cmd.Stdout)
-	}
-
-	if cmd.Stderr.Len() != 0 {
-		t.Errorf("Expected stderr to be empty, got %v instead", cmd.Stderr)
-	}
-
-	if cmd.ExitCode != 0 {
-		t.Errorf("Expected exit code to be 0, got %v instead", cmd.ExitCode)
-	}
-
-	var p, err = projects.Read("mocks/generate/example")
-
-	if err != nil {
-		t.Errorf("Expected reading project file, got error %v instead", err)
-	}
-
-	if p.ID != "example" {
-		t.Errorf(`Expected project to be generated with ID "example" got %v instead`, p.ID)
-	}
-
-	var wantCustomDomains = []string{"example.com"}
-
-	if !reflect.DeepEqual(p.CustomDomains, wantCustomDomains) {
-		t.Errorf("Expected custom domain for project to be %v, got %v instead", wantCustomDomains, p.CustomDomains[0])
-	}
-}
-
-func TestGenerateProjectWithCustomDomainAndContainerWithoutContainerBoilerplate(t *testing.T) {
+func TestGenerateProjectAndContainerWithoutContainerBoilerplate(t *testing.T) {
+	t.Skipf("Registry is changed and the generate command is hidden on releases currently")
 	removeAll("mocks/generate/example")
 	defer removeAll("mocks/generate/example")
 
@@ -233,8 +148,6 @@ func TestGenerateProjectWithCustomDomainAndContainerWithoutContainerBoilerplate(
 			"example",
 			"--container",
 			"email",
-			"--project-custom-domain",
-			"example.com",
 			"--container-type",
 			"auth",
 			"--container-boilerplate=false",
@@ -271,12 +184,6 @@ func TestGenerateProjectWithCustomDomainAndContainerWithoutContainerBoilerplate(
 
 	if p.ID != "example" {
 		t.Errorf(`Expected project to be generated with ID "example" got %v instead`, p.ID)
-	}
-
-	var wantCustomDomains = []string{"example.com"}
-
-	if !reflect.DeepEqual(p.CustomDomains, wantCustomDomains) {
-		t.Errorf("Expected custom domain for project to be %v, got %v instead", wantCustomDomains, p.CustomDomains[0])
 	}
 }
 
