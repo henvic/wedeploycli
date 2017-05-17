@@ -188,6 +188,8 @@ func TestGenerateProjectAndContainerWithoutContainerBoilerplate(t *testing.T) {
 }
 
 func TestGenerateContainerInsideAlreadyExistingProjectWithoutContainerBoilerplate(t *testing.T) {
+	t.Skipf("Registry is changed and the generate command is hidden on releases currently")
+
 	removeAll("mocks/generate/foo/data")
 	defer removeAll("mocks/generate/foo/data")
 

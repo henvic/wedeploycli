@@ -25,6 +25,7 @@ func TestGeneratePromptProjectThenContainer(t *testing.T) {
 }
 
 func TestGeneratePromptProjectAndContainerAtOnce(t *testing.T) {
+	t.Skipf("Registry is changed and the generate command is hidden on releases currently")
 	Setup()
 	defer Teardown()
 	removeAll("mocks/generate/example")
@@ -184,6 +185,7 @@ func testGeneratePromptProject(t *testing.T) {
 }
 
 func testGeneratePromptContainer(t *testing.T) {
+	t.Skipf("Registry is changed and the generate command is hidden on releases currently")
 	var cmd = (&Command{
 		Args: []string{"generate"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
