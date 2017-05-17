@@ -83,7 +83,7 @@ func inspect(field string) (string, error) {
 	case "container":
 		return inspector.InspectContainer(format, directory)
 	default:
-		return "", fmt.Errorf(`Inspecting "%v" is not implemented.`, field)
+		return "", fmt.Errorf(`inspecting "%v" is not implemented`, field)
 	}
 }
 
@@ -99,7 +99,7 @@ func printTypeFieldsSpec(field string) error {
 	}
 
 	if i == nil {
-		return fmt.Errorf(`Spec for "%v" is not implemented.`, field)
+		return fmt.Errorf(`spec for "%v" is not implemented`, field)
 	}
 
 	fmt.Println(strings.Join(inspector.GetSpec(i), "\n"))

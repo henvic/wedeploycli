@@ -23,7 +23,7 @@ func TestLogsTooManyArguments(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stderr:   "Invalid number of arguments: too many",
+		Stderr:   "Error: Invalid number of arguments: too many",
 		ExitCode: 1,
 	}
 
@@ -42,7 +42,7 @@ func TestLogsIncompatibleUse(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stderr:   "Use flag --project or call this from inside a project directory",
+		Stderr:   "Error: Use flag --project or call this from inside a project directory",
 		ExitCode: 1,
 	}
 

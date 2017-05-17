@@ -32,7 +32,7 @@ func TestWhoNotFound(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stderr:   "User is not available",
+		Stderr:   "Error: User is not available",
 		ExitCode: 1,
 	}
 

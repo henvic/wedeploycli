@@ -522,7 +522,7 @@ func (cc *containerCreator) checkIfDirectoryEmptyForInstallingBoilerplate() (emp
 			return false, nil
 		}
 
-		return false, errors.New("Container directory already exists. Can not install boilerplate.")
+		return false, errors.New("container directory already exists. Can not install boilerplate")
 	}
 
 	return true, nil

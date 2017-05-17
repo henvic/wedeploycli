@@ -149,7 +149,7 @@ func StopOutdatedImage(nextImage string) error {
 	}
 
 	if q != "" && q != "y" && q != "yes" {
-		return errors.New("Can not update image while running an old version of the infrastructure.")
+		return errors.New("can not update image while running an old version of the infrastructure")
 	}
 
 	return cleanupEnvironment()

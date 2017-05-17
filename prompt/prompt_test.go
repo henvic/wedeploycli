@@ -192,7 +192,7 @@ func TestSelectOptionNoneAvailable(t *testing.T) {
 		t.Errorf("Expected option to be -1, got %v instead", option)
 	}
 
-	var wantErr = "No options available."
+	var wantErr = "no options available"
 
 	if errt == nil || errt.Error() != wantErr {
 		t.Errorf("Expected option error to be %v, got %v instead", wantErr, errt)
@@ -229,7 +229,7 @@ func TestSelectOptionNoneAvailableEquivalent(t *testing.T) {
 		t.Errorf("Expected option to be -1, got %v instead", option)
 	}
 
-	var wantErr = "No options available."
+	var wantErr = "no options available"
 
 	if errt == nil || errt.Error() != wantErr {
 		t.Errorf("Expected option error to be %v, got %v instead", wantErr, errt)
@@ -264,7 +264,7 @@ func TestSelectOptionInvalidOption(t *testing.T) {
 		t.Errorf("Expected option to be -1, got %v instead", option)
 	}
 
-	var wantErr = "Invalid option."
+	var wantErr = "invalid option"
 
 	if errt == nil || errt.Error() != wantErr {
 		t.Errorf("Expected option error to be %v, got %v instead", wantErr, errt)
@@ -299,7 +299,7 @@ func TestSelectOptionInvalidOptionOffByOne(t *testing.T) {
 		t.Errorf("Expected option to be -1, got %v instead", option)
 	}
 
-	var wantErr = "Invalid option."
+	var wantErr = "invalid option"
 
 	if errt == nil || errt.Error() != wantErr {
 		t.Errorf("Expected option error to be %v, got %v instead", wantErr, errt)
@@ -337,7 +337,7 @@ func TestSelectOptionInvalidOptionEquivalent(t *testing.T) {
 		t.Errorf("Expected option to be -1, got %v instead", option)
 	}
 
-	var wantErr = "Invalid option."
+	var wantErr = "invalid option"
 
 	if errt == nil || errt.Error() != wantErr {
 		t.Errorf("Expected option error to be %v, got %v instead", wantErr, errt)

@@ -39,7 +39,7 @@ const Start = "start"
 
 var (
 	// ErrMissingHook is used when the hook is missing
-	ErrMissingHook = errors.New("Missing hook.")
+	ErrMissingHook = errors.New("missing hook")
 
 	outStream io.Writer = os.Stdout
 	errStream io.Writer = os.Stderr

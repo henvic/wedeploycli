@@ -62,7 +62,7 @@ func init() {
 
 func preRun(cmd *cobra.Command, args []string) error {
 	if len(args) != 0 {
-		return errors.New("Invalid number of arguments.")
+		return errors.New("invalid number of arguments")
 	}
 
 	if err := cmdargslen.Validate(args, 0, 0); err != nil {

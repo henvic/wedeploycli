@@ -59,7 +59,7 @@ func validateChannel() {
 	re := regexp.MustCompile("^$|^[a-zA-Z0-9]+$")
 
 	if !re.MatchString(channel) {
-		panic(errors.New("Invalid channel name."))
+		panic(errors.New("invalid channel name"))
 	}
 }
 

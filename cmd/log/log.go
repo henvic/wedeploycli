@@ -66,7 +66,7 @@ func logRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(args) > 2 {
-		return errors.New("Invalid number of arguments.")
+		return errors.New("invalid number of arguments")
 	}
 
 	since, err := getSince()

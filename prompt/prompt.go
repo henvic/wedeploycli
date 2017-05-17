@@ -25,7 +25,7 @@ var (
 // SelectOption prompts for an option from a list
 func SelectOption(indexLength int, equivalents map[string]int) (index int, err error) {
 	if indexLength == 0 {
-		return -1, errors.New("No options available.")
+		return -1, errors.New("no options available")
 	}
 
 	var option string
@@ -50,7 +50,7 @@ func SelectOption(indexLength int, equivalents map[string]int) (index int, err e
 func getSelectOptionIndex(index, indexLength int, err error) (int, error) {
 	index--
 	if err != nil || index < 0 || index >= indexLength {
-		return -1, errors.New("Invalid option.")
+		return -1, errors.New("invalid option")
 	}
 
 	return index, nil
