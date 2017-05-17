@@ -74,15 +74,11 @@ func TestGetLevel(t *testing.T) {
 func TestGetList(t *testing.T) {
 	servertest.Setup()
 
-	servertest.Mux.HandleFunc("/logs/foo",
+	servertest.Mux.HandleFunc("/projects/foo/services/nodejs5143/logs",
 		func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Query().Get("containerId") != "nodejs5143" {
-				t.Errorf("Wrong value for containerId")
-			}
-
-			if r.URL.Query().Get("containerUid") != "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj" {
-				t.Errorf("Wrong value for containerUid")
-			}
+			// if r.URL.Query().Get("containerUid") != "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj" {
+			// 	t.Errorf("Wrong value for containerUid")
+			// }
 
 			if r.URL.Query().Get("level") != "4" {
 				t.Errorf("Wrong value for level")
@@ -120,7 +116,7 @@ func TestList(t *testing.T) {
 
 	servertest.Setup()
 
-	servertest.Mux.HandleFunc("/logs/foo",
+	servertest.Mux.HandleFunc("/projects/foo/services/nodejs5143/logs",
 		tdata.ServerJSONFileHandler("mocks/logs_response.json"))
 
 	var filter = &Filter{
@@ -159,7 +155,7 @@ func TestWatch(t *testing.T) {
 
 	var missing = true
 
-	servertest.Mux.HandleFunc("/logs/foo",
+	servertest.Mux.HandleFunc("/projects/foo/services/bar/logs",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			switch missing {
@@ -223,7 +219,7 @@ func TestWatcherStart(t *testing.T) {
 
 	var fileNum = 0
 
-	servertest.Mux.HandleFunc("/logs/foo",
+	servertest.Mux.HandleFunc("/projects/foo/services/nodejs5143/logs",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			time.Sleep(2 * time.Millisecond)
