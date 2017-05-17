@@ -1,36 +1,24 @@
-WeDeploy Command Line Interface
-Version master
-Copyright 2016 Liferay, Inc.
-http://wedeploy.com
+WeDeploy CLI tool wedeploy.com
 
-Usage:
-  we [flags]
-  we [command]
+● we [command] [flags]
 
-Available Commands:
+Commands:
+  deploy       Performs a deployment
+  list         List deployments
+  log          Show deployment logs
+  domain       Manages your domain names
+  env          Environment variables for containers
+  restart      Restart project or container
+  remove       Remove a project or container
   login        Authenticate on WeDeploy
   logout       Revoke credentials
+
   remote       Configure WeDeploy remotes
-
-  deploy       Deploy project or container
-  undeploy     Undeploy a given project or container
-  run          Run development environment
-
-  domain       Configure custom domains for projects
-  env          Environment variables for containers
-  list         List projects and containers running
-  log          See logs running containers
-  restart      Restart project or container
-
   metrics      Analytics reporting and settings
   update       Updates this tool to the latest version
   version      Print version information and quit
 
-  inspect      Inspect environment info
-  diagnostics  Diagnose & Feedback
-
 Flags:
-      --no-color   Disable color output
-  -v, --verbose    Verbose output
+  -v, --verbose   Verbose output
 
 Use "we [command] --help" for more information about a command.
