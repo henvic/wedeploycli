@@ -1,13 +1,6 @@
-{
-    "id": "app",
-    "health": "up",
-    "containers": {
-        "container": {
-            "template": "wedeploy-email",
-            "maxScale": 1,
-            "health": "up",
-            "scale": 1,
-            "id": "container"
-        }
-    }
-}
+[
+    {
+        "serviceId": "container",
+        "health": "up"
+   }
+]

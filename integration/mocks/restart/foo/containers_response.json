@@ -1,0 +1,7 @@
+[
+    {
+    "type": "nodejs",
+    "serviceId": "bar",
+    "health": "on"
+    }
+]
