@@ -648,7 +648,9 @@ func (r *runner) saveProject(p *projects.Project) error {
 		return err
 	}
 
-	bin, err := json.MarshalIndent(p, "", "    ")
+	bin, err := json.MarshalIndent(projects.ProjectPackage{
+		ID: p.ProjectID,
+	}, "", "    ")
 
 	if err != nil {
 		return err
