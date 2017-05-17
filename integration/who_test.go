@@ -13,7 +13,7 @@ func TestWho(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stdout:   "foo",
+		Stdout:   "admin in wedeploy (wedeploy.io)",
 		ExitCode: 0,
 	}
 
