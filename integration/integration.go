@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/stringlib"
 )
@@ -206,7 +207,8 @@ func setupLoginHome() {
 	removeLoginHomeMock()
 
 	var mock = &config.Config{
-		Path: file,
+		Path:    file,
+		NoColor: true,
 	}
 
 	if err := mock.Load(); err != nil {
@@ -214,9 +216,12 @@ func setupLoginHome() {
 	}
 
 	mock.LocalHTTPPort = getIntegrationServerPort()
-	mock.Username = "foo"
-	mock.Password = "bar"
 	mock.AnalyticsOption = "Sat Dec  5 01:23:45 -0800 2016"
+
+	var cr = mock.Remotes[defaults.CloudRemote]
+	cr.Username = "admin"
+	mock.Remotes[defaults.CloudRemote] = cr
+
 	if err := mock.Save(); err != nil {
 		panic(err)
 	}
