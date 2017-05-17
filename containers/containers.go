@@ -214,6 +214,7 @@ func (l *listFromDirectoryGetter) addFunc(cp *ContainerPackage, dir string) erro
 // List containers of a given project
 func List(ctx context.Context, projectID string) (Containers, error) {
 	var cs Containers
+
 	var err = apihelper.AuthGet(ctx, "/projects/"+url.QueryEscape(projectID)+"/services", &cs)
 	sort.Slice(cs, func(i, j int) bool {
 		return cs[i].ServiceID < cs[j].ServiceID
