@@ -424,13 +424,6 @@ func TestRemotes(t *testing.T) {
 [remote "remain"]
 `,
 		`
-[remote "local"]
-    ; Default local remote
-    url      = http://wedeploy.me
-    username = no-reply@wedeploy.com
-    password = cli-tool-password
-`,
-		`
 [remote "wedeploy"]
     ; Default cloud remote
     url = wedeploy.io
