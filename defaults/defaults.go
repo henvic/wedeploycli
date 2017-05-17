@@ -14,7 +14,7 @@ var (
 	DashboardAddressPrefix = "console."
 
 	// DashboardURLPrefix for a given remote
-	DashboardURLPrefix = "http://" + DashboardAddressPrefix
+	DashboardURLPrefix = "https://" + DashboardAddressPrefix
 
 	// Docs page
 	Docs = "http://wedeploy.com/docs/"
