@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"sync"
 	"syscall"
 	"testing"
@@ -12,11 +13,25 @@ import (
 
 	"github.com/wedeploy/api-go/jsonlib"
 	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/configmock"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/stringlib"
 	"github.com/wedeploy/cli/tdata"
 )
+
+func TestMain(m *testing.M) {
+	if err := config.Setup("mocks/.we"); err != nil {
+		panic(err)
+	}
+
+	if err := config.SetEndpointContext(defaults.LocalRemote); err != nil {
+		panic(err)
+	}
+
+	ec := m.Run()
+	os.Exit(ec)
+}
 
 type GetLevelProvider struct {
 	in    string
@@ -58,7 +73,6 @@ func TestGetLevel(t *testing.T) {
 
 func TestGetList(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/logs/foo",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -93,7 +107,6 @@ func TestGetList(t *testing.T) {
 
 	jsonlib.AssertJSONMarshal(t, tdata.FromFile("mocks/logs_response_ref.json"), list)
 
-	configmock.Teardown()
 	servertest.Teardown()
 }
 
@@ -105,7 +118,6 @@ func TestList(t *testing.T) {
 	var defaultNoColor = color.NoColor
 	color.NoColor = true
 
-	configmock.Setup()
 	servertest.Setup()
 
 	servertest.Mux.HandleFunc("/logs/foo",
@@ -132,7 +144,6 @@ func TestList(t *testing.T) {
 	color.NoColor = defaultNoColor
 	outStream = defaultOutStream
 
-	configmock.Teardown()
 	servertest.Teardown()
 }
 
@@ -144,7 +155,6 @@ func TestWatch(t *testing.T) {
 	var defaultNoColor = color.NoColor
 	color.NoColor = true
 
-	configmock.Setup()
 	servertest.Setup()
 
 	var missing = true
@@ -198,7 +208,6 @@ func TestWatch(t *testing.T) {
 	time.Sleep(10 * time.Millisecond)
 	color.NoColor = defaultNoColor
 	outStream = defaultOutStream
-	configmock.Teardown()
 	servertest.Teardown()
 }
 
@@ -211,7 +220,6 @@ func TestWatcherStart(t *testing.T) {
 	color.NoColor = true
 
 	servertest.Setup()
-	configmock.Setup()
 
 	var fileNum = 0
 
@@ -262,7 +270,6 @@ func TestWatcherStart(t *testing.T) {
 
 	outStream = defaultOutStream
 	servertest.Teardown()
-	configmock.Teardown()
 }
 
 func TestGetUnixTimestamp(t *testing.T) {

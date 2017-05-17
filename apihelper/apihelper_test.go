@@ -43,7 +43,9 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	config.SetEndpointContext(defaults.LocalRemote)
+	if err := config.SetEndpointContext(defaults.LocalRemote); err != nil {
+		panic(err)
+	}
 
 	ec := m.Run()
 
@@ -965,10 +967,14 @@ func TestURL(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	config.SetEndpointContext(defaults.CloudRemote)
+	if err := config.SetEndpointContext(defaults.CloudRemote); err != nil {
+		panic(err)
+	}
 
 	defer func() {
-		config.SetEndpointContext(defaults.LocalRemote)
+		if err := config.SetEndpointContext(defaults.LocalRemote); err != nil {
+			panic(err)
+		}
 	}()
 
 	var want = `WeDeploy platform error: could not connect to remote infrastructure`
@@ -1092,8 +1098,15 @@ func TestValidateUnexpectedResponseCustom(t *testing.T) {
 	servertest.Setup()
 	defer servertest.Teardown()
 
-	config.SetEndpointContext(defaults.CloudRemote)
-	defer config.SetEndpointContext(defaults.LocalRemote)
+	if err := config.SetEndpointContext(defaults.CloudRemote); err != nil {
+		panic(err)
+	}
+
+	defer func() {
+		if err := config.SetEndpointContext(defaults.LocalRemote); err != nil {
+			panic(err)
+		}
+	}()
 
 	servertest.Mux.HandleFunc("/foo/bah", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(403)

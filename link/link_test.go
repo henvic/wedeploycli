@@ -10,12 +10,25 @@ import (
 
 	"github.com/wedeploy/api-go/jsonlib"
 	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/configmock"
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/hooks"
+	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/tdata"
 )
+
+func TestMain(m *testing.M) {
+	if err := config.Setup("mocks/.we"); err != nil {
+		panic(err)
+	}
+
+	if err := config.SetEndpointContext(defaults.LocalRemote); err != nil {
+		panic(err)
+	}
+
+	os.Exit(m.Run())
+}
 
 func TestNew(t *testing.T) {
 	if _, err := New("mocks/myproject/mycontainer"); err != nil {

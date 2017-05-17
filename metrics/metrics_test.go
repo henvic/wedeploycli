@@ -25,7 +25,11 @@ import (
 
 func TestMain(m *testing.M) {
 	removeMetricsFile()
-	config.Setup("mocks/.we")
+
+	if err := config.Setup("mocks/.we"); err != nil {
+		panic(err)
+	}
+
 	config.Global.EnableAnalytics = true
 	resetMetricsSetup()
 	ec := m.Run()

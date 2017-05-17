@@ -27,7 +27,10 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	config.SetEndpointContext(defaults.LocalRemote)
+	if err := config.SetEndpointContext(defaults.LocalRemote); err != nil {
+		panic(err)
+	}
+
 	os.Exit(m.Run())
 }
 
