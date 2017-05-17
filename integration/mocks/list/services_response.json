@@ -1,0 +1,12 @@
+[
+    {
+        "serviceId": "data",
+        "health": "up",
+        "image": "wedeploy/engine"
+    },
+    {
+        "serviceId": "static",
+        "health": "up",
+        "image": "wedeploy/hosting"
+    }
+]

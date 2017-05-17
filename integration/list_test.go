@@ -17,6 +17,10 @@ func TestList(t *testing.T) {
 		"/projects",
 		tdata.ServerJSONFileHandler("./mocks/list/projects_response.json"))
 
+	servertest.IntegrationMux.HandleFunc(
+		"/projects/wechat/services",
+		tdata.ServerJSONFileHandler("./mocks/list/services_response.json"))
+
 	var cmd = &Command{
 		Args: []string{"list", "--remote", "local", "--no-color"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
@@ -54,11 +58,15 @@ func TestListContainerFromInsideProject(t *testing.T) {
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc(
+		"/projects/app",
+		tdata.ServerJSONFileHandler("./mocks/home/bucket/project/container/projects_list"))
+
+	servertest.IntegrationMux.HandleFunc(
 		"/projects/app/services/container",
 		tdata.ServerJSONFileHandler("./mocks/home/bucket/project/container/container.json"))
 
 	servertest.IntegrationMux.HandleFunc(
-		"/projects/app",
+		"/projects/app/services",
 		tdata.ServerJSONFileHandler("./mocks/home/bucket/project/container/container_list.json"))
 
 	var cmd = &Command{
@@ -102,7 +110,7 @@ func TestListContainerFromInsideProjectNotExists(t *testing.T) {
 	}
 
 	var e = &Expect{
-		Stderr:   "Not found\n",
+		Stderr:   "Error: Not found\n",
 		ExitCode: 1,
 	}
 
