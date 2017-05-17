@@ -21,10 +21,10 @@ func TestInspectPrintProjectStructure(t *testing.T) {
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
-	var want = `ID string
-CustomDomains []string
+	var want = `ProjectID string
 Health string
-Description string`
+Description string
+HealthUID string`
 
 	var e = &Expect{
 		ExitCode: 0,
@@ -40,15 +40,20 @@ func TestInspectPrintContainerStructure(t *testing.T) {
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"inspect", "project", "--fields"},
+		Args: []string{"inspect", "container", "--fields"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
-	var want = `ID string
-		CustomDomains []string
+	var want = `ServiceID string
 		Health string
-		Description string`
+		Image string
+		Version string
+		Hooks *hooks.Hooks
+		CustomDomains []string
+		Env map[string]string
+		Scale int
+		HealthUID string`
 
 	var e = &Expect{
 		ExitCode: 0,
