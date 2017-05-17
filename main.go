@@ -15,8 +15,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/autocomplete"
 	"github.com/wedeploy/cli/cmd"
 	"github.com/wedeploy/cli/color"
@@ -90,9 +92,23 @@ func (m *mainProgram) setupMetrics() {
 
 func printError(e error) {
 	fmt.Fprintf(os.Stderr,
-		"%v %v\n%v %v\n",
+		"%v %v\n",
 		color.Format(color.FgRed, "Error:"),
-		e,
+		e)
+
+	var aft = errwrap.GetType(e, &apihelper.APIFault{})
+
+	if aft == nil {
+		return
+	}
+
+	af, ok := aft.(*apihelper.APIFault)
+
+	if !ok || af.Status < 500 || af.Status > 599 {
+		return
+	}
+
+	fmt.Fprintf(os.Stderr, "%v %v\n",
 		color.Format(color.FgRed, "Contact us:"),
 		defaults.SupportEmail)
 }
