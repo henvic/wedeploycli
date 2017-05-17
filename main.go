@@ -119,7 +119,7 @@ func hideHelpFlag() {
 	// subcommands.
 	var x bool
 	cmd.RootCmd.PersistentFlags().BoolVarP(&x, "help", "h", false, "")
-	cmd.RootCmd.PersistentFlags().MarkHidden("help")
+	_ = cmd.RootCmd.PersistentFlags().MarkHidden("help")
 }
 
 func (m *mainProgram) executeCommand() {
