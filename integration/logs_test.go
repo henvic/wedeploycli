@@ -76,12 +76,8 @@ func TestLogs(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc("/logs/foo",
+	servertest.IntegrationMux.HandleFunc("/projects/foo/services/nodejs5143/logs",
 		func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Query().Get("containerId") != "nodejs5143" {
-				t.Errorf("Wrong value for containerId")
-			}
-
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			fmt.Fprintf(w, tdata.FromFile("mocks/logs/logs_response.json"))
 		})
@@ -90,7 +86,7 @@ func TestLogs(t *testing.T) {
 		Args: []string{
 			"log",
 			"-u",
-			"nodejs5143.foo.wedeploy.me",
+			"nodejs5143-foo.wedeploy.me",
 			"--no-color"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/",
@@ -109,7 +105,7 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContext(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc("/logs/foo",
+	servertest.IntegrationMux.HandleFunc("/projects/foo/logs",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Query().Get("containerId") != "" {
 				t.Errorf("Wrong value for containerId")
@@ -142,12 +138,8 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContextFilteringByContainer(t *
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc("/logs/foo",
+	servertest.IntegrationMux.HandleFunc("/projects/foo/services/nodejs5143/logs",
 		func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Query().Get("containerId") != "nodejs5143" {
-				t.Errorf("Wrong value for containerId")
-			}
-
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			fmt.Fprintf(w, tdata.FromFile("mocks/logs/logs_response.json"))
 		})
@@ -176,12 +168,8 @@ func TestLogsFromCurrentWorkingOnContainerDirectoryContext(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc("/logs/foo",
+	servertest.IntegrationMux.HandleFunc("/projects/foo/services/nodejs5143/logs",
 		func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Query().Get("containerId") != "nodejs5143" {
-				t.Errorf("Wrong value for containerId")
-			}
-
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			fmt.Fprintf(w, tdata.FromFile("mocks/logs/logs_response.json"))
 		})
@@ -209,14 +197,10 @@ func TestLogsWithWeDeployDotMeAddress(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc("/logs/foo",
+	servertest.IntegrationMux.HandleFunc("/projects/foo/services/nodejs5143/logs",
 		func(w http.ResponseWriter, r *http.Request) {
-			if strings.Index(r.Host, "localhost:") != 0 {
+			if strings.Index(r.Host, "api.wedeploy.me:") != 0 {
 				t.Errorf("Expected host to be localhost, got %v instead", r.Host)
-			}
-
-			if r.URL.Query().Get("containerId") != "nodejs5143" {
-				t.Errorf("Wrong value for containerId")
 			}
 
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
@@ -227,7 +211,7 @@ func TestLogsWithWeDeployDotMeAddress(t *testing.T) {
 		Args: []string{
 			"log",
 			"-u",
-			"nodejs5143.foo.wedeploy.me",
+			"nodejs5143-foo.wedeploy.me",
 			"--no-color"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/",
@@ -246,12 +230,8 @@ func TestWatch(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc("/logs/foo",
+	servertest.IntegrationMux.HandleFunc("/projects/foo/services/nodejs5143/logs",
 		func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Query().Get("containerId") != "nodejs5143" {
-				t.Errorf("Wrong value for containerId")
-			}
-
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
 			fmt.Fprintf(w, "[]")
 		})
@@ -260,7 +240,7 @@ func TestWatch(t *testing.T) {
 		Args: []string{
 			"log",
 			"-u",
-			"nodejs5143.foo.wedeploy.me",
+			"nodejs5143-foo.wedeploy.me",
 			"--watch"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/",
