@@ -55,14 +55,17 @@ type restart struct {
 }
 
 func (r *restart) do() {
+	var err error
+
 	switch r.container {
 	case "":
-		r.err = projects.Restart(context.Background(), r.project)
+		err = projects.Restart(context.Background(), r.project)
 	default:
-		r.err = containers.Restart(context.Background(), r.project, r.container)
+		err = containers.Restart(context.Background(), r.project, r.container)
 	}
 
 	r.endMutex.Lock()
+	r.err = err
 	r.end = true
 	r.endMutex.Unlock()
 }
