@@ -52,6 +52,8 @@ type restart struct {
 	err       error
 	end       bool
 	endMutex  sync.RWMutex
+	ctx       context.Context
+	ctxCancel context.CancelFunc
 }
 
 func (r *restart) do() {
@@ -59,15 +61,16 @@ func (r *restart) do() {
 
 	switch r.container {
 	case "":
-		err = projects.Restart(context.Background(), r.project)
+		err = projects.Restart(r.ctx, r.project)
 	default:
-		err = containers.Restart(context.Background(), r.project, r.container)
+		err = containers.Restart(r.ctx, r.project, r.container)
 	}
 
 	r.endMutex.Lock()
 	r.err = err
 	r.end = true
 	r.endMutex.Unlock()
+	r.ctxCancel()
 }
 
 func (r *restart) checkProjectOrContainerExists() error {
@@ -132,9 +135,13 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func restartRun(cmd *cobra.Command, args []string) error {
+	var ctx, cancel = context.WithCancel(context.Background())
+
 	var r = &restart{
 		project:   setupHost.Project(),
 		container: setupHost.Container(),
+		ctx:       ctx,
+		ctxCancel: cancel,
 	}
 
 	if err := r.checkProjectOrContainerExists(); err != nil {
@@ -147,7 +154,6 @@ func restartRun(cmd *cobra.Command, args []string) error {
 		r.watch()
 	}
 
-	r.endMutex.RLock()
-	defer r.endMutex.RUnlock()
+	<-r.ctx.Done()
 	return r.err
 }
