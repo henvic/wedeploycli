@@ -2,20 +2,18 @@ package link
 
 import (
 	"bytes"
+	"context"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"testing"
 
-	"github.com/wedeploy/api-go/jsonlib"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
-	"github.com/wedeploy/cli/hooks"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/servertest"
-	"github.com/wedeploy/cli/tdata"
 )
 
 func TestMain(m *testing.M) {
@@ -57,7 +55,9 @@ func TestErrors(t *testing.T) {
 		List: []ContainerError{fooe, bare},
 	}
 
-	var want = tdata.FromFile("mocks/test_errors")
+	var want = `Local deployment errors:
+foo: file already exists
+bar: file does not exist`
 
 	if fmt.Sprintf("%v", e) != want {
 		t.Errorf("Wanted error %v, got %v instead.", want, e)
@@ -66,7 +66,6 @@ func TestErrors(t *testing.T) {
 
 func TestMissingProject(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	var m Machine
 	var err = m.Setup([]string{"mocks/myproject/mycontainer"})
@@ -75,35 +74,22 @@ func TestMissingProject(t *testing.T) {
 		t.Errorf("Expected error to be %v, got %v instead", errMissingProjectID, err)
 	}
 
-	configmock.Teardown()
 	servertest.Teardown()
 }
 
 func TestAll(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects/foo/services",
 		func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "POST" {
-				t.Errorf("Expected method to be PUT, got %v instead", r.Method)
-			}
-
-			var body, err = ioutil.ReadAll(r.Body)
-
-			if err != nil {
-				t.Errorf("Expected no error, got %v isntead", err)
-			}
-
-			jsonlib.AssertJSONMarshal(t, string(body), containers.Container{
-				ServiceID: "container",
-				Source:    "mocks/myproject/mycontainer",
-				Hooks:     &hooks.Hooks{},
-			})
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, "[]")
 		})
 
 	var m = &Machine{
-		ProjectID: "foo",
+		Project: projects.Project{
+			ProjectID: "foo",
+		},
 	}
 
 	var err = m.Setup([]string{"mocks/myproject/mycontainer"})
@@ -112,41 +98,30 @@ func TestAll(t *testing.T) {
 		t.Errorf("Unexpected error %v on linking", err)
 	}
 
-	m.Run()
+	var ctx, cancel = context.WithCancel(context.Background())
+	m.Run(cancel)
+	<-ctx.Done()
 
 	if len(m.Errors.List) != 0 {
 		t.Errorf("Wanted list of errors to contain zero errors, got %v errors instead", m.Errors)
 	}
 
-	configmock.Teardown()
 	servertest.Teardown()
 }
 
 func TestAllQuiet(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects/foo/services",
 		func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "POST" {
-				t.Errorf("Expected method to be POST, got %v instead", r.Method)
-			}
-
-			var body, err = ioutil.ReadAll(r.Body)
-
-			if err != nil {
-				t.Errorf("Expected no error, got %v isntead", err)
-			}
-
-			jsonlib.AssertJSONMarshal(t, string(body), containers.Container{
-				ServiceID: "container",
-				Source:    "mocks/myproject/mycontainer",
-				Hooks:     &hooks.Hooks{},
-			})
+			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			fmt.Fprintf(w, "[]")
 		})
 
 	var m = &Machine{
-		ProjectID: "foo",
+		Project: projects.Project{
+			ProjectID: "foo",
+		},
 	}
 
 	var bufErrStream bytes.Buffer
@@ -158,66 +133,35 @@ func TestAllQuiet(t *testing.T) {
 		t.Errorf("Unexpected error %v on linking", err)
 	}
 
-	m.Run()
+	var ctx, cancel = context.WithCancel(context.Background())
+	m.Run(cancel)
+	<-ctx.Done()
 
-	var wantContainerLinkedMessage = "Container container linked.\n"
+	var wantContainerLinkedMessage = "Container container deployed locally.\n"
 	if bufErrStream.String() != wantContainerLinkedMessage {
-		t.Errorf("Wanted container linked message not, got %v instead.", bufErrStream.String())
+		t.Errorf("Wanted container deployed locally message, got %v instead.", bufErrStream.String())
 	}
 
 	if len(m.Errors.List) != 0 {
 		t.Errorf("Wanted list of errors to contain zero errors, got %v errors instead", m.Errors)
 	}
 
-	configmock.Teardown()
-	servertest.Teardown()
-}
-
-func TestAllOnlyNewError(t *testing.T) {
-	servertest.Setup()
-	configmock.Setup()
-
-	var m = &Machine{
-		ProjectID: "foo",
-	}
-
-	var err = m.Setup([]string{"mocks/myproject/nil"})
-
-	if err != nil {
-		panic(err)
-	}
-
-	m.Run()
-
-	var list = m.Errors.List
-
-	if len(list) != 1 {
-		t.Errorf("Expected 1 element on the list.")
-	}
-
-	var nilerr = list[0]
-
-	if nilerr.ContainerPath != "mocks/myproject/nil" {
-		t.Errorf("Expected container to be 'nil'")
-	}
-
-	if nilerr.Error != containers.ErrContainerNotFound {
-		t.Errorf("Expected not exists error for container 'nil'")
-	}
-
-	configmock.Teardown()
 	servertest.Teardown()
 }
 
 func TestAllMultipleWithOnlyNewError(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects/foo/services",
-		func(w http.ResponseWriter, r *http.Request) {})
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			fmt.Fprintf(w, `[]`)
+		})
 
 	var m = &Machine{
-		ProjectID: "foo",
+		Project: projects.Project{
+			ProjectID: "foo",
+		},
 	}
 
 	var err = m.Setup(
@@ -227,7 +171,9 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 		panic(err)
 	}
 
-	m.Run()
+	var ctx, cancel = context.WithCancel(context.Background())
+	m.Run(cancel)
+	<-ctx.Done()
 
 	var list = m.Errors.List
 
@@ -247,13 +193,11 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 		}
 	}
 
-	configmock.Teardown()
 	servertest.Teardown()
 }
 
 func TestAllInstallContainerError(t *testing.T) {
 	servertest.Setup()
-	configmock.Setup()
 
 	servertest.Mux.HandleFunc("/projects/foo/services",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -261,24 +205,17 @@ func TestAllInstallContainerError(t *testing.T) {
 		})
 
 	var m = &Machine{
-		ProjectID: "foo",
+		Project: projects.Project{
+			ProjectID: "foo",
+		},
 	}
 
 	var err = m.Setup([]string{"mocks/myproject/mycontainer"})
+	var af = err.(*apihelper.APIFault)
 
-	if err != nil {
-		panic(err)
-	}
-
-	m.Run()
-
-	var el = m.Errors.List
-	var af = el[0].Error.(*apihelper.APIFault)
-
-	if m.Errors == nil || af.Status != 403 {
+	if err == nil || af.Status != 403 {
 		t.Errorf("Expected 403 Forbidden error, got %v instead", m.Errors)
 	}
 
-	configmock.Teardown()
 	servertest.Teardown()
 }
