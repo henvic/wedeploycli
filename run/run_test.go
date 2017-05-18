@@ -72,13 +72,15 @@ func TestTCPPortsAvailableNone(t *testing.T) {
 }
 
 func TestTCPPortsAvailableNotFree(t *testing.T) {
-	var l, e = net.ListenTCP("tcp", &net.TCPAddr{})
+	var l, e = net.ListenTCP("tcp", &net.TCPAddr{
+		IP: net.IPv4(127, 0, 0, 1),
+	})
 
 	if e != nil {
 		panic(e)
 	}
 
-	var add = strings.SplitAfter(l.Addr().String(), "[::]:")[1]
+	var add = strings.SplitAfter(l.Addr().String(), ":")[1]
 	var port, ea = strconv.Atoi(add)
 
 	if ea != nil {
@@ -110,13 +112,15 @@ func TestTCPPortsAvailableNotFree(t *testing.T) {
 }
 
 func TestTCPPortsAvailableFree(t *testing.T) {
-	var l, e = net.ListenTCP("tcp", &net.TCPAddr{})
+	var l, e = net.ListenTCP("tcp", &net.TCPAddr{
+		IP: net.IPv4(127, 0, 0, 1),
+	})
 
 	if e != nil {
 		panic(e)
 	}
 
-	var add = strings.SplitAfter(l.Addr().String(), "[::]:")[1]
+	var add = strings.SplitAfter(l.Addr().String(), ":")[1]
 	var port, ea = strconv.Atoi(add)
 
 	if ea != nil {
