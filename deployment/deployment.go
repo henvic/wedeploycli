@@ -27,6 +27,7 @@ var (
 // Deploy project
 type Deploy struct {
 	Context           context.Context
+	AuthorEmail       string
 	ProjectID         string
 	Path              string
 	Remote            string
@@ -139,6 +140,7 @@ func (d *Deploy) Commit() (commit string, err error) {
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
+	cmd.Env = append(cmd.Env, fmt.Sprintf("GIT_AUTHOR_EMAIL=%v", d.AuthorEmail))
 	cmd.Dir = d.Path
 
 	if verbose.Enabled {

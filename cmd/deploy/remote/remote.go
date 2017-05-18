@@ -172,6 +172,7 @@ func (rd *RemoteDeployment) Run() (err error) {
 
 	var deploy = deployment.Deploy{
 		Context:           ctx,
+		AuthorEmail:       config.Context.Username,
 		ProjectID:         rd.ProjectID,
 		Path:              rd.path,
 		Remote:            config.Context.Remote,
