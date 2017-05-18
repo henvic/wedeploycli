@@ -136,7 +136,14 @@ func (d *Deploy) Commit() (commit string, err error) {
 	}
 
 	var msg = fmt.Sprintf("Deployment at %v", time.Now().Format(time.RubyDate))
-	var params = []string{"commit", "--allow-empty", "--message", msg}
+
+	var params = []string{
+		"commit",
+		"--allow-empty",
+		"--message",
+		msg,
+	}
+
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
