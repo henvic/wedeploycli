@@ -135,14 +135,13 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func restartRun(cmd *cobra.Command, args []string) error {
-	var ctx, cancel = context.WithCancel(context.Background())
-
 	var r = &restart{
 		project:   setupHost.Project(),
 		container: setupHost.Container(),
-		ctx:       ctx,
-		ctxCancel: cancel,
 	}
+
+	r.ctx, r.ctxCancel = context.WithCancel(
+		context.Background())
 
 	if err := r.checkProjectOrContainerExists(); err != nil {
 		return err
