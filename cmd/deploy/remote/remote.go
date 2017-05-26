@@ -116,25 +116,26 @@ func createContainerPackage(id, path string) error {
 }
 
 func (rd *RemoteDeployment) getProjectID() (string, error) {
-	var pp, err = projects.Read(config.Context.ProjectRoot)
 	var projectID = rd.ProjectID
 
-	switch {
-	case err == nil:
-		projectID = pp.ID
-	case err != projects.ErrProjectNotFound:
-		return "", errwrap.Wrapf("Error trying to read project: {{err}}", err)
+	if projectID == "" {
+		var pp, err = projects.Read(config.Context.ProjectRoot)
+
+		switch {
+		case err == nil:
+			projectID = pp.ID
+		case err != projects.ErrProjectNotFound:
+			return "", errwrap.Wrapf("Error trying to read project: {{err}}", err)
+		}
+
+		if projectID != "" {
+			return projectID, nil
+		}
 	}
 
-	if rd.ProjectID != "" && projectID != rd.ProjectID {
-		return "", errwrap.Wrapf("You can not use a different id on --project from inside a project directory", err)
-	}
-
-	if projectID != "" {
-		return projectID, nil
-	}
-
-	var p, ep = projects.Create(context.Background(), projects.Project{})
+	var p, ep = projects.Create(context.Background(), projects.Project{
+		ProjectID: projectID,
+	})
 	return p.ProjectID, ep
 }
 
