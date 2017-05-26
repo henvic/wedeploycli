@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/autocomplete"
+	"github.com/wedeploy/cli/cmd/activities"
 	"github.com/wedeploy/cli/cmd/autocomplete"
 	"github.com/wedeploy/cli/cmd/build"
 	"github.com/wedeploy/cli/cmd/cmdmanager"
@@ -51,6 +52,7 @@ var (
 )
 
 var commands = []*cobra.Command{
+	cmdactivities.ActivitiesCmd,
 	cmddeploy.DeployCmd,
 	cmdlist.ListCmd,
 	cmdlog.LogCmd,
