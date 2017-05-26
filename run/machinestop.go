@@ -32,6 +32,7 @@ func (dm *DockerMachine) Stop() error {
 	}
 
 	dm.waitLiveMsg.ResetDuration()
+	dm.waitLiveMsg.SetTickSymbolEnd()
 	dm.waitLiveMsg.SetMessage("WeDeploy is stopping")
 	dm.waitLiveMsg.SetStream(dm.livew)
 
@@ -71,6 +72,7 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 	dm.waitLiveMsg.Stop()
 
 	dm.waitLiveMsg.ResetDuration()
+	dm.waitLiveMsg.SetTickSymbolEnd()
 	dm.waitLiveMsg.SetMessage("WeDeploy is stopping")
 	dm.waitLiveMsg.SetStream(dm.livew)
 	go dm.waitLiveMsg.Wait()
