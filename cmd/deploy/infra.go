@@ -110,7 +110,7 @@ func maybeStartInfrastructure(cmd *cobra.Command) error {
 			defaultImage)
 	}
 
-	defer signal.Ignore(syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Reset(syscall.SIGINT, syscall.SIGTERM)
 	return run.Run(context.Background(), runFlags)
 }
 
