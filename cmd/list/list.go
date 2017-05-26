@@ -37,10 +37,6 @@ var setupHost = cmdflagsfromhost.SetupHost{
 	},
 }
 
-func init() {
-	setupHost.Init(ListCmd)
-}
-
 func preRun(cmd *cobra.Command, args []string) error {
 	if err := cmdargslen.Validate(args, 0, 0); err != nil {
 		return err
@@ -102,6 +98,8 @@ func listRun(cmd *cobra.Command, args []string) {
 }
 
 func init() {
+	setupHost.Init(ListCmd)
+
 	ListCmd.Flags().BoolVarP(
 		&detailed,
 		"detailed", "d", false, "Show more containers details")
