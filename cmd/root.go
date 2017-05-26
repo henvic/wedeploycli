@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -95,6 +96,12 @@ func init() {
 	maybeEnableVerboseByEnv()
 
 	RootCmd.PersistentFlags().BoolVar(
+		&verbose.Defered,
+		"defer-verbose-output",
+		false,
+		"Defer verbose output")
+
+	RootCmd.PersistentFlags().BoolVar(
 		&verbosereq.Disabled,
 		"no-verbose-requests",
 		false,
@@ -111,6 +118,7 @@ func init() {
 		"version", false, "Print version information and quit")
 
 	cmdmanager.HideFlag("version", RootCmd)
+	cmdmanager.HidePersistentFlag("defer-verbose-output", RootCmd)
 	cmdmanager.HidePersistentFlag("no-verbose-requests", RootCmd)
 	cmdmanager.HidePersistentFlag("no-color", RootCmd)
 
@@ -120,6 +128,10 @@ func init() {
 }
 
 func persistentPreRun(cmd *cobra.Command, args []string) error {
+	if verbose.Defered {
+		fmt.Fprintf(os.Stderr, color.Format(color.FgBlue, "Defering verbose output (might lose messages on failures)\n"))
+	}
+
 	// load default cloud remote on config context
 	return config.SetEndpointContext(defaults.CloudRemote)
 }

@@ -1,9 +1,11 @@
 package verbose
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
+	"sync"
 
 	"github.com/wedeploy/cli/color"
 )
@@ -12,10 +14,15 @@ var (
 	// Enabled flag
 	Enabled = false
 
+	// Defered flag to only print debugging on end of program execution
+	Defered = false
+
 	// ErrStream is the stream for errors
 	ErrStream io.Writer = os.Stderr
 
-	unsafeVerbose = false
+	unsafeVerbose          = false
+	bufDeferedVerbose      bytes.Buffer
+	bufDeferedVerboseMutex sync.Mutex
 )
 
 func init() {
@@ -57,7 +64,26 @@ func SafeEscapeSlice(values []string) string {
 
 // Debug prints verbose messages to stderr on verbose mode
 func Debug(a ...interface{}) {
-	if Enabled {
-		fmt.Fprintln(ErrStream, a...)
+	if !Enabled {
+		return
 	}
+
+	if !Defered {
+		fmt.Fprintln(ErrStream, a...)
+		return
+	}
+
+	bufDeferedVerboseMutex.Lock()
+	bufDeferedVerbose.WriteString(fmt.Sprintln(a...))
+	bufDeferedVerboseMutex.Unlock()
+}
+
+// PrintDefered debug messages
+func PrintDefered() {
+	bufDeferedVerboseMutex.Lock()
+	if bufDeferedVerbose.Len() != 0 {
+		fmt.Fprintf(ErrStream, "\n%v\n", color.Format(color.BgHiBlue, " Defered verbose messages below "))
+		bufDeferedVerbose.WriteTo(ErrStream)
+	}
+	bufDeferedVerboseMutex.Unlock()
 }

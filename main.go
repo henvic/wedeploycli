@@ -56,6 +56,7 @@ func init() {
 
 func main() {
 	var panickingFlag = true
+	defer verbosePrinting()
 	defer panickingListener(&panickingFlag)
 
 	setErrorHandlingCommandName()
@@ -276,6 +277,12 @@ func isCommand(cmd string) bool {
 
 func setErrorHandlingCommandName() {
 	errorhandling.CommandName = strings.Join(os.Args[1:], " ")
+}
+
+func verbosePrinting() {
+	if verbose.Defered {
+		verbose.PrintDefered()
+	}
 }
 
 func panickingListener(panicking *bool) {
