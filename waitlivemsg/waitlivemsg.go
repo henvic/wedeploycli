@@ -22,9 +22,15 @@ var spinners = []string{
 	"⠏",
 }
 
+var (
+	tickEnd  = "✔"
+	crossEnd = "✖"
+)
+
 // WaitLiveMsg is used for "waiting" live message
 type WaitLiveMsg struct {
 	msg          string
+	symbolEnd    string
 	stream       *uilive.Writer
 	streamMutex  sync.RWMutex
 	msgMutex     sync.RWMutex
@@ -49,6 +55,23 @@ func (w *WaitLiveMsg) SetStream(ws *uilive.Writer) {
 	w.streamMutex.Unlock()
 }
 
+// SetSymbolEnd sets the symbol to be used on the end of the timer
+func (w *WaitLiveMsg) SetSymbolEnd(s string) {
+	w.msgMutex.Lock()
+	w.symbolEnd = s
+	w.msgMutex.Unlock()
+}
+
+// SetTickSymbolEnd sets the end symbol to tick
+func (w *WaitLiveMsg) SetTickSymbolEnd() {
+	w.SetSymbolEnd(color.Format(color.FgGreen, tickEnd))
+}
+
+// SetCrossSymbolEnd sets the end symbol to cross
+func (w *WaitLiveMsg) SetCrossSymbolEnd() {
+	w.SetSymbolEnd(color.Format(color.FgRed, crossEnd))
+}
+
 // Wait starts the waiting message
 func (w *WaitLiveMsg) Wait() {
 	w.waitEnd.Add(1)
@@ -62,7 +85,7 @@ func (w *WaitLiveMsg) Wait() {
 	w.waitLoop()
 
 	w.msgMutex.RLock()
-	w.print(w.msg, "✔")
+	w.print(w.msg, w.symbolEnd)
 	w.msgMutex.RUnlock()
 	w.waitEnd.Done()
 }
@@ -107,19 +130,21 @@ func (w *WaitLiveMsg) ResetDuration() {
 }
 
 // Duration in seconds
-func (w *WaitLiveMsg) Duration() int {
+func (w *WaitLiveMsg) Duration() time.Duration {
 	w.startMutex.RLock()
-	var duration = int(-w.start.Sub(time.Now()).Seconds())
+	var duration = time.Now().Sub(w.start)
 	w.startMutex.RUnlock()
 	return duration
 }
 
 func (w *WaitLiveMsg) print(msg string, symbol string) {
 	w.streamMutex.Lock()
-	fmt.Fprintf(w.stream,
-		"%v %v\n",
-		color.Format(color.FgBlue, symbol),
-		w.msg)
+
+	if symbol != "" {
+		symbol = symbol + " "
+	}
+
+	fmt.Fprintf(w.stream, "%v%v\n", symbol, w.msg)
 	_ = w.stream.Flush()
 	w.streamMutex.Unlock()
 }

@@ -20,6 +20,7 @@ import (
 	"github.com/wedeploy/cli/createuser"
 	"github.com/wedeploy/cli/exechelper"
 	"github.com/wedeploy/cli/status"
+	"github.com/wedeploy/cli/timehelper"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/waitlivemsg"
 )
@@ -157,7 +158,10 @@ func (dm *DockerMachine) createUser() (err error) {
 		return err
 	}
 
-	dm.waitLiveMsg.StopWithMessage(fmt.Sprintf("WeDeploy is ready! %vs", dm.waitLiveMsg.Duration()))
+	dm.waitLiveMsg.StopWithMessage(
+		fmt.Sprintf("WeDeploy is ready! %v",
+			timehelper.RoundDuration(
+				dm.waitLiveMsg.Duration(), time.Second)))
 	_ = dm.livew.Flush()
 
 	return err
@@ -268,11 +272,12 @@ func (dm *DockerMachine) waitReadyState() {
 	var tries = 1
 
 	dm.waitLiveMsg.SetStream(dm.livew)
+	dm.waitLiveMsg.SetTickSymbolEnd()
 	dm.waitLiveMsg.SetMessage("WeDeploy is starting")
 	go dm.waitLiveMsg.Wait()
 
 	// Starting WeDeploy
-	for tries <= 100 || dm.waitLiveMsg.Duration() < 300 {
+	for tries <= 100 || dm.waitLiveMsg.Duration() < 300*time.Second {
 		verbose.Debug(fmt.Sprintf("Trying #%v", tries))
 		tries++
 		var ctx, cancel = context.WithTimeout(dm.Context, time.Second)
