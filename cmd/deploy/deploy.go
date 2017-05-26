@@ -120,6 +120,7 @@ func runRun(cmd *cobra.Command, args []string) (err error) {
 		ProjectID: setupHost.Project(),
 		ServiceID: setupHost.Container(),
 		Remote:    setupHost.Remote(),
+		Quiet:     quiet,
 	}).Run()
 }
 

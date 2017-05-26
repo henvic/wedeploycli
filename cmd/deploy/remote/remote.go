@@ -1,6 +1,7 @@
 package cmddeployremote
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -8,30 +9,38 @@ import (
 	"io/ioutil"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
+	"time"
 
 	"os"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/henvic/uilive"
+	"github.com/wedeploy/cli/activities"
 	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/deployment"
 	"github.com/wedeploy/cli/inspector"
 	"github.com/wedeploy/cli/projectctx"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/timehelper"
 	"github.com/wedeploy/cli/usercontext"
+	"github.com/wedeploy/cli/waitlivemsg"
 )
 
 const gitSchema = "http://"
 
 // RemoteDeployment of services
 type RemoteDeployment struct {
-	ProjectID          string
-	ServiceID          string
-	Remote             string
-	path               string
-	containersInfoList containers.ContainerInfoList
+	ProjectID  string
+	ServiceID  string
+	Remote     string
+	Quiet      bool
+	path       string
+	containers containers.ContainerInfoList
 }
 
 func getAuthCredentials() string {
@@ -160,15 +169,19 @@ func (rd *RemoteDeployment) Run() (err error) {
 
 	var ctx = context.Background()
 
-	if rd.containersInfoList, err = getContainersInfoListFromProject(rd.path); err != nil {
+	if err = rd.loadContainersList(); err != nil {
 		return err
 	}
 
-	_, err = projectctx.CreateOrUpdate(rd.ProjectID)
+	if len(rd.containers) == 0 {
+		return errors.New("no container available for deployment was found")
+	}
 
-	if err != nil {
+	if _, err = projectctx.CreateOrUpdate(rd.ProjectID); err != nil {
 		return err
 	}
+
+	rd.printStartDeployment()
 
 	var deploy = deployment.Deploy{
 		Context:           ctx,
@@ -182,42 +195,135 @@ func (rd *RemoteDeployment) Run() (err error) {
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Reset(syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
 		<-sigs
 		_ = deploy.Cleanup()
 	}()
 
-	return rd.Feedback(deploy.Do())
+	var wlm = waitlivemsg.WaitLiveMsg{}
+
+	wlm.SetMessage("Upload in progress")
+	var us = uilive.New()
+
+	if rd.Quiet {
+		us.Out = ioutil.Discard
+	}
+
+	wlm.SetStream(us)
+	go wlm.Wait()
+
+	err = deploy.Do()
+
+	if err != nil {
+		wlm.SetCrossSymbolEnd()
+		wlm.StopWithMessage("Upload failed")
+		return err
+	}
+
+	wlm.SetTickSymbolEnd()
+
+	wlm.StopWithMessage(
+		fmt.Sprintf("Upload completed in %v\n",
+			color.Format(color.FgBlue, timehelper.RoundDuration(deploy.UploadDuration(), time.Second))))
+
+	signal.Reset(syscall.SIGINT, syscall.SIGTERM)
+	return rd.Feedback(deploy.GetGroupUID())
 }
 
-// Feedback of a remote deployment
-func (rd *RemoteDeployment) Feedback(err error) error {
+func (rd *RemoteDeployment) printStartDeployment() {
+	p := &bytes.Buffer{}
+
+	p.WriteString(fmt.Sprintf("%v Project: %v in remote %v\n",
+		color.Format(color.FgGreen, "•"),
+		color.Format(color.FgBlue, rd.ProjectID),
+		color.Format(color.FgBlue, rd.Remote),
+	))
+
+	var cl = rd.containers.GetIDs()
+
+	if len(cl) > 0 {
+		p.WriteString(fmt.Sprintf("%v Services: %v\n",
+			color.Format(color.FgGreen, "•"),
+			color.Format(color.FgBlue, strings.Join(cl, ", "))))
+	}
+
+	fmt.Println(p)
+}
+
+func (rd *RemoteDeployment) loadContainersList() error {
+	var allProjectContainers, err = getContainersInfoListFromProject(rd.path)
+
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("Project " + rd.printAddress(""))
-
-	switch {
-	case config.Context.Scope == usercontext.ProjectScope:
-		for _, c := range rd.containersInfoList {
-			fmt.Println(rd.printAddress(c.ServiceID))
+	if config.Context.Scope == usercontext.ProjectScope {
+		for _, c := range allProjectContainers {
+			rd.containers = append(rd.containers, c)
 		}
-	case config.Context.Scope == usercontext.ContainerScope:
-		for _, c := range rd.containersInfoList {
+
+		return nil
+	}
+
+	if config.Context.Scope == usercontext.ContainerScope {
+		for _, c := range allProjectContainers {
 			if c.Location == rd.path {
-				fmt.Println(rd.printAddress(c.ServiceID))
+				rd.containers = append(rd.containers, c)
 			}
 		}
-	default:
-		var cp, err = containers.Read(rd.path)
 
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error reading container after deployment: %v", err)
-		}
+		return nil
+	}
 
-		fmt.Println(rd.printAddress(cp.ID))
+	cp, err := containers.Read(rd.path)
+
+	if err != nil {
+		return errwrap.Wrapf("Error reading container after deployment: {{err}}", err)
+	}
+
+	rd.containers = append(rd.containers, containers.ContainerInfo{
+		Location:  rd.path,
+		ServiceID: cp.ID,
+	})
+
+	return nil
+}
+
+func (rd *RemoteDeployment) maybeWatch(groupUID string) (err error) {
+	if rd.Quiet {
+		fmt.Fprintf(os.Stdout, "\n%v\n", color.Format(color.FgGreen, "Your deployment should be ready soon!"))
+		return nil
+	}
+
+	var watcher = activities.NewDeployWatcher(
+		context.Background(),
+		rd.ProjectID,
+		rd.containers.GetIDs(),
+		activities.Filter{
+			GroupUID: groupUID,
+		},
+	)
+
+	if err = watcher.Run(); err != nil {
+		return err
+	}
+
+	fmt.Fprintf(os.Stdout, "\n%v\n", color.Format(color.FgGreen, "You're ready!\n"))
+	return nil
+}
+
+// Feedback of a remote deployment
+func (rd *RemoteDeployment) Feedback(groupUID string) (err error) {
+	if err = rd.maybeWatch(groupUID); err != nil {
+		return err
+	}
+
+	for _, c := range rd.containers.GetIDs() {
+		fmt.Fprintf(os.Stdout, "%v %v\n",
+			color.Format(color.FgGreen, "➜"),
+			rd.printAddress(c))
 	}
 
 	return nil
@@ -227,7 +333,7 @@ func (rd *RemoteDeployment) printAddress(container string) string {
 	var address = rd.ProjectID + "." + config.Global.Remotes[rd.Remote].URL
 
 	if container != "" {
-		address = container + "." + address
+		address = container + "-" + address
 	}
 
 	return address
