@@ -201,14 +201,15 @@ func (d *Deploy) verboseOnPush() {
 		verbose.SafeEscape(d.RepoAuthorization))
 }
 
-func copyErrStreamAndVerbose(cmd *exec.Cmd) (bufErr bytes.Buffer) {
+func copyErrStreamAndVerbose(cmd *exec.Cmd) *bytes.Buffer {
+	var bufErr bytes.Buffer
 	if verbose.Enabled {
 		cmd.Stderr = io.MultiWriter(&bufErr, os.Stderr)
 	} else {
 		cmd.Stderr = &bufErr
 	}
 
-	return bufErr
+	return &bufErr
 }
 
 // Push deployment to the WeDeploy remote
