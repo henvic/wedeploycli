@@ -83,7 +83,7 @@ func PrintDefered() {
 	bufDeferedVerboseMutex.Lock()
 	if bufDeferedVerbose.Len() != 0 {
 		fmt.Fprintf(ErrStream, "\n%v\n", color.Format(color.BgHiBlue, " Defered verbose messages below "))
-		bufDeferedVerbose.WriteTo(ErrStream)
+		_, _ = bufDeferedVerbose.WriteTo(ErrStream)
 	}
 	bufDeferedVerboseMutex.Unlock()
 }
