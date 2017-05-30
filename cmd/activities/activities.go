@@ -88,14 +88,15 @@ func watchDeployRun(cmd *cobra.Command, args []string) (err error) {
 		servicesSlice = strings.Split(services, ",")
 	}
 
-	var watcher = activities.NewDeployWatcher(
+	var w = activities.DeployWatcher{}
+
+	return w.Run(
 		context.Background(),
 		setupHost.Project(),
 		servicesSlice,
 		activities.Filter{
 			GroupUID: groupUID,
+			Commit:   commit,
 		},
 	)
-
-	return watcher.Run()
 }
