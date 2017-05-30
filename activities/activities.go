@@ -139,11 +139,5 @@ func getActivityMessage(a Activity, template map[string]string) (string, error) 
 		return a.Type, nil
 	}
 
-	m, err := templates.Execute(at, a)
-
-	if err != nil {
-		return "", err
-	}
-
-	return m, nil
+	return templates.Execute(at, a)
 }
