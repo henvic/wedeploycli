@@ -111,17 +111,25 @@ func checkNoLocalOnlyFlags(cmd *cobra.Command) error {
 	return nil
 }
 
-func runRun(cmd *cobra.Command, args []string) (err error) {
+func runRun(cmd *cobra.Command, args []string) error {
 	if setupHost.Remote() == defaults.LocalRemote {
 		return runLocal(cmd)
 	}
 
-	return (&cmddeployremote.RemoteDeployment{
+	var rd = &cmddeployremote.RemoteDeployment{
 		ProjectID: setupHost.Project(),
 		ServiceID: setupHost.Container(),
 		Remote:    setupHost.Remote(),
 		Quiet:     quiet,
-	}).Run()
+	}
+
+	var _, err = rd.Run()
+
+	if err != nil {
+		return err
+	}
+
+	return rd.Feedback()
 }
 
 func init() {
