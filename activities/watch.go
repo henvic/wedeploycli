@@ -16,57 +16,89 @@ import (
 
 // DeployWatcher activities
 type DeployWatcher struct {
-	ctx          context.Context
-	projectID    string
-	timeout      time.Duration
-	filter       Filter
-	services     []string
-	servicesMsgs map[string]string
-	finalStates  map[string]bool
-	buildOK      map[string]bool
-	buildFail    map[string]bool
-	deployOK     map[string]bool
-	deployFail   map[string]bool
+	ctx       context.Context
+	projectID string
+	timeout   time.Duration
+	filter    Filter
+	services  servicesMap
+}
+
+type servicesMap map[string]*serviceWatch
+
+func (s servicesMap) GetServicesByState(state string) (keys []string) {
+	for k, c := range s {
+		if c.state == state {
+			keys = append(keys, k)
+		}
+	}
+
+	return keys
+}
+
+type serviceWatch struct {
+	state  string
+	msgWLM *waitlivemsg.Message
 }
 
 var timeout = time.Minute
 
-var servicesDeploymentActivityTemplates = map[string]string{
-	buildFailed:     "{{.Metadata.serviceId}} build failed",
-	buildPending:    "{{.Metadata.serviceId}} build pending",
-	buildStarted:    "{{.Metadata.serviceId}} build started",
-	buildSucceeded:  "{{.Metadata.serviceId}} build successful",
-	deployFailed:    "{{.Metadata.serviceId}} deployment failed",
-	deployPending:   "{{.Metadata.serviceId}} deployment pending",
-	deployStarted:   "{{.Metadata.serviceId}} deployment started",
-	deploySucceeded: "{{.Metadata.serviceId}} deployment successful",
+func (s servicesMap) isFinalState(key string) bool {
+	if s == nil || s[key] == nil {
+		return false
+	}
+
+	switch s[key].state {
+	case buildFailed, deployFailed, deploySucceeded:
+		return true
+	}
+
+	return false
 }
 
-func (dw *DeployWatcher) iterator(a Activity) {
-	var serviceID, ok = a.Metadata["serviceId"]
-	var err error
+var sMetaServiceID = color.Format(color.FgBlue, "{{.Metadata.serviceId}}")
+var servicesDeploymentActivityTemplates = map[string]string{
+	buildFailed:    sMetaServiceID + " build failed",
+	buildPending:   sMetaServiceID + " build pending",
+	buildStarted:   sMetaServiceID + " build started",
+	buildSucceeded: sMetaServiceID + " build successful",
+	deployFailed:   sMetaServiceID + " deploy failed",
+	deployPending:  sMetaServiceID + " deploy pending",
+	deployStarted:  sMetaServiceID + " deploy started",
+	// deploySucceeded: sMetaServiceID + " deployed successful in {{.time}}",
+	deploySucceeded: sMetaServiceID + " deployed successful",
+}
 
-	// stop processing if service has already reached end state,
-	// type is not any of the watched deployment cycle types,
+func (dw *DeployWatcher) updateActivityState(a Activity) {
+	var serviceID, ok = a.Metadata["serviceId"]
+
+	// stop processing if service is not any of the watched deployment cycle types,
 	// or if service ID is somehow not available
-	if !ok || dw.finalStates[serviceID] || !isActitityTypeDeploymentRelated(a.Type) {
+	if !ok || !isActitityTypeDeploymentRelated(a.Type) {
 		return
 	}
 
-	if _, exists := dw.finalStates[serviceID]; !exists {
+	if _, exists := dw.services[serviceID]; !exists {
 		// we want to avoid problems (read: nil pointer panics)
 		// if the server sends back a response with an ID we don't have already locally
-		fmt.Fprintf(os.Stderr, "skipping activity for non-existing %v service on deployment list: %+v", serviceID, a)
+		fmt.Fprintf(os.Stderr,
+			"skipping activity for non-existing %v service on deployment list: %+v\n",
+			serviceID,
+			a)
 		return
 	}
 
-	dw.servicesMsgs[serviceID], err = getActivityMessage(a, servicesDeploymentActivityTemplates)
-
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "can't identify activity for %v service: %+v\n", serviceID, err)
-	}
+	var m, err = getActivityMessage(a, servicesDeploymentActivityTemplates)
 
 	dw.markActivityState(serviceID, a.Type)
+	var wlm = dw.services[serviceID].msgWLM
+
+	if err != nil {
+		wlm.SetText(color.Format(color.FgBlue, serviceID) + " error")
+		fmt.Fprintf(os.Stderr, "%v activity error for %v service: %+v\n", a.Type, serviceID, err)
+		return
+	}
+
+	wlm.SetText(m)
 }
 
 func isActitityTypeDeploymentRelated(activityType string) bool {
@@ -87,17 +119,11 @@ func isActitityTypeDeploymentRelated(activityType string) bool {
 
 func (dw *DeployWatcher) markActivityState(serviceID, activityType string) {
 	switch activityType {
-	case buildSucceeded:
-		dw.buildOK[serviceID] = true
-	case buildFailed:
-		dw.buildFail[serviceID] = true
-		dw.finalStates[serviceID] = true
-	case deployFailed:
-		dw.deployFail[serviceID] = true
-		dw.finalStates[serviceID] = true
-	case deploySucceeded:
-		dw.deployOK[serviceID] = true
-		dw.finalStates[serviceID] = true
+	case buildSucceeded,
+		buildFailed,
+		deployFailed,
+		deploySucceeded:
+		dw.services[serviceID].state = activityType
 	}
 }
 
@@ -111,32 +137,16 @@ func (dw *DeployWatcher) loop() (end bool, err error) {
 	}
 
 	for _, a := range as {
-		dw.iterator(a)
+		dw.updateActivityState(a)
 	}
 
-	for _, c := range dw.finalStates {
-		if !c {
+	for id := range dw.services {
+		if !dw.services.isFinalState(id) {
 			return false, nil
 		}
 	}
 
 	return true, nil
-}
-
-// NewDeployWatcher creates a deployment watcher
-func NewDeployWatcher(ctx context.Context, projectID string, expectServices []string, f Filter) *DeployWatcher {
-	return &DeployWatcher{
-		ctx:          ctx,
-		projectID:    projectID,
-		services:     expectServices,
-		filter:       f,
-		servicesMsgs: map[string]string{},
-		finalStates:  map[string]bool{},
-		buildOK:      map[string]bool{},
-		buildFail:    map[string]bool{},
-		deployOK:     map[string]bool{},
-		deployFail:   map[string]bool{},
-	}
 }
 
 func (dw *DeployWatcher) runLoop() error {
@@ -152,53 +162,62 @@ l:
 }
 
 // Run the activities watcher
-func (dw *DeployWatcher) Run() error {
-	if len(dw.services) == 0 {
-		return errors.New("services parameter required for listening to services deployment")
-	}
+func (dw *DeployWatcher) Run(ctx context.Context, projectID string, services []string, f Filter) error {
+	dw.projectID = projectID
+	dw.services = servicesMap{}
+	dw.filter = f
 
-	for _, c := range dw.services {
-		dw.finalStates[c] = false
-		dw.servicesMsgs[c] = "waiting signal"
+	if len(services) == 0 {
+		return errors.New("services parameter required for listening to services deployment")
 	}
 
 	var wlm = waitlivemsg.WaitLiveMsg{}
 	var us = uilive.New()
 	wlm.SetStream(us)
-	wlm.SetTickSymbolEnd()
-	wlm.SetMessage("Deploying")
+
+	for _, s := range services {
+		var m = waitlivemsg.NewMessage(
+			color.Format(color.FgBlue, s))
+
+		dw.services[s] = &serviceWatch{
+			msgWLM: m,
+		}
+		wlm.AddMessage(m)
+	}
+
 	go wlm.Wait()
 
 	var err = dw.runLoop()
+	defer wlm.Stop()
+
+	for _, s := range services {
+		wlm.RemoveMessage(dw.services[s].msgWLM)
+	}
 
 	var after = color.Format(color.FgBlue, "%v",
 		timehelper.RoundDuration(wlm.Duration(), time.Second))
 
 	if err != nil {
-		wlm.SetCrossSymbolEnd()
-		wlm.StopWithMessage(fmt.Sprintf("Deploy failed after %v", after))
+		var m = waitlivemsg.NewMessage(
+			fmt.Sprintf("Deploy failed after %v", after),
+		)
+
+		m.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
+		wlm.AddMessage(m)
 		return err
 	}
 
-	wlm.StopWithMessage(fmt.Sprintf("Deploy completed in %v", after))
+	wlm.AddMessage(waitlivemsg.NewMessage(
+		fmt.Sprintf("Deploy completed in %v", after),
+	))
 
 	return dw.checkSuccess()
 }
 
-func getTruthKeysOnMap(m map[string]bool) (truth []string) {
-	for k, c := range m {
-		if c {
-			truth = append(truth, k)
-		}
-	}
-
-	return truth
-}
-
 func (dw *DeployWatcher) checkSuccess() error {
 	var (
-		fb = getTruthKeysOnMap(dw.buildFail)
-		fd = getTruthKeysOnMap(dw.deployFail)
+		fb = dw.services.GetServicesByState(buildFailed)
+		fd = dw.services.GetServicesByState(deployFailed)
 		em string
 	)
 
@@ -218,7 +237,7 @@ func (dw *DeployWatcher) checkSuccess() error {
 	}
 
 	if len(failedDeploys) == 0 {
-		em = fmt.Sprintf("failed deploys: %v", failedDeploys)
+		em = fmt.Sprintf("failed deployments: %v", failedDeploys)
 	}
 
 	return errors.New(em)
