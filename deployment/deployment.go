@@ -3,17 +3,15 @@ package deployment
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
-
-	"os"
-
-	"encoding/json"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
