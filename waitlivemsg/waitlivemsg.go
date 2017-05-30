@@ -5,6 +5,8 @@ import (
 	"sync"
 	"time"
 
+	"bytes"
+
 	"github.com/henvic/uilive"
 	"github.com/wedeploy/cli/color"
 )
@@ -22,18 +24,104 @@ var spinners = []string{
 	"⠏",
 }
 
-var (
-	tickEnd  = "✔"
-	crossEnd = "✖"
+const (
+	tick  = "✔"
+	cross = "✖"
 )
+
+// Message to print
+type Message struct {
+	text      string
+	symbolEnd string
+	end       bool
+	counter   int
+	mutex     sync.RWMutex
+}
+
+// NewMessage creates a Message with a given text
+func NewMessage(text string) *Message {
+	var m = Message{}
+	m.SetText(text)
+	return &m
+}
+
+// EmptyLine creates a Message with an empty line
+// it has the side-effect of using no symbols as prefixes
+func EmptyLine() *Message {
+	return NewMessage("")
+}
+
+// SetText of message
+func (m *Message) SetText(text string) {
+	m.mutex.Lock()
+	m.text = text
+	m.mutex.Unlock()
+}
+
+func (m *Message) getSymbol() string {
+	m.mutex.RLock()
+	defer m.mutex.RUnlock()
+
+	if m.text == "" {
+		return ""
+	}
+
+	var symbol = spinners[m.counter]
+	m.counter = (m.counter + 1) % len(spinners)
+
+	if !m.end {
+		return symbol
+	}
+
+	if m.symbolEnd != "" {
+		return m.symbolEnd
+	}
+
+	return GreenTickSymbol()
+}
+
+// SetSymbolEnd of message
+func (m *Message) SetSymbolEnd(symbolEnd string) {
+	m.mutex.Lock()
+	m.symbolEnd = symbolEnd
+	m.mutex.Unlock()
+}
+
+func (m *Message) isEnd() bool {
+	m.mutex.RLock()
+	defer m.mutex.RUnlock()
+	return m.end
+}
+
+func (m *Message) getText() string {
+	m.mutex.RLock()
+	defer m.mutex.RUnlock()
+	return m.text
+}
+
+// End message
+func (m *Message) End() {
+	m.mutex.Lock()
+	m.end = true
+	m.mutex.Unlock()
+}
+
+// GreenTickSymbol for stop messages
+func GreenTickSymbol() string {
+	return color.Format(color.FgGreen, tick)
+}
+
+// RedCrossSymbol for stop messages
+func RedCrossSymbol() string {
+	return color.Format(color.FgRed, cross)
+}
 
 // WaitLiveMsg is used for "waiting" live message
 type WaitLiveMsg struct {
-	msg          string
-	symbolEnd    string
+	msgs         []*Message
 	stream       *uilive.Writer
 	streamMutex  sync.RWMutex
-	msgMutex     sync.RWMutex
+	msgsMutex    sync.RWMutex
 	start        time.Time
 	tickerd      chan bool
 	tickerdMutex sync.Mutex
@@ -41,11 +129,45 @@ type WaitLiveMsg struct {
 	waitEnd      sync.WaitGroup
 }
 
+// AddMessage to display
+func (w *WaitLiveMsg) AddMessage(msg *Message) {
+	w.msgsMutex.Lock()
+	w.msgs = append(w.msgs, msg)
+	w.msgsMutex.Unlock()
+}
+
 // SetMessage to display
-func (w *WaitLiveMsg) SetMessage(msg string) {
-	w.msgMutex.Lock()
-	w.msg = msg
-	w.msgMutex.Unlock()
+func (w *WaitLiveMsg) SetMessage(msg *Message) {
+	w.msgsMutex.Lock()
+	w.msgs = []*Message{msg}
+	w.msgsMutex.Unlock()
+}
+
+// SetMessages to display
+func (w *WaitLiveMsg) SetMessages(msgs []*Message) {
+	w.msgsMutex.Lock()
+	w.msgs = msgs
+	w.msgsMutex.Unlock()
+}
+
+// RemoveMessage from the messages slice
+func (w *WaitLiveMsg) RemoveMessage(msg *Message) {
+	w.msgsMutex.Lock()
+	var newSlice = []*Message{}
+	for _, m := range w.msgs {
+		if m != msg {
+			newSlice = append(newSlice, m)
+		}
+	}
+	w.msgs = newSlice
+	w.msgsMutex.Unlock()
+}
+
+// ResetMessages to display
+func (w *WaitLiveMsg) ResetMessages() {
+	w.msgsMutex.Lock()
+	w.msgs = []*Message{}
+	w.msgsMutex.Unlock()
 }
 
 // SetStream to output to
@@ -53,23 +175,6 @@ func (w *WaitLiveMsg) SetStream(ws *uilive.Writer) {
 	w.streamMutex.Lock()
 	w.stream = ws
 	w.streamMutex.Unlock()
-}
-
-// SetSymbolEnd sets the symbol to be used on the end of the timer
-func (w *WaitLiveMsg) SetSymbolEnd(s string) {
-	w.msgMutex.Lock()
-	w.symbolEnd = s
-	w.msgMutex.Unlock()
-}
-
-// SetTickSymbolEnd sets the end symbol to tick
-func (w *WaitLiveMsg) SetTickSymbolEnd() {
-	w.SetSymbolEnd(color.Format(color.FgGreen, tickEnd))
-}
-
-// SetCrossSymbolEnd sets the end symbol to cross
-func (w *WaitLiveMsg) SetCrossSymbolEnd() {
-	w.SetSymbolEnd(color.Format(color.FgRed, crossEnd))
 }
 
 // Wait starts the waiting message
@@ -84,22 +189,20 @@ func (w *WaitLiveMsg) Wait() {
 
 	w.waitLoop()
 
-	w.msgMutex.RLock()
-	w.print(w.msg, w.symbolEnd)
-	w.msgMutex.RUnlock()
+	w.msgsMutex.RLock()
+	w.print()
+	w.msgsMutex.RUnlock()
 	w.waitEnd.Done()
 }
 
 func (w *WaitLiveMsg) waitLoop() {
 	var ticker = time.NewTicker(60 * time.Millisecond)
-	var counter = 0
 	for {
 		select {
 		case _ = <-ticker.C:
-			w.msgMutex.RLock()
-			w.print(w.msg, spinners[counter])
-			counter = (counter + 1) % len(spinners)
-			w.msgMutex.RUnlock()
+			w.msgsMutex.RLock()
+			w.print()
+			w.msgsMutex.RUnlock()
 		case <-w.tickerd:
 			ticker.Stop()
 			ticker = nil
@@ -110,16 +213,18 @@ func (w *WaitLiveMsg) waitLoop() {
 
 // Stop the waiting message
 func (w *WaitLiveMsg) Stop() {
+	w.msgsMutex.RLock()
+	for _, m := range w.msgs {
+		if !m.isEnd() {
+			m.End()
+		}
+	}
+	w.msgsMutex.RUnlock()
+
 	w.tickerdMutex.Lock()
 	w.tickerd <- true
 	w.tickerdMutex.Unlock()
 	w.waitEnd.Wait()
-}
-
-// StopWithMessage sets the last message and stops
-func (w *WaitLiveMsg) StopWithMessage(msg string) {
-	w.SetMessage(msg)
-	w.Stop()
 }
 
 // ResetDuration to restart counter
@@ -137,14 +242,24 @@ func (w *WaitLiveMsg) Duration() time.Duration {
 	return duration
 }
 
-func (w *WaitLiveMsg) print(msg string, symbol string) {
+func (w *WaitLiveMsg) print() {
 	w.streamMutex.Lock()
 
-	if symbol != "" {
-		symbol = symbol + " "
+	var buf = bytes.Buffer{}
+
+	for _, m := range w.msgs {
+		var s = m.getSymbol()
+
+		if len(s) != 0 {
+			buf.WriteString(s)
+			buf.WriteString(" ")
+		}
+
+		buf.WriteString(m.getText())
+		buf.WriteString("\n")
 	}
 
-	fmt.Fprintf(w.stream, "%v%v\n", symbol, w.msg)
+	fmt.Fprintf(w.stream, "%v", buf.String())
 	_ = w.stream.Flush()
 	w.streamMutex.Unlock()
 }
