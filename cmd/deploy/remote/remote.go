@@ -41,6 +41,7 @@ type RemoteDeployment struct {
 	Quiet      bool
 	path       string
 	containers containers.ContainerInfoList
+	groupUID   string
 }
 
 func getAuthCredentials() string {
@@ -136,31 +137,36 @@ func (rd *RemoteDeployment) getProjectID() (string, error) {
 	var p, ep = projects.Create(context.Background(), projects.Project{
 		ProjectID: projectID,
 	})
+
+	if epf, ok := ep.(*apihelper.APIFault); ok && epf.Has("projectAlreadyExists") {
+		return projectID, nil
+	}
+
 	return p.ProjectID, ep
 }
 
 // Run does the remote deployment procedures
-func (rd *RemoteDeployment) Run() (err error) {
+func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 	if config.Context.Scope == usercontext.ContainerScope && rd.ServiceID != "" {
-		return errors.New("Can not use --container from inside a project container")
+		return "", errors.New("Can not use --container from inside a project container")
 	}
 
 	rd.ProjectID, err = rd.getProjectID()
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	rd.path, err = rd.getPath()
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	var repoAuthorization, repoAuthorizationErr = getRepoAuthorization()
 
 	if repoAuthorizationErr != nil {
-		return repoAuthorizationErr
+		return "", repoAuthorizationErr
 	}
 
 	var gitServer = fmt.Sprintf("%vgit.%v/%v.git",
@@ -171,15 +177,15 @@ func (rd *RemoteDeployment) Run() (err error) {
 	var ctx = context.Background()
 
 	if err = rd.loadContainersList(); err != nil {
-		return err
+		return "", err
 	}
 
 	if len(rd.containers) == 0 {
-		return errors.New("no container available for deployment was found")
+		return "", errors.New("no container available for deployment was found")
 	}
 
 	if _, err = projectctx.CreateOrUpdate(rd.ProjectID); err != nil {
-		return err
+		return "", err
 	}
 
 	rd.printStartDeployment()
@@ -204,8 +210,9 @@ func (rd *RemoteDeployment) Run() (err error) {
 	}()
 
 	var wlm = waitlivemsg.WaitLiveMsg{}
+	var uploadMsg = waitlivemsg.NewMessage("Upload in progress")
 
-	wlm.SetMessage("Upload in progress")
+	wlm.SetMessage(uploadMsg)
 	var us = uilive.New()
 
 	if rd.Quiet {
@@ -214,23 +221,24 @@ func (rd *RemoteDeployment) Run() (err error) {
 
 	wlm.SetStream(us)
 	go wlm.Wait()
+	defer wlm.Stop()
 
 	err = deploy.Do()
 
 	if err != nil {
-		wlm.SetCrossSymbolEnd()
-		wlm.StopWithMessage("Upload failed")
-		return err
+		uploadMsg.SetText("Upload failed")
+		uploadMsg.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
+		return "", err
 	}
 
-	wlm.SetTickSymbolEnd()
-
-	wlm.StopWithMessage(
+	uploadMsg.SetText(
 		fmt.Sprintf("Upload completed in %v\n",
 			color.Format(color.FgBlue, timehelper.RoundDuration(deploy.UploadDuration(), time.Second))))
 
 	signal.Reset(syscall.SIGINT, syscall.SIGTERM)
-	return rd.Feedback(deploy.GetGroupUID())
+
+	rd.groupUID = deploy.GetGroupUID()
+	return rd.groupUID, nil
 }
 
 func (rd *RemoteDeployment) printStartDeployment() {
@@ -298,26 +306,22 @@ func (rd *RemoteDeployment) maybeWatch(groupUID string) (err error) {
 		return nil
 	}
 
-	var watcher = activities.NewDeployWatcher(
+	var w = &activities.DeployWatcher{}
+	var filter = activities.Filter{
+		GroupUID: groupUID,
+	}
+
+	return w.Run(
 		context.Background(),
 		rd.ProjectID,
 		rd.containers.GetIDs(),
-		activities.Filter{
-			GroupUID: groupUID,
-		},
+		filter,
 	)
-
-	if err = watcher.Run(); err != nil {
-		return err
-	}
-
-	fmt.Fprintf(os.Stdout, "\n%v\n", color.Format(color.FgGreen, "You're ready!\n"))
-	return nil
 }
 
 // Feedback of a remote deployment
-func (rd *RemoteDeployment) Feedback(groupUID string) (err error) {
-	if err = rd.maybeWatch(groupUID); err != nil {
+func (rd *RemoteDeployment) Feedback() (err error) {
+	if err = rd.maybeWatch(rd.groupUID); err != nil {
 		return err
 	}
 
