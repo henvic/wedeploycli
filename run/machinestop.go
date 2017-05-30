@@ -9,8 +9,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/henvic/uilive"
 	"github.com/wedeploy/cli/verbose"
+	"github.com/wedeploy/cli/waitlivemsg"
 )
 
 // Stop stops the WeDeploy infrastructure
@@ -27,16 +27,13 @@ func Stop() error {
 
 // Stop stops the machine
 func (dm *DockerMachine) Stop() error {
-	if dm.livew == nil {
-		dm.livew = uilive.New()
-	}
+	dm.maybeInitializePointers()
+	dm.wlm.ResetDuration()
+	var stopping = waitlivemsg.NewMessage("WeDeploy is stopping")
+	dm.wlm.SetMessage(stopping)
+	dm.wlm.SetStream(dm.livew)
 
-	dm.waitLiveMsg.ResetDuration()
-	dm.waitLiveMsg.SetTickSymbolEnd()
-	dm.waitLiveMsg.SetMessage("WeDeploy is stopping")
-	dm.waitLiveMsg.SetStream(dm.livew)
-
-	go dm.waitLiveMsg.Wait()
+	go dm.wlm.Wait()
 
 	if err := dm.LoadDockerInfo(); err != nil {
 		return err
@@ -52,7 +49,8 @@ func (dm *DockerMachine) Stop() error {
 		return err
 	}
 
-	dm.waitLiveMsg.StopWithMessage("WeDeploy is stopped.")
+	stopping.SetText("WeDeploy is stopped.")
+	dm.wlm.Stop()
 
 	return nil
 }
@@ -69,13 +67,12 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 	<-dm.started
 	verbose.Debug("Started end signal received.")
 
-	dm.waitLiveMsg.Stop()
-
-	dm.waitLiveMsg.ResetDuration()
-	dm.waitLiveMsg.SetTickSymbolEnd()
-	dm.waitLiveMsg.SetMessage("WeDeploy is stopping")
-	dm.waitLiveMsg.SetStream(dm.livew)
-	go dm.waitLiveMsg.Wait()
+	dm.wlm.Stop()
+	dm.wlm.ResetDuration()
+	dm.wlmMessage.SetText("WeDeploy is stopping")
+	dm.wlm.SetMessage(dm.wlmMessage)
+	dm.wlm.SetStream(dm.livew)
+	go dm.wlm.Wait()
 
 	killLoop(sigs)
 	dm.terminateMutex.Lock()
@@ -88,7 +85,8 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 	}
 
-	dm.waitLiveMsg.StopWithMessage("WeDeploy is stopped")
+	dm.wlmMessage.SetText("WeDeploy is stopped")
+	dm.wlm.Stop()
 	dm.endRun()
 }
 

@@ -36,7 +36,8 @@ type DockerMachine struct {
 	Container      string
 	Image          string
 	Flags          Flags
-	waitLiveMsg    waitlivemsg.WaitLiveMsg
+	wlm            waitlivemsg.WaitLiveMsg
+	wlmMessage     *waitlivemsg.Message
 	livew          *uilive.Writer
 	end            chan bool
 	started        chan bool
@@ -45,6 +46,16 @@ type DockerMachine struct {
 	tcpPorts       tcpPortsMap
 	terminate      bool
 	terminateMutex sync.RWMutex
+}
+
+func (dm *DockerMachine) maybeInitializePointers() {
+	if dm.livew == nil {
+		dm.livew = uilive.New()
+	}
+
+	if dm.wlmMessage == nil {
+		dm.wlmMessage = &waitlivemsg.Message{}
+	}
 }
 
 // Run runs the WeDeploy infrastructure
@@ -123,7 +134,7 @@ To run the infrastructure with debug mode:
 		return nil
 	}
 
-	dm.livew = uilive.New()
+	dm.maybeInitializePointers()
 	dm.started = make(chan bool, 1)
 	dm.end = make(chan bool, 1)
 
@@ -158,10 +169,11 @@ func (dm *DockerMachine) createUser() (err error) {
 		return err
 	}
 
-	dm.waitLiveMsg.StopWithMessage(
-		fmt.Sprintf("WeDeploy is ready! %v",
+	dm.wlmMessage.SetText(
+		fmt.Sprintf("WeDeploy is deployed! %v",
 			timehelper.RoundDuration(
-				dm.waitLiveMsg.Duration(), time.Second)))
+				dm.wlm.Duration(), time.Second)))
+	dm.wlm.Stop()
 	_ = dm.livew.Flush()
 
 	return err
@@ -271,13 +283,13 @@ func (dm *DockerMachine) checkPortsAreAvailable() error {
 func (dm *DockerMachine) waitReadyState() {
 	var tries = 1
 
-	dm.waitLiveMsg.SetStream(dm.livew)
-	dm.waitLiveMsg.SetTickSymbolEnd()
-	dm.waitLiveMsg.SetMessage("WeDeploy is starting")
-	go dm.waitLiveMsg.Wait()
+	dm.wlm.SetStream(dm.livew)
+	dm.wlm.SetMessage(dm.wlmMessage)
+	dm.wlmMessage.SetText("WeDeploy is starting")
+	go dm.wlm.Wait()
 
 	// Starting WeDeploy
-	for tries <= 100 || dm.waitLiveMsg.Duration() < 300*time.Second {
+	for tries <= 100 || dm.wlm.Duration() < 300*time.Second {
 		verbose.Debug(fmt.Sprintf("Trying #%v", tries))
 		tries++
 		var ctx, cancel = context.WithTimeout(dm.Context, time.Second)
