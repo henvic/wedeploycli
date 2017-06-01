@@ -124,12 +124,7 @@ func runRun(cmd *cobra.Command, args []string) error {
 	}
 
 	var _, err = rd.Run()
-
-	if err != nil {
-		return err
-	}
-
-	return rd.Feedback()
+	return err
 }
 
 func init() {

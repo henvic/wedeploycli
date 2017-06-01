@@ -4,13 +4,19 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
+	"bytes"
+
+	"github.com/hashicorp/errwrap"
 	"github.com/henvic/uilive"
+	"github.com/pkg/browser"
 	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/prompt"
 	"github.com/wedeploy/cli/timehelper"
+	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/waitlivemsg"
 )
 
@@ -55,19 +61,6 @@ func (s servicesMap) isFinalState(key string) bool {
 	return false
 }
 
-var sMetaServiceID = color.Format(color.FgBlue, "{{.Metadata.serviceId}}")
-var servicesDeploymentActivityTemplates = map[string]string{
-	buildFailed:    sMetaServiceID + " build failed",
-	buildPending:   sMetaServiceID + " build pending",
-	buildStarted:   sMetaServiceID + " build started",
-	buildSucceeded: sMetaServiceID + " build successful",
-	deployFailed:   sMetaServiceID + " deploy failed",
-	deployPending:  sMetaServiceID + " deploy pending",
-	deployStarted:  sMetaServiceID + " deploy started",
-	// deploySucceeded: sMetaServiceID + " deployed successful in {{.time}}",
-	deploySucceeded: sMetaServiceID + " deployed successful",
-}
-
 func (dw *DeployWatcher) updateActivityState(a Activity) {
 	var serviceID, ok = a.Metadata["serviceId"]
 
@@ -78,27 +71,47 @@ func (dw *DeployWatcher) updateActivityState(a Activity) {
 	}
 
 	if _, exists := dw.services[serviceID]; !exists {
+		// skip activity
 		// we want to avoid problems (read: nil pointer panics)
 		// if the server sends back a response with an ID we don't have already locally
-		fmt.Fprintf(os.Stderr,
-			"skipping activity for non-existing %v service on deployment list: %+v\n",
-			serviceID,
-			a)
 		return
 	}
-
-	var m, err = getActivityMessage(a, servicesDeploymentActivityTemplates)
 
 	dw.markActivityState(serviceID, a.Type)
 	var wlm = dw.services[serviceID].msgWLM
+	var pre, post string
 
-	if err != nil {
-		wlm.SetText(color.Format(color.FgBlue, serviceID) + " error")
-		fmt.Fprintf(os.Stderr, "%v activity error for %v service: %+v\n", a.Type, serviceID, err)
-		return
+	var suffixes = map[string]string{
+		buildFailed:     "build failed",
+		buildPending:    "build pending",
+		buildStarted:    "build started",
+		buildSucceeded:  "build successful",
+		deployFailed:    "deploy failed",
+		deployPending:   "deploy pending",
+		deploySucceeded: "deployed " + serviceID,
+		deployStarted:   "", // should not show a suffix
 	}
 
-	wlm.SetText(m)
+	switch a.Type {
+	case buildFailed, buildPending, buildStarted, buildSucceeded:
+		pre = "building"
+	case deployFailed, deployPending, deployStarted, deploySucceeded:
+		pre = "deploying"
+	}
+
+	if post, ok = suffixes[a.Type]; !ok {
+		post = a.Type
+	}
+
+	wlm.SetText(dw.makeServiceStatusMessage(serviceID, pre, post))
+
+	switch a.Type {
+	case buildFailed, deployFailed:
+		wlm.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
+		wlm.End()
+	case deploySucceeded:
+		wlm.End()
+	}
 }
 
 func isActitityTypeDeploymentRelated(activityType string) bool {
@@ -161,6 +174,39 @@ l:
 	return nil
 }
 
+func (dw *DeployWatcher) printServiceAddress(service string) string {
+	var address = dw.projectID + "." + config.Context.RemoteAddress
+
+	if service != "" {
+		address = service + "-" + address
+	}
+
+	return address
+}
+
+func (dw *DeployWatcher) makeServiceStatusMessage(serviceID, pre string, posts ...string) string {
+	var buff bytes.Buffer
+
+	if pre != "" {
+		buff.WriteString(pre)
+		buff.WriteString(" ")
+	}
+
+	buff.WriteString(color.Format(
+		color.FgBlue,
+		dw.printServiceAddress(serviceID)))
+
+	var post = strings.Join(posts, " ")
+
+	if post != "" {
+		buff.WriteString(" (")
+		buff.WriteString(post)
+		buff.WriteString(")")
+	}
+
+	return buff.String()
+}
+
 // Run the activities watcher
 func (dw *DeployWatcher) Run(ctx context.Context, projectID string, services []string, f Filter) error {
 	dw.projectID = projectID
@@ -176,8 +222,7 @@ func (dw *DeployWatcher) Run(ctx context.Context, projectID string, services []s
 	wlm.SetStream(us)
 
 	for _, s := range services {
-		var m = waitlivemsg.NewMessage(
-			color.Format(color.FgBlue, s))
+		var m = waitlivemsg.NewMessage(dw.makeServiceStatusMessage(s, "waiting for deployment"))
 
 		dw.services[s] = &serviceWatch{
 			msgWLM: m,
@@ -188,57 +233,75 @@ func (dw *DeployWatcher) Run(ctx context.Context, projectID string, services []s
 	go wlm.Wait()
 
 	var err = dw.runLoop()
-	defer wlm.Stop()
-
-	for _, s := range services {
-		wlm.RemoveMessage(dw.services[s].msgWLM)
-	}
+	wlm.Stop()
 
 	var after = color.Format(color.FgBlue, "%v",
 		timehelper.RoundDuration(wlm.Duration(), time.Second))
 
 	if err != nil {
-		var m = waitlivemsg.NewMessage(
-			fmt.Sprintf("Deploy failed after %v", after),
-		)
-
-		m.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
-		wlm.AddMessage(m)
-		return err
+		return errwrap.Wrapf("deployment failure: {{err}}", err)
 	}
 
-	wlm.AddMessage(waitlivemsg.NewMessage(
-		fmt.Sprintf("Deploy completed in %v", after),
-	))
-
-	return dw.checkSuccess()
+	return dw.checkSuccess(after)
 }
 
-func (dw *DeployWatcher) checkSuccess() error {
+func (dw *DeployWatcher) checkSuccess(timeElapsed string) error {
 	var (
-		fb = dw.services.GetServicesByState(buildFailed)
-		fd = dw.services.GetServicesByState(deployFailed)
-		em string
+		fb       = dw.services.GetServicesByState(buildFailed)
+		fd       = dw.services.GetServicesByState(deployFailed)
+		feedback string
 	)
 
+	fmt.Println("")
+
 	if len(fb) == 0 && len(fd) == 0 {
+		fmt.Printf("Deployment successful in %v\n", timeElapsed)
 		return nil
 	}
 
-	var failedBuilds = strings.Join(fb, ", ")
-	var failedDeploys = strings.Join(fd, ", ")
+	dw.maybeOpenLogs(fb, fd)
 
-	if len(failedBuilds) == 0 {
-		em = fmt.Sprintf("failed builds: %v", failedBuilds)
+	switch len(dw.services) {
+	case len(fb) + len(fd):
+		feedback = "deployment failed partially in %v"
+	default:
+		feedback = "deployment failed in %v"
 	}
 
-	if len(failedDeploys) != 0 {
-		em += " and "
+	return errors.New(feedback)
+}
+
+func (dw *DeployWatcher) maybeOpenLogs(failedBuilds, failedDeploys []string) {
+shouldOpenPrompt:
+	var p, err = prompt.Prompt("Do you want to check the logs (yes/no)? [no]")
+
+	if err != nil {
+		verbose.Debug(err)
+		return
 	}
 
-	if len(failedDeploys) == 0 {
-		em = fmt.Sprintf("failed deployments: %v", failedDeploys)
+	switch p {
+	case "y":
+		break
+	case "no", "n":
+		return
+	default:
+		goto shouldOpenPrompt
 	}
 
-	return errors.New(em)
+	var logsURL = fmt.Sprintf("https://%v/projects/%v/logs", config.Context.RemoteAddress, dw.projectID)
+
+	switch {
+	case len(failedBuilds) == 1 && len(failedDeploys) == 0:
+		logsURL += "?label=buildUid&logServiceId=" + failedBuilds[0]
+	case len(failedBuilds) == 0 && len(failedDeploys) == 1:
+		logsURL += "?logServiceId=" + failedDeploys[0]
+	case len(failedDeploys) == 0:
+		logsURL += "?label=buildUid"
+	}
+
+	if err := browser.OpenURL(logsURL); err != nil {
+		fmt.Println("Open URL: (can't open automatically)", logsURL)
+		verbose.Debug(err)
+	}
 }

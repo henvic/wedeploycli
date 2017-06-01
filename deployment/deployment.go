@@ -37,7 +37,11 @@ type Deploy struct {
 	groupUID          string
 	pushStartTime     time.Time
 	pushEndTime       time.Time
+	notify            Notifier
 }
+
+// Notifier interface
+type Notifier func(string)
 
 func (d *Deploy) getGitPath() string {
 	return filepath.Join(userhome.GetHomeDir(), ".wedeploy", "tmp", "repos", d.Path)
@@ -322,8 +326,15 @@ func (d *Deploy) cleanupAfter() {
 	}
 }
 
+// DiscardNotifier receiver
+func DiscardNotifier(s string) {}
+
 // Do deployment
-func (d *Deploy) Do() (err error) {
+func (d *Deploy) Do(n Notifier) (err error) {
+	d.notify = n
+
+	d.notify("Initializing deployment process")
+
 	if err = d.Cleanup(); err != nil {
 		return errwrap.Wrapf("Can not clean up directory for deployment: {{err}}", err)
 	}
@@ -338,6 +349,8 @@ func (d *Deploy) Do() (err error) {
 		return err
 	}
 
+	d.notify("Preparing package…")
+
 	if _, err = d.Commit(); err != nil {
 		return err
 	}
@@ -345,6 +358,8 @@ func (d *Deploy) Do() (err error) {
 	if err = d.AddRemote(); err != nil {
 		return err
 	}
+
+	d.notify("Uploading package…")
 
 	if d.groupUID, err = d.Push(); err != nil {
 		if _, ok := err.(*exec.ExitError); ok {
