@@ -35,6 +35,7 @@ type Message struct {
 	symbolEnd string
 	end       bool
 	counter   int
+	noSymbol  bool
 	mutex     sync.RWMutex
 }
 
@@ -51,6 +52,13 @@ func EmptyLine() *Message {
 	return NewMessage("")
 }
 
+// NoSymbol hides the symbol for the given message
+func (m *Message) NoSymbol() {
+	m.mutex.Lock()
+	m.noSymbol = true
+	m.mutex.Unlock()
+}
+
 // SetText of message
 func (m *Message) SetText(text string) {
 	m.mutex.Lock()
@@ -62,7 +70,7 @@ func (m *Message) getSymbol() string {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
 
-	if m.text == "" {
+	if m.text == "" || m.noSymbol {
 		return ""
 	}
 
