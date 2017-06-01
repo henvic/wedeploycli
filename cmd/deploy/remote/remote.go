@@ -11,13 +11,10 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
-	"time"
 
 	"os"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/henvic/uilive"
-	"github.com/wedeploy/cli/activities"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
@@ -26,9 +23,7 @@ import (
 	"github.com/wedeploy/cli/inspector"
 	"github.com/wedeploy/cli/projectctx"
 	"github.com/wedeploy/cli/projects"
-	"github.com/wedeploy/cli/timehelper"
 	"github.com/wedeploy/cli/usercontext"
-	"github.com/wedeploy/cli/waitlivemsg"
 )
 
 const gitSchema = "http://"
@@ -41,8 +36,6 @@ type RemoteDeployment struct {
 	Quiet      bool
 	path       string
 	containers containers.ContainerInfoList
-	groupUID   string
-	status     *waitlivemsg.Message
 }
 
 func getAuthCredentials() string {
@@ -201,7 +194,7 @@ func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 
 	rd.printStartDeployment()
 
-	var deploy = deployment.Deploy{
+	var deploy = &deployment.Deploy{
 		Context:           ctx,
 		AuthorEmail:       config.Context.Username,
 		ProjectID:         rd.ProjectID,
@@ -209,46 +202,19 @@ func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 		Remote:            config.Context.Remote,
 		RepoAuthorization: repoAuthorization,
 		GitRemoteAddress:  gitServer,
+		Services:          rd.containers.GetIDs(),
 	}
 
-	listenCleanupOnCancel(&deploy)
+	listenCleanupOnCancel(deploy)
 	defer signal.Reset(syscall.SIGINT, syscall.SIGTERM)
 
-	var wlm = waitlivemsg.WaitLiveMsg{}
-	rd.status = waitlivemsg.NewMessage("Initializing deployment process…")
+	err = deploy.Do()
 
-	wlm.SetMessage(rd.status)
-	var us = uilive.New()
-
-	if rd.Quiet {
-		us.Out = ioutil.Discard
+	if rd.Quiet && err == nil {
+		fmt.Println("Deployment Group ID:" + deploy.GetGroupUID())
 	}
 
-	wlm.SetStream(us)
-	go wlm.Wait()
-	defer wlm.Stop()
-
-	err = deploy.Do(func(s string) {
-		rd.status.SetText(s)
-	})
-
-	if err != nil {
-		rd.status.SetText("Upload failed")
-		rd.status.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
-		return "", err
-	}
-
-	rd.status.SetText(
-		fmt.Sprintf("Upload completed in %v",
-			color.Format(color.FgBlue, timehelper.RoundDuration(deploy.UploadDuration(), time.Second))))
-
-	rd.groupUID = deploy.GetGroupUID()
-
-	if err == nil {
-		err = rd.maybeWatch()
-	}
-
-	return rd.groupUID, err
+	return deploy.GetGroupUID(), err
 }
 
 func (rd *RemoteDeployment) printStartDeployment() {
@@ -305,36 +271,6 @@ func (rd *RemoteDeployment) loadContainersList() error {
 		Location:  rd.path,
 		ServiceID: cp.ID,
 	})
-
-	return nil
-}
-
-func (rd *RemoteDeployment) watch(groupUID string) (err error) {
-	var w = &activities.DeployWatcher{}
-	var filter = activities.Filter{
-		GroupUID: groupUID,
-	}
-
-	return w.Run(
-		context.Background(),
-		rd.ProjectID,
-		rd.containers.GetIDs(),
-		filter,
-	)
-}
-
-func (rd *RemoteDeployment) maybeWatch() (err error) {
-	if !rd.Quiet {
-		return rd.watch(rd.groupUID)
-	}
-
-	fmt.Fprintf(os.Stdout, "%v\n", color.Format(color.FgGreen, "Starting deployment for:"))
-
-	for _, c := range rd.containers.GetIDs() {
-		fmt.Fprintf(os.Stdout, "%v %v\n",
-			color.Format(color.FgGreen, "➜"),
-			rd.printAddress(c))
-	}
 
 	return nil
 }

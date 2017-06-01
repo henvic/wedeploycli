@@ -14,10 +14,18 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/henvic/uilive"
+	"github.com/pkg/browser"
+	"github.com/wedeploy/cli/activities"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/prompt"
+	"github.com/wedeploy/cli/timehelper"
 	"github.com/wedeploy/cli/userhome"
 	"github.com/wedeploy/cli/verbose"
+	"github.com/wedeploy/cli/waitlivemsg"
 )
 
 var (
@@ -34,14 +42,18 @@ type Deploy struct {
 	Remote            string
 	RepoAuthorization string
 	GitRemoteAddress  string
+	Services          []string
 	groupUID          string
 	pushStartTime     time.Time
 	pushEndTime       time.Time
-	notify            Notifier
+	sActivities       servicesMap
+	wlm               waitlivemsg.WaitLiveMsg
+	stepMessage       *waitlivemsg.Message
 }
 
-// Notifier interface
-type Notifier func(string)
+func (d *Deploy) setStepMessage(s string) {
+	d.stepMessage.SetText(s)
+}
 
 func (d *Deploy) getGitPath() string {
 	return filepath.Join(userhome.GetHomeDir(), ".wedeploy", "tmp", "repos", d.Path)
@@ -330,10 +342,32 @@ func (d *Deploy) cleanupAfter() {
 func DiscardNotifier(s string) {}
 
 // Do deployment
-func (d *Deploy) Do(n Notifier) (err error) {
-	d.notify = n
+func (d *Deploy) Do() (err error) {
+	d.sActivities = servicesMap{}
 
-	d.notify("Initializing deployment process")
+	var us = uilive.New()
+	d.wlm = waitlivemsg.WaitLiveMsg{}
+	d.wlm.SetStream(us)
+
+	d.stepMessage = waitlivemsg.NewMessage("Initializing deployment process")
+	d.stepMessage.NoSymbol()
+	d.wlm.AddMessage(d.stepMessage)
+	d.wlm.AddMessage(waitlivemsg.EmptyLine())
+
+	var uploadMessage = waitlivemsg.NewMessage("Uploading")
+	d.wlm.AddMessage(uploadMessage)
+
+	for _, s := range d.Services {
+		var m = waitlivemsg.NewMessage(d.makeServiceStatusMessage(s, "waiting for deployment"))
+
+		d.sActivities[s] = &serviceWatch{
+			msgWLM: m,
+		}
+		d.wlm.AddMessage(m)
+	}
+
+	go d.wlm.Wait()
+	defer d.wlm.Stop()
 
 	if err = d.Cleanup(); err != nil {
 		return errwrap.Wrapf("Can not clean up directory for deployment: {{err}}", err)
@@ -349,7 +383,7 @@ func (d *Deploy) Do(n Notifier) (err error) {
 		return err
 	}
 
-	d.notify("Preparing package…")
+	d.setStepMessage("Preparing package...")
 
 	if _, err = d.Commit(); err != nil {
 		return err
@@ -359,9 +393,11 @@ func (d *Deploy) Do(n Notifier) (err error) {
 		return err
 	}
 
-	d.notify("Uploading package…")
+	d.setStepMessage("Uploading package...")
 
 	if d.groupUID, err = d.Push(); err != nil {
+		uploadMessage.SetText("Upload failed")
+		uploadMessage.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
 		if _, ok := err.(*exec.ExitError); ok {
 			return errwrap.Wrapf("deployment push failed", err)
 		}
@@ -369,7 +405,24 @@ func (d *Deploy) Do(n Notifier) (err error) {
 		return errwrap.Wrapf("deployment failed: {{err}}", err)
 	}
 
-	return nil
+	uploadMessage.SetText(
+		fmt.Sprintf("Upload completed in %v",
+			color.Format(color.FgBlue, timehelper.RoundDuration(d.UploadDuration(), time.Second))))
+	uploadMessage.End()
+
+	d.setStepMessage("Deploying...")
+
+	err = d.checkActivitiesLoop()
+
+	var after = color.Format(color.FgBlue, "%v",
+		timehelper.RoundDuration(d.wlm.Duration(), time.Second))
+
+	if err != nil {
+		return errwrap.Wrapf("deployment failure: {{err}}", err)
+	}
+
+	d.wlm.Stop()
+	return d.checkDeployment(after)
 }
 
 // GetGroupUID gets the deployment group UID
@@ -380,4 +433,259 @@ func (d *Deploy) GetGroupUID() string {
 // UploadDuration for deployment (only correct after it finishes)
 func (d *Deploy) UploadDuration() time.Duration {
 	return d.pushEndTime.Sub(d.pushStartTime)
+}
+
+type servicesMap map[string]*serviceWatch
+
+func (s servicesMap) GetServicesByState(state string) (keys []string) {
+	for k, c := range s {
+		if c.state == state {
+			keys = append(keys, k)
+		}
+	}
+
+	return keys
+}
+
+type serviceWatch struct {
+	state  string
+	msgWLM *waitlivemsg.Message
+}
+
+func (s servicesMap) isFinalState(key string) bool {
+	if s == nil || s[key] == nil {
+		return false
+	}
+
+	switch s[key].state {
+	case activities.BuildFailed,
+		activities.DeployFailed,
+		activities.DeploySucceeded:
+		return true
+	}
+
+	return false
+}
+
+func (d *Deploy) updateActivityState(a activities.Activity) {
+	var serviceID, ok = a.Metadata["serviceId"]
+
+	// stop processing if service is not any of the watched deployment cycle types,
+	// or if service ID is somehow not available
+	if !ok || !isActitityTypeDeploymentRelated(a.Type) {
+		return
+	}
+
+	if _, exists := d.sActivities[serviceID]; !exists {
+		// skip activity
+		// we want to avoid problems (read: nil pointer panics)
+		// if the server sends back a response with an ID we don't have already locally
+		return
+	}
+
+	d.markActivityState(serviceID, a.Type)
+	var wlm = d.sActivities[serviceID].msgWLM
+	var pre, post string
+
+	var suffixes = map[string]string{
+		activities.BuildFailed:     "build failed",
+		activities.BuildPending:    "build pending",
+		activities.BuildStarted:    "build started",
+		activities.BuildSucceeded:  "build successful",
+		activities.DeployFailed:    "deploy failed",
+		activities.DeployPending:   "deploy pending",
+		activities.DeploySucceeded: "deployed " + serviceID,
+		activities.DeployStarted:   "", // should not show a suffix
+	}
+
+	switch a.Type {
+	case
+		activities.BuildFailed,
+		activities.BuildPending,
+		activities.BuildStarted,
+		activities.BuildSucceeded:
+		pre = "building"
+	case
+		activities.DeployFailed,
+		activities.DeployPending,
+		activities.DeployStarted,
+		activities.DeploySucceeded:
+		pre = "deploying"
+	}
+
+	if post, ok = suffixes[a.Type]; !ok {
+		post = a.Type
+	}
+
+	wlm.SetText(d.makeServiceStatusMessage(serviceID, pre, post))
+
+	switch a.Type {
+	case
+		activities.BuildFailed,
+		activities.DeployFailed:
+		wlm.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
+		wlm.End()
+	case
+		activities.DeploySucceeded:
+		wlm.End()
+	}
+}
+
+func isActitityTypeDeploymentRelated(activityType string) bool {
+	switch activityType {
+	case
+		activities.BuildPending,
+		activities.BuildStarted,
+		activities.BuildFailed,
+		activities.BuildSucceeded,
+		activities.DeployPending,
+		activities.DeployStarted,
+		activities.DeployFailed,
+		activities.DeploySucceeded:
+		return true
+	}
+
+	return false
+}
+
+func (d *Deploy) markActivityState(serviceID, activityType string) {
+	switch activityType {
+	case
+		activities.BuildSucceeded,
+		activities.BuildFailed,
+		activities.DeployFailed,
+		activities.DeploySucceeded:
+		d.sActivities[serviceID].state = activityType
+	}
+}
+
+func (d *Deploy) checkActivities() (end bool, err error) {
+	var as activities.Activities
+	as, err = activities.List(d.Context, d.ProjectID, activities.Filter{
+		GroupUID: d.groupUID,
+	})
+	as = as.Reverse()
+
+	if err != nil {
+		return false, err
+	}
+
+	for _, a := range as {
+		d.updateActivityState(a)
+	}
+
+	for id := range d.sActivities {
+		if !d.sActivities.isFinalState(id) {
+			return false, nil
+		}
+	}
+
+	return true, nil
+}
+
+func (d *Deploy) checkActivitiesLoop() error {
+l:
+	switch end, err := d.checkActivities(); {
+	case err != nil:
+		return err
+	case !end:
+		goto l
+	}
+
+	return nil
+}
+
+func (d *Deploy) printServiceAddress(service string) string {
+	var address = d.ProjectID + "." + config.Context.RemoteAddress
+
+	if service != "" {
+		address = service + "-" + address
+	}
+
+	return address
+}
+
+func (d *Deploy) makeServiceStatusMessage(serviceID, pre string, posts ...string) string {
+	var buff bytes.Buffer
+
+	if pre != "" {
+		buff.WriteString(pre)
+		buff.WriteString(" ")
+	}
+
+	buff.WriteString(color.Format(
+		color.FgBlue,
+		d.printServiceAddress(serviceID)))
+
+	var post = strings.Join(posts, " ")
+
+	if post != "" {
+		buff.WriteString(" (")
+		buff.WriteString(post)
+		buff.WriteString(")")
+	}
+
+	return buff.String()
+}
+
+func (d *Deploy) checkDeployment(timeElapsed string) error {
+	var (
+		fb       = d.sActivities.GetServicesByState(activities.BuildFailed)
+		fd       = d.sActivities.GetServicesByState(activities.DeployFailed)
+		feedback string
+	)
+
+	if len(fb) == 0 && len(fd) == 0 {
+		fmt.Printf("Deployment successful in %v\n", timeElapsed)
+		return nil
+	}
+
+	d.maybeOpenLogs(fb, fd)
+
+	switch len(d.sActivities) {
+	case len(fb) + len(fd):
+		feedback = "deployment failed partially in %v"
+	default:
+		feedback = "deployment failed in %v"
+	}
+
+	return fmt.Errorf(feedback, timeElapsed)
+}
+
+func (d *Deploy) maybeOpenLogs(failedBuilds, failedDeploys []string) {
+shouldOpenPrompt:
+	var p, err = prompt.Prompt("Do you want to check the logs (yes/no)? [no]")
+
+	if err != nil {
+		verbose.Debug(err)
+		return
+	}
+
+	switch p {
+	case "y":
+		break
+	case "no", "n":
+		return
+	default:
+		goto shouldOpenPrompt
+	}
+
+	var logsURL = fmt.Sprintf("https://%v%v/projects/%v/logs",
+		defaults.DashboardAddressPrefix,
+		config.Context.RemoteAddress,
+		d.ProjectID)
+
+	switch {
+	case len(failedBuilds) == 1 && len(failedDeploys) == 0:
+		logsURL += "?label=buildUid&logServiceId=" + failedBuilds[0]
+	case len(failedBuilds) == 0 && len(failedDeploys) == 1:
+		logsURL += "?logServiceId=" + failedDeploys[0]
+	case len(failedDeploys) == 0:
+		logsURL += "?label=buildUid"
+	}
+
+	if err := browser.OpenURL(logsURL); err != nil {
+		fmt.Println("Open URL: (can't open automatically)", logsURL)
+		verbose.Debug(err)
+	}
 }

@@ -43,60 +43,112 @@ type Filter struct {
 }
 
 const (
-	buildFailed                        = "BUILD_FAILED"
-	buildPending                       = "BUILD_PENDING"
-	buildStarted                       = "BUILD_STARTED"
-	buildSucceeded                     = "BUILD_SUCCEEDED"
-	collaboratorDeleted                = "COLLABORATOR_DELETED"
-	collaboratorInvitationAccepted     = "COLLABORATOR_INVITATION_ACCEPTED"
-	collaboratorInvitationDeleted      = "COLLABORATOR_INVITATION_DELETED"
-	collaboratorInvitationSent         = "COLLABORATOR_INVITATION_SENT"
-	collaboratorLeft                   = "COLLABORATOR_LEFT"
-	customDomainUpdated                = "CUSTOM_DOMAIN_UPDATED"
-	deployFailed                       = "DEPLOY_FAILED"
-	deployPending                      = "DEPLOY_PENDING"
-	deployStarted                      = "DEPLOY_STARTED"
-	deploySucceeded                    = "DEPLOY_SUCCEEDED"
-	githubProviderConnected            = "GITHUB_PROVIDER_CONNECTED"
-	githubProviderDisconnected         = "GITHUB_PROVIDER_DISCONNECTED"
-	githubRepositoryConnected          = "GITHUB_REPOSITORY_CONNECTED"
-	githubRepositoryDisconnected       = "GITHUB_REPOSITORY_DISCONNECTED"
-	homeServiceUpdated                 = "HOME_SERVICE_UPDATED"
-	projectCreated                     = "PROJECT_CREATED"
-	projectRestarted                   = "PROJECT_RESTARTED"
-	projectTransferred                 = "PROJECT_TRANSFERRED"
-	serviceCreated                     = "SERVICE_CREATED"
-	serviceDeleted                     = "SERVICE_DELETED"
-	serviceEnvironmentVariablesUpdated = "SERVICE_ENVIRONMENT_VARIABLES_UPDATED"
-	serviceRestarted                   = "SERVICE_RESTARTED"
+	// BuildFailed state
+	BuildFailed = "BUILD_FAILED"
+
+	// BuildPending state
+	BuildPending = "BUILD_PENDING"
+
+	BuildStarted = "BUILD_STARTED"
+	// BuildStarted state
+
+	BuildSucceeded = "BUILD_SUCCEEDED"
+	// BuildSucceeded state
+
+	CollaboratorDeleted = "COLLABORATOR_DELETED"
+	// CollaboratorDeleted state
+
+	CollaboratorInvitationAccepted = "COLLABORATOR_INVITATION_ACCEPTED"
+	// CollaboratorInvitationAccepted state
+
+	CollaboratorInvitationDeleted = "COLLABORATOR_INVITATION_DELETED"
+	// CollaboratorInvitationDeleted state
+
+	CollaboratorInvitationSent = "COLLABORATOR_INVITATION_SENT"
+	// CollaboratorInvitationSent state
+
+	CollaboratorLeft = "COLLABORATOR_LEFT"
+	// CollaboratorLeft state
+
+	CustomDomainUpdated = "CUSTOM_DOMAIN_UPDATED"
+	// CustomDomainUpdated state
+
+	DeployFailed = "DEPLOY_FAILED"
+	// DeployFailed state
+
+	DeployPending = "DEPLOY_PENDING"
+	// DeployPending state
+
+	DeployStarted = "DEPLOY_STARTED"
+	// DeployStarted state
+
+	DeploySucceeded = "DEPLOY_SUCCEEDED"
+	// DeploySucceeded state
+
+	GithubProviderConnected = "GITHUB_PROVIDER_CONNECTED"
+	// GithubProviderConnected state
+
+	GithubProviderDisconnected = "GITHUB_PROVIDER_DISCONNECTED"
+	// GithubProviderDisconnected state
+
+	GithubRepositoryConnected = "GITHUB_REPOSITORY_CONNECTED"
+	// GithubRepositoryConnected state
+
+	GithubRepositoryDisconnected = "GITHUB_REPOSITORY_DISCONNECTED"
+	// GithubRepositoryDisconnected state
+
+	HomeServiceUpdated = "HOME_SERVICE_UPDATED"
+	// HomeServiceUpdated state
+
+	ProjectCreated = "PROJECT_CREATED"
+	// ProjectCreated state
+
+	ProjectRestarted = "PROJECT_RESTARTED"
+	// ProjectRestarted state
+
+	ProjectTransferred = "PROJECT_TRANSFERRED"
+	// ProjectTransferred state
+
+	ServiceCreated = "SERVICE_CREATED"
+	// ServiceCreated state
+
+	ServiceDeleted = "SERVICE_DELETED"
+	// ServiceDeleted state
+
+	ServiceEnvironmentVariablesUpdated = "SERVICE_ENVIRONMENT_VARIABLES_UPDATED"
+	// ServiceEnvironmentVariablesUpdated state
+
+	ServiceRestarted = "SERVICE_RESTARTED"
+	// ServiceRestarted state
+
 )
 
 var activityTemplates = map[string]string{
-	buildFailed:                        "{{.Metadata.serviceId}} build failed on project {{.ProjectID}}",
-	buildPending:                       "{{.Metadata.serviceId}} build pending on project {{.ProjectID}}",
-	buildStarted:                       "{{.Metadata.serviceId}} build started on project {{.ProjectID}}",
-	buildSucceeded:                     "{{.Metadata.serviceId}} build successful on project {{.ProjectID}}",
-	collaboratorDeleted:                "{{.ProjectID}} project collaborator deleted",
-	collaboratorInvitationAccepted:     "{{.ProjectID}} project collaborator invitation accepted",
-	collaboratorInvitationDeleted:      "{{.ProjectID}} project collaborator invitation deleted",
-	collaboratorInvitationSent:         "{{.ProjectID}} project collaborator invitation sent",
-	collaboratorLeft:                   "{{.ProjectID}} project collaborator left",
-	customDomainUpdated:                "{{.Metadata.serviceId}} custom domain updated on project {{.ProjectID}}",
-	deployFailed:                       "{{.Metadata.serviceId}} deployment failed on project {{.ProjectID}}",
-	deployPending:                      "{{.Metadata.serviceId}} deployment pending on project {{.ProjectID}}",
-	deployStarted:                      "{{.Metadata.serviceId}} deployment started on project {{.ProjectID}}",
-	deploySucceeded:                    "{{.Metadata.serviceId}} deployment successful on project {{.ProjectID}}",
-	githubProviderConnected:            "GitHub provider connected",
-	githubProviderDisconnected:         "GitHub provider disconnected",
-	githubRepositoryConnected:          "GitHub repository connected",
-	githubRepositoryDisconnected:       "GitHub repository disconnected",
-	projectCreated:                     "{{.ProjectID}} project created",
-	projectRestarted:                   "{{.ProjectID}} project restarted",
-	projectTransferred:                 "{{.ProjectID}} project transferred",
-	serviceCreated:                     "{{.Metadata.serviceId}} service created on project {{.ProjectID}}",
-	serviceDeleted:                     "{{.Metadata.serviceId}} service deleted on project {{.ProjectID}}",
-	serviceEnvironmentVariablesUpdated: "{{.Metadata.serviceId}} service environment variables updated on project {{.ProjectID}}",
-	serviceRestarted:                   "{{.Metadata.serviceId}} service restarted on project {{.ProjectID}}",
+	BuildFailed:                        "{{.Metadata.serviceId}} build failed on project {{.ProjectID}}",
+	BuildPending:                       "{{.Metadata.serviceId}} build pending on project {{.ProjectID}}",
+	BuildStarted:                       "{{.Metadata.serviceId}} build started on project {{.ProjectID}}",
+	BuildSucceeded:                     "{{.Metadata.serviceId}} build successful on project {{.ProjectID}}",
+	CollaboratorDeleted:                "{{.ProjectID}} project collaborator deleted",
+	CollaboratorInvitationAccepted:     "{{.ProjectID}} project collaborator invitation accepted",
+	CollaboratorInvitationDeleted:      "{{.ProjectID}} project collaborator invitation deleted",
+	CollaboratorInvitationSent:         "{{.ProjectID}} project collaborator invitation sent",
+	CollaboratorLeft:                   "{{.ProjectID}} project collaborator left",
+	CustomDomainUpdated:                "{{.Metadata.serviceId}} custom domain updated on project {{.ProjectID}}",
+	DeployFailed:                       "{{.Metadata.serviceId}} deployment failed on project {{.ProjectID}}",
+	DeployPending:                      "{{.Metadata.serviceId}} deployment pending on project {{.ProjectID}}",
+	DeployStarted:                      "{{.Metadata.serviceId}} deployment started on project {{.ProjectID}}",
+	DeploySucceeded:                    "{{.Metadata.serviceId}} deployment successful on project {{.ProjectID}}",
+	GithubProviderConnected:            "GitHub provider connected",
+	GithubProviderDisconnected:         "GitHub provider disconnected",
+	GithubRepositoryConnected:          "GitHub repository connected",
+	GithubRepositoryDisconnected:       "GitHub repository disconnected",
+	ProjectCreated:                     "{{.ProjectID}} project created",
+	ProjectRestarted:                   "{{.ProjectID}} project restarted",
+	ProjectTransferred:                 "{{.ProjectID}} project transferred",
+	ServiceCreated:                     "{{.Metadata.serviceId}} service created on project {{.ProjectID}}",
+	ServiceDeleted:                     "{{.Metadata.serviceId}} service deleted on project {{.ProjectID}}",
+	ServiceEnvironmentVariablesUpdated: "{{.Metadata.serviceId}} service environment variables updated on project {{.ProjectID}}",
+	ServiceRestarted:                   "{{.Metadata.serviceId}} service restarted on project {{.ProjectID}}",
 }
 
 // List activities of a given project
