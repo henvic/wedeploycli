@@ -49,78 +49,77 @@ const (
 	// BuildPending state
 	BuildPending = "BUILD_PENDING"
 
-	BuildStarted = "BUILD_STARTED"
 	// BuildStarted state
+	BuildStarted = "BUILD_STARTED"
 
-	BuildSucceeded = "BUILD_SUCCEEDED"
 	// BuildSucceeded state
+	BuildSucceeded = "BUILD_SUCCEEDED"
 
-	CollaboratorDeleted = "COLLABORATOR_DELETED"
 	// CollaboratorDeleted state
+	CollaboratorDeleted = "COLLABORATOR_DELETED"
 
-	CollaboratorInvitationAccepted = "COLLABORATOR_INVITATION_ACCEPTED"
 	// CollaboratorInvitationAccepted state
+	CollaboratorInvitationAccepted = "COLLABORATOR_INVITATION_ACCEPTED"
 
-	CollaboratorInvitationDeleted = "COLLABORATOR_INVITATION_DELETED"
 	// CollaboratorInvitationDeleted state
+	CollaboratorInvitationDeleted = "COLLABORATOR_INVITATION_DELETED"
 
-	CollaboratorInvitationSent = "COLLABORATOR_INVITATION_SENT"
 	// CollaboratorInvitationSent state
+	CollaboratorInvitationSent = "COLLABORATOR_INVITATION_SENT"
 
-	CollaboratorLeft = "COLLABORATOR_LEFT"
 	// CollaboratorLeft state
+	CollaboratorLeft = "COLLABORATOR_LEFT"
 
-	CustomDomainUpdated = "CUSTOM_DOMAIN_UPDATED"
 	// CustomDomainUpdated state
+	CustomDomainUpdated = "CUSTOM_DOMAIN_UPDATED"
 
-	DeployFailed = "DEPLOY_FAILED"
 	// DeployFailed state
+	DeployFailed = "DEPLOY_FAILED"
 
-	DeployPending = "DEPLOY_PENDING"
 	// DeployPending state
+	DeployPending = "DEPLOY_PENDING"
 
-	DeployStarted = "DEPLOY_STARTED"
 	// DeployStarted state
+	DeployStarted = "DEPLOY_STARTED"
 
-	DeploySucceeded = "DEPLOY_SUCCEEDED"
 	// DeploySucceeded state
+	DeploySucceeded = "DEPLOY_SUCCEEDED"
 
-	GithubProviderConnected = "GITHUB_PROVIDER_CONNECTED"
 	// GithubProviderConnected state
+	GithubProviderConnected = "GITHUB_PROVIDER_CONNECTED"
 
-	GithubProviderDisconnected = "GITHUB_PROVIDER_DISCONNECTED"
 	// GithubProviderDisconnected state
+	GithubProviderDisconnected = "GITHUB_PROVIDER_DISCONNECTED"
 
-	GithubRepositoryConnected = "GITHUB_REPOSITORY_CONNECTED"
 	// GithubRepositoryConnected state
+	GithubRepositoryConnected = "GITHUB_REPOSITORY_CONNECTED"
 
-	GithubRepositoryDisconnected = "GITHUB_REPOSITORY_DISCONNECTED"
 	// GithubRepositoryDisconnected state
+	GithubRepositoryDisconnected = "GITHUB_REPOSITORY_DISCONNECTED"
 
-	HomeServiceUpdated = "HOME_SERVICE_UPDATED"
 	// HomeServiceUpdated state
+	HomeServiceUpdated = "HOME_SERVICE_UPDATED"
 
-	ProjectCreated = "PROJECT_CREATED"
 	// ProjectCreated state
+	ProjectCreated = "PROJECT_CREATED"
 
-	ProjectRestarted = "PROJECT_RESTARTED"
 	// ProjectRestarted state
+	ProjectRestarted = "PROJECT_RESTARTED"
 
-	ProjectTransferred = "PROJECT_TRANSFERRED"
 	// ProjectTransferred state
+	ProjectTransferred = "PROJECT_TRANSFERRED"
 
-	ServiceCreated = "SERVICE_CREATED"
 	// ServiceCreated state
+	ServiceCreated = "SERVICE_CREATED"
 
-	ServiceDeleted = "SERVICE_DELETED"
 	// ServiceDeleted state
+	ServiceDeleted = "SERVICE_DELETED"
 
-	ServiceEnvironmentVariablesUpdated = "SERVICE_ENVIRONMENT_VARIABLES_UPDATED"
 	// ServiceEnvironmentVariablesUpdated state
+	ServiceEnvironmentVariablesUpdated = "SERVICE_ENVIRONMENT_VARIABLES_UPDATED"
 
-	ServiceRestarted = "SERVICE_RESTARTED"
 	// ServiceRestarted state
-
+	ServiceRestarted = "SERVICE_RESTARTED"
 )
 
 var activityTemplates = map[string]string{
