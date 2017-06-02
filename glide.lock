@@ -26,7 +26,7 @@ imports:
 - name: github.com/henvic/pseudoterm
   version: 1e7fa843ce8fcc56d8c355a450cd952538ba48c7
 - name: github.com/henvic/uilive
-  version: 240d73050dfe68e6061e4748aa8d21153341f6f0
+  version: dc7a6ced9df35e99c5bafbe99cb1bf59a5965224
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/kylelemons/godebug
