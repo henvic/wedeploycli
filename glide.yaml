@@ -23,3 +23,6 @@ import:
 - package: github.com/pkg/browser
 - package: github.com/dgrijalva/jwt-go
   version: v3.0.0
+- package: golang.org/x/time
+  subpackages:
+  - rate

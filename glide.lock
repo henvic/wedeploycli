@@ -1,5 +1,5 @@
-hash: 6de00a35e093a0ec5613adad5fc80114ccc3677684e67e4d7fb01489f9e3c570
-updated: 2017-04-26T22:23:53.06162885-03:00
+hash: d606c41a175613ff2476547e6e1d791e9d530e3b83250c6f2d5c89509ac3d920
+updated: 2017-06-02T02:00:33.060318251-03:00
 imports:
 - name: github.com/coreos/go-semver
   version: 8ab6407b697782a06568d4b7f1db25550ec2e4c6
@@ -70,6 +70,10 @@ imports:
   version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
   subpackages:
   - unix
+- name: golang.org/x/time
+  version: 8be79e1e0910c292df4e79c241bb7e8f7e725959
+  subpackages:
+  - rate
 - name: gopkg.in/ini.v1
   version: 6e4869b434bd001f6983749881c7ead3545887d8
 - name: gopkg.in/yaml.v2
