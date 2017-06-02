@@ -71,7 +71,9 @@ imports:
   subpackages:
   - unix
 - name: gopkg.in/ini.v1
-  version: e7fea39b01aea8d5671f6858f0532f56e8bff3a5
+  version: 6e4869b434bd001f6983749881c7ead3545887d8
+- name: gopkg.in/yaml.v2
+  version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
 testImports:
 - name: github.com/kr/pty
   version: ce7fa45920dc37a92de8377972e52bc55ffa8d57
