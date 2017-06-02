@@ -66,6 +66,14 @@ func (m *Message) SetText(text string) {
 	m.mutex.Unlock()
 }
 
+// GetText of the message
+func (m *Message) GetText() string {
+	m.mutex.RLock()
+	var text = m.text
+	m.mutex.RUnlock()
+	return text
+}
+
 func (m *Message) getSymbol() string {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
