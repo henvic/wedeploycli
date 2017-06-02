@@ -386,6 +386,40 @@ func TestPrompt(t *testing.T) {
 	}
 }
 
+func TestPromptEmpty(t *testing.T) {
+	defer func() {
+		isTerminal = defaultIsTerminal
+	}()
+	var want = ""
+	bufInStream.Reset()
+	bufErrStream.Reset()
+	bufOutStream.Reset()
+	isTerminal = true
+	var _, err = bufInStream.WriteString("\n")
+
+	if err != nil {
+		panic(err)
+	}
+
+	var u, errt = Prompt("question")
+
+	if errt != nil {
+		t.Errorf("Expected prompt error to be nil, got %v instead", errt)
+	}
+
+	if u != want {
+		t.Errorf("Expected prompt value %v, got %v instead", want, u)
+	}
+
+	if bufErrStream.Len() != 0 {
+		t.Error("Expected error stream to be empty")
+	}
+
+	if bufOutStream.String() != "question: " {
+		t.Error("Unexpected output stream")
+	}
+}
+
 func TestPromptWithSpace(t *testing.T) {
 	defer func() {
 		isTerminal = defaultIsTerminal
