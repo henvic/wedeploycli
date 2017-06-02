@@ -2,7 +2,6 @@ package cmdactivities
 
 import (
 	"context"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/activities"
@@ -17,13 +16,6 @@ var ActivitiesCmd = &cobra.Command{
 	PreRunE: preRun,
 	RunE:    activitiesRun,
 	Hidden:  true,
-}
-
-var watchDeployCmd = &cobra.Command{
-	Use:     "watch-deploy",
-	Short:   "Watch deployment status",
-	PreRunE: preRun,
-	RunE:    watchDeployRun,
 }
 
 var (
@@ -55,13 +47,8 @@ var setupHost = cmdflagsfromhost.SetupHost{
 
 func init() {
 	setupHost.Init(ActivitiesCmd)
-	setupHost.Init(watchDeployCmd)
-	ActivitiesCmd.AddCommand(watchDeployCmd)
 	ActivitiesCmd.Flags().StringVar(&commit, "commit", "", "Filter by deployment hash")
 	ActivitiesCmd.Flags().StringVar(&groupUID, "group", "", "Filter by Group UID")
-	watchDeployCmd.Flags().StringVar(&commit, "commit", "", "Filter by deployment hash")
-	watchDeployCmd.Flags().StringVar(&groupUID, "group", "", "Filter by Group UID")
-	watchDeployCmd.Flags().StringVar(&services, "services", "", "Comma-separated services to watch")
 }
 
 func activitiesRun(cmd *cobra.Command, args []string) (err error) {
@@ -79,24 +66,4 @@ func activitiesRun(cmd *cobra.Command, args []string) (err error) {
 
 	activities.PrettyPrintList(as)
 	return nil
-}
-
-func watchDeployRun(cmd *cobra.Command, args []string) (err error) {
-	var servicesSlice = []string{}
-
-	if services != "" {
-		servicesSlice = strings.Split(services, ",")
-	}
-
-	var w = activities.DeployWatcher{}
-
-	return w.Run(
-		context.Background(),
-		setupHost.Project(),
-		servicesSlice,
-		activities.Filter{
-			GroupUID: groupUID,
-			Commit:   commit,
-		},
-	)
 }
