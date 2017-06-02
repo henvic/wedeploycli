@@ -9,8 +9,12 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/hashicorp/errwrap"
@@ -19,13 +23,13 @@ import (
 	"github.com/wedeploy/cli/activities"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/prompt"
 	"github.com/wedeploy/cli/timehelper"
 	"github.com/wedeploy/cli/userhome"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/waitlivemsg"
+	"golang.org/x/time/rate"
 )
 
 var (
@@ -40,6 +44,7 @@ type Deploy struct {
 	ProjectID         string
 	Path              string
 	Remote            string
+	RemoteAddress     string
 	RepoAuthorization string
 	GitRemoteAddress  string
 	Services          []string
@@ -49,10 +54,7 @@ type Deploy struct {
 	sActivities       servicesMap
 	wlm               waitlivemsg.WaitLiveMsg
 	stepMessage       *waitlivemsg.Message
-}
-
-func (d *Deploy) setStepMessage(s string) {
-	d.stepMessage.SetText(s)
+	uploadMessage     *waitlivemsg.Message
 }
 
 func (d *Deploy) getGitPath() string {
@@ -338,25 +340,36 @@ func (d *Deploy) cleanupAfter() {
 	}
 }
 
-// DiscardNotifier receiver
-func DiscardNotifier(s string) {}
+func (d *Deploy) listenCleanupOnCancel() {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-// Do deployment
-func (d *Deploy) Do() (err error) {
-	d.sActivities = servicesMap{}
+	go func() {
+		<-sigs
+		_ = d.Cleanup()
+	}()
+}
 
-	var us = uilive.New()
-	d.wlm = waitlivemsg.WaitLiveMsg{}
-	d.wlm.SetStream(us)
+func (d *Deploy) printFailureStep(s string) {
+	d.stepMessage.SetText(waitlivemsg.RedCrossSymbol() + " " + s)
+}
 
-	d.stepMessage = waitlivemsg.NewMessage("Initializing deployment process")
+func (d *Deploy) printDeploymentFailed() {
+	d.printFailureStep("Deployment failed")
+}
+
+func (d *Deploy) createStatusMessages() {
+	d.stepMessage.SetText("Initializing deployment process")
 	d.stepMessage.NoSymbol()
 	d.wlm.AddMessage(d.stepMessage)
 	d.wlm.AddMessage(waitlivemsg.EmptyLine())
 
-	var uploadMessage = waitlivemsg.NewMessage("Uploading")
-	d.wlm.AddMessage(uploadMessage)
+	d.uploadMessage = waitlivemsg.NewMessage("Uploading deployment package...")
+	d.wlm.AddMessage(d.uploadMessage)
+}
 
+func (d *Deploy) createServicesActivitiesMap() {
+	d.sActivities = servicesMap{}
 	for _, s := range d.Services {
 		var m = waitlivemsg.NewMessage(d.makeServiceStatusMessage(s, "waiting for deployment"))
 
@@ -365,13 +378,53 @@ func (d *Deploy) Do() (err error) {
 		}
 		d.wlm.AddMessage(m)
 	}
+}
 
+// Do deployment
+func (d *Deploy) Do() error {
+	d.stepMessage = &waitlivemsg.Message{}
+	var us = uilive.New()
+	d.wlm = waitlivemsg.WaitLiveMsg{}
+	d.wlm.SetStream(us)
 	go d.wlm.Wait()
-	defer d.wlm.Stop()
+
+	var err = d.do()
+
+	var fb, fd []string
+	var askLogs = false
+	if err == nil {
+		fb, fd, err = d.checkDeployment()
+		askLogs = (err != nil)
+	}
+
+	var timeElapsed = color.Format(color.FgBlue, "%v",
+		timehelper.RoundDuration(d.wlm.Duration(), time.Second))
+
+	switch err {
+	case nil:
+		d.stepMessage.SetText(fmt.Sprintf("Deployment successful in " + timeElapsed))
+	default:
+		d.stepMessage.SetText(color.Format(color.FgRed, "Deployment failure in ") + timeElapsed)
+	}
+
+	d.wlm.Stop()
+
+	if askLogs {
+		d.maybeOpenLogs(fb, fd)
+	}
+
+	return err
+}
+func (d *Deploy) do() (err error) {
+	d.createStatusMessages()
+	d.createServicesActivitiesMap()
 
 	if err = d.Cleanup(); err != nil {
 		return errwrap.Wrapf("Can not clean up directory for deployment: {{err}}", err)
 	}
+
+	d.listenCleanupOnCancel()
+	defer signal.Reset(syscall.SIGINT, syscall.SIGTERM)
 
 	if err = d.CreateGitDirectory(); err != nil {
 		return errwrap.Wrapf("Can not create temporary directory for deployment: {{err}}", err)
@@ -379,25 +432,47 @@ func (d *Deploy) Do() (err error) {
 
 	defer d.cleanupAfter()
 
-	if err = d.InitializeRepository(); err != nil {
+	if err = d.preparePackage(); err != nil {
 		return err
 	}
 
-	d.setStepMessage("Preparing package...")
+	d.stepMessage.SetText(
+		fmt.Sprintf("Deploying services on project %v in %v...",
+			color.Format(color.FgBlue, d.ProjectID),
+			color.Format(color.FgBlue, d.RemoteAddress)),
+	)
+
+	if err = d.uploadPackage(); err != nil {
+		return err
+	}
+
+	signal.Reset(syscall.SIGINT, syscall.SIGTERM)
+	d.checkActivitiesLoop()
+	return nil
+}
+
+func (d *Deploy) preparePackage() (err error) {
+	d.stepMessage.SetText(
+		fmt.Sprintf("Preparing deployment for project %v in %v...",
+			color.Format(color.FgBlue, d.ProjectID),
+			color.Format(d.Remote)),
+	)
+
+	if err = d.InitializeRepository(); err != nil {
+		return err
+	}
 
 	if _, err = d.Commit(); err != nil {
 		return err
 	}
 
-	if err = d.AddRemote(); err != nil {
-		return err
-	}
+	return d.AddRemote()
+}
 
-	d.setStepMessage("Uploading package...")
-
+func (d *Deploy) uploadPackage() (err error) {
 	if d.groupUID, err = d.Push(); err != nil {
-		uploadMessage.SetText("Upload failed")
-		uploadMessage.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
+		d.uploadMessage.SetText("Upload failed")
+		d.uploadMessage.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
 		if _, ok := err.(*exec.ExitError); ok {
 			return errwrap.Wrapf("deployment push failed", err)
 		}
@@ -405,24 +480,11 @@ func (d *Deploy) Do() (err error) {
 		return errwrap.Wrapf("deployment failed: {{err}}", err)
 	}
 
-	uploadMessage.SetText(
+	d.uploadMessage.SetText(
 		fmt.Sprintf("Upload completed in %v",
 			color.Format(color.FgBlue, timehelper.RoundDuration(d.UploadDuration(), time.Second))))
-	uploadMessage.End()
-
-	d.setStepMessage("Deploying...")
-
-	err = d.checkActivitiesLoop()
-
-	var after = color.Format(color.FgBlue, "%v",
-		timehelper.RoundDuration(d.wlm.Duration(), time.Second))
-
-	if err != nil {
-		return errwrap.Wrapf("deployment failure: {{err}}", err)
-	}
-
-	d.wlm.Stop()
-	return d.checkDeployment(after)
+	d.uploadMessage.End()
+	return nil
 }
 
 // GetGroupUID gets the deployment group UID
@@ -485,39 +547,24 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 
 	d.markActivityState(serviceID, a.Type)
 	var wlm = d.sActivities[serviceID].msgWLM
-	var pre, post string
+	var pre string
 
-	var suffixes = map[string]string{
+	var prefixes = map[string]string{
 		activities.BuildFailed:     "build failed",
 		activities.BuildPending:    "build pending",
-		activities.BuildStarted:    "build started",
+		activities.BuildStarted:    "building",
 		activities.BuildSucceeded:  "build successful",
 		activities.DeployFailed:    "deploy failed",
 		activities.DeployPending:   "deploy pending",
-		activities.DeploySucceeded: "deployed " + serviceID,
-		activities.DeployStarted:   "", // should not show a suffix
+		activities.DeploySucceeded: "deployed",
+		activities.DeployStarted:   "deploying",
 	}
 
-	switch a.Type {
-	case
-		activities.BuildFailed,
-		activities.BuildPending,
-		activities.BuildStarted,
-		activities.BuildSucceeded:
-		pre = "building"
-	case
-		activities.DeployFailed,
-		activities.DeployPending,
-		activities.DeployStarted,
-		activities.DeploySucceeded:
-		pre = "deploying"
+	if pre, ok = prefixes[a.Type]; !ok {
+		pre = a.Type
 	}
 
-	if post, ok = suffixes[a.Type]; !ok {
-		post = a.Type
-	}
-
-	wlm.SetText(d.makeServiceStatusMessage(serviceID, pre, post))
+	wlm.SetText(d.makeServiceStatusMessage(serviceID, pre))
 
 	switch a.Type {
 	case
@@ -561,9 +608,12 @@ func (d *Deploy) markActivityState(serviceID, activityType string) {
 
 func (d *Deploy) checkActivities() (end bool, err error) {
 	var as activities.Activities
-	as, err = activities.List(d.Context, d.ProjectID, activities.Filter{
+	var ctx, cancel = context.WithTimeout(d.Context, 5*time.Second)
+	defer cancel()
+	as, err = activities.List(ctx, d.ProjectID, activities.Filter{
 		GroupUID: d.groupUID,
 	})
+	cancel()
 	as = as.Reverse()
 
 	if err != nil {
@@ -583,20 +633,65 @@ func (d *Deploy) checkActivities() (end bool, err error) {
 	return true, nil
 }
 
-func (d *Deploy) checkActivitiesLoop() error {
-l:
-	switch end, err := d.checkActivities(); {
-	case err != nil:
-		return err
-	case !end:
-		goto l
+func updateMessageErrorStringCounter(input string) (output string) {
+	var r = regexp.MustCompile(`\(error #([0-9]+)\)`)
+
+	if input == "" {
+		return "(error #1)"
 	}
 
-	return nil
+	if r.FindString(input) == "" {
+		return input + " (error #1)"
+	}
+
+	return string(r.ReplaceAllStringFunc(input, func(n string) string {
+		const prefix = "(error #"
+		const suffix = ")"
+
+		if len(n) <= len(prefix)+len(suffix) {
+			return n
+		}
+
+		var num, _ = strconv.Atoi(n[len(prefix) : len(n)-1])
+		num++
+		return fmt.Sprintf("(error #%v)", num)
+	}))
+}
+
+func clearMessageErrorStringCounter(input string) (output string) {
+	var r = regexp.MustCompile(`\s?\(error #([0-9]+)\)`)
+	return r.ReplaceAllString(input, "")
+}
+
+func (d *Deploy) checkActivitiesLoop() {
+	rate := rate.NewLimiter(rate.Every(time.Second), 1)
+
+	for {
+		if er := rate.Wait(d.Context); er != nil {
+			verbose.Debug(er)
+		}
+
+		var end, err = d.checkActivities()
+		var stepText = d.stepMessage.GetText()
+
+		if err != nil {
+			d.stepMessage.SetText(updateMessageErrorStringCounter(stepText))
+			verbose.Debug(err)
+			continue
+		}
+
+		if strings.Contains(stepText, "error #") {
+			d.stepMessage.SetText(clearMessageErrorStringCounter(stepText))
+		}
+
+		if end {
+			return
+		}
+	}
 }
 
 func (d *Deploy) printServiceAddress(service string) string {
-	var address = d.ProjectID + "." + config.Context.RemoteAddress
+	var address = d.ProjectID + "." + d.RemoteAddress
 
 	if service != "" {
 		address = service + "-" + address
@@ -605,7 +700,13 @@ func (d *Deploy) printServiceAddress(service string) string {
 	return address
 }
 
-func (d *Deploy) makeServiceStatusMessage(serviceID, pre string, posts ...string) string {
+func (d *Deploy) coloredServiceAddress(serviceID string) string {
+	return color.Format(
+		color.FgBlue,
+		d.printServiceAddress(serviceID))
+}
+
+func (d *Deploy) makeServiceStatusMessage(serviceID, pre string) string {
 	var buff bytes.Buffer
 
 	if pre != "" {
@@ -613,43 +714,52 @@ func (d *Deploy) makeServiceStatusMessage(serviceID, pre string, posts ...string
 		buff.WriteString(" ")
 	}
 
-	buff.WriteString(color.Format(
-		color.FgBlue,
-		d.printServiceAddress(serviceID)))
-
-	var post = strings.Join(posts, " ")
-
-	if post != "" {
-		buff.WriteString(" (")
-		buff.WriteString(post)
-		buff.WriteString(")")
-	}
+	buff.WriteString(d.coloredServiceAddress(serviceID))
 
 	return buff.String()
 }
 
-func (d *Deploy) checkDeployment(timeElapsed string) error {
-	var (
-		fb       = d.sActivities.GetServicesByState(activities.BuildFailed)
-		fd       = d.sActivities.GetServicesByState(activities.DeployFailed)
-		feedback string
-	)
+func (d *Deploy) checkDeployment() (failedBuilds []string, failedDeploys []string, err error) {
+	var feedback string
+	failedBuilds = d.sActivities.GetServicesByState(activities.BuildFailed)
+	failedDeploys = d.sActivities.GetServicesByState(activities.DeployFailed)
 
-	if len(fb) == 0 && len(fd) == 0 {
-		fmt.Printf("Deployment successful in %v\n", timeElapsed)
-		return nil
+	if len(failedBuilds) == 0 && len(failedDeploys) == 0 {
+		return failedBuilds, failedDeploys, nil
 	}
-
-	d.maybeOpenLogs(fb, fd)
 
 	switch len(d.sActivities) {
-	case len(fb) + len(fd):
-		feedback = "deployment failed partially in %v"
+	case len(failedBuilds) + len(failedDeploys):
+		feedback = "deployment failed while"
 	default:
-		feedback = "deployment failed in %v"
+		feedback = "deployment failed partially while"
 	}
 
-	return fmt.Errorf(feedback, timeElapsed)
+	if len(failedBuilds) != 0 {
+		feedback += " building service"
+
+		if len(failedBuilds) != 1 {
+			feedback += "s"
+		}
+
+		feedback += " " + color.Format(color.FgBlue, strings.Join(failedBuilds, ", "))
+	}
+
+	if len(failedBuilds) != 0 && len(failedDeploys) != 0 {
+		feedback += ", and"
+	}
+
+	if len(failedDeploys) != 0 {
+		feedback += " deploying service"
+
+		if len(failedDeploys) != 1 {
+			feedback += "s"
+		}
+
+		feedback += " " + color.Format(color.FgBlue, strings.Join(failedDeploys, ", "))
+	}
+
+	return failedBuilds, failedDeploys, errors.New(feedback)
 }
 
 func (d *Deploy) maybeOpenLogs(failedBuilds, failedDeploys []string) {
@@ -661,10 +771,10 @@ shouldOpenPrompt:
 		return
 	}
 
-	switch p {
+	switch strings.ToLower(p) {
 	case "y":
 		break
-	case "no", "n":
+	case "no", "n", "":
 		return
 	default:
 		goto shouldOpenPrompt
@@ -672,7 +782,7 @@ shouldOpenPrompt:
 
 	var logsURL = fmt.Sprintf("https://%v%v/projects/%v/logs",
 		defaults.DashboardAddressPrefix,
-		config.Context.RemoteAddress,
+		d.RemoteAddress,
 		d.ProjectID)
 
 	switch {

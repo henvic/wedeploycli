@@ -7,10 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"os/signal"
 	"path/filepath"
 	"strings"
-	"syscall"
 
 	"os"
 
@@ -139,16 +137,6 @@ func (rd *RemoteDeployment) getProjectID() (string, error) {
 	return p.ProjectID, ep
 }
 
-func listenCleanupOnCancel(deploy *deployment.Deploy) {
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		<-sigs
-		_ = deploy.Cleanup()
-	}()
-}
-
 // Run does the remote deployment procedures
 func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 	if config.Context.Scope == usercontext.ContainerScope && rd.ServiceID != "" {
@@ -192,7 +180,9 @@ func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 		return "", err
 	}
 
-	rd.printStartDeployment()
+	if rd.Quiet {
+		rd.printStartDeployment()
+	}
 
 	var deploy = &deployment.Deploy{
 		Context:           ctx,
@@ -200,13 +190,11 @@ func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 		ProjectID:         rd.ProjectID,
 		Path:              rd.path,
 		Remote:            config.Context.Remote,
+		RemoteAddress:     config.Context.RemoteAddress,
 		RepoAuthorization: repoAuthorization,
 		GitRemoteAddress:  gitServer,
 		Services:          rd.containers.GetIDs(),
 	}
-
-	listenCleanupOnCancel(deploy)
-	defer signal.Reset(syscall.SIGINT, syscall.SIGTERM)
 
 	err = deploy.Do()
 
@@ -227,7 +215,7 @@ func (rd *RemoteDeployment) printStartDeployment() {
 
 	var cl = rd.containers.GetIDs()
 
-	if rd.Quiet && len(cl) > 0 {
+	if len(cl) > 0 {
 		p.WriteString(fmt.Sprintf("%v Services: %v\n",
 			color.Format(color.FgGreen, "•"),
 			color.Format(color.FgBlue, strings.Join(cl, ", "))))
