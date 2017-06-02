@@ -1,20 +1,17 @@
 package cmddeployremote
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
-	"strings"
 
 	"os"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/deployment"
@@ -180,10 +177,6 @@ func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 		return "", err
 	}
 
-	if rd.Quiet {
-		rd.printStartDeployment()
-	}
-
 	var deploy = &deployment.Deploy{
 		Context:           ctx,
 		AuthorEmail:       config.Context.Username,
@@ -194,34 +187,11 @@ func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 		RepoAuthorization: repoAuthorization,
 		GitRemoteAddress:  gitServer,
 		Services:          rd.containers.GetIDs(),
+		Quiet:             rd.Quiet,
 	}
 
 	err = deploy.Do()
-
-	if rd.Quiet && err == nil {
-		fmt.Println("Deployment Group ID:" + deploy.GetGroupUID())
-	}
-
 	return deploy.GetGroupUID(), err
-}
-
-func (rd *RemoteDeployment) printStartDeployment() {
-	p := &bytes.Buffer{}
-
-	p.WriteString(fmt.Sprintf("%v in %v\n",
-		color.Format(color.FgBlue, rd.ProjectID),
-		color.Format(color.FgBlue, rd.Remote),
-	))
-
-	var cl = rd.containers.GetIDs()
-
-	if len(cl) > 0 {
-		p.WriteString(fmt.Sprintf("%v Services: %v\n",
-			color.Format(color.FgGreen, "•"),
-			color.Format(color.FgBlue, strings.Join(cl, ", "))))
-	}
-
-	fmt.Println(p)
 }
 
 func (rd *RemoteDeployment) loadContainersList() error {

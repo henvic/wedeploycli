@@ -48,6 +48,7 @@ type Deploy struct {
 	RepoAuthorization string
 	GitRemoteAddress  string
 	Services          []string
+	Quiet             bool
 	groupUID          string
 	pushStartTime     time.Time
 	pushEndTime       time.Time
@@ -380,23 +381,7 @@ func (d *Deploy) createServicesActivitiesMap() {
 	}
 }
 
-// Do deployment
-func (d *Deploy) Do() error {
-	d.stepMessage = &waitlivemsg.Message{}
-	var us = uilive.New()
-	d.wlm = waitlivemsg.WaitLiveMsg{}
-	d.wlm.SetStream(us)
-	go d.wlm.Wait()
-
-	var err = d.do()
-
-	var fb, fd []string
-	var askLogs = false
-	if err == nil {
-		fb, fd, err = d.checkDeployment()
-		askLogs = (err != nil)
-	}
-
+func (d *Deploy) updateDeploymentEndStep(err error) {
 	var timeElapsed = color.Format(color.FgBlue, "%v",
 		timehelper.RoundDuration(d.wlm.Duration(), time.Second))
 
@@ -406,6 +391,74 @@ func (d *Deploy) Do() error {
 	default:
 		d.stepMessage.SetText(color.Format(color.FgRed, "Deployment failure in ") + timeElapsed)
 	}
+}
+
+func (d *Deploy) prepareQuiet() {
+	p := &bytes.Buffer{}
+
+	p.WriteString(d.getDeployingMessage())
+	p.WriteString("\n")
+
+	if len(d.Services) > 0 {
+		p.WriteString(fmt.Sprintf("\nList of services:\n"))
+	}
+
+	for _, s := range d.Services {
+		p.WriteString(d.coloredServiceAddress(s))
+		p.WriteString("\n")
+	}
+
+	fmt.Print(p)
+}
+
+func (d *Deploy) prepareNoisy() {
+	var us = uilive.New()
+	d.wlm.SetStream(us)
+	go d.wlm.Wait()
+}
+
+func (d *Deploy) prepare() {
+	if d.Quiet {
+		d.prepareQuiet()
+		return
+	}
+
+	d.prepareNoisy()
+}
+
+func (d *Deploy) notifyDeploymentOnQuiet(err error) {
+	if err != nil {
+		return
+	}
+
+	fmt.Printf("Deployment %v is in progress on remote %v\n",
+		color.Format(color.FgBlue, d.GetGroupUID()),
+		color.Format(color.FgBlue, d.RemoteAddress))
+}
+
+// Do deployment
+func (d *Deploy) Do() error {
+	d.stepMessage = &waitlivemsg.Message{}
+	d.wlm = waitlivemsg.WaitLiveMsg{}
+	d.prepare()
+
+	var err = d.do()
+
+	if d.Quiet {
+		d.notifyDeploymentOnQuiet(err)
+		return err
+	}
+
+	d.checkActivitiesLoop()
+
+	var fb, fd []string
+	var askLogs = false
+	if err == nil {
+		fb, fd, err = d.checkDeployment()
+		askLogs = (err != nil)
+	}
+
+	d.updateDeploymentEndStep(err)
 
 	d.wlm.Stop()
 
@@ -415,6 +468,14 @@ func (d *Deploy) Do() error {
 
 	return err
 }
+
+func (d *Deploy) getDeployingMessage() string {
+	return fmt.Sprintf("Deploying services on project %v in %v...",
+		color.Format(color.FgBlue, d.ProjectID),
+		color.Format(color.FgBlue, d.RemoteAddress),
+	)
+}
+
 func (d *Deploy) do() (err error) {
 	d.createStatusMessages()
 	d.createServicesActivitiesMap()
@@ -436,18 +497,13 @@ func (d *Deploy) do() (err error) {
 		return err
 	}
 
-	d.stepMessage.SetText(
-		fmt.Sprintf("Deploying services on project %v in %v...",
-			color.Format(color.FgBlue, d.ProjectID),
-			color.Format(color.FgBlue, d.RemoteAddress)),
-	)
+	d.stepMessage.SetText(d.getDeployingMessage())
 
 	if err = d.uploadPackage(); err != nil {
 		return err
 	}
 
 	signal.Reset(syscall.SIGINT, syscall.SIGTERM)
-	d.checkActivitiesLoop()
 	return nil
 }
 
