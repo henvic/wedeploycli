@@ -634,18 +634,18 @@ func (d *Deploy) checkActivities() (end bool, err error) {
 }
 
 func updateMessageErrorStringCounter(input string) (output string) {
-	var r = regexp.MustCompile(`\(error #([0-9]+)\)`)
+	var r = regexp.MustCompile(`\(retrying to get status #([0-9]+)\)`)
 
 	if input == "" {
-		return "(error #1)"
+		return "(retrying to get status #1)"
 	}
 
 	if r.FindString(input) == "" {
-		return input + " (error #1)"
+		return input + " (retrying to get status #1)"
 	}
 
 	return string(r.ReplaceAllStringFunc(input, func(n string) string {
-		const prefix = "(error #"
+		const prefix = "(retrying to get status #"
 		const suffix = ")"
 
 		if len(n) <= len(prefix)+len(suffix) {
@@ -654,12 +654,12 @@ func updateMessageErrorStringCounter(input string) (output string) {
 
 		var num, _ = strconv.Atoi(n[len(prefix) : len(n)-1])
 		num++
-		return fmt.Sprintf("(error #%v)", num)
+		return fmt.Sprintf("(retrying to get status #%v)", num)
 	}))
 }
 
 func clearMessageErrorStringCounter(input string) (output string) {
-	var r = regexp.MustCompile(`\s?\(error #([0-9]+)\)`)
+	var r = regexp.MustCompile(`\s?\(retrying to get status #([0-9]+)\)`)
 	return r.ReplaceAllString(input, "")
 }
 

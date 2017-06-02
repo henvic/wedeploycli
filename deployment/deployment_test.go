@@ -6,19 +6,19 @@ import (
 
 func TestUpdateMessageErrorStringCounter(t *testing.T) {
 	var msgs = map[string]string{
-		"":                       "(error #1)",
-		"oi":                     "oi (error #1)",
-		"oi (error #1)":          "oi (error #2)",
-		"oi (error #2)":          "oi (error #3)",
-		"oi (error #3)":          "oi (error #4)",
-		"(error #1)":             "(error #2)",
-		"(error #1) (error #1)":  "(error #2) (error #2)",
-		"(error #6) (error #3)":  "(error #7) (error #4)",
-		"(error #20)":            "(error #21)",
-		"(error #20) xyz":        "(error #21) xyz",
-		"abc (error #20) xyz":    "abc (error #21) xyz",
-		"abc (error #21) xyz":    "abc (error #22) xyz",
-		"abc (error #12321) xyz": "abc (error #12322) xyz",
+		"":   "(retrying to get status #1)",
+		"oi": "oi (retrying to get status #1)",
+		"oi (retrying to get status #1)":                          "oi (retrying to get status #2)",
+		"oi (retrying to get status #2)":                          "oi (retrying to get status #3)",
+		"oi (retrying to get status #3)":                          "oi (retrying to get status #4)",
+		"(retrying to get status #1)":                             "(retrying to get status #2)",
+		"(retrying to get status #1) (retrying to get status #1)": "(retrying to get status #2) (retrying to get status #2)",
+		"(retrying to get status #6) (retrying to get status #3)": "(retrying to get status #7) (retrying to get status #4)",
+		"(retrying to get status #20)":                            "(retrying to get status #21)",
+		"(retrying to get status #20) xyz":                        "(retrying to get status #21) xyz",
+		"abc (retrying to get status #20) xyz":                    "abc (retrying to get status #21) xyz",
+		"abc (retrying to get status #21) xyz":                    "abc (retrying to get status #22) xyz",
+		"abc (retrying to get status #12321) xyz":                 "abc (retrying to get status #12322) xyz",
 	}
 
 	for k, v := range msgs {
