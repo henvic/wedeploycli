@@ -365,7 +365,13 @@ func (d *Deploy) createStatusMessages() {
 	d.wlm.AddMessage(d.stepMessage)
 	d.wlm.AddMessage(waitlivemsg.EmptyLine())
 
-	d.uploadMessage = waitlivemsg.NewMessage("Uploading deployment package...")
+	const udpm = "Uploading deployment package..."
+
+	if d.Quiet {
+		fmt.Println("\n" + udpm)
+	}
+
+	d.uploadMessage = waitlivemsg.NewMessage(udpm)
 	d.wlm.AddMessage(d.uploadMessage)
 }
 
