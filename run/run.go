@@ -425,7 +425,7 @@ func filterWeDeployDockerContainers(cs []string) []string {
 	for _, c := range cs {
 		var p = strings.SplitN(c, "|", 2)
 
-		if strings.Contains(p[1], "wedeploy") && len(p) == 2 {
+		if len(p) == 2 && strings.Contains(p[1], "wedeploy") {
 			filtered = append(filtered, p[0])
 		}
 	}
