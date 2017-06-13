@@ -743,6 +743,7 @@ func (d *Deploy) checkActivitiesLoop() {
 		}
 
 		if strings.Contains(stepText, "error #") {
+			// it is not cleaning always
 			d.stepMessage.SetText(clearMessageErrorStringCounter(stepText))
 		}
 
@@ -834,7 +835,7 @@ shouldOpenPrompt:
 	}
 
 	switch strings.ToLower(p) {
-	case "y":
+	case "yes", "y":
 		break
 	case "no", "n", "":
 		return
