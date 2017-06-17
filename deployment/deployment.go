@@ -455,6 +455,13 @@ func (d *Deploy) Do() error {
 		return err
 	}
 
+	if err != nil {
+		d.updateDeploymentEndStep(err)
+		d.notifyFailedUpload()
+		d.wlm.Stop()
+		return err
+	}
+
 	d.checkActivitiesLoop()
 
 	var fb, fd []string
@@ -473,6 +480,14 @@ func (d *Deploy) Do() error {
 	}
 
 	return err
+}
+
+func (d *Deploy) notifyFailedUpload() {
+	d.wlm.RemoveMessage(d.uploadMessage)
+	for serviceID, s := range d.sActivities {
+		s.msgWLM.SetText(d.makeServiceStatusMessage(serviceID, "Upload failed"))
+		s.msgWLM.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
+	}
 }
 
 func (d *Deploy) getDeployingMessage() string {
