@@ -298,7 +298,7 @@ func tryGetPushGroupUID(buff bytes.Buffer) (groupUID string, err error) {
 func extractErrorFromBuild(e []byte) error {
 	var af apihelper.APIFault
 	if errJSON := json.Unmarshal(e, &af); errJSON != nil {
-		return fmt.Errorf(`can't process error message: "%s"`, e)
+		return fmt.Errorf(`can't process error message: "%s"`, bytes.TrimSpace(e))
 	}
 
 	return af
