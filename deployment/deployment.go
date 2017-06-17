@@ -532,6 +532,7 @@ func (d *Deploy) preparePackage() (err error) {
 }
 
 func (d *Deploy) uploadPackage() (err error) {
+	defer d.uploadMessage.End()
 	if d.groupUID, err = d.Push(); err != nil {
 		d.uploadMessage.SetText("Upload failed")
 		d.uploadMessage.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
@@ -545,7 +546,6 @@ func (d *Deploy) uploadPackage() (err error) {
 	d.uploadMessage.SetText(
 		fmt.Sprintf("Upload completed in %v",
 			color.Format(color.FgBlue, timehelper.RoundDuration(d.UploadDuration(), time.Second))))
-	d.uploadMessage.End()
 	return nil
 }
 
