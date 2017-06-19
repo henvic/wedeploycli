@@ -24,6 +24,7 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/prompt"
 	"github.com/wedeploy/cli/timehelper"
 	"github.com/wedeploy/cli/userhome"
@@ -476,7 +477,9 @@ func (d *Deploy) Do() error {
 	d.wlm.Stop()
 
 	if askLogs {
-		d.maybeOpenLogs(fb, fd)
+		errorhandling.SetAfterError(func() {
+			d.maybeOpenLogs(fb, fd)
+		})
 	}
 
 	return err
