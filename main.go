@@ -136,6 +136,7 @@ func (m *mainProgram) executeCommand() {
 
 	if m.cmdErr != nil {
 		m.commandErrorConditionalUsage()
+		errorhandling.RunAfterError()
 		os.Exit(1)
 	}
 }

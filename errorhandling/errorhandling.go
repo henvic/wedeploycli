@@ -30,6 +30,20 @@ Time: %s
 // CommandName for the local message repository
 var CommandName string
 
+var afterError func()
+
+// SetAfterError defines a function to run after global error
+func SetAfterError(f func()) {
+	afterError = f
+}
+
+// RunAfterError runs code after a global error, just before exiting
+func RunAfterError() {
+	if afterError != nil {
+		afterError()
+	}
+}
+
 // Handle error to a more friendly format
 func Handle(err error) error {
 	if err == nil {
