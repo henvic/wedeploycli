@@ -4,14 +4,14 @@ package diagnostics
 
 var windowsExecutables = []*Executable{
 	&Executable{
-		appendTo: "system",
-		name:     "ver",
-		arg:      []string{"SPFirewallDataType"},
+		Description: "Checking system version",
+		LogFile:     "system",
+		Command:     "ver",
 	},
 	&Executable{
-		appendTo: "system",
-		name:     "systeminfo",
-		arg:      []string{"SPFirewallDataType"},
+		Description: "Checking system overview",
+		LogFile:     "system",
+		Command:     "systeminfo",
 	},
 }
 

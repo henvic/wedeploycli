@@ -3,17 +3,20 @@ package diagnostics
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
-	"strings"
 	"sync"
 	"time"
 
+	"github.com/henvic/uilive"
+	wedeploy "github.com/wedeploy/api-go"
+	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/verbose"
+	"github.com/wedeploy/cli/waitlivemsg"
 )
 
 // Diagnostics for the CLI and environment
@@ -24,67 +27,118 @@ type Diagnostics struct {
 	ctx         context.Context
 	cancel      context.CancelFunc
 	queue       sync.WaitGroup
+	wlm         waitlivemsg.WaitLiveMsg
 }
 
 func (d *Diagnostics) exec(e *Executable) {
 	var ctxCmd, ctxCmdCancel = context.WithTimeout(d.ctx, d.Timeout)
 	defer func() {
 		ctxCmdCancel()
-		d.queue.Done()
 	}()
 
-	verbose.Debug(color.Format(color.FgHiYellow, "$ %s", e.Program()))
-	var c = exec.CommandContext(ctxCmd, e.name, e.arg...)
+	var desc = waitlivemsg.NewMessage(e.Description)
+	defer desc.End()
+
+	// only add message if it is not empty
+	if e.Description != "" {
+		d.wlm.AddMessage(desc)
+	}
+
+	verbose.Debug(color.Format(color.FgHiYellow, "$ %s", e.Command))
+	var name, args = getRunCommand(e.Command)
+	var c = exec.CommandContext(ctxCmd, name, args...)
 	var b = &bytes.Buffer{}
 	c.Stderr = b
 	c.Stdout = b
 
 	e.err = c.Run()
 
-	var dm = color.Format(color.FgHiRed, `Terminated "%s"`, e.Program())
+	var dm = color.Format(color.FgHiRed, `Terminated "%s"`, e.Command)
 
 	if e.err != nil {
-		dm += fmt.Sprintf(" (error: %v)", e.err)
+		if e.IgnoreError {
+			dm += fmt.Sprintf(" (error: %v; probably safe to ignore due to command not available on system)", e.err)
+		} else {
+			desc.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
+			dm += fmt.Sprintf(" (error: %v)", e.err)
+		}
 	}
 
 	verbose.Debug(dm)
 	e.output = b.Bytes()
 
 	if e.err != nil {
-		e.output = append(e.output, []byte(fmt.Sprintln())...)
-		e.output = append(e.output, []byte(fmt.Sprintln(e.err.Error()))...)
+		e.output = append(e.output, []byte(fmt.Sprintf("\n%v\n", e.err))...)
 	}
 
 	e.output = append(e.output, []byte(fmt.Sprintln())...)
 }
 
 func (d *Diagnostics) execAll() {
+	d.wlm = waitlivemsg.WaitLiveMsg{}
+	d.wlm.SetStream(uilive.New())
+	go d.wlm.Wait()
+	defer d.wlm.Stop()
+
 	d.queue.Add(len(d.Executables))
 
-	// this should be just a wrapper for calling the list of executables
-	// from Diagnostics and no other processing should be done here
+	// we don't want to fire dozen of commands at once
+	var concurrencyLimit = 10
+
+	if d.Serial {
+		concurrencyLimit = 1
+	}
+
+	// idea from the net package
+	// see http://jmoiron.net/blog/limiting-concurrency-in-go/
+	sem := make(chan struct{}, concurrencyLimit)
+
 	for _, e := range d.Executables {
-		switch d.Serial {
-		case true:
-			d.exec(e)
-		default:
-			go d.exec(e)
-		}
+		sem <- struct{}{}
+		go func(re *Executable) {
+			defer func() {
+				<-sem
+			}()
+			d.exec(re)
+			d.queue.Done()
+		}(e)
 	}
 
 	d.queue.Wait()
+	verbose.Debug("Finished executing all diagnostic commands")
 	d.cancel()
 }
 
-// Start diagnostics
-func (d *Diagnostics) Start() (context.Context, context.CancelFunc) {
-	d.ctx, d.cancel = context.WithCancel(context.Background())
-	go d.execAll()
-	return d.ctx, d.cancel
+// Run diagnostics
+func (d *Diagnostics) Run(ctx context.Context) {
+	d.ctx, d.cancel = context.WithCancel(ctx)
+	d.execAll()
 }
 
 // Report is a map of filename to content
 type Report map[string][]byte
+
+// Len returns the number of bytes of a report
+func (r *Report) Len() int {
+	var l = 0
+
+	for _, rb := range *r {
+		l += len(rb)
+	}
+
+	return l
+}
+
+// Stringify report
+func (r *Report) Stringify() map[string]string {
+	var m = map[string]string{}
+
+	for k, rb := range *r {
+		m[k] = string(rb)
+	}
+
+	return m
+}
 
 // Collect diagnostics
 func (d *Diagnostics) Collect() Report {
@@ -93,7 +147,11 @@ func (d *Diagnostics) Collect() Report {
 	var files = Report{}
 
 	for _, e := range d.Executables {
-		var appendTo = e.appendTo
+		if e.IgnoreError {
+			break
+		}
+
+		var appendTo = e.LogFile
 
 		if appendTo == "" {
 			appendTo = "log"
@@ -103,7 +161,7 @@ func (d *Diagnostics) Collect() Report {
 			files[appendTo] = []byte{}
 		}
 
-		var what = []byte(fmt.Sprintln(color.Format(color.FgHiYellow, "$ %s", e.Program())))
+		var what = []byte(fmt.Sprintln(color.Format(color.FgHiYellow, "$ %s", e.Command)))
 		files[appendTo] = append(files[appendTo], what...)
 		files[appendTo] = append(files[appendTo], e.output...)
 	}
@@ -115,33 +173,22 @@ func (d *Diagnostics) Collect() Report {
 func Write(w io.Writer, r Report) {
 	for k, v := range r {
 		fmt.Fprintf(os.Stderr,
-			"%v%v%s",
+			"%v\n%s",
 			color.Format(color.Bold, color.BgHiBlue, " %v ", k),
-			fmt.Sprintln(),
 			v)
 	}
 }
 
 // Executable is a command to be executed on the diagnostics
 type Executable struct {
-	appendTo string
-	function func() error
-	name     string
-	arg      []string
-	output   []byte
-	err      error
-}
-
-// Program is the name of the program + arguments
-func (e *Executable) Program() string {
-	var program = e.name
-	var args = strings.Join(e.arg, " ")
-
-	if len(args) != 0 {
-		program += " " + args
-	}
-
-	return program
+	Description string
+	LogFile     string
+	Command     string
+	// IgnoreError if command exit code is != 0 (don't log)
+	IgnoreError bool
+	Required    bool
+	output      []byte
+	err         error
 }
 
 func (e *Executable) Error() error {
@@ -155,8 +202,32 @@ type Entry struct {
 	Report   Report `json:"report"`
 }
 
+type submitPost struct {
+	ID       string            `json:"id"`
+	Username string            `json:"username"`
+	Report   map[string]string `json:"report"`
+}
+
 // Submit diagnostics
-func Submit(ctx context.Context, entry Entry) error {
-	// defaults.DiagnosticsEndpoint
-	return errors.New("Not implemented")
+func Submit(ctx context.Context, entry Entry) (err error) {
+	var req = wedeploy.URL(defaults.DiagnosticsEndpoint)
+	req.SetContext(ctx)
+
+	err = apihelper.SetBody(req, submitPost{
+		ID:       entry.ID,
+		Username: entry.Username,
+		Report:   entry.Report.Stringify(),
+	})
+
+	if err != nil {
+		return err
+	}
+
+	err = req.Post()
+	return apihelper.Validate(req, err)
+}
+
+func checkBashExists() bool {
+	_, err := exec.LookPath("bash")
+	return err == nil
 }

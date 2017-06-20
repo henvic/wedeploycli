@@ -7,44 +7,46 @@ var we = os.Args[0]
 // Executables is a list of executables
 var Executables = []*Executable{
 	&Executable{
-		name: we,
-		arg:  []string{"who"},
+		Command: we + " who",
 	},
 	&Executable{
-		name: we,
-		arg:  []string{"version"},
+		Description: "Checking installed version",
+		Command:     we + " version",
 	},
 	&Executable{
-		name: we,
-		arg:  []string{"remote", "-v"},
+		Command: we + " --verbose",
 	},
 	&Executable{
-		name: we,
-		arg:  []string{"inspect", "context"},
+		Description: "Inspecting working directory context",
+		Command:     we + " inspect context",
 	},
 	&Executable{
-		appendTo: "docker_images",
-		name:     "docker",
-		arg:      []string{"images"},
+		Description: "Checking system docker images",
+		LogFile:     "docker_images",
+		Command:     "docker images",
 	},
 	&Executable{
-		appendTo: "docker_ps",
-		name:     "docker",
-		arg:      []string{"ps"},
+		Description: "Checking docker containers",
+		LogFile:     "docker_ps",
+		Command:     `docker ps -a --format "table {{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Names}}"`,
 	},
 	&Executable{
-		appendTo: "docker_info",
-		name:     "docker",
-		arg:      []string{"info"},
+		LogFile: "docker_ps",
+		Command: "docker ps",
 	},
 	&Executable{
-		appendTo: "docker_network",
-		name:     "docker",
-		arg:      []string{"network", "ls"},
+		Description: "Checking docker system-wide information",
+		LogFile:     "docker_info",
+		Command:     "docker info",
 	},
 	&Executable{
-		appendTo: "docker_network",
-		name:     "docker",
-		arg:      []string{"network", "inspect", "bridge"},
+		Description: "Checking docker network list",
+		LogFile:     "docker_network",
+		Command:     "docker network ls",
+	},
+	&Executable{
+		Description: "Inspecting WeDeploy docker network",
+		LogFile:     "docker_network",
+		Command:     "docker network inspect wedeploy",
 	},
 }

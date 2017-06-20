@@ -4,24 +4,24 @@ package diagnostics
 
 var macExecutables = []*Executable{
 	&Executable{
-		appendTo: "system",
-		name:     "system_profiler",
-		arg:      []string{"SPSoftwareDataType"},
+		Description: "Checking system software overview",
+		LogFile:     "system",
+		Command:     "system_profiler SPSoftwareDataType",
 	},
 	&Executable{
-		appendTo: "system",
-		name:     "system_profiler",
-		arg:      []string{"SPHardwareDataType"},
+		Description: "Checking hardware overview",
+		LogFile:     "system",
+		Command:     "system_profiler SPHardwareDataType",
 	},
 	&Executable{
-		appendTo: "system",
-		name:     "system_profiler",
-		arg:      []string{"SPMemoryDataType"},
+		Description: "Checking memory",
+		LogFile:     "system",
+		Command:     "system_profiler SPMemoryDataType",
 	},
 	&Executable{
-		appendTo: "system",
-		name:     "system_profiler",
-		arg:      []string{"SPFirewallDataType"},
+		Description: "Checking firewall settings",
+		LogFile:     "system",
+		Command:     "system_profiler SPFirewallDataType",
 	},
 }
 

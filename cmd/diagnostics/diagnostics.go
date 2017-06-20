@@ -8,13 +8,17 @@ import (
 
 	"strings"
 
+	humanize "github.com/dustin/go-humanize"
 	"github.com/hashicorp/errwrap"
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/diagnostics"
 	"github.com/wedeploy/cli/prompt"
+	"github.com/wedeploy/cli/run"
 )
 
 var (
@@ -41,20 +45,21 @@ func diagnosticsRun(cmd *cobra.Command, args []string) error {
 		Serial:      serial,
 	}
 
-	fmt.Println("Running diagnostics tools…")
-
-	var ctx, cancel = d.Start()
-	<-ctx.Done()
-	cancel()
+	fmt.Println("Running diagnostics tools...")
+	run.MaybeStartDocker()
+	d.Run(context.Background())
 
 	var report = d.Collect()
+	fmt.Println()
 
 	if print {
 		diagnostics.Write(os.Stderr, report)
 	}
 
+	fmt.Printf("Diagnostics report size: %v\n", color.Format(color.Bold, color.FgHiBlue, humanize.Bytes(uint64(report.Len()))))
+
 	if !send && !cmd.Flag("send").Changed {
-		const question = "Press [Enter] or type \"yes\" send diagnostics report to WeDeploy [yes/no]"
+		const question = "Press [Enter] or type \"yes\" to send diagnostics report to WeDeploy [yes/no]"
 		switch ask, askErr := prompt.Prompt(question); {
 		case askErr != nil:
 			return errwrap.Wrapf("Skipping diagnostics submission: {{err}}", askErr)
@@ -81,8 +86,10 @@ func printUsername() string {
 func submit(report diagnostics.Report) error {
 	var username string
 
-	if config.Global != nil {
-		username = config.Context.Username
+	cloudRemote, ok := config.Global.Remotes[defaults.CloudRemote]
+
+	if ok {
+		username = cloudRemote.Username
 	}
 
 	var entry = diagnostics.Entry{

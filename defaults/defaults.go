@@ -16,6 +16,9 @@ var (
 	// DashboardURLPrefix for a given remote
 	DashboardURLPrefix = "https://" + DashboardAddressPrefix
 
+	// DiagnosticsEndpoint is the endpoint to where the diagnostics should be sent
+	DiagnosticsEndpoint = "https://diagnostics.wedeploy.com/report/cli"
+
 	// Docs page
 	Docs = "http://wedeploy.com/docs/"
 
