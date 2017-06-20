@@ -1,5 +1,5 @@
-hash: d606c41a175613ff2476547e6e1d791e9d530e3b83250c6f2d5c89509ac3d920
-updated: 2017-06-02T02:00:33.060318251-03:00
+hash: bcafdc203320f98ff22293a9a0595100f41181b343f3737afb08c4fe1aa51a62
+updated: 2017-06-20T11:26:08.439291829-03:00
 imports:
 - name: github.com/coreos/go-semver
   version: 8ab6407b697782a06568d4b7f1db25550ec2e4c6
@@ -11,6 +11,8 @@ imports:
   - md2man
 - name: github.com/dgrijalva/jwt-go
   version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
+- name: github.com/dustin/go-humanize
+  version: 259d2a102b871d17f30e3cd9881a642961a1e486
 - name: github.com/equinox-io/equinox
   version: 6f97d0d3970881d3e53dd6f547a41109eb055e54
   subpackages:
@@ -66,6 +68,10 @@ imports:
   version: 81372b2fc2f10bef2a7f338da115c315a56b2726
   subpackages:
   - ssh/terminal
+- name: golang.org/x/net
+  version: fe686d45ea04bc1bd4eff6a52865ce8757320325
+  subpackages:
+  - context
 - name: golang.org/x/sys
   version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
   subpackages:

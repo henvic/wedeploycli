@@ -26,3 +26,4 @@ import:
 - package: golang.org/x/time
   subpackages:
   - rate
+- package: github.com/dustin/go-humanize
