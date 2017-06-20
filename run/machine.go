@@ -85,6 +85,8 @@ func (dm *DockerMachine) checkDockerDebug() (ok bool, err error) {
 }
 
 func (dm *DockerMachine) runDocker() (err error) {
+	MaybeStartDocker()
+
 	if err = checkDockerAvailable(); err != nil {
 		return err
 	}
