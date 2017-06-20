@@ -278,9 +278,7 @@ func unlinkProjects() error {
 	}
 
 	for _, p := range list {
-		if err := projects.Unlink(context.Background(), p.ProjectID); err != nil {
-			fmt.Fprintf(os.Stderr, "Unlinking project %v error: %v\n", p.ProjectID, err)
-		}
+		_ = projects.Unlink(context.Background(), p.ProjectID)
 	}
 
 	return err
@@ -289,9 +287,7 @@ func unlinkProjects() error {
 func cleanupEnvironment() error {
 	verbose.Debug("Cleaning up processes and containers.")
 
-	if err := stopContainers(); err != nil {
-		return err
-	}
+	_ = stopContainers()
 
 	if err := rmContainers(); err != nil {
 		return err
