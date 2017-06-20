@@ -760,7 +760,7 @@ func (d *Deploy) checkActivitiesLoop() {
 			continue
 		}
 
-		if strings.Contains(stepText, "error #") {
+		if strings.Contains(stepText, "retrying to get status #") {
 			// it is not cleaning always
 			d.stepMessage.SetText(clearMessageErrorStringCounter(stepText))
 		}
