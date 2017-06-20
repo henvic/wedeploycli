@@ -11,7 +11,7 @@ import (
 )
 
 func tryStartDocker() (err error) {
-	var _, err = exec.LookPath("service")
+	_, err = exec.LookPath("service")
 
 	if err != nil {
 		return err
