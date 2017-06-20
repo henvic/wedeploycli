@@ -60,10 +60,6 @@ func (dm *DockerMachine) maybeInitializePointers() {
 
 // Run runs the WeDeploy infrastructure
 func Run(ctx context.Context, flags Flags) (terminated bool, err error) {
-	if err = checkDockerAvailable(); err != nil {
-		return false, err
-	}
-
 	var dm = &DockerMachine{
 		Flags:   flags,
 		Context: ctx,
@@ -88,8 +84,20 @@ func (dm *DockerMachine) checkDockerDebug() (ok bool, err error) {
 	return ok, err
 }
 
+func (dm *DockerMachine) runDocker() (err error) {
+	if err = checkDockerAvailable(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Run executes the WeDeploy infrastruture
 func (dm *DockerMachine) Run() (err error) {
+	if err = dm.runDocker(); err != nil {
+		return err
+	}
+
 	dm.Context, dm.contextCancel = context.WithCancel(dm.Context)
 
 	if err = dm.LoadDockerInfo(); err != nil {
