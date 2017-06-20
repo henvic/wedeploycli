@@ -18,6 +18,8 @@ Commands:
   update       Updates this tool to the latest version
   version      Print version information and quit
 
+  diagnostics  Troubleshoot problems and submit system diagnostics
+
 Flags:
   -v, --verbose   Verbose output
 

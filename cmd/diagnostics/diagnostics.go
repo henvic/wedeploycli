@@ -32,10 +32,9 @@ var (
 // DiagnosticsCmd sets the user credential
 var DiagnosticsCmd = &cobra.Command{
 	Use:     "diagnostics",
-	Short:   "Diagnose & Feedback",
+	Short:   "Troubleshoot problems and submit system diagnostics\n",
 	PreRunE: cmdargslen.ValidateCmd(0, 0),
 	RunE:    diagnosticsRun,
-	Hidden:  true,
 }
 
 func diagnosticsRun(cmd *cobra.Command, args []string) error {
