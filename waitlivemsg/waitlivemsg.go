@@ -140,7 +140,7 @@ type WaitLiveMsg struct {
 	msgsMutex    sync.RWMutex
 	start        time.Time
 	tickerd      chan bool
-	tickerdMutex sync.Mutex
+	tickerdMutex sync.RWMutex
 	startMutex   sync.RWMutex
 	waitEnd      sync.WaitGroup
 }
@@ -214,6 +214,7 @@ func (w *WaitLiveMsg) Wait() {
 func (w *WaitLiveMsg) waitLoop() {
 	var ticker = time.NewTicker(60 * time.Millisecond)
 	for {
+		w.tickerdMutex.RLock()
 		select {
 		case _ = <-ticker.C:
 			w.msgsMutex.RLock()
@@ -224,6 +225,7 @@ func (w *WaitLiveMsg) waitLoop() {
 			ticker = nil
 			return
 		}
+		w.tickerdMutex.RUnlock()
 	}
 }
 
