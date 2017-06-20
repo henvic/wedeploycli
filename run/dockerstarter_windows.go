@@ -11,7 +11,8 @@ import (
 )
 
 func tryStartDocker() (err error) {
-	var cmd = exec.CommandContext(context.Background(), `C:\Program Files\Docker\Docker\Docker for Windows.exe`)
+	var cmd = exec.CommandContext(context.Background(), `Docker for Windows.exe`)
+	cmd.Dir = `C:\Program Files\Docker\Docker`
 	var bufErr = &bytes.Buffer{}
 	cmd.Stderr = bufErr
 	err = cmd.Run()
