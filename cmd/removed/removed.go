@@ -49,7 +49,7 @@ var stopCmd = &cobra.Command{
 		fmt.Fprintln(os.Stderr,
 			color.Format(color.FgHiRed, "we stop")+
 				" has been replaced by "+
-				color.Format(color.FgHiRed, "we run --stop-local-infra")+".")
+				color.Format(color.FgHiRed, "we deploy --stop-local-infra")+".")
 		os.Exit(1)
 	},
 }
@@ -60,7 +60,7 @@ var linkCmd = &cobra.Command{
 	DisableFlagParsing: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Fprintln(os.Stderr,
-			"Use instead: "+color.Format(color.FgHiRed, "we run %v", strings.Join(args, " ")))
+			"Use instead: "+color.Format(color.FgHiRed, "we deploy %v", strings.Join(args, " ")))
 
 		os.Exit(1)
 	},
