@@ -176,7 +176,7 @@ func checkDockerAvailable() error {
 
 	switch {
 	case err != nil && strings.Contains(versionErrBuf.String(),
-		"Is the docker daemon running on this host?\n"):
+		"Is the docker daemon running"):
 		return errors.New(strings.TrimSpace(versionErrBuf.String()))
 	case err != nil:
 		print(versionErrBuf.String())
