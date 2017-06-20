@@ -80,10 +80,10 @@ func maybeShutdown() (err error) {
 	return run.Stop()
 }
 
-func maybeStartInfrastructure(cmd *cobra.Command) error {
+func maybeStartInfrastructure(cmd *cobra.Command) (terminated bool, err error) {
 	if skipInfra {
 		verbose.Debug("Skipping setting up infrastructure.")
-		return nil
+		return false, nil
 	}
 
 	if up := checkInfrastructureIsUp(); up {
@@ -98,7 +98,7 @@ func maybeStartInfrastructure(cmd *cobra.Command) error {
 				color.Format(color.BgRed, color.Bold,
 					" debug flag ignored: already running infrastructure "))
 		}
-		return nil
+		return false, nil
 	}
 
 	var defaultImage = run.WeDeployImage
@@ -114,16 +114,23 @@ func maybeStartInfrastructure(cmd *cobra.Command) error {
 	return run.Run(context.Background(), runFlags)
 }
 
-func runLocal(cmd *cobra.Command) (err error) {
+func runLocal(cmd *cobra.Command) error {
 	if !infra {
 		return maybeShutdown()
 	}
 
-	if err = maybeStartInfrastructure(cmd); err != nil {
+	var terminated, err = maybeStartInfrastructure(cmd)
+
+	if err != nil {
 		return err
 	}
 
 	if runFlags.DryRun || isCommand("--start-local-infra") || isCommand("--stop-local-infra") {
+		return nil
+	}
+
+	// on termination, don't try to link the containers
+	if terminated {
 		return nil
 	}
 

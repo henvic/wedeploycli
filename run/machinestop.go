@@ -67,7 +67,6 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 	<-dm.started
 	verbose.Debug("Started end signal received.")
 
-	dm.wlm.Stop()
 	dm.wlm.ResetDuration()
 	dm.wlmMessage.SetText("WeDeploy is stopping")
 	dm.wlm.SetMessage(dm.wlmMessage)
@@ -92,9 +91,9 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 
 func (dm *DockerMachine) endRun() {
 	dm.end <- true
-	dm.terminateMutex.RLock()
+	dm.terminateMutex.Lock()
 	dm.terminate = true
-	dm.terminateMutex.RUnlock()
+	dm.terminateMutex.Unlock()
 }
 
 func (dm *DockerMachine) terminating() bool {

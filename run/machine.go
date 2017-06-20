@@ -59,9 +59,9 @@ func (dm *DockerMachine) maybeInitializePointers() {
 }
 
 // Run runs the WeDeploy infrastructure
-func Run(ctx context.Context, flags Flags) error {
-	if err := checkDockerAvailable(); err != nil {
-		return err
+func Run(ctx context.Context, flags Flags) (terminated bool, err error) {
+	if err = checkDockerAvailable(); err != nil {
+		return false, err
 	}
 
 	var dm = &DockerMachine{
@@ -69,7 +69,9 @@ func Run(ctx context.Context, flags Flags) error {
 		Context: ctx,
 	}
 
-	return dm.Run()
+	err = dm.Run()
+
+	return dm.terminate, err
 }
 
 func (dm *DockerMachine) checkDockerDebug() (ok bool, err error) {
@@ -157,11 +159,19 @@ To run the infrastructure with debug mode:
 
 	defer dm.terminateMutex.Unlock()
 	dm.terminateMutex.Lock()
+
 	if dm.terminate {
 		return nil
 	}
 
 	return dm.createUser()
+}
+
+// IsTerminate tells if the DockerMachine was terminated correctly (if Run was already run)
+func (dm *DockerMachine) IsTerminate() bool {
+	dm.terminateMutex.Lock()
+	defer dm.terminateMutex.Unlock()
+	return dm.terminate
 }
 
 func (dm *DockerMachine) createUser() (err error) {
