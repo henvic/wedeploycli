@@ -21,7 +21,7 @@ import (
 	"github.com/wedeploy/cli/usercontext"
 )
 
-const gitSchema = "http://"
+const gitSchema = "https://"
 
 // RemoteDeployment of services
 type RemoteDeployment struct {
