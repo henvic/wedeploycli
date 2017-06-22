@@ -21,6 +21,10 @@ var Executables = []*Executable{
 		Command:     we + " inspect context",
 	},
 	&Executable{
+		Description: "Listing running services on local machine",
+		Command:     we + " list --remote local",
+	},
+	&Executable{
 		Description: "Checking system docker images",
 		LogFile:     "docker_images",
 		Command:     "docker images",
