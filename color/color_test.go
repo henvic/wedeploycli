@@ -16,6 +16,34 @@ func TestFormat(t *testing.T) {
 	NoColor = defaultNoColor
 }
 
+func TestFormatLong(t *testing.T) {
+	var defaultNoColor = NoColor
+	NoColor = false
+
+	want := "\x1b[102;95mHello World, my little 92%!(EXTRA string=robot)\x1b[0m"
+	got := Format(BgHiGreen, FgHiMagenta, "Hello World, %s %s %v", "my", "little", FgHiGreen, "robot")
+
+	if got != want {
+		t.Errorf("Expecting %s, got '%s'\n", want, got)
+	}
+
+	NoColor = defaultNoColor
+}
+
+func TestMalformedFormat(t *testing.T) {
+	var defaultNoColor = NoColor
+	NoColor = false
+
+	want := "\x1b[102mHello World%!(EXTRA color.Attribute=95)\x1b[0m"
+	got := Format(BgHiGreen, "Hello World", FgHiMagenta)
+
+	if got != want {
+		t.Errorf("Expecting %s, got '%s'\n", want, got)
+	}
+
+	NoColor = defaultNoColor
+}
+
 func TestFormatArray(t *testing.T) {
 	var defaultNoColor = NoColor
 	NoColor = false
@@ -38,6 +66,20 @@ func TestEmpty(t *testing.T) {
 
 	want := "\x1b[m\x1b[0m"
 	got := Format()
+
+	if got != want {
+		t.Errorf("Expecting %s, got '%s'\n", want, got)
+	}
+
+	NoColor = defaultNoColor
+}
+
+func TestEmptyColorString(t *testing.T) {
+	var defaultNoColor = NoColor
+	NoColor = false
+
+	want := "\x1b[40m\x1b[0m"
+	got := Format(BgBlack)
 
 	if got != want {
 		t.Errorf("Expecting %s, got '%s'\n", want, got)

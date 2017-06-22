@@ -111,16 +111,23 @@ var TextPalette = [][]Attribute{
 func Format(s ...interface{}) string {
 	var out = make([]interface{}, 0)
 	var params = []Attribute{}
+	var in = -1
 
-	for _, v := range s {
+	for i, v := range s {
 		switch v.(type) {
 		case []Attribute:
 			params = append(params, v.([]Attribute)...)
 		case Attribute:
 			params = append(params, v.(Attribute))
 		default:
-			out = append(out, v)
+			in = i
+			goto over
 		}
+	}
+
+over:
+	if in != -1 {
+		out = s[in:]
 	}
 
 	return wrap(params, sprintf(out...))
