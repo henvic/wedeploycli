@@ -19,6 +19,7 @@ import (
 	"github.com/wedeploy/cli/diagnostics"
 	"github.com/wedeploy/cli/prompt"
 	"github.com/wedeploy/cli/run"
+	"github.com/wedeploy/cli/verbose"
 )
 
 var (
@@ -38,6 +39,7 @@ var DiagnosticsCmd = &cobra.Command{
 }
 
 func diagnosticsRun(cmd *cobra.Command, args []string) error {
+	print = print || verbose.Enabled
 	var d = diagnostics.Diagnostics{
 		Timeout:     time.Duration(timeout) * time.Second,
 		Executables: diagnostics.Executables,
