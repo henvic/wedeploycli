@@ -132,6 +132,17 @@ func (c ContainerInfoList) GetIDs() []string {
 	return ids
 }
 
+// Get container info from container info list
+func (c ContainerInfoList) Get(ID string) (ContainerInfo, error) {
+	for _, item := range c {
+		if ID == item.ServiceID {
+			return item, nil
+		}
+	}
+
+	return ContainerInfo{}, fmt.Errorf("found no service matching ID %v locally", ID)
+}
+
 // GetListFromDirectory returns a list of containers on the given diretory
 func GetListFromDirectory(root string) (ContainerInfoList, error) {
 	return (&listFromDirectoryGetter{}).Walk(root)

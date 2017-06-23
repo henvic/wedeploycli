@@ -71,6 +71,22 @@ func TestGetListFromDirectory(t *testing.T) {
 	if !reflect.DeepEqual(containers, want) {
 		t.Errorf("Want %v, got %v instead", want, containers)
 	}
+
+	speakerCI, speakerErr := containers.Get("speaker")
+
+	if speakerErr != nil {
+		t.Errorf("Wanted speakerErr to be nil, got %v instead", speakerErr)
+	}
+
+	if speakerCI.Location != "speaker" || speakerCI.ServiceID != "speaker" {
+		t.Errorf("speakerCI is not what was expected: %+v instead", speakerCI)
+	}
+
+	_, notFoundErr := containers.Get("notfound")
+
+	if notFoundErr == nil || notFoundErr.Error() != "found no service matching ID notfound locally" {
+		t.Errorf("Expected not found error, got %v instead", err)
+	}
 }
 
 func TestGetListFromDirectoryOnProjectWithContainersInsideSubdirectories(t *testing.T) {
