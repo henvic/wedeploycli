@@ -19,6 +19,8 @@ import (
 )
 
 type linker struct {
+	Project string
+	Service string
 	Machine link.Machine
 }
 
@@ -96,16 +98,31 @@ func (l *linker) getContainersDirectoriesFromScope() ([]string, error) {
 	var list, err = containers.GetListFromDirectory(config.Context.ProjectRoot)
 
 	if err != nil {
-		err = errwrap.Wrapf("Error retrieving containers list from directory: {{err}}", err)
+		return nil, err
 	}
 
+	list, err = FilterContainerListFromProjectList(setupHost.Container(), list)
 	var absList = []string{}
+
+	if err != nil {
+		return nil, err
+	}
 
 	for _, item := range list {
 		absList = append(absList, filepath.Join(config.Context.ProjectRoot, item.Location))
 	}
 
 	return absList, err
+}
+
+// FilterContainerListFromProjectList using a given service ID as filter
+func FilterContainerListFromProjectList(service string, list containers.ContainerInfoList) (containers.ContainerInfoList, error) {
+	if service == "" {
+		return list, nil
+	}
+
+	var c, err = list.Get(service)
+	return containers.ContainerInfoList{c}, err
 }
 
 func (l *linker) getProject() (projectID string, err error) {
@@ -131,7 +148,16 @@ func (l *linker) linkMachineSetup(project projects.Project, csDirs []string) err
 		l.Machine.ErrStream = os.Stderr
 	}
 
-	if err := l.Machine.Setup(csDirs); err != nil {
+	var renameServiceIDs = []link.RenameServiceID{}
+
+	if setupHost.Container() != "" {
+		renameServiceIDs = append(renameServiceIDs, link.RenameServiceID{
+			Any: true,
+			To:  setupHost.Container(),
+		})
+	}
+
+	if err := l.Machine.Setup(csDirs, renameServiceIDs...); err != nil {
 		return err
 	}
 

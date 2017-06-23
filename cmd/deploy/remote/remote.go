@@ -31,6 +31,7 @@ type RemoteDeployment struct {
 	Quiet      bool
 	path       string
 	containers containers.ContainerInfoList
+	changedSID bool
 }
 
 func getAuthCredentials() string {
@@ -51,23 +52,19 @@ func getRepoAuthorization() (string, error) {
 }
 
 func (rd *RemoteDeployment) getPath() (path string, err error) {
-	if config.Context.Scope != usercontext.GlobalScope {
-		switch {
-		case rd.ProjectID != "" && rd.ServiceID != "":
-			return "", errors.New("--project and --container can not be used inside this context")
-		case rd.ServiceID != "":
-			return "", errors.New("--container can not be used inside this context")
-		}
-	}
-
-	if config.Context.Scope == usercontext.ProjectScope {
+	switch config.Context.Scope {
+	case usercontext.ProjectScope:
 		return config.Context.ProjectRoot, nil
-	}
-
-	if config.Context.Scope == usercontext.ContainerScope {
+	case usercontext.ContainerScope:
 		return config.Context.ContainerRoot, nil
+	case usercontext.GlobalScope:
+		return rd.getPathForGlobalScope()
 	}
 
+	return "", fmt.Errorf("Scope not identified: %v", err)
+}
+
+func (rd *RemoteDeployment) getPathForGlobalScope() (path string, err error) {
 	wd, err := os.Getwd()
 
 	if err != nil {
@@ -76,19 +73,14 @@ func (rd *RemoteDeployment) getPath() (path string, err error) {
 
 	_, err = containers.Read(wd)
 
-	if err == nil {
-		if rd.ServiceID == "" {
-			return wd, nil
-		}
-
-		return "", errors.New("--container can not be used inside a directory with container.json")
+	switch {
+	case err == containers.ErrContainerNotFound:
+		return wd, createContainerPackage(rd.ServiceID, wd)
+	case err == nil:
+		return wd, nil
 	}
 
-	if err != containers.ErrContainerNotFound {
-		return "", err
-	}
-
-	return wd, createContainerPackage(rd.ServiceID, wd)
+	return "", err
 }
 
 func createContainerPackage(id, path string) error {
@@ -136,20 +128,18 @@ func (rd *RemoteDeployment) getProjectID() (string, error) {
 
 // Run does the remote deployment procedures
 func (rd *RemoteDeployment) Run() (groupUID string, err error) {
-	if config.Context.Scope == usercontext.ContainerScope && rd.ServiceID != "" {
-		return "", errors.New("Can not use --container from inside a project container")
-	}
-
 	rd.ProjectID, err = rd.getProjectID()
 
 	if err != nil {
 		return "", err
 	}
 
-	rd.path, err = rd.getPath()
-
-	if err != nil {
+	if err = rd.loadContainersList(); err != nil {
 		return "", err
+	}
+
+	if len(rd.containers) == 0 {
+		return "", errors.New("no service available for deployment was found")
 	}
 
 	var repoAuthorization, repoAuthorizationErr = getRepoAuthorization()
@@ -165,14 +155,6 @@ func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 
 	var ctx = context.Background()
 
-	if err = rd.loadContainersList(); err != nil {
-		return "", err
-	}
-
-	if len(rd.containers) == 0 {
-		return "", errors.New("no container available for deployment was found")
-	}
-
 	if _, err = projectctx.CreateOrUpdate(rd.ProjectID); err != nil {
 		return "", err
 	}
@@ -181,6 +163,8 @@ func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 		Context:           ctx,
 		AuthorEmail:       config.Context.Username,
 		ProjectID:         rd.ProjectID,
+		ServiceID:         rd.ServiceID,
+		ChangedServiceID:  rd.changedSID,
 		Path:              rd.path,
 		Remote:            config.Context.Remote,
 		RemoteAddress:     config.Context.RemoteAddress,
@@ -194,31 +178,90 @@ func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 	return deploy.GetGroupUID(), err
 }
 
-func (rd *RemoteDeployment) loadContainersList() error {
-	var allProjectContainers, err = getContainersInfoListFromProject(rd.path)
+func (rd *RemoteDeployment) loadContainersList() (err error) {
+	rd.path, err = rd.getPath()
 
 	if err != nil {
 		return err
 	}
 
+	allProjectContainers, err := getContainersInfoListFromProject(rd.path)
+
+	if err != nil {
+		return err
+	}
+
+	switch config.Context.Scope {
+	case usercontext.ProjectScope:
+		err = rd.loadContainersListForProjectScope(allProjectContainers)
+	case usercontext.ContainerScope:
+		err = rd.loadContainersListForContainerScope(allProjectContainers)
+	default:
+		err = rd.loadContainersListForGlobalScope()
+	}
+
+	if err == nil {
+		err = rd.maybeFilterOrRenameContainer()
+	}
+
+	return err
+}
+
+func (rd *RemoteDeployment) maybeFilterOrRenameContainer() error {
+	if rd.ServiceID == "" {
+		return nil
+	}
+
 	if config.Context.Scope == usercontext.ProjectScope {
-		for _, c := range allProjectContainers {
+		return rd.maybeFilterOrRenameContainerForProjectScope()
+	}
+
+	// for container and global...
+	if rd.containers[0].ServiceID != rd.ServiceID {
+		rd.containers[0].ServiceID = rd.ServiceID
+		rd.changedSID = true
+	}
+
+	return nil
+}
+
+func (rd *RemoteDeployment) maybeFilterOrRenameContainerForProjectScope() error {
+	var s, err = rd.containers.Get(rd.ServiceID)
+
+	if err != nil {
+		return err
+	}
+
+	rd.containers = containers.ContainerInfoList{
+		s,
+	}
+
+	rd.path = s.Location
+	rd.changedSID = true
+	return nil
+
+}
+
+func (rd *RemoteDeployment) loadContainersListForProjectScope(containers containers.ContainerInfoList) (err error) {
+	for _, c := range containers {
+		rd.containers = append(rd.containers, c)
+	}
+
+	return nil
+}
+
+func (rd *RemoteDeployment) loadContainersListForContainerScope(containers containers.ContainerInfoList) (err error) {
+	for _, c := range containers {
+		if c.Location == rd.path {
 			rd.containers = append(rd.containers, c)
+			break
 		}
-
-		return nil
 	}
 
-	if config.Context.Scope == usercontext.ContainerScope {
-		for _, c := range allProjectContainers {
-			if c.Location == rd.path {
-				rd.containers = append(rd.containers, c)
-			}
-		}
+	return nil
+}
 
-		return nil
-	}
-
+func (rd *RemoteDeployment) loadContainersListForGlobalScope() (err error) {
 	cp, err := containers.Read(rd.path)
 
 	if err != nil {

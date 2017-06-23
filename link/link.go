@@ -28,8 +28,21 @@ type Machine struct {
 	queue       sync.WaitGroup
 	list        *list.List
 	RWList      list.RestartWatchList
+	renameSID   []RenameServiceID
 	end         bool
 	endMutex    sync.RWMutex
+}
+
+// RenameServiceID object
+type RenameServiceID struct {
+	Any  bool
+	From string
+	To   string
+}
+
+// Match rule for renaming
+func (r RenameServiceID) Match(serviceID string) bool {
+	return r.Any || serviceID == r.From
 }
 
 // Link holds the information of container to be linked
@@ -51,6 +64,10 @@ type Errors struct {
 
 // New Container link
 func New(dir string) (*Link, error) {
+	return new(dir)
+}
+
+func new(dir string, renames ...RenameServiceID) (*Link, error) {
 	var l = &Link{
 		ContainerPath: dir,
 	}
@@ -62,10 +79,23 @@ func New(dir string) (*Link, error) {
 	}
 
 	l.Container = cp.Container()
+	maybeRenameContainer(l.Container, renames)
 
-	verbose.Debug("Container ServiceID " + cp.ID + " for directory " + dir)
+	verbose.Debug(fmt.Sprintf("Container ServiceID %v (local: %v) for directory %v",
+		l.Container.ServiceID,
+		cp.ID,
+		dir))
 
 	return l, err
+}
+
+func maybeRenameContainer(c *containers.Container, renames []RenameServiceID) {
+	for _, r := range renames {
+		if r.Match(c.ServiceID) {
+			c.ServiceID = r.To
+			return
+		}
+	}
 }
 
 func (le Errors) Error() string {
@@ -81,7 +111,7 @@ func (le Errors) Error() string {
 var errMissingProjectID = errors.New("Missing project ID for linking containers")
 
 // Setup the linking machine
-func (m *Machine) Setup(containersList []string) error {
+func (m *Machine) Setup(containersList []string, renameServiceID ...RenameServiceID) error {
 	if m.Project.ProjectID == "" {
 		return errMissingProjectID
 	}
@@ -93,6 +123,8 @@ func (m *Machine) Setup(containersList []string) error {
 	m.Errors = &Errors{
 		List: []ContainerError{},
 	}
+
+	m.renameSID = renameServiceID
 
 	for _, dir := range containersList {
 		m.mount(dir)
@@ -202,7 +234,7 @@ func (m *Machine) logError(dir string, err error) {
 }
 
 func (m *Machine) mount(dir string) {
-	var l, err = New(dir)
+	var l, err = new(dir, m.renameSID...)
 
 	if err != nil {
 		m.logError(dir, err)

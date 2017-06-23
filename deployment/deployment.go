@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -23,6 +24,7 @@ import (
 	"github.com/wedeploy/cli/activities"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/prompt"
@@ -43,6 +45,8 @@ type Deploy struct {
 	Context           context.Context
 	AuthorEmail       string
 	ProjectID         string
+	ServiceID         string
+	ChangedServiceID  bool
 	Path              string
 	Remote            string
 	RemoteAddress     string
@@ -126,6 +130,53 @@ func (d *Deploy) stageAllFiles() (err error) {
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
+	cmd.Dir = d.Path
+	cmd.Stderr = errStream
+	cmd.Stdout = outStream
+
+	err = cmd.Run()
+
+	if err != nil || !d.ChangedServiceID {
+		return err
+	}
+
+	if err = d.stageChangedServiceFile(); err != nil {
+		return errwrap.Wrapf("can't stage custom container.json to replace service ID: {{err}}", err)
+	}
+
+	return err
+}
+
+func (d *Deploy) stageChangedServiceFile() error {
+	var cp, err = containers.Read(d.Path)
+
+	if err != nil {
+		return err
+	}
+
+	cp.ID = d.ServiceID
+
+	var tmpDirPath = d.getGitPath()
+
+	bin, err := json.MarshalIndent(cp, "", "    ")
+	if err != nil {
+		return err
+	}
+
+	if err = ioutil.WriteFile(filepath.Join(tmpDirPath, "container.json"), bin, 0644); err != nil {
+		return err
+	}
+
+	defer func() {
+		if er := os.Remove(filepath.Join(tmpDirPath, "container.json")); er != nil {
+			verbose.Debug(er)
+		}
+	}()
+
+	var params = []string{"add", "container.json"}
+	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
+	var cmd = exec.CommandContext(d.Context, "git", params...)
+	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+tmpDirPath)
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
 	cmd.Stdout = outStream

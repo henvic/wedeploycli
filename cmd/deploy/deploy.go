@@ -17,6 +17,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 	Requires: cmdflagsfromhost.Requires{
 		Auth: true,
 	},
+	UseProjectDirectoryForContainer: true,
 }
 
 var (
