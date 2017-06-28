@@ -134,7 +134,7 @@ func Update(channel string) error {
 	var resp, err = check(channel)
 
 	if err != nil {
-		return handleUpdateCheckError(err)
+		return handleUpdateCheckError(channel, err)
 	}
 
 	err = updateApply(channel, resp)
@@ -164,11 +164,12 @@ func getCurrentTime() string {
 	return time.Now().Format(time.RubyDate)
 }
 
-func handleUpdateCheckError(err error) error {
+func handleUpdateCheckError(channel string, err error) error {
 	switch err {
 	case equinox.NotAvailableErr:
 		var g = config.Global
 		g.NextVersion = ""
+		g.ReleaseChannel = channel
 		g.LastUpdateCheck = getCurrentTime()
 		if err := g.Save(); err != nil {
 			return err
