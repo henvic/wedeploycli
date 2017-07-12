@@ -8,7 +8,6 @@ IFS=$'\n\t'
 cd `dirname $0`/..
 
 skipIntegrationTests=false
-helpFlag=true
 prereleaseFlag=false
 config=""
 
@@ -42,14 +41,12 @@ do
             helpmenu
             ;;
         --pre-release)
-            helpFlag=false
             prereleaseFlag=true
             ;;
         --skip-integration-tests)
             skipIntegrationTests=true
             ;;
         --config)
-            helpFlag=false
             config=${2-}
             shift
             break

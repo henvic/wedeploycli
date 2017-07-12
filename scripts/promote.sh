@@ -5,7 +5,6 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-helpFlag=true
 config=""
 
 function helpmenu() {
@@ -26,7 +25,6 @@ do
             helpmenu
             ;;
         --config)
-            helpFlag=false
             config=${2-}
             shift
             break
