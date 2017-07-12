@@ -66,13 +66,11 @@ func basicAuthLogin() error {
 		remoteAddress = config.Context.RemoteAddress
 	)
 
-	fmt.Println(`Your email and password are your Basic Auth credentials.
-
-Have you signed up with an authentication provider such as Google or GitHub?
+	fmt.Println(`Have you signed up with an authentication provider such as Google or GitHub?
 Please, set up a WeDeploy password first at
-` + color.Format(color.FgHiRed, "http://%v.%v/password/reset", defaults.DashboardAddressPrefix, remoteAddress) +
+` + color.Format(color.FgHiRed, "%v%v/password/reset", defaults.DashboardURLPrefix, remoteAddress) +
 		"\nor you won't be able to continue.\n")
-	if username, err = prompt.Prompt("Username"); err != nil {
+	if username, err = prompt.Prompt("Email"); err != nil {
 		return err
 	}
 
@@ -109,7 +107,6 @@ Logout first with "we logout"`, config.Context.Username, config.Context.Remote, 
 	}
 
 	if noLaunchBrowser {
-		println("OAuth implemented trough Basic Auth")
 		return basicAuthLogin()
 	}
 
