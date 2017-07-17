@@ -27,8 +27,7 @@ func MaybeStartDocker() {
 // TryStartDocker tries to run Docker on the system
 func TryStartDocker() {
 	var wlmMsg = waitlivemsg.NewMessage("docker is starting up")
-	var wlm = waitlivemsg.WaitLiveMsg{}
-	wlm.SetStream(uilive.New())
+	var wlm = waitlivemsg.New(uilive.New())
 	go wlm.Wait()
 	defer wlmMsg.End()
 	defer wlm.Stop()

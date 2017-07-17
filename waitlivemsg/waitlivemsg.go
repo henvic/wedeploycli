@@ -145,6 +145,17 @@ type WaitLiveMsg struct {
 	waitEnd      sync.WaitGroup
 }
 
+// New creates a WaitLiveMsg
+func New(ws *uilive.Writer) *WaitLiveMsg {
+	if ws == nil {
+		ws = uilive.New()
+	}
+
+	return &WaitLiveMsg{
+		stream: ws,
+	}
+}
+
 // AddMessage to display
 func (w *WaitLiveMsg) AddMessage(msg *Message) {
 	w.msgsMutex.Lock()
