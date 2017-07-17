@@ -22,10 +22,8 @@ import (
 	"github.com/hashicorp/errwrap"
 	uuid "github.com/satori/go.uuid"
 	wedeploy "github.com/wedeploy/api-go"
-	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/prompt"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 )
@@ -115,40 +113,9 @@ func RecOrFail(e Event) (saved bool, err error) {
 	return true, nil
 }
 
-// TryAskEnable asks the user to enable
-func TryAskEnable() (ok bool, err error) {
-	if config.Global.EnableAnalytics || config.Global.AnalyticsOption != "" {
-		return false, nil
-	}
-
-	return tryAskEnable()
-}
-
-func tryAskEnable() (bool, error) {
-	var answer, err = prompt.Prompt(
-		color.Format(color.FgCyan,
-			`You can use "we metrics usage" to control your usage reporting preferences.`) +
-			"\nPress [Enter] or type \"yes\" to allow WeDeploy to collect metrics or type \"no\" to decline")
-
-	answer = strings.ToLower(answer)
-
-	switch {
-	case err != nil:
-		// let's just bypass if tty is not available
-		return false, nil
-	case len(answer) == 0 || strings.HasPrefix(answer, "y"):
-		return true, Enable()
-	case strings.HasPrefix(answer, "n"):
-		return false, Disable()
-	default:
-		return false, nil
-	}
-}
-
 // Enable metrics
 func Enable() error {
 	config.Global.EnableAnalytics = true
-	config.Global.AnalyticsOption = time.Now().Format(time.RubyDate)
 
 	if config.Global.AnalyticsID == "" {
 		config.Global.AnalyticsID = newAnalyticsID()
@@ -160,7 +127,6 @@ func Enable() error {
 // Disable metrics
 func Disable() error {
 	config.Global.EnableAnalytics = false
-	config.Global.AnalyticsOption = time.Now().Format(time.RubyDate)
 	return config.Global.Save()
 }
 

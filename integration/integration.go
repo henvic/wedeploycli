@@ -216,7 +216,6 @@ func setupLoginHome() {
 	}
 
 	mock.LocalHTTPPort = getIntegrationServerPort()
-	mock.AnalyticsOption = "Sat Dec  5 01:23:45 -0800 2016"
 
 	var cr = mock.Remotes[defaults.CloudRemote]
 	cr.Username = "admin"

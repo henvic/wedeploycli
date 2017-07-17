@@ -13,7 +13,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
@@ -224,25 +223,12 @@ func (cl *configLoader) checkPastVersion() {
 }
 
 func (cl *configLoader) checkAnalytics() {
-	if isCommand("usage") {
+	if !config.Global.EnableAnalytics || config.Global.AnalyticsID != "" {
 		return
 	}
 
-	if config.Global.EnableAnalytics && config.Global.AnalyticsID == "" {
-		if err := metrics.Enable(); err != nil {
-			verbose.Debug("Error trying to fix enabled metrics without analytics ID: " + err.Error())
-		}
-		return
-	}
-
-	switch toEnabled, err := metrics.TryAskEnable(); {
-	case err != nil:
-		fmt.Fprintf(os.Stderr, "%v\n", errorhandling.Handle(err))
-	case toEnabled:
-		fmt.Println(color.Format(color.FgCyan,
-			`Thanks. If you change your mind, use "we metrics usage disable" to stop reporting metrics.
-`))
-		time.Sleep(time.Second)
+	if err := metrics.Enable(); err != nil {
+		verbose.Debug("Error trying to fix enabled metrics without analytics ID: " + err.Error())
 	}
 }
 

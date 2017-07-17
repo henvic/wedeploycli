@@ -33,7 +33,6 @@ type Config struct {
 	PastVersion     string       `ini:"past_version"`
 	NextVersion     string       `ini:"next_version"`
 	EnableAnalytics bool         `ini:"enable_analytics"`
-	AnalyticsOption string       `ini:"analytics_option_date"`
 	AnalyticsID     string       `ini:"analytics_id"`
 	Path            string       `ini:"-"`
 	Remotes         remotes.List `ini:"-"`
@@ -211,6 +210,7 @@ func getRemoteAddress(address string) string {
 }
 
 func (c *Config) setDefaults() {
+	c.EnableAnalytics = true
 	c.LocalHTTPPort = defaults.LocalHTTPPort
 	c.LocalHTTPSPort = defaults.LocalHTTPSPort
 	c.NotifyUpdates = true

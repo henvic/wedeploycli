@@ -399,18 +399,6 @@ func testRecCheckMetrics(t *testing.T, line string, expected event) {
 	}
 }
 
-func TestTryAskEnableMetricsAlreadyEnabled(t *testing.T) {
-	ok, err := TryAskEnable()
-
-	if ok {
-		t.Errorf("Metrics should be already enabled, so it shouldn't be able to reenable it")
-	}
-
-	if err != nil {
-		t.Errorf("Expected no error, got %v instead", err)
-	}
-}
-
 func TestDisableAndEnableAndReset(t *testing.T) {
 	var te = &testStatusMetricsStory{}
 	t.Run("testDisable", te.testDisable)
@@ -442,16 +430,6 @@ func (te *testStatusMetricsStory) testDisable(t *testing.T) {
 		t.Errorf("Analytics should be disabled")
 	}
 
-	ti, errt := time.Parse(time.RubyDate, config.Global.AnalyticsOption)
-
-	if time.Now().Add(2 * time.Second).Before(ti) {
-		t.Errorf("Time of disabling should be within seconds")
-	}
-
-	if errt != nil {
-		t.Errorf("Unexpected time parsing error for %v", errt)
-	}
-
 	var weWithoutSpace = strings.Replace(tdata.FromFile("mocks/.we"), " ", "", -1)
 	if !strings.Contains(weWithoutSpace, "enable_analytics=false") {
 		t.Errorf(".we should have enable_analytics = false")
@@ -461,16 +439,6 @@ func (te *testStatusMetricsStory) testDisable(t *testing.T) {
 func (te *testStatusMetricsStory) testEnableAndRecording(t *testing.T) {
 	if err := Enable(); err != nil {
 		t.Errorf("Expected no error while re-enabling analytics, got %v instead", err)
-	}
-
-	ti, errt := time.Parse(time.RubyDate, config.Global.AnalyticsOption)
-
-	if errt != nil {
-		t.Errorf("Unexpected time parsing error for %v", config.Global.AnalyticsOption)
-	}
-
-	if time.Now().Add(2 * time.Second).Before(ti) {
-		t.Errorf("Time of disabling should be within seconds")
 	}
 
 	var weWithoutSpace = strings.Replace(tdata.FromFile("mocks/.we"), " ", "", -1)
