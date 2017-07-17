@@ -31,6 +31,12 @@ var unixExecutables = []*Executable{
 		Command:     "free -m",
 		IgnoreError: true,
 	},
+	&Executable{
+		Description: "Internet connection",
+		LogFile:     "system",
+		Command:     "ping -c 3 google.com",
+		IgnoreError: true,
+	},
 }
 
 func init() {
