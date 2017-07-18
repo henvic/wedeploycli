@@ -21,6 +21,7 @@ import (
 	"github.com/wedeploy/cli/autocomplete"
 	"github.com/wedeploy/cli/cmd"
 	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/color/template"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/errorhandling"
@@ -45,6 +46,8 @@ func turnColorsOffOnWindows() bool {
 }
 
 func init() {
+	cobra.AddTemplateFuncs(colortemplate.Functions())
+
 	_, machineFriendly := os.LookupEnv("WEDEPLOY_MACHINE_FRIENDLY")
 	formatter.Human = !machineFriendly
 
@@ -118,8 +121,7 @@ func hideHelpFlag() {
 	// with consistent behavior. If it wasn't like this, I couldn't as it might affect
 	// subcommands.
 	var x bool
-	cmd.RootCmd.PersistentFlags().BoolVarP(&x, "help", "h", false, "")
-	_ = cmd.RootCmd.PersistentFlags().MarkHidden("help")
+	cmd.RootCmd.PersistentFlags().BoolVarP(&x, "help", "h", false, "Show help message")
 }
 
 func (m *mainProgram) executeCommand() {

@@ -38,8 +38,7 @@ import (
 // RootCmd is the main command for the CLI
 var RootCmd = &cobra.Command{
 	Use:               "we",
-	Short:             "WeDeploy CLI tool",
-	Long:              "WeDeploy CLI tool wedeploy.com",
+	Short:             "WeDeploy CLI Tool",
 	PersistentPreRunE: persistentPreRun,
 	Run:               run,
 	SilenceErrors:     true,
@@ -66,10 +65,10 @@ var commands = []*cobra.Command{
 	cmdbuild.BuildCmd,
 	cmdstart.StartCmd,
 	cmdremote.RemoteCmd,
-	cmdupdate.UpdateCmd,
-	cmdversion.VersionCmd,
-	cmdinspect.InspectCmd,
 	cmddiagnostics.DiagnosticsCmd,
+	cmdversion.VersionCmd,
+	cmdupdate.UpdateCmd,
+	cmdinspect.InspectCmd,
 	cmdwho.WhoCmd,
 }
 
@@ -90,7 +89,7 @@ func init() {
 		"verbose",
 		"v",
 		false,
-		"Verbose output")
+		"Show more information about an operation")
 
 	// this has to run after defining the --verbose flag above
 	maybeEnableVerboseByEnv()
