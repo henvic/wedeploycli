@@ -183,7 +183,7 @@ func getProjectRootDirectory(dir string) (string, error) {
 }
 
 func getContainerRootDirectory(dir string) (string, error) {
-	return getRootDirectory(dir, "container.json")
+	return getRootDirectory(dir, "wedeploy.json")
 }
 
 func getRootDirectory(dir, file string) (string, error) {

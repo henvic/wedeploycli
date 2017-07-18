@@ -63,7 +63,7 @@ func TestListContainerFromInsideProject(t *testing.T) {
 
 	servertest.IntegrationMux.HandleFunc(
 		"/projects/app/services/container",
-		tdata.ServerJSONFileHandler("./mocks/home/bucket/project/container/container.json"))
+		tdata.ServerJSONFileHandler("./mocks/home/bucket/project/container/wedeploy.json"))
 
 	servertest.IntegrationMux.HandleFunc(
 		"/projects/app/services",

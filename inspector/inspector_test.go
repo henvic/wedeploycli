@@ -221,7 +221,7 @@ func TestInspectProjectWithCorruptedContainerOnContextOverview(t *testing.T) {
 	var _, err = InspectContext("", "./mocks/project-with-corrupted-container")
 	var wantErr = fmt.Sprintf(`Error while trying to read list of containers on project: `+
 		`Can not list containers: error reading %v: unexpected end of JSON input`,
-		abs("mocks/project-with-corrupted-container/corrupted-container/container.json"))
+		abs("mocks/project-with-corrupted-container/corrupted-container/wedeploy.json"))
 
 	if err == nil || err.Error() != wantErr {
 		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)

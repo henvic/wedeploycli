@@ -141,7 +141,7 @@ func (d *Deploy) stageAllFiles() (err error) {
 	}
 
 	if err = d.stageChangedServiceFile(); err != nil {
-		return errwrap.Wrapf("can't stage custom container.json to replace service ID: {{err}}", err)
+		return errwrap.Wrapf("can't stage custom wedeploy.json to replace service ID: {{err}}", err)
 	}
 
 	return err
@@ -163,17 +163,17 @@ func (d *Deploy) stageChangedServiceFile() error {
 		return err
 	}
 
-	if err = ioutil.WriteFile(filepath.Join(tmpDirPath, "container.json"), bin, 0644); err != nil {
+	if err = ioutil.WriteFile(filepath.Join(tmpDirPath, "wedeploy.json"), bin, 0644); err != nil {
 		return err
 	}
 
 	defer func() {
-		if er := os.Remove(filepath.Join(tmpDirPath, "container.json")); er != nil {
+		if er := os.Remove(filepath.Join(tmpDirPath, "wedeploy.json")); er != nil {
 			verbose.Debug(er)
 		}
 	}()
 
-	var params = []string{"add", "container.json"}
+	var params = []string{"add", "wedeploy.json"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+tmpDirPath)

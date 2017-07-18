@@ -22,7 +22,7 @@ func startRun(cmd *cobra.Command, args []string) error {
 	var cp, err = containers.Read(".")
 
 	if err != nil {
-		return errwrap.Wrapf("container.json error: {{err}}", err)
+		return errwrap.Wrapf("wedeploy.json error: {{err}}", err)
 	}
 
 	if cp.Hooks == nil || (cp.Hooks.BeforeStart == "" &&

@@ -19,7 +19,7 @@ var EnvCmd = &cobra.Command{
 	Short: "Show and configure environment variables for services",
 	Long: `Show and configure environment variables for services
 
-	Changing these values does not change container.json hard coded values.
+	Changing these values does not change wedeploy.json hard coded values.
 	You must restart containers for changed values to apply.`,
 	Example: `   we env (to list environment variables)
    we env set foo bar

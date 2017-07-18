@@ -102,7 +102,7 @@ func checkProjectOrContainer() error {
 	}
 
 	if err != nil && errc != nil {
-		return errwrap.Wrapf("container.json error: {{err}}", errc)
+		return errwrap.Wrapf("wedeploy.json error: {{err}}", errc)
 	}
 
 	return nil

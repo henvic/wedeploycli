@@ -83,7 +83,7 @@ func (l *linker) getContainersDirectoriesFromScope() ([]string, error) {
 
 		switch {
 		case err == containers.ErrContainerNotFound:
-			err = errwrap.Wrapf("Missing container.json on directory.", err)
+			err = errwrap.Wrapf("Missing wedeploy.json on directory.", err)
 		case err != nil:
 			err = errwrap.Wrapf("Can not read container with no project: {{err}}", err)
 		}

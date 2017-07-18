@@ -48,7 +48,7 @@ type Container struct {
 	HealthUID     string            `json:"healthUid,omitempty"`
 }
 
-// ContainerPackage is the structure for container.json
+// ContainerPackage is the structure for wedeploy.json
 type ContainerPackage struct {
 	ID            string            `json:"id,omitempty"`
 	Scale         int               `json:"scale,omitempty"`
@@ -58,7 +58,7 @@ type ContainerPackage struct {
 	Env           map[string]string `json:"env,omitempty"`
 }
 
-// Container returns a Container type created taking container.json as base
+// Container returns a Container type created taking wedeploy.json as base
 func (cp ContainerPackage) Container() *Container {
 	var image, version = extractType(cp)
 
@@ -82,7 +82,7 @@ type Register struct {
 }
 
 var (
-	// ErrContainerNotFound happens when a container.json is not found
+	// ErrContainerNotFound happens when a wedeploy.json is not found
 	ErrContainerNotFound = errors.New("Container not found")
 
 	// ErrContainerAlreadyExists happens when a container ID already exists
@@ -182,7 +182,7 @@ func (l *listFromDirectoryGetter) walkFunc(path string, info os.FileInfo, err er
 		return filepath.SkipDir
 	}
 
-	if info.IsDir() || info.Name() != "container.json" {
+	if info.IsDir() || info.Name() != "wedeploy.json" {
 		return nil
 	}
 
@@ -190,7 +190,7 @@ func (l *listFromDirectoryGetter) walkFunc(path string, info os.FileInfo, err er
 }
 
 func (l *listFromDirectoryGetter) readFunc(path string) error {
-	var dir = strings.TrimSuffix(path, string(os.PathSeparator)+"container.json")
+	var dir = strings.TrimSuffix(path, string(os.PathSeparator)+"wedeploy.json")
 	var container, errRead = Read(dir)
 
 	switch {
@@ -405,9 +405,9 @@ func GetRegistry(ctx context.Context) (registry []Register, err error) {
 	return registry, err
 }
 
-// Read a container directory properties (defined by a container.json on it)
+// Read a container directory properties (defined by a wedeploy.json on it)
 func Read(path string) (*ContainerPackage, error) {
-	var content, err = ioutil.ReadFile(filepath.Join(path, "container.json"))
+	var content, err = ioutil.ReadFile(filepath.Join(path, "wedeploy.json"))
 	var data ContainerPackage
 
 	if err != nil {

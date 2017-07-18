@@ -126,7 +126,7 @@ func promptProject() (project string, err error) {
 }
 
 func checkContainerDirectory(container, path string) error {
-	switch containerExists, err := exists(filepath.Join(path, "container.json")); {
+	switch containerExists, err := exists(filepath.Join(path, "wedeploy.json")); {
 	case containerExists:
 		return fmt.Errorf("Container %v already exists in:\n%v",
 			color.Format(color.FgBlue, container), path)
@@ -614,7 +614,7 @@ func (cc *containerCreator) saveContainerPackage() error {
 		return err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(cc.ContainerDirectory, "container.json"),
+	err = ioutil.WriteFile(filepath.Join(cc.ContainerDirectory, "wedeploy.json"),
 		bin, 0644)
 
 	if err == nil {
@@ -628,7 +628,7 @@ func (cc *containerCreator) saveContainerPackage() error {
 Go to the container directory to keep hacking! :)
 Some tips:
 	Run the container on your local machine with: "we link"
-	Check container.json for additional configuration.
+	Check wedeploy.json for additional configuration.
 `, abs)
 	}
 

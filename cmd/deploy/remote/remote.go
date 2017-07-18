@@ -94,7 +94,7 @@ func createContainerPackage(id, path string) error {
 		return err
 	}
 
-	return ioutil.WriteFile(filepath.Join(path, "container.json"), bin, 0644)
+	return ioutil.WriteFile(filepath.Join(path, "wedeploy.json"), bin, 0644)
 }
 
 func (rd *RemoteDeployment) getProjectID() (string, error) {

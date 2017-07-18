@@ -36,7 +36,7 @@ const (
 	ContainerScope Scope = "container"
 )
 
-// ErrContainerInProjectRoot happens when a project.json and container.json is found at the same directory level
+// ErrContainerInProjectRoot happens when a project.json and wedeploy.json is found at the same directory level
 var ErrContainerInProjectRoot = errors.New("Container and project definition files at the same directory level")
 
 func (cx *Context) loadProject() error {
@@ -97,7 +97,7 @@ func GetProjectRootDirectory(delimiter string) (string, error) {
 
 // GetContainerRootDirectory returns container dir for the current scope
 func GetContainerRootDirectory(delimiter string) (string, error) {
-	return getRootDirectory(delimiter, "container.json")
+	return getRootDirectory(delimiter, "wedeploy.json")
 }
 
 func getRootDirectory(delimiter, file string) (dir string, err error) {

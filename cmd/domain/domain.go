@@ -17,7 +17,7 @@ var DomainCmd = &cobra.Command{
 	Short: "Show and configure domain names for services",
 	Long: `Show and configure domain names for services
 
-Changing these values does not change container.json hard coded values.
+Changing these values does not change wedeploy.json hard coded values.
 
 Information about name servers configuration at
 http://wedeploy.com/docs/intro/custom-domains.html`,
