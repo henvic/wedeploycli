@@ -11,7 +11,7 @@ import (
 var UpdateCmd = &cobra.Command{
 	Use:   "update",
 	RunE:  updateRun,
-	Short: "Updates this tool to the latest version",
+	Short: "Update CLI to the latest version",
 }
 
 var (

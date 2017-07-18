@@ -27,7 +27,6 @@ var RemoteCmd = &cobra.Command{
 var setCmd = &cobra.Command{
 	Use:     "set",
 	Short:   "Set a remote named <name> with <url>",
-	Example: "  we remote set hk https://hk.example.com/",
 	Aliases: []string{"add"},
 	PreRunE: cmdargslen.ValidateCmd(2, 2),
 	RunE:    setRun,
@@ -36,7 +35,6 @@ var setCmd = &cobra.Command{
 var renameCmd = &cobra.Command{
 	Use:     "rename",
 	Short:   "Rename the remote named <old> to <new>",
-	Example: "  we remote rename asia hk",
 	PreRunE: cmdargslen.ValidateCmd(2, 2),
 	RunE:    renameRun,
 	Hidden:  true,
@@ -45,25 +43,25 @@ var renameCmd = &cobra.Command{
 var removeCmd = &cobra.Command{
 	Use:     "rm",
 	Short:   "Remove the remote named <name>",
-	Example: "  we remote rm hk",
 	PreRunE: cmdargslen.ValidateCmd(1, 1),
 	RunE:    removeRun,
 }
 
 var getURLCmd = &cobra.Command{
 	Use:     "get-url",
-	Short:   "  Retrieves the URLs for a remote",
+	Short:   "Retrieves the URLs for a remote",
 	PreRunE: cmdargslen.ValidateCmd(1, 1),
 	RunE:    getURLRun,
 	Hidden:  true,
 }
 
 var setURLCmd = &cobra.Command{
-	Use:     "set-url",
-	Short:   "  Changes URLs for the remote",
-	PreRunE: cmdargslen.ValidateCmd(2, 2),
-	RunE:    setURLRun,
-	Hidden:  true,
+	Use:         "set-url",
+	Short:       "Changes URLs for the remote",
+	PreRunE:     cmdargslen.ValidateCmd(2, 2),
+	RunE:        setURLRun,
+	Hidden:      true,
+	Annotations: nil,
 }
 
 func remoteRun(cmd *cobra.Command, args []string) error {

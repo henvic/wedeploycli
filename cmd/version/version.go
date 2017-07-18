@@ -12,7 +12,7 @@ import (
 var VersionCmd = &cobra.Command{
 	Use:   "version",
 	Run:   versionRun,
-	Short: "Print version information and quit\n",
+	Short: "Show CLI version",
 }
 
 func versionRun(cmd *cobra.Command, args []string) {

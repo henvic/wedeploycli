@@ -28,13 +28,9 @@ var (
 // and / or a project or container
 var DeployCmd = &cobra.Command{
 	Use:     "deploy",
-	Short:   "Performs a deployment",
+	Short:   "Perform services deployment",
 	PreRunE: preRun,
 	RunE:    runRun,
-	Example: `  we deploy
-  we deploy --project chat
-  we deploy --start-local-infra to startup only the local infrastructure
-  we deploy --stop-local-infra to shutdown the local infrastructure`,
 }
 
 func preRun(cmd *cobra.Command, args []string) error {

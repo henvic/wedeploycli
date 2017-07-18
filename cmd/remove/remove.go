@@ -25,7 +25,7 @@ var (
 // RemoveCmd is the remove command to undeploy a project or container
 var RemoveCmd = &cobra.Command{
 	Use:     "remove",
-	Short:   "Remove a project or container",
+	Short:   "Delete project or services",
 	PreRunE: preRun,
 	RunE:    run,
 	Example: `  we remove --url data.chat.wedeploy.me

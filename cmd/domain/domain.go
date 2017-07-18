@@ -14,8 +14,8 @@ import (
 // DomainCmd controls the domains for a given project
 var DomainCmd = &cobra.Command{
 	Use:   "domain",
-	Short: "Manages your domain names",
-	Long: `Manages your domain names
+	Short: "Show and configure domain names for services",
+	Long: `Show and configure domain names for services
 
 Changing these values does not change container.json hard coded values.
 

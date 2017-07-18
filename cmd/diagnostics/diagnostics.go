@@ -33,7 +33,7 @@ var (
 // DiagnosticsCmd sets the user credential
 var DiagnosticsCmd = &cobra.Command{
 	Use:     "diagnostics",
-	Short:   "Troubleshoot problems and submit system diagnostics\n",
+	Short:   "Run system diagnostics and show report",
 	PreRunE: cmdargslen.ValidateCmd(0, 0),
 	RunE:    diagnosticsRun,
 }

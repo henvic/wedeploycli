@@ -18,7 +18,7 @@ import (
 
 // InspectCmd returns information about current environment
 var InspectCmd = &cobra.Command{
-	Use:   "inspect <type> --format <format>",
+	Use:   "inspect",
 	Short: "Inspect environment info",
 	Long: `Use "we inspect" to peek inside a project or a container on your file system.
 <type> = context | project | container`,
