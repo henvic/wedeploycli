@@ -169,21 +169,21 @@ func (s *SetupHost) Process() (err error) {
 }
 
 func (s *SetupHost) addURLFlag(cmd *cobra.Command) {
-	cmd.Flags().StringVarP(&s.url, "url", "u", "", "URL host for resource")
+	cmd.Flags().StringVarP(&s.url, "url", "u", "", "Perform the operation for a specific URL (host)")
 }
 
 func (s *SetupHost) addRemoteFlag(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(
 		&s.remote,
-		"remote", "r", "current", "Remote to use")
+		"remote", "r", "current", "Perform the operation for a specific remote")
 }
 
 func (s *SetupHost) addProjectFlag(cmd *cobra.Command) {
-	cmd.Flags().StringVarP(&s.project, "project", "p", "", "Project ID")
+	cmd.Flags().StringVarP(&s.project, "project", "p", "", "Perform the operation for a specific project")
 }
 
 func (s *SetupHost) addContainerFlag(cmd *cobra.Command) {
-	cmd.Flags().StringVarP(&s.container, "container", "c", "", "Container ID")
+	cmd.Flags().StringVarP(&s.container, "container", "c", "", "Perform the operation for a specific service")
 }
 
 func (s *SetupHost) getContainerFromCurrentWorkingDirectory() (container string, err error) {
