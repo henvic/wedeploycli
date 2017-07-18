@@ -30,16 +30,10 @@ var errorReasonMessage = messages{
 }
 
 var errorReasonCommandMessageOverrides = map[string]messages{
-	"run": messages{
-		"typeNotFound":                  "Container type not found",
-		"projectContainerQuotaExceeded": "Your quota for services has exceeded",
-		"projectServiceQuotaExceeded":   "Your quota for services has exceeded",
-		"exists":                        "Project is already linked",
-	},
 	"deploy": messages{
 		"invalidDocumentValue": "Access denied to this project",
 	},
-	"undeploy": messages{
+	"remove": messages{
 		"deleteProject":    "Can not delete project",
 		"invalidContainer": "Not found",
 		"invalidService":   "Not found",
