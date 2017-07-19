@@ -10,7 +10,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -44,19 +44,19 @@ func getLocallyAvailableImagesList() (map[string]bool, error) {
 	return images, nil
 }
 
-func getContainerTypesFromContainersDirectories(csDirs []string) (containersImages map[string]string, err error) {
-	containersImages = map[string]string{}
+func getServiceTypesFromServicesDirectories(csDirs []string) (servicesImages map[string]string, err error) {
+	servicesImages = map[string]string{}
 	for _, c := range csDirs {
-		cp, err := containers.Read(c)
+		cp, err := services.Read(c)
 
 		if err != nil {
-			return nil, errwrap.Wrapf("Failure trying to read containers types availability: {{err}}", err)
+			return nil, errwrap.Wrapf("Failure trying to read services types availability: {{err}}", err)
 		}
 
-		containersImages[c] = cp.Type
+		servicesImages[c] = cp.Type
 	}
 
-	return containersImages, nil
+	return servicesImages, nil
 }
 
 func pullImage(image string) (err error) {
@@ -85,10 +85,10 @@ func pullImage(image string) (err error) {
 	return err
 }
 
-func getMissingContainersTypes(typesFromContainers map[string]string, locallyAvailable map[string]bool) (missing []string) {
+func getMissingServicesTypes(typesFromServices map[string]string, locallyAvailable map[string]bool) (missing []string) {
 	var inMissingList = map[string]bool{}
 
-	for c, i := range typesFromContainers {
+	for c, i := range typesFromServices {
 		if i == "" || i == "scratch" {
 			continue
 		}
@@ -101,7 +101,7 @@ func getMissingContainersTypes(typesFromContainers map[string]string, locallyAva
 			continue
 		}
 
-		verbose.Debug(fmt.Sprintf("Container %v requires missing image %v", c, i))
+		verbose.Debug(fmt.Sprintf("Service %v requires missing image %v", c, i))
 
 		if !inMissingList[i] {
 			missing = append(missing, i)
@@ -112,21 +112,21 @@ func getMissingContainersTypes(typesFromContainers map[string]string, locallyAva
 	return missing
 }
 
-// PullMissingContainersImages pulls missing images using docker pull on the foreground
-func PullMissingContainersImages(csDirs []string) (err error) {
+// PullMissingServicesImages pulls missing images using docker pull on the foreground
+func PullMissingServicesImages(csDirs []string) (err error) {
 	var locallyAvailable, errAvailable = getLocallyAvailableImagesList()
 
 	if errAvailable != nil {
 		return errwrap.Wrapf("Error trying to list locally available images: {{err}}", errAvailable)
 	}
 
-	var typesFromContainers, errGetTypes = getContainerTypesFromContainersDirectories(csDirs)
+	var typesFromServices, errGetTypes = getServiceTypesFromServicesDirectories(csDirs)
 
 	if errGetTypes != nil {
 		return errGetTypes
 	}
 
-	var missing = getMissingContainersTypes(typesFromContainers, locallyAvailable)
+	var missing = getMissingServicesTypes(typesFromServices, locallyAvailable)
 
 	if len(missing) == 0 {
 		return nil
@@ -167,7 +167,7 @@ func pullImages(missing []string) (err error) {
 	}
 
 	if len(missing) != 0 {
-		fmt.Println(color.Format(color.FgHiGreen, "Number of container images pulled: %v\n", len(missing)))
+		fmt.Println(color.Format(color.FgHiGreen, "Number of service images pulled: %v\n", len(missing)))
 	}
 
 	return nil

@@ -152,7 +152,7 @@ func TestParseByFlagsOnly(t *testing.T) {
 		}
 
 		if parsed.Project() != k.Project ||
-			parsed.Container() != k.Container ||
+			parsed.Service() != k.Service ||
 			parsed.Remote() != k.Remote {
 			t.Errorf("Expected values doesn't match on parsed object: %+v", parsed)
 		}
@@ -163,7 +163,7 @@ func TestParseByFlagsOnly(t *testing.T) {
 	}
 }
 
-func TestContainerWithMissingProject(t *testing.T) {
+func TestServiceWithMissingProject(t *testing.T) {
 	defer resetDefaults()
 	remotesList = &remotes.List{
 		"hollywood": remotes.Entry{
@@ -172,14 +172,14 @@ func TestContainerWithMissingProject(t *testing.T) {
 	}
 
 	var parsed, err = Parse(ParseFlags{
-		Container: "foo",
-		Remote:    "hollywood",
+		Service: "foo",
+		Remote:  "hollywood",
 	})
 
 	var expected = &FlagsFromHost{
-		project:   "",
-		container: "foo",
-		remote:    "hollywood",
+		project: "",
+		service: "foo",
+		remote:  "hollywood",
 	}
 
 	if !reflect.DeepEqual(parsed, expected) {
@@ -187,12 +187,12 @@ func TestContainerWithMissingProject(t *testing.T) {
 	}
 
 	switch err.(type) {
-	case ErrorContainerWithNoProject:
+	case ErrorServiceWithNoProject:
 	default:
-		t.Errorf("Expected error type ErrorContainerWithNoProject, got error %v instead", err)
+		t.Errorf("Expected error type ErrorServiceWithNoProject, got error %v instead", err)
 	}
 
-	if err == nil || err.Error() != "Incompatible use: --container requires --project" {
+	if err == nil || err.Error() != "Incompatible use: --service requires --project" {
 		t.Errorf("Expected no error on parsing, got %v instead", err)
 	}
 }
@@ -215,11 +215,11 @@ func TestParseErrorMultiModeProject(t *testing.T) {
 	}
 }
 
-func TestParseErrorMultiModeContainer(t *testing.T) {
+func TestParseErrorMultiModeService(t *testing.T) {
 	defer resetDefaults()
 	var parsed, err = Parse(ParseFlags{
-		Host:      "foo-bar.wedeploy.com",
-		Container: "b",
+		Host:    "foo-bar.wedeploy.com",
+		Service: "b",
 	})
 
 	if parsed != nil {
@@ -232,7 +232,7 @@ func TestParseErrorMultiModeContainer(t *testing.T) {
 		t.Errorf("Expected err to be of type ErrorMultiMode, got %v instead", err)
 	}
 
-	if err.Error() != "Incompatible use: --project and --container are not allowed with host URL flag" {
+	if err.Error() != "Incompatible use: --project and --service are not allowed with host URL flag" {
 		t.Errorf("Expected incompatible use message, got %v instead", err)
 	}
 }
@@ -299,7 +299,7 @@ type parseMock struct {
 
 type parsed struct {
 	Project          string
-	Container        string
+	Service          string
 	Remote           string
 	IsRemoteFromHost bool
 	Err              error
@@ -308,10 +308,10 @@ type parsed struct {
 var parseMocks = []parseMock{
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "EXAMPLE.com",
-			Project:   "",
-			Container: "",
-			Remote:    "foo",
+			Host:    "EXAMPLE.com",
+			Project: "",
+			Service: "",
+			Remote:  "foo",
 		},
 		Want: parsed{
 			Err: ErrorRemoteFlagAndHost{},
@@ -319,10 +319,10 @@ var parseMocks = []parseMock{
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "example.com",
-			Project:   "",
-			Container: "",
-			Remote:    "foo",
+			Host:    "example.com",
+			Project: "",
+			Service: "",
+			Remote:  "foo",
 		},
 		Want: parsed{
 			Err: ErrorRemoteFlagAndHost{},
@@ -330,10 +330,10 @@ var parseMocks = []parseMock{
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "CINEMA.EXAMPLE.COM",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "CINEMA.EXAMPLE.COM",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "cinema",
@@ -343,10 +343,10 @@ var parseMocks = []parseMock{
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "cinema.example.com",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "cinema.example.com",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "cinema",
@@ -356,90 +356,90 @@ var parseMocks = []parseMock{
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "projector-cinema.example.com",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "projector-cinema.example.com",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "cinema",
-			Container:        "projector",
+			Service:          "projector",
 			Remote:           "foo",
 			IsRemoteFromHost: true,
 		},
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "projector-10-cinema.example.com",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "projector-10-cinema.example.com",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "cinema",
-			Container:        "projector-10",
+			Service:          "projector-10",
 			Remote:           "foo",
 			IsRemoteFromHost: true,
 		},
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "projector-10-b-cinema.example.com",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "projector-10-b-cinema.example.com",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "cinema",
-			Container:        "projector-10-b",
+			Service:          "projector-10-b",
 			Remote:           "foo",
 			IsRemoteFromHost: true,
 		},
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "projector-cinema",
-			Project:   "",
-			Container: "",
-			Remote:    "foo",
+			Host:    "projector-cinema",
+			Project: "",
+			Service: "",
+			Remote:  "foo",
 		},
 		Want: parsed{
-			Project:   "cinema",
-			Container: "projector",
-			Remote:    "foo",
+			Project: "cinema",
+			Service: "projector",
+			Remote:  "foo",
 		},
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "cinema",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "cinema",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
-			Container: "cinema",
-			Err:       ErrorContainerWithNoProject{},
+			Service: "cinema",
+			Err:     ErrorServiceWithNoProject{},
 		},
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "cinema",
-			Project:   "",
-			Container: "",
-			Remote:    "foo",
+			Host:    "cinema",
+			Project: "",
+			Service: "",
+			Remote:  "foo",
 		},
 		Want: parsed{
-			Container: "cinema",
-			Remote:    "foo",
-			Err:       ErrorContainerWithNoProject{},
+			Service: "cinema",
+			Remote:  "foo",
+			Err:     ErrorServiceWithNoProject{},
 		},
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "abc.def.ghi.jkl.mnn.opq.rst.uvw.xyz",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "abc.def.ghi.jkl.mnn.opq.rst.uvw.xyz",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "abc",
@@ -449,10 +449,10 @@ var parseMocks = []parseMock{
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "abc.11.22.33.44:5555",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "abc.11.22.33.44:5555",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "abc",
@@ -462,33 +462,33 @@ var parseMocks = []parseMock{
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "def-abc.11.22.33.44:5555",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "def-abc.11.22.33.44:5555",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "abc",
-			Container:        "def",
+			Service:          "def",
 			Remote:           "ip",
 			IsRemoteFromHost: true,
 		},
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{},
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "wedeploy.io",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "wedeploy.io",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Remote:           "wedeploy",
@@ -497,10 +497,10 @@ var parseMocks = []parseMock{
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "wedeploy.me",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "wedeploy.me",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			IsRemoteFromHost: true,
@@ -508,10 +508,10 @@ var parseMocks = []parseMock{
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "foo.wedeploy.me",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "foo.wedeploy.me",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "foo",
@@ -520,10 +520,10 @@ var parseMocks = []parseMock{
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:      "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Remote:           "alphabet",
@@ -540,7 +540,7 @@ func testParse(pm parseMock, t *testing.T) {
 	}
 
 	if parsed != nil && (parsed.Project() != pm.Want.Project ||
-		parsed.Container() != pm.Want.Container ||
+		parsed.Service() != pm.Want.Service ||
 		parsed.Remote() != pm.Want.Remote ||
 		parsed.IsRemoteFromHost() != pm.Want.IsRemoteFromHost) {
 		t.Errorf("Expected values doesn't match on parsed object: %+v", parsed)
@@ -579,7 +579,7 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
 			Host:          "example.com",
 			Project:       "",
-			Container:     "",
+			Service:       "",
 			Remote:        "foo",
 			RemoteChanged: true,
 		},
@@ -591,22 +591,22 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
 			Host:          "",
 			Project:       "CINEMA",
-			Container:     "THEATER",
+			Service:       "THEATER",
 			Remote:        "FOO",
 			RemoteChanged: true,
 		},
 		Want: parsed{
-			Project:   "cinema",
-			Container: "theater",
-			Remote:    "foo",
+			Project: "cinema",
+			Service: "theater",
+			Remote:  "foo",
 		},
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
-			Host:      "cinema.example.com",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "cinema.example.com",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "cinema",
@@ -616,14 +616,14 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
-			Host:      "projector-cinema.example.com",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "projector-cinema.example.com",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "cinema",
-			Container:        "projector",
+			Service:          "projector",
 			Remote:           "foo",
 			IsRemoteFromHost: true,
 		},
@@ -632,49 +632,49 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
 			Host:          "projector-cinema",
 			Project:       "",
-			Container:     "",
+			Service:       "",
 			Remote:        "foo",
 			RemoteChanged: true,
 		},
 		Want: parsed{
-			Project:   "cinema",
-			Container: "projector",
-			Remote:    "foo",
+			Project: "cinema",
+			Service: "projector",
+			Remote:  "foo",
 		},
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
-			Host:      "cinema",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "cinema",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
-			Container: "cinema",
-			Remote:    "wedeploy",
-			Err:       ErrorContainerWithNoProject{},
+			Service: "cinema",
+			Remote:  "wedeploy",
+			Err:     ErrorServiceWithNoProject{},
 		},
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
 			Host:          "cinema",
 			Project:       "",
-			Container:     "",
+			Service:       "",
 			Remote:        "foo",
 			RemoteChanged: true,
 		},
 		Want: parsed{
-			Container: "cinema",
-			Remote:    "foo",
-			Err:       ErrorContainerWithNoProject{},
+			Service: "cinema",
+			Remote:  "foo",
+			Err:     ErrorServiceWithNoProject{},
 		},
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
-			Host:      "abc.def.ghi.jkl.mnn.opq.rst.uvw.xyz",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "abc.def.ghi.jkl.mnn.opq.rst.uvw.xyz",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "abc",
@@ -684,10 +684,10 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
-			Host:      "abc.11.22.33.44:5555",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "abc.11.22.33.44:5555",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "abc",
@@ -697,24 +697,24 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
-			Host:      "def-abc.11.22.33.44:5555",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "def-abc.11.22.33.44:5555",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "abc",
-			Container:        "def",
+			Service:          "def",
 			Remote:           "ip",
 			IsRemoteFromHost: true,
 		},
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
-			Host:      "",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Remote: "wedeploy",
@@ -722,10 +722,10 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
-			Host:      "wedeploy.io",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "wedeploy.io",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Remote:           "wedeploy",
@@ -734,10 +734,10 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
-			Host:      "wedeploy.me",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "wedeploy.me",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Remote:           "local",
@@ -746,10 +746,10 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
-			Host:      "project.wedeploy.me",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "project.wedeploy.me",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "project",
@@ -759,14 +759,14 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
-			Host:      "container-project.wedeploy.me",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "service-project.wedeploy.me",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "project",
-			Container:        "container",
+			Service:          "service",
 			Remote:           "local",
 			IsRemoteFromHost: true,
 		},
@@ -775,7 +775,7 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
 			Host:          "",
 			Project:       "",
-			Container:     "",
+			Service:       "",
 			Remote:        "local",
 			RemoteChanged: true,
 		},
@@ -785,10 +785,10 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
-			Host:      "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
-			Project:   "",
-			Container: "",
-			Remote:    "",
+			Host:    "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
+			Project: "",
+			Service: "",
+			Remote:  "",
 		},
 		Want: parsed{
 			Remote:           "alphabet",
@@ -805,7 +805,7 @@ func testParseWithDefaultCustomRemote(pm parseMockWithDefaultCustomRemote, t *te
 	}
 
 	if parsed != nil && (parsed.Project() != pm.Want.Project ||
-		parsed.Container() != pm.Want.Container ||
+		parsed.Service() != pm.Want.Service ||
 		parsed.Remote() != pm.Want.Remote ||
 		parsed.IsRemoteFromHost() != pm.Want.IsRemoteFromHost) {
 		t.Errorf("Expected values doesn't match on parsed object: %+v", parsed)

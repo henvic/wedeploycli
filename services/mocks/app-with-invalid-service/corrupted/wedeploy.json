@@ -1,0 +1,17 @@
+INVALID
+{
+    "id": "email",
+    "version": "0.0.1",
+    "description": "Email hosting service example",
+    "runtime": "static",
+    "basePath": "/",
+    "webPath": "/",
+    "scale": 1,
+    "memory": 128,
+    "environment": {},
+    "hooks": {
+        "before_build": "",
+        "build": "",
+        "after_build": ""
+    }
+}

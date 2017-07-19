@@ -35,12 +35,12 @@ HealthUID string`
 	e.Assert(t, cmd)
 }
 
-func TestInspectPrintContainerStructure(t *testing.T) {
+func TestInspectPrintServiceStructure(t *testing.T) {
 	defer Teardown()
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"inspect", "container", "--fields"},
+		Args: []string{"inspect", "service", "--fields"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
@@ -76,10 +76,10 @@ func TestInspectPrintContextStructure(t *testing.T) {
 
 	var want = `Scope usercontext.Scope
 ProjectRoot string
-ContainerRoot string
+ServiceRoot string
 ProjectID string
 ServiceID string
-ProjectContainers []containers.ContainerInfo`
+ProjectServices []services.ServiceInfo`
 
 	var e = &Expect{
 		ExitCode: 0,
@@ -171,12 +171,12 @@ func TestInspectProjectList(t *testing.T) {
 	}
 }
 
-func TestInspectContainerFormat(t *testing.T) {
+func TestInspectServiceFormat(t *testing.T) {
 	defer Teardown()
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"inspect", "container", "--format", "{{.Type}}"},
+		Args: []string{"inspect", "service", "--format", "{{.Type}}"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "./mocks/inspect/my-project/email",
@@ -193,12 +193,12 @@ func TestInspectContainerFormat(t *testing.T) {
 	e.Assert(t, cmd)
 }
 
-func TestInspectContainerFormatVerbose(t *testing.T) {
+func TestInspectServiceFormatVerbose(t *testing.T) {
 	defer Teardown()
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"inspect", "container", "--format", "{{.Type}}", "--verbose"},
+		Args: []string{"inspect", "service", "--format", "{{.Type}}", "--verbose"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "./mocks/inspect/my-project/email",
@@ -210,7 +210,7 @@ func TestInspectContainerFormatVerbose(t *testing.T) {
 		t.Errorf("Expected exit code to be 0, got %v instead", cmd.ExitCode)
 	}
 
-	if !strings.HasPrefix(cmd.Stderr.String(), "Reading container at") {
+	if !strings.HasPrefix(cmd.Stderr.String(), "Reading service at") {
 		t.Errorf("Expected output not found: %v", cmd.Stdout)
 	}
 
@@ -223,12 +223,12 @@ func TestInspectContainerFormatVerbose(t *testing.T) {
 	}
 }
 
-func TestInspectContainerList(t *testing.T) {
+func TestInspectServiceList(t *testing.T) {
 	defer Teardown()
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"inspect", "container"},
+		Args: []string{"inspect", "service"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "./mocks/inspect/my-project/email",
@@ -274,7 +274,7 @@ func TestInspectContextOnGlobalContextList(t *testing.T) {
 	e.Assert(t, cmd)
 }
 
-func TestInspectContextOnGlobalOnContainerOutsideProjectContextList(t *testing.T) {
+func TestInspectContextOnGlobalOnServiceOutsideProjectContextList(t *testing.T) {
 	defer Teardown()
 	Setup()
 
@@ -282,10 +282,10 @@ func TestInspectContextOnGlobalOnContainerOutsideProjectContextList(t *testing.T
 		Args: []string{"inspect", "context"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
-		Dir: "./mocks/inspect/container-outside-project",
+		Dir: "./mocks/inspect/service-outside-project",
 	}
 
-	var want = fmt.Sprintf(tdata.FromFile("./mocks/inspect/container-outside-project/context-list.json"), abs("."))
+	var want = fmt.Sprintf(tdata.FromFile("./mocks/inspect/service-outside-project/context-list.json"), abs("."))
 
 	var e = &Expect{
 		ExitCode: 0,
@@ -319,7 +319,7 @@ func TestInspectContextOnProjectContextList(t *testing.T) {
 	e.Assert(t, cmd)
 }
 
-func TestInspectContextOnContainerContextList(t *testing.T) {
+func TestInspectContextOnServiceContextList(t *testing.T) {
 	defer Teardown()
 	Setup()
 
@@ -342,11 +342,11 @@ func TestInspectContextOnContainerContextList(t *testing.T) {
 	e.Assert(t, cmd)
 }
 
-func TestInspectContextListOnContainerOnProjectWithContainersInsideSubdirectories(t *testing.T) {
+func TestInspectContextListOnServiceOnProjectWithServicesInsideSubdirectories(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	var mock = "./mocks/inspect/project-with-containers-inside-subdirs/sub-dir-2/sub-dir/container-level-3"
+	var mock = "./mocks/inspect/project-with-services-inside-subdirs/sub-dir-2/sub-dir/service-level-3"
 
 	var cmd = &Command{
 		Args: []string{"inspect", "context"},
@@ -355,7 +355,7 @@ func TestInspectContextListOnContainerOnProjectWithContainersInsideSubdirectorie
 		Dir: mock,
 	}
 
-	var path = abs("./mocks/inspect/project-with-containers-inside-subdirs")
+	var path = abs("./mocks/inspect/project-with-services-inside-subdirs")
 	var want = strings.Replace(tdata.FromFile(mock+"/context-list.json"), "{{PATH}}", path, -1)
 
 	var e = &Expect{
@@ -367,7 +367,7 @@ func TestInspectContextListOnContainerOnProjectWithContainersInsideSubdirectorie
 	e.Assert(t, cmd)
 }
 
-func TestInspectContextOnContainerContextFormat(t *testing.T) {
+func TestInspectContextOnServiceContextFormat(t *testing.T) {
 	defer Teardown()
 	Setup()
 

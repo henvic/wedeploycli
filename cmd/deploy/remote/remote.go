@@ -13,11 +13,11 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/deployment"
 	"github.com/wedeploy/cli/inspector"
 	"github.com/wedeploy/cli/projectctx"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/usercontext"
 )
 
@@ -30,7 +30,7 @@ type RemoteDeployment struct {
 	Remote     string
 	Quiet      bool
 	path       string
-	containers containers.ContainerInfoList
+	services   services.ServiceInfoList
 	changedSID bool
 }
 
@@ -55,8 +55,8 @@ func (rd *RemoteDeployment) getPath() (path string, err error) {
 	switch config.Context.Scope {
 	case usercontext.ProjectScope:
 		return config.Context.ProjectRoot, nil
-	case usercontext.ContainerScope:
-		return config.Context.ContainerRoot, nil
+	case usercontext.ServiceScope:
+		return config.Context.ServiceRoot, nil
 	case usercontext.GlobalScope:
 		return rd.getPathForGlobalScope()
 	}
@@ -71,11 +71,11 @@ func (rd *RemoteDeployment) getPathForGlobalScope() (path string, err error) {
 		return "", errwrap.Wrapf("Can not get current working directory: {{err}}", err)
 	}
 
-	_, err = containers.Read(wd)
+	_, err = services.Read(wd)
 
 	switch {
-	case err == containers.ErrContainerNotFound:
-		return wd, createContainerPackage(rd.ServiceID, wd)
+	case err == services.ErrServiceNotFound:
+		return wd, createServicePackage(rd.ServiceID, wd)
 	case err == nil:
 		return wd, nil
 	}
@@ -83,8 +83,8 @@ func (rd *RemoteDeployment) getPathForGlobalScope() (path string, err error) {
 	return "", err
 }
 
-func createContainerPackage(id, path string) error {
-	var c = &containers.ContainerPackage{
+func createServicePackage(id, path string) error {
+	var c = &services.ServicePackage{
 		ID:   filepath.Base(path),
 		Type: "wedeploy/hosting",
 	}
@@ -134,11 +134,11 @@ func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 		return "", err
 	}
 
-	if err = rd.loadContainersList(); err != nil {
+	if err = rd.loadServicesList(); err != nil {
 		return "", err
 	}
 
-	if len(rd.containers) == 0 {
+	if len(rd.services) == 0 {
 		return "", errors.New("no service available for deployment was found")
 	}
 
@@ -170,7 +170,7 @@ func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 		RemoteAddress:     config.Context.RemoteAddress,
 		RepoAuthorization: repoAuthorization,
 		GitRemoteAddress:  gitServer,
-		Services:          rd.containers.GetIDs(),
+		Services:          rd.services.GetIDs(),
 		Quiet:             rd.Quiet,
 	}
 
@@ -178,14 +178,14 @@ func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 	return deploy.GetGroupUID(), err
 }
 
-func (rd *RemoteDeployment) loadContainersList() (err error) {
+func (rd *RemoteDeployment) loadServicesList() (err error) {
 	rd.path, err = rd.getPath()
 
 	if err != nil {
 		return err
 	}
 
-	allProjectContainers, err := getContainersInfoListFromProject(rd.path)
+	allProjectServices, err := getServicesInfoListFromProject(rd.path)
 
 	if err != nil {
 		return err
@@ -193,46 +193,46 @@ func (rd *RemoteDeployment) loadContainersList() (err error) {
 
 	switch config.Context.Scope {
 	case usercontext.ProjectScope:
-		err = rd.loadContainersListForProjectScope(allProjectContainers)
-	case usercontext.ContainerScope:
-		err = rd.loadContainersListForContainerScope(allProjectContainers)
+		err = rd.loadServicesListForProjectScope(allProjectServices)
+	case usercontext.ServiceScope:
+		err = rd.loadServicesListForServiceScope(allProjectServices)
 	default:
-		err = rd.loadContainersListForGlobalScope()
+		err = rd.loadServicesListForGlobalScope()
 	}
 
 	if err == nil {
-		err = rd.maybeFilterOrRenameContainer()
+		err = rd.maybeFilterOrRenameService()
 	}
 
 	return err
 }
 
-func (rd *RemoteDeployment) maybeFilterOrRenameContainer() error {
+func (rd *RemoteDeployment) maybeFilterOrRenameService() error {
 	if rd.ServiceID == "" {
 		return nil
 	}
 
 	if config.Context.Scope == usercontext.ProjectScope {
-		return rd.maybeFilterOrRenameContainerForProjectScope()
+		return rd.maybeFilterOrRenameServiceForProjectScope()
 	}
 
-	// for container and global...
-	if rd.containers[0].ServiceID != rd.ServiceID {
-		rd.containers[0].ServiceID = rd.ServiceID
+	// for service and global...
+	if rd.services[0].ServiceID != rd.ServiceID {
+		rd.services[0].ServiceID = rd.ServiceID
 		rd.changedSID = true
 	}
 
 	return nil
 }
 
-func (rd *RemoteDeployment) maybeFilterOrRenameContainerForProjectScope() error {
-	var s, err = rd.containers.Get(rd.ServiceID)
+func (rd *RemoteDeployment) maybeFilterOrRenameServiceForProjectScope() error {
+	var s, err = rd.services.Get(rd.ServiceID)
 
 	if err != nil {
 		return err
 	}
 
-	rd.containers = containers.ContainerInfoList{
+	rd.services = services.ServiceInfoList{
 		s,
 	}
 
@@ -242,18 +242,18 @@ func (rd *RemoteDeployment) maybeFilterOrRenameContainerForProjectScope() error 
 
 }
 
-func (rd *RemoteDeployment) loadContainersListForProjectScope(containers containers.ContainerInfoList) (err error) {
-	for _, c := range containers {
-		rd.containers = append(rd.containers, c)
+func (rd *RemoteDeployment) loadServicesListForProjectScope(services services.ServiceInfoList) (err error) {
+	for _, c := range services {
+		rd.services = append(rd.services, c)
 	}
 
 	return nil
 }
 
-func (rd *RemoteDeployment) loadContainersListForContainerScope(containers containers.ContainerInfoList) (err error) {
-	for _, c := range containers {
+func (rd *RemoteDeployment) loadServicesListForServiceScope(services services.ServiceInfoList) (err error) {
+	for _, c := range services {
 		if c.Location == rd.path {
-			rd.containers = append(rd.containers, c)
+			rd.services = append(rd.services, c)
 			break
 		}
 	}
@@ -261,14 +261,14 @@ func (rd *RemoteDeployment) loadContainersListForContainerScope(containers conta
 	return nil
 }
 
-func (rd *RemoteDeployment) loadContainersListForGlobalScope() (err error) {
-	cp, err := containers.Read(rd.path)
+func (rd *RemoteDeployment) loadServicesListForGlobalScope() (err error) {
+	cp, err := services.Read(rd.path)
 
 	if err != nil {
-		return errwrap.Wrapf("Error reading container after deployment: {{err}}", err)
+		return errwrap.Wrapf("Error reading service after deployment: {{err}}", err)
 	}
 
-	rd.containers = append(rd.containers, containers.ContainerInfo{
+	rd.services = append(rd.services, services.ServiceInfo{
 		Location:  rd.path,
 		ServiceID: cp.ID,
 	})
@@ -276,27 +276,27 @@ func (rd *RemoteDeployment) loadContainersListForGlobalScope() (err error) {
 	return nil
 }
 
-func (rd *RemoteDeployment) printAddress(container string) string {
+func (rd *RemoteDeployment) printAddress(service string) string {
 	var address = rd.ProjectID + "." + config.Global.Remotes[rd.Remote].URL
 
-	if container != "" {
-		address = container + "-" + address
+	if service != "" {
+		address = service + "-" + address
 	}
 
 	return address
 }
 
-// getContainersInfoListFromProject get a list of containers on a given project directory
-func getContainersInfoListFromProject(projectPath string) (containers.ContainerInfoList, error) {
+// getServicesInfoListFromProject get a list of services on a given project directory
+func getServicesInfoListFromProject(projectPath string) (services.ServiceInfoList, error) {
 	var i = &inspector.ContextOverview{}
 
 	if err := i.Load(projectPath); err != nil {
-		return containers.ContainerInfoList{}, errwrap.Wrapf("Can not list containers from project: {{err}}", err)
+		return services.ServiceInfoList{}, errwrap.Wrapf("Can not list services from project: {{err}}", err)
 	}
 
-	var list = containers.ContainerInfoList{}
+	var list = services.ServiceInfoList{}
 
-	for _, c := range i.ProjectContainers {
+	for _, c := range i.ProjectServices {
 		list = append(list, c)
 	}
 

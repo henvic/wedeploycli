@@ -11,7 +11,7 @@ import (
 // RestartWatchList is a temporary watch
 type RestartWatchList struct {
 	Project           string
-	Containers        []string
+	Services        []string
 	IsStillRunning    func() bool
 	list              *List
 	projectHealthUID  string
@@ -37,8 +37,8 @@ func (rwl *RestartWatchList) SetInitialProjectHealthUID(healthUID string) {
 	rwl.healthMutex.Unlock()
 }
 
-// SetInitialContainersHealthUID sets the initial state for the HealthUID for the containers
-func (rwl *RestartWatchList) SetInitialContainersHealthUID(healthUIDs map[string]string) {
+// SetInitialServicesHealthUID sets the initial state for the HealthUID for the services
+func (rwl *RestartWatchList) SetInitialServicesHealthUID(healthUIDs map[string]string) {
 	rwl.healthMutex.Lock()
 	rwl.servicesHealthUID = healthUIDs
 	rwl.healthMutex.Unlock()
@@ -47,7 +47,7 @@ func (rwl *RestartWatchList) SetInitialContainersHealthUID(healthUIDs map[string
 func (rwl *RestartWatchList) watchRoutine() {
 	var filter = Filter{
 		Project:    rwl.Project,
-		Containers: rwl.Containers,
+		Services: rwl.Services,
 	}
 
 	rwl.list = New(filter)
@@ -78,7 +78,7 @@ func (rwl *RestartWatchList) isDone() bool {
 	var cs, ec = p.Services(context.Background())
 
 	if ec != nil {
-		fmt.Fprintf(rwl.list.outStream, "Can't check if containers are finished: %v\n", ec)
+		fmt.Fprintf(rwl.list.outStream, "Can't check if services are finished: %v\n", ec)
 		return false
 	}
 

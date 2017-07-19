@@ -1,8 +1,8 @@
 [
     {
         "projectId": "foo",
-        "containerId": "bar",
-        "containerUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+        "serviceId": "bar",
+        "serviceUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
         "level": 6,
         "logger": {
             "line": 69,
@@ -17,8 +17,8 @@
     },
     {
         "projectId": "foo",
-        "containerId": "bar",
-        "containerUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+        "serviceId": "bar",
+        "serviceUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
         "level": 6,
         "logger": null,
         "message": "\tMember [172.21.0.2]:5701\r",
@@ -28,8 +28,8 @@
     },
     {
         "projectId": "foo",
-        "containerId": "bar",
-        "containerUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+        "serviceId": "bar",
+        "serviceUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
         "level": 6,
         "logger": null,
         "message": "Mar 29, 2016 7:43:30 PM com.hazelcast.core.LifecycleService\r",

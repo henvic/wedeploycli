@@ -63,15 +63,15 @@ func TestGetProjectIDWithInvalidProject(t *testing.T) {
 	config.Teardown()
 }
 
-func TestGetProjectOrContainerIDInvalidContext(t *testing.T) {
-	project, container, err := GetProjectOrContainerID()
+func TestGetProjectOrServiceIDInvalidContext(t *testing.T) {
+	project, service, err := GetProjectOrServiceID()
 
 	if project != "" {
 		t.Errorf("Wanted empty project ID, got %v instead", project)
 	}
 
-	if container != "" {
-		t.Errorf("Wanted empty container ID, got %v instead", container)
+	if service != "" {
+		t.Errorf("Wanted empty service ID, got %v instead", service)
 	}
 
 	if err != ErrContextNotFound {
@@ -79,22 +79,22 @@ func TestGetProjectOrContainerIDInvalidContext(t *testing.T) {
 	}
 }
 
-func TestGetProjectOrContainerID(t *testing.T) {
+func TestGetProjectOrServiceID(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 	chdir("./mocks/project/")
 	if err := config.Setup("mocks/.we"); err != nil {
 		panic(err)
 	}
 
-	project, container, err := GetProjectOrContainerID()
+	project, service, err := GetProjectOrServiceID()
 	wantProject := "extraction"
 
 	if project != wantProject {
 		t.Errorf("Wanted empty project %v, got %v instead", wantProject, project)
 	}
 
-	if container != "" {
-		t.Errorf("Wanted empty container ID, got %v instead", container)
+	if service != "" {
+		t.Errorf("Wanted empty service ID, got %v instead", service)
 	}
 
 	if err != nil {
@@ -105,23 +105,23 @@ func TestGetProjectOrContainerID(t *testing.T) {
 	config.Teardown()
 }
 
-func TestGetProjectOrContainerIDWithContainer(t *testing.T) {
+func TestGetProjectOrServiceIDWithService(t *testing.T) {
 	var workingDir, _ = os.Getwd()
-	chdir("./mocks/project/container")
+	chdir("./mocks/project/service")
 	if err := config.Setup("mocks/.we"); err != nil {
 		panic(err)
 	}
 
-	project, container, err := GetProjectOrContainerID()
+	project, service, err := GetProjectOrServiceID()
 	wantProject := "extraction"
-	wantContainer := "mycontainer"
+	wantService := "myservice"
 
 	if project != wantProject {
 		t.Errorf("Wanted empty project %v, got %v instead", wantProject, project)
 	}
 
-	if container != wantContainer {
-		t.Errorf("Wanted container %v, got %v instead", wantContainer, container)
+	if service != wantService {
+		t.Errorf("Wanted service %v, got %v instead", wantService, service)
 	}
 
 	if err != nil {
@@ -132,22 +132,22 @@ func TestGetProjectOrContainerIDWithContainer(t *testing.T) {
 	config.Teardown()
 }
 
-func TestGetProjectOrContainerIDInvalidContainer(t *testing.T) {
+func TestGetProjectOrServiceIDInvalidService(t *testing.T) {
 	var workingDir, _ = os.Getwd()
-	chdir("./mocks/project/invalid-container")
+	chdir("./mocks/project/invalid-service")
 	if err := config.Setup("mocks/.we"); err != nil {
 		panic(err)
 	}
 
-	project, container, err := GetProjectOrContainerID()
+	project, service, err := GetProjectOrServiceID()
 	wantProject := "extraction"
 
 	if project != wantProject {
 		t.Errorf("Wanted empty project %v, got %v instead", wantProject, project)
 	}
 
-	if container != "" {
-		t.Errorf("Wanted empty container ID, got %v instead", container)
+	if service != "" {
+		t.Errorf("Wanted empty service ID, got %v instead", service)
 	}
 
 	if err == nil {
@@ -158,18 +158,18 @@ func TestGetProjectOrContainerIDInvalidContainer(t *testing.T) {
 	config.Teardown()
 }
 
-func TestGetContainerID(t *testing.T) {
+func TestGetServiceID(t *testing.T) {
 	var workingDir, _ = os.Getwd()
-	chdir("./mocks/project/container")
+	chdir("./mocks/project/service")
 	if err := config.Setup("mocks/.we"); err != nil {
 		panic(err)
 	}
 
-	container, err := GetContainerID()
-	want := "mycontainer"
+	service, err := GetServiceID()
+	want := "myservice"
 
-	if container != want {
-		t.Errorf("Wanted empty container %v, got %v instead", want, container)
+	if service != want {
+		t.Errorf("Wanted empty service %v, got %v instead", want, service)
 	}
 
 	if err != nil {
@@ -180,11 +180,11 @@ func TestGetContainerID(t *testing.T) {
 	config.Teardown()
 }
 
-func TestGetContainerIDInvalidContext(t *testing.T) {
-	container, err := GetContainerID()
+func TestGetServiceIDInvalidContext(t *testing.T) {
+	service, err := GetServiceID()
 
-	if container != "" {
-		t.Errorf("Wanted empty container ID, got %v instead", container)
+	if service != "" {
+		t.Errorf("Wanted empty service ID, got %v instead", service)
 	}
 
 	if err != ErrContextNotFound {

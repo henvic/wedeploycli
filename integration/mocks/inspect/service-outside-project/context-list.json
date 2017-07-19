@@ -1,0 +1,8 @@
+{
+    "Scope": "global",
+    "ProjectRoot": "",
+    "ServiceRoot": "%v/mocks/inspect/service-outside-project",
+    "ProjectID": "",
+    "ServiceID": "alone",
+    "ProjectServices": null
+}

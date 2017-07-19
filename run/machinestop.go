@@ -39,8 +39,8 @@ func (dm *DockerMachine) Stop() error {
 		return err
 	}
 
-	if dm.Container == "" {
-		verbose.Debug("No infrastructure container detected.")
+	if dm.Service == "" {
+		verbose.Debug("No infrastructure service detected.")
 	}
 
 	_ = unlinkProjects()

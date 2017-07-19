@@ -9,22 +9,22 @@ import (
 	"time"
 
 	"github.com/henvic/pseudoterm"
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/projects"
 )
 
-func TestGeneratePromptProjectThenContainer(t *testing.T) {
+func TestGeneratePromptProjectThenService(t *testing.T) {
 	Setup()
 	defer Teardown()
 	removeAll("mocks/generate/example")
 	defer removeAll("mocks/generate/example")
 
 	if ok := t.Run("testGeneratePromptProject", testGeneratePromptProject); ok {
-		t.Run("testGeneratePromptContainer", testGeneratePromptContainer)
+		t.Run("testGeneratePromptService", testGeneratePromptService)
 	}
 }
 
-func TestGeneratePromptProjectAndContainerAtOnce(t *testing.T) {
+func TestGeneratePromptProjectAndServiceAtOnce(t *testing.T) {
 	t.Skipf("Registry is changed and the generate command is hidden on releases currently")
 	Setup()
 	defer Teardown()
@@ -55,7 +55,7 @@ func TestGeneratePromptProjectAndContainerAtOnce(t *testing.T) {
 			SkipWrite: true,
 		},
 		pseudoterm.Step{
-			Read:      "2) a project and a container inside it",
+			Read:      "2) a project and a service inside it",
 			SkipWrite: true,
 		},
 		pseudoterm.Step{
@@ -71,7 +71,7 @@ func TestGeneratePromptProjectAndContainerAtOnce(t *testing.T) {
 			Write: "",
 		},
 		pseudoterm.Step{
-			Read:      "Container type:",
+			Read:      "Service type:",
 			SkipWrite: true,
 		},
 		pseudoterm.Step{
@@ -79,11 +79,11 @@ func TestGeneratePromptProjectAndContainerAtOnce(t *testing.T) {
 			Write:     "auth",
 		},
 		pseudoterm.Step{
-			Read:  "Container ID [default: wedeploy-auth]:",
+			Read:  "Service ID [default: wedeploy-auth]:",
 			Write: "auth",
 		},
 		pseudoterm.Step{
-			Read:      "Go to the container directory to keep hacking! :)",
+			Read:      "Go to the service directory to keep hacking! :)",
 			SkipWrite: true,
 		},
 	)
@@ -108,12 +108,12 @@ func TestGeneratePromptProjectAndContainerAtOnce(t *testing.T) {
 		t.Errorf("Expected project ID to be %v, got %v instead", wantProject, project.ID)
 	}
 
-	cp, err := containers.Read("mocks/generate/example/auth")
+	cp, err := services.Read("mocks/generate/example/auth")
 
-	var wantContainer = "auth"
+	var wantService = "auth"
 
-	if cp.ID != wantContainer {
-		t.Errorf("Expected container ID to be %v, got %v instead", wantContainer, cp.ID)
+	if cp.ID != wantService {
+		t.Errorf("Expected service ID to be %v, got %v instead", wantService, cp.ID)
 	}
 
 	if err != nil {
@@ -146,7 +146,7 @@ func testGeneratePromptProject(t *testing.T) {
 			SkipWrite: true,
 		},
 		pseudoterm.Step{
-			Read:      "2) a project and a container inside it",
+			Read:      "2) a project and a service inside it",
 			SkipWrite: true,
 		},
 		pseudoterm.Step{
@@ -184,7 +184,7 @@ func testGeneratePromptProject(t *testing.T) {
 	}
 }
 
-func testGeneratePromptContainer(t *testing.T) {
+func testGeneratePromptService(t *testing.T) {
 	t.Skipf("Registry is changed and the generate command is hidden on releases currently")
 	var cmd = (&Command{
 		Args: []string{"generate"},
@@ -206,7 +206,7 @@ func testGeneratePromptContainer(t *testing.T) {
 
 	story.Add(
 		pseudoterm.Step{
-			Read:      "Container type:",
+			Read:      "Service type:",
 			SkipWrite: true,
 		},
 		pseudoterm.Step{
@@ -214,7 +214,7 @@ func testGeneratePromptContainer(t *testing.T) {
 			Write: "1",
 		},
 		pseudoterm.Step{
-			Read:  "Container ID [default: wedeploy-auth]:",
+			Read:  "Service ID [default: wedeploy-auth]:",
 			Write: "auth",
 		},
 	)
@@ -227,12 +227,12 @@ func testGeneratePromptContainer(t *testing.T) {
 		t.Errorf("we generate did not execute successfully")
 	}
 
-	cp, err := containers.Read("mocks/generate/example/auth")
+	cp, err := services.Read("mocks/generate/example/auth")
 
-	var wantContainer = "auth"
+	var wantService = "auth"
 
-	if cp.ID != wantContainer {
-		t.Errorf("Expected container ID to be %v, got %v instead", wantContainer, cp.ID)
+	if cp.ID != wantService {
+		t.Errorf("Expected service ID to be %v, got %v instead", wantService, cp.ID)
 	}
 
 	if err != nil {

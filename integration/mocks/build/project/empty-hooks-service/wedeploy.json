@@ -1,0 +1,8 @@
+{
+    "id": "empty-hooks-service",
+    "hooks": {
+        "before_build": "",
+        "build": "",
+        "after_build": ""
+    }
+}

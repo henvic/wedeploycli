@@ -12,17 +12,17 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/services"
 )
 
 var (
 	quiet bool
 )
 
-// RemoveCmd is the remove command to undeploy a project or container
+// RemoveCmd is the remove command to undeploy a project or service
 var RemoveCmd = &cobra.Command{
 	Use:     "remove",
 	Short:   "Delete project or services",
@@ -30,13 +30,13 @@ var RemoveCmd = &cobra.Command{
 	RunE:    run,
 	Example: `  we remove --url data.chat.wedeploy.me
   we remove --project chat
-  we remove --project chat --container data`,
+  we remove --project chat --service data`,
 }
 
 type undeployer struct {
 	context       context.Context
 	project       string
-	container     string
+	service       string
 	remoteAddress string
 	list          *list.List
 	end           bool
@@ -45,9 +45,9 @@ type undeployer struct {
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern:               cmdflagsfromhost.FullHostPattern,
-	UseProjectDirectory:   true,
-	UseContainerDirectory: true,
+	Pattern:             cmdflagsfromhost.FullHostPattern,
+	UseProjectDirectory: true,
+	UseServiceDirectory: true,
 	Requires: cmdflagsfromhost.Requires{
 		Project: true,
 		Auth:    true,
@@ -76,12 +76,12 @@ func run(cmd *cobra.Command, args []string) error {
 	var u = undeployer{
 		context:       context.Background(),
 		project:       setupHost.Project(),
-		container:     setupHost.Container(),
+		service:       setupHost.Service(),
 		remoteAddress: setupHost.RemoteAddress(),
 		err:           make(chan error, 1),
 	}
 
-	if err := u.checkProjectOrContainerExists(); err != nil {
+	if err := u.checkProjectOrServiceExists(); err != nil {
 		return err
 	}
 
@@ -95,11 +95,11 @@ func run(cmd *cobra.Command, args []string) error {
 }
 
 func (u *undeployer) do() {
-	switch u.container {
+	switch u.service {
 	case "":
 		u.err <- projects.Unlink(u.context, u.project)
 	default:
-		u.err <- containers.Unlink(u.context, u.project, u.container)
+		u.err <- services.Unlink(u.context, u.project, u.service)
 	}
 
 	u.endMutex.Lock()
@@ -110,8 +110,8 @@ func (u *undeployer) do() {
 func (u *undeployer) getAddress() string {
 	var address = fmt.Sprintf("%v.%v", u.project, u.remoteAddress)
 
-	if u.container != "" {
-		address = u.container + "." + address
+	if u.service != "" {
+		address = u.service + "." + address
 	}
 
 	return address
@@ -138,8 +138,8 @@ func (u *undeployer) isDone() bool {
 		return ok && eaf.Status == http.StatusNotFound
 	}
 
-	var _, ec = c.Get(u.container)
-	return u.container != "" && ec != nil
+	var _, ec = c.Get(u.service)
+	return u.service != "" && ec != nil
 }
 
 func (u *undeployer) handleWatchRequestError(err error) string {
@@ -167,8 +167,8 @@ func (u *undeployer) watchRoutine() {
 
 	filter.Project = u.project
 
-	if u.container != "" {
-		filter.Containers = []string{u.container}
+	if u.service != "" {
+		filter.Services = []string{u.service}
 	}
 
 	u.list = list.New(filter)
@@ -177,11 +177,11 @@ func (u *undeployer) watchRoutine() {
 	u.list.Start()
 }
 
-func (u *undeployer) checkProjectOrContainerExists() (err error) {
-	if u.container == "" {
+func (u *undeployer) checkProjectOrServiceExists() (err error) {
+	if u.service == "" {
 		_, err = projects.Get(u.context, u.project)
 	} else {
-		_, err = containers.Get(u.context, u.project, u.container)
+		_, err = services.Get(u.context, u.project, u.service)
 	}
 
 	return err

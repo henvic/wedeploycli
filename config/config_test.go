@@ -220,8 +220,8 @@ func TestSetupRemoteAndTeardown(t *testing.T) {
 		t.Errorf("Expected Context.ProjectRoot to be empty")
 	}
 
-	if Context.ContainerRoot != "" {
-		t.Errorf("Expected Context.ContainerRoot to be empty")
+	if Context.ServiceRoot != "" {
+		t.Errorf("Expected Context.ServiceRoot to be empty")
 	}
 
 	Teardown()
@@ -238,7 +238,7 @@ func TestSetupRemoteAndTeardown(t *testing.T) {
 func TestSetupAndTeardownProject(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/project/non-container")); err != nil {
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/project/non-service")); err != nil {
 		t.Error(err)
 	}
 
@@ -254,8 +254,8 @@ func TestSetupAndTeardownProject(t *testing.T) {
 		t.Errorf("Context.ProjectRoot does not match with expected value")
 	}
 
-	if Context.ContainerRoot != "" {
-		t.Errorf("Expected Context.ContainerRoot to be empty")
+	if Context.ServiceRoot != "" {
+		t.Errorf("Expected Context.ServiceRoot to be empty")
 	}
 
 	if err := os.Chdir(workingDir); err != nil {
@@ -265,10 +265,10 @@ func TestSetupAndTeardownProject(t *testing.T) {
 	Teardown()
 }
 
-func TestSetupAndTeardownProjectAndContainer(t *testing.T) {
+func TestSetupAndTeardownProjectAndService(t *testing.T) {
 	var workingDir, _ = os.Getwd()
 
-	if err := os.Chdir(filepath.Join(workingDir, "mocks/project/container/inside")); err != nil {
+	if err := os.Chdir(filepath.Join(workingDir, "mocks/project/service/inside")); err != nil {
 		t.Error(err)
 	}
 
@@ -276,16 +276,16 @@ func TestSetupAndTeardownProjectAndContainer(t *testing.T) {
 		panic(err)
 	}
 
-	if Context.Scope != "container" {
-		t.Errorf("Expected scope to be container, got %v instead", Context.Scope)
+	if Context.Scope != "service" {
+		t.Errorf("Expected scope to be service, got %v instead", Context.Scope)
 	}
 
 	if Context.ProjectRoot != filepath.Join(workingDir, "mocks/project") {
 		t.Errorf("Context.ProjectRoot does not match with expected value")
 	}
 
-	if Context.ContainerRoot != filepath.Join(workingDir, "mocks/project/container") {
-		t.Errorf("Expected Context.ContainerRoot to be empty")
+	if Context.ServiceRoot != filepath.Join(workingDir, "mocks/project/service") {
+		t.Errorf("Expected Context.ServiceRoot to be empty")
 	}
 
 	if err := os.Chdir(workingDir); err != nil {

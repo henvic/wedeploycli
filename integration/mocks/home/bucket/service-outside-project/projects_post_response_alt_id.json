@@ -1,0 +1,18 @@
+{
+    "health": "unknown",
+    "source": null,
+    "ownerId": null,
+    "users": [
+        null
+    ],
+    "createdAt": "1479149707886",
+    "githubToken": null,
+    "maxServices": 5,
+    "githubRepository": null,
+    "githubHookId": null,
+    "invitations": {},
+    "services": {},
+    "id": "bar",
+    "masterToken": "88cb3ed8-7513-4639-a354-0ebd4e84d45f",
+    "githubBranch": null
+}

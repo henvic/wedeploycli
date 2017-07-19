@@ -9,14 +9,14 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 )
 
 // Cmd for removing a domain
 var Cmd = &cobra.Command{
 	Use:     "set",
 	Aliases: []string{"add"},
-	Short:   "Set an environment variable for a given container",
+	Short:   "Set an environment variable for a given service",
 	Example: `  we env set key value
   we env set key=value`,
 	PreRunE: preRun,
@@ -24,13 +24,13 @@ var Cmd = &cobra.Command{
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern:               cmdflagsfromhost.FullHostPattern,
-	UseProjectDirectory:   true,
-	UseContainerDirectory: true,
+	Pattern:             cmdflagsfromhost.FullHostPattern,
+	UseProjectDirectory: true,
+	UseServiceDirectory: true,
 	Requires: cmdflagsfromhost.Requires{
-		Auth:      true,
-		Project:   true,
-		Container: true,
+		Auth:    true,
+		Project: true,
+		Service: true,
 	},
 }
 
@@ -77,10 +77,10 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return containers.SetEnvironmentVariable(
+	return services.SetEnvironmentVariable(
 		context.Background(),
 		setupHost.Project(),
-		setupHost.Container(),
+		setupHost.Service(),
 		key,
 		value)
 }

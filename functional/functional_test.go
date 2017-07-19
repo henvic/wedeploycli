@@ -33,15 +33,15 @@ var tests = []func(t *testing.T){
 	scenario1.cleanupEnvironment,
 	scenario1.install,
 	scenario1.testDockerStandby,
-	scenario1.testDockerHasNoContainers,
+	scenario1.testDockerHasNoServices,
 	scenario1.testDockerHasNoImages,
 	scenario1.testRun,
-	scenario1.linkContainer,
+	scenario1.linkService,
 	scenario1.testLinkedChatAfter5Seconds,
 	scenario1.testErrorFeedbacks,
 	scenario1.testShutdownGracefullyAfter5Seconds,
-	scenario1.testDockerHasNoContainersRunning,
-	scenario1.testDockerHasNoContainers,
+	scenario1.testDockerHasNoServicesRunning,
+	scenario1.testDockerHasNoServices,
 	scenario1.teardown,
 }
 
@@ -92,7 +92,7 @@ func (s *scenario) teardown(t *testing.T) {
 	destroyTmp(t)
 }
 
-func getAllContainers() ([]string, error) {
+func getAllServices() ([]string, error) {
 	var params = []string{
 		"ps", "--all", "--quiet", "--no-trunc",
 	}
@@ -104,14 +104,14 @@ func getAllContainers() ([]string, error) {
 	list.Stdout = &buf
 
 	if err := list.Run(); err != nil {
-		return []string{}, errwrap.Wrapf("Can not get containers list: {{err}}", err)
+		return []string{}, errwrap.Wrapf("Can not get services list: {{err}}", err)
 	}
 
 	return strings.Fields(buf.String()), nil
 }
 
-func rmAllContainers() error {
-	var ids, err = getAllContainers()
+func rmAllServices() error {
+	var ids, err = getAllServices()
 
 	if err != nil {
 		return err
@@ -128,7 +128,7 @@ func rmAllContainers() error {
 	rm.Stderr = os.Stderr
 
 	if err = rm.Run(); err != nil {
-		return errwrap.Wrapf("Error trying to remove containers: {{err}}", err)
+		return errwrap.Wrapf("Error trying to remove services: {{err}}", err)
 	}
 
 	return err
@@ -199,8 +199,8 @@ func (s *scenario) cleanupEnvironment(t *testing.T) {
 
 	println("Running cleanup environment script")
 
-	if err := rmAllContainers(); err != nil {
-		t.Fatalf("Can not remove containers: %v", err)
+	if err := rmAllServices(); err != nil {
+		t.Fatalf("Can not remove services: %v", err)
 	}
 
 	if keepImages {
@@ -250,11 +250,11 @@ func (s *scenario) testDockerStandby(t *testing.T) {
 	cmd.Run()
 
 	if !cmdrunner.IsCommandOutputNop(cmd) {
-		t.Errorf("Expected docker to find no containers running (command: %+v)", cmd)
+		t.Errorf("Expected docker to find no services running (command: %+v)", cmd)
 	}
 }
 
-func (s *scenario) testDockerHasNoContainersRunning(t *testing.T) {
+func (s *scenario) testDockerHasNoServicesRunning(t *testing.T) {
 	var cmd = &cmdrunner.Command{
 		Name: "docker",
 		Args: []string{"ps", "--all", "--quiet"},
@@ -263,11 +263,11 @@ func (s *scenario) testDockerHasNoContainersRunning(t *testing.T) {
 	cmd.Run()
 
 	if !cmdrunner.IsCommandOutputNop(cmd) {
-		t.Errorf("Expected docker to find no containers running")
+		t.Errorf("Expected docker to find no services running")
 	}
 }
 
-func (s *scenario) testDockerHasNoContainers(t *testing.T) {
+func (s *scenario) testDockerHasNoServices(t *testing.T) {
 	var cmd = &cmdrunner.Command{
 		Name: "docker",
 		Args: []string{"ps", "--all", "--quiet"},
@@ -276,7 +276,7 @@ func (s *scenario) testDockerHasNoContainers(t *testing.T) {
 	cmd.Run()
 
 	if !cmdrunner.IsCommandOutputNop(cmd) {
-		t.Errorf("Expected docker to find no containers")
+		t.Errorf("Expected docker to find no services")
 	}
 }
 
@@ -324,7 +324,7 @@ func assertReadyState(cmd *cmdrunner.Command, t *testing.T) bool {
 	return true
 }
 
-func (s *scenario) linkContainer(t *testing.T) {
+func (s *scenario) linkService(t *testing.T) {
 	chdir("tmp")
 
 	if err := cmdrunner.Run("git clone https://github.com/wedeploy/sample-wechat.git"); err != nil {
@@ -415,7 +415,7 @@ var feTestCases = []feTestCase{
 			[]string{"domain", "--url", "foo.wedeploy.me", "rm", "example.com"},
 			[]string{"domain", "--project", "foo", "--remote", "local"},
 			[]string{"env", "-p", "foo", "-c", "bar", "-r", "local"},
-			[]string{"env", "--project", "foo", "--container", "bar", "--remote", "local"},
+			[]string{"env", "--project", "foo", "--service", "bar", "--remote", "local"},
 			[]string{"env", "-u", "bar-foo.wedeploy.me"},
 			[]string{"env", "--url", "bar-foo.wedeploy.me"},
 			[]string{"env", "-p", "foo", "-c", "bar", "--remote", "local", "add", "envkey=envvalue"},
@@ -428,23 +428,23 @@ var feTestCases = []feTestCase{
 			[]string{"env", "--url", "bar-foo.wedeploy.me", "set", "envkey=envvalue"},
 			[]string{"env", "--url", "bar-foo.wedeploy.me", "set", "envkey", "envvalue"},
 			[]string{"env", "-p", "foo", "-c", "bar", "--remote", "local", "rm", "envkey"},
-			[]string{"env", "--project", "foo", "--container", "bar", "--remote", "local", "rm", "envkey"},
+			[]string{"env", "--project", "foo", "--service", "bar", "--remote", "local", "rm", "envkey"},
 			[]string{"env", "-u", "bar-foo.wedeploy.me", "rm", "envkey"},
 			[]string{"env", "--url", "bar-foo.wedeploy.me", "rm", "envkey"},
 			[]string{"list", "-p", "foo", "-r", "local"},
 			[]string{"list", "--project", "foo", "--remote", "local"},
 			[]string{"list", "--project", "foo", "-c", "bar", "--remote", "local"},
-			[]string{"list", "--project", "foo", "--container", "bar", "--remote", "local"},
+			[]string{"list", "--project", "foo", "--service", "bar", "--remote", "local"},
 			[]string{"list", "--url", "foo.wedeploy.me"},
 			[]string{"log", "-p", "foo", "-r", "local"},
 			[]string{"log", "--project", "foo", "--remote", "local"},
 			[]string{"log", "--project", "foo", "-c", "bar", "--remote", "local"},
-			[]string{"log", "--project", "foo", "--container", "bar", "--remote", "local"},
+			[]string{"log", "--project", "foo", "--service", "bar", "--remote", "local"},
 			[]string{"log", "--url", "foo.wedeploy.me"},
 			[]string{"restart", "-p", "foo", "-r", "local"},
 			[]string{"restart", "--project", "foo", "--remote", "local"},
 			[]string{"restart", "--project", "foo", "-c", "bar", "--remote", "local"},
-			[]string{"restart", "--project", "foo", "--container", "bar", "--remote", "local"},
+			[]string{"restart", "--project", "foo", "--service", "bar", "--remote", "local"},
 			[]string{"restart", "--url", "foo.wedeploy.me"},
 		},
 		"Not found",

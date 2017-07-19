@@ -34,7 +34,7 @@ func TestBuild(t *testing.T) {
 	Teardown()
 }
 
-func TestBuildFromContainerDirectory(t *testing.T) {
+func TestBuildFromServiceDirectory(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("Not testing hooks.Build() on Windows")
 	}
@@ -46,12 +46,12 @@ func TestBuildFromContainerDirectory(t *testing.T) {
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome(),
 		},
-		Dir: "mocks/build/project/container",
+		Dir: "mocks/build/project/service",
 	}
 
 	var e = &Expect{
 		ExitCode: 0,
-		Stdout:   tdata.FromFile("mocks/build/project/container/expect"),
+		Stdout:   tdata.FromFile("mocks/build/project/service/expect"),
 	}
 
 	cmd.Run()
@@ -72,12 +72,12 @@ func TestBuildOutsideProject(t *testing.T) {
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome(),
 		},
-		Dir: "mocks/build/container",
+		Dir: "mocks/build/service",
 	}
 
 	var e = &Expect{
 		ExitCode: 0,
-		Stdout:   tdata.FromFile("mocks/build/container/expect"),
+		Stdout:   tdata.FromFile("mocks/build/service/expect"),
 	}
 
 	cmd.Run()
@@ -98,13 +98,13 @@ func TestBuildError(t *testing.T) {
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome(),
 		},
-		Dir: "mocks/build/project/build-error-container",
+		Dir: "mocks/build/project/build-error-service",
 	}
 
 	var e = &Expect{
 		ExitCode: 1,
-		Stderr:   tdata.FromFile("mocks/build/project/build-error-container/expect_stderr"),
-		Stdout:   tdata.FromFile("mocks/build/project/build-error-container/expect_stdout"),
+		Stderr:   tdata.FromFile("mocks/build/project/build-error-service/expect_stderr"),
+		Stdout:   tdata.FromFile("mocks/build/project/build-error-service/expect_stdout"),
 	}
 
 	cmd.Run()

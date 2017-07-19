@@ -8,7 +8,7 @@ import (
 	cmddomainadd "github.com/wedeploy/cli/cmd/domain/add"
 	cmddomainremove "github.com/wedeploy/cli/cmd/domain/remove"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 )
 
 // DomainCmd controls the domains for a given project
@@ -29,13 +29,13 @@ http://wedeploy.com/docs/intro/custom-domains.html`,
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern:               cmdflagsfromhost.FullHostPattern,
-	UseProjectDirectory:   true,
-	UseContainerDirectory: true,
+	Pattern:             cmdflagsfromhost.FullHostPattern,
+	UseProjectDirectory: true,
+	UseServiceDirectory: true,
 	Requires: cmdflagsfromhost.Requires{
-		Auth:      true,
-		Project:   true,
-		Container: true,
+		Auth:    true,
+		Project: true,
+		Service: true,
 	},
 }
 
@@ -49,15 +49,15 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	var container, err = containers.Get(context.Background(),
+	var service, err = services.Get(context.Background(),
 		setupHost.Project(),
-		setupHost.Container())
+		setupHost.Service())
 
 	if err != nil {
 		return err
 	}
 
-	for _, customDomain := range container.CustomDomains {
+	for _, customDomain := range service.CustomDomains {
 		fmt.Println(customDomain)
 	}
 

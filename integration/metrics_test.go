@@ -12,7 +12,7 @@ func testAnalyticsReportStatus(status string, t *testing.T) {
 		Args: []string{"metrics", "usage", "status"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
-		Dir: "mocks/home/bucket/project/container",
+		Dir: "mocks/home/bucket/project/service",
 	}
 
 	var e = &Expect{
@@ -29,7 +29,7 @@ func testAnalyticsReportEnable(t *testing.T) {
 		Args: []string{"metrics", "usage", "enable"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
-		Dir: "mocks/home/bucket/project/container",
+		Dir: "mocks/home/bucket/project/service",
 	}
 
 	var e = &Expect{}
@@ -42,7 +42,7 @@ func testAnalyticsReportDisable(t *testing.T) {
 		Args: []string{"metrics", "usage", "disable"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
-		Dir: "mocks/home/bucket/project/container",
+		Dir: "mocks/home/bucket/project/service",
 	}
 
 	var e = &Expect{}
@@ -55,7 +55,7 @@ func testAnalyticsReportReset(t *testing.T) {
 		Args: []string{"metrics", "usage", "reset"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
-		Dir: "mocks/home/bucket/project/container",
+		Dir: "mocks/home/bucket/project/service",
 	}
 
 	if len(tdata.FromFile(filepath.Join(GetLoginHome(), ".we_metrics"))) < 200 {

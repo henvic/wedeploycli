@@ -6,9 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/services"
 )
 
 // RestartCmd is used for getting restart
@@ -17,9 +17,9 @@ var RestartCmd = &cobra.Command{
 	Short:   "Restart project or services",
 	PreRunE: preRun,
 	RunE:    restartRun,
-	Example: `  we restart --project chat --container data
-  we restart --container data
-  we restart --project chat --container data --remote local
+	Example: `  we restart --project chat --service data
+  we restart --service data
+  we restart --project chat --service data --remote local
   we restart --url data-chat.wedeploy.me`,
 }
 
@@ -29,9 +29,9 @@ var setupHost = cmdflagsfromhost.SetupHost{
 	Requires: cmdflagsfromhost.Requires{
 		Auth: true,
 	},
-	Pattern:               cmdflagsfromhost.FullHostPattern,
-	UseProjectDirectory:   true,
-	UseContainerDirectory: true,
+	Pattern:             cmdflagsfromhost.FullHostPattern,
+	UseProjectDirectory: true,
+	UseServiceDirectory: true,
 }
 
 func init() {
@@ -46,7 +46,7 @@ func init() {
 
 type restart struct {
 	project   string
-	container string
+	service   string
 	list      *list.List
 	rwl       list.RestartWatchList
 	err       error
@@ -59,11 +59,11 @@ type restart struct {
 func (r *restart) do() {
 	var err error
 
-	switch r.container {
+	switch r.service {
 	case "":
 		err = projects.Restart(r.ctx, r.project)
 	default:
-		err = containers.Restart(r.ctx, r.project, r.container)
+		err = services.Restart(r.ctx, r.project, r.service)
 	}
 
 	r.endMutex.Lock()
@@ -73,21 +73,21 @@ func (r *restart) do() {
 	r.ctxCancel()
 }
 
-func (r *restart) checkProjectOrContainerExists() error {
+func (r *restart) checkProjectOrServiceExists() error {
 	var p, err = projects.Get(context.Background(), r.project)
 	r.rwl.SetInitialProjectHealthUID(p.HealthUID)
 
 	switch {
 	case err != nil:
 		return err
-	case r.container == "":
-		return r.getContainerListForProjectRestart(p)
+	case r.service == "":
+		return r.getServiceListForProjectRestart(p)
 	default:
-		return r.checkContainerExists()
+		return r.checkServiceExists()
 	}
 }
 
-func (r *restart) getContainerListForProjectRestart(p projects.Project) error {
+func (r *restart) getServiceListForProjectRestart(p projects.Project) error {
 	var services, err = p.Services(context.Background())
 
 	if err != nil {
@@ -100,15 +100,15 @@ func (r *restart) getContainerListForProjectRestart(p projects.Project) error {
 		m[s.ServiceID] = s.HealthUID
 	}
 
-	r.rwl.SetInitialContainersHealthUID(m)
+	r.rwl.SetInitialServicesHealthUID(m)
 
 	return nil
 }
 
-func (r *restart) checkContainerExists() error {
-	var c, err = containers.Get(context.Background(), r.project, r.container)
-	r.rwl.SetInitialContainersHealthUID(map[string]string{
-		r.container: c.HealthUID,
+func (r *restart) checkServiceExists() error {
+	var c, err = services.Get(context.Background(), r.project, r.service)
+	r.rwl.SetInitialServicesHealthUID(map[string]string{
+		r.service: c.HealthUID,
 	})
 	return err
 }
@@ -117,8 +117,8 @@ func (r *restart) watch() {
 	r.rwl.Project = r.project
 	r.rwl.IsStillRunning = r.hasRestartFinished
 
-	if r.container != "" {
-		r.rwl.Containers = []string{r.container}
+	if r.service != "" {
+		r.rwl.Services = []string{r.service}
 	}
 
 	r.rwl.Watch()
@@ -136,14 +136,14 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 func restartRun(cmd *cobra.Command, args []string) error {
 	var r = &restart{
-		project:   setupHost.Project(),
-		container: setupHost.Container(),
+		project: setupHost.Project(),
+		service: setupHost.Service(),
 	}
 
 	r.ctx, r.ctxCancel = context.WithCancel(
 		context.Background())
 
-	if err := r.checkProjectOrContainerExists(); err != nil {
+	if err := r.checkProjectOrServiceExists(); err != nil {
 		return err
 	}
 

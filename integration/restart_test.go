@@ -56,7 +56,7 @@ func TestRestartProjectQuiet(t *testing.T) {
 		tdata.ServerJSONFileHandler("mocks/restart/foo/project_response.json"))
 
 	servertest.IntegrationMux.HandleFunc("/projects/foo/services",
-		tdata.ServerJSONFileHandler("mocks/restart/foo/containers_response.json"))
+		tdata.ServerJSONFileHandler("mocks/restart/foo/services_response.json"))
 
 	servertest.IntegrationMux.HandleFunc("/projects/foo/restart",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -89,7 +89,7 @@ func TestRestartProjectQuietFromCurrentWorkingDirectoryContext(t *testing.T) {
 		tdata.ServerJSONFileHandler("mocks/restart/foo/project_response.json"))
 
 	servertest.IntegrationMux.HandleFunc("/projects/foo/services",
-		tdata.ServerJSONFileHandler("mocks/restart/foo/containers_response.json"))
+		tdata.ServerJSONFileHandler("mocks/restart/foo/services_response.json"))
 
 	servertest.IntegrationMux.HandleFunc("/projects/foo/restart",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -114,7 +114,7 @@ func TestRestartProjectQuietFromCurrentWorkingDirectoryContext(t *testing.T) {
 	}
 }
 
-func TestRestartContainerQuiet(t *testing.T) {
+func TestRestartServiceQuiet(t *testing.T) {
 	var handled bool
 	defer Teardown()
 	Setup()
@@ -123,7 +123,7 @@ func TestRestartContainerQuiet(t *testing.T) {
 		tdata.ServerJSONFileHandler("mocks/restart/foo/bar/project_response.json"))
 
 	servertest.IntegrationMux.HandleFunc("/projects/foo/services/bar",
-		tdata.ServerJSONFileHandler("mocks/restart/foo/bar/container_response.json"))
+		tdata.ServerJSONFileHandler("mocks/restart/foo/bar/service_response.json"))
 
 	servertest.IntegrationMux.HandleFunc("/projects/foo/services/bar/restart",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -151,7 +151,7 @@ func TestRestartContainerQuiet(t *testing.T) {
 	}
 }
 
-func TestRestartContainerQuietFromCurrentWorkingDirectoryContext(t *testing.T) {
+func TestRestartServiceQuietFromCurrentWorkingDirectoryContext(t *testing.T) {
 	var handled bool
 	defer Teardown()
 	Setup()
@@ -160,7 +160,7 @@ func TestRestartContainerQuietFromCurrentWorkingDirectoryContext(t *testing.T) {
 		tdata.ServerJSONFileHandler("mocks/restart/foo/bar/project_response.json"))
 
 	servertest.IntegrationMux.HandleFunc("/projects/foo/services/bar",
-		tdata.ServerJSONFileHandler("mocks/restart/foo/bar/container_response.json"))
+		tdata.ServerJSONFileHandler("mocks/restart/foo/bar/service_response.json"))
 
 	servertest.IntegrationMux.HandleFunc("/projects/foo/services/bar/restart",
 		func(w http.ResponseWriter, r *http.Request) {

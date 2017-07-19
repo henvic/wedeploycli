@@ -76,8 +76,8 @@ func TestGetList(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/projects/foo/services/nodejs5143/logs",
 		func(w http.ResponseWriter, r *http.Request) {
-			// if r.URL.Query().Get("containerUid") != "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj" {
-			// 	t.Errorf("Wrong value for containerUid")
+			// if r.URL.Query().Get("serviceUid") != "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj" {
+			// 	t.Errorf("Wrong value for serviceUid")
 			// }
 
 			if r.URL.Query().Get("level") != "4" {
@@ -89,10 +89,10 @@ func TestGetList(t *testing.T) {
 		})
 
 	var filter = &Filter{
-		Project:   "foo",
-		Container: "nodejs5143",
-		Instance:  "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
-		Level:     4,
+		Project:  "foo",
+		Service:  "nodejs5143",
+		Instance: "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+		Level:    4,
 	}
 
 	var list, err = GetList(context.Background(), filter)
@@ -120,10 +120,10 @@ func TestList(t *testing.T) {
 		tdata.ServerJSONFileHandler("mocks/logs_response.json"))
 
 	var filter = &Filter{
-		Level:     4,
-		Project:   "foo",
-		Container: "nodejs5143",
-		Instance:  "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+		Level:    4,
+		Project:  "foo",
+		Service:  "nodejs5143",
+		Instance: "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
 	}
 
 	var err = List(context.Background(), filter)
@@ -169,9 +169,9 @@ func TestWatch(t *testing.T) {
 
 	var watcher = &Watcher{
 		Filter: &Filter{
-			Project:   "foo",
-			Container: "bar",
-			Level:     4,
+			Project: "foo",
+			Service: "bar",
+			Level:   4,
 		},
 		PoolingInterval: time.Millisecond,
 	}
@@ -234,10 +234,10 @@ func TestWatcherStart(t *testing.T) {
 
 	var watcher = &Watcher{
 		Filter: &Filter{
-			Project:   "foo",
-			Container: "nodejs5143",
-			Instance:  "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
-			Level:     4,
+			Project:  "foo",
+			Service:  "nodejs5143",
+			Instance: "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+			Level:    4,
 		},
 		PoolingInterval: time.Millisecond,
 	}

@@ -7,11 +7,11 @@
     ],
     "createdAt": "1479149707886",
     "githubToken": null,
-    "maxContainers": 5,
+    "maxServices": 5,
     "githubRepository": null,
     "githubHookId": null,
     "invitations": {},
-    "containers": {},
+    "services": {},
     "id": "app",
     "masterToken": "88cb3ed8-7513-4639-a354-0ebd4e84d45f",
     "githubBranch": null

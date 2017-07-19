@@ -61,7 +61,7 @@ func TestLogIncompatibleUseProjectAndHostURLFlag(t *testing.T) {
 		t.Errorf("Expected stdout to be empty, got %v instead", cmd.Stdout)
 	}
 
-	var wantErr = "Incompatible use: --project and --container are not allowed with host URL flag"
+	var wantErr = "Incompatible use: --project and --service are not allowed with host URL flag"
 
 	if !strings.Contains(cmd.Stderr.String(), wantErr) {
 		t.Errorf("Wanted stderr to have %v, got %v instead", wantErr, cmd.Stderr)
@@ -107,8 +107,8 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContext(t *testing.T) {
 
 	servertest.IntegrationMux.HandleFunc("/projects/foo/logs",
 		func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Query().Get("containerId") != "" {
-				t.Errorf("Wrong value for containerId")
+			if r.URL.Query().Get("serviceId") != "" {
+				t.Errorf("Wrong value for serviceId")
 			}
 
 			w.Header().Set("Content-type", "application/json; charset=UTF-8")
@@ -134,7 +134,7 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContext(t *testing.T) {
 	e.Assert(t, cmd)
 }
 
-func TestLogsFromCurrentWorkingOnProjectDirectoryContextFilteringByContainer(t *testing.T) {
+func TestLogsFromCurrentWorkingOnProjectDirectoryContextFilteringByService(t *testing.T) {
 	defer Teardown()
 	Setup()
 
@@ -149,7 +149,7 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContextFilteringByContainer(t *
 			"log",
 			"--remote",
 			"local",
-			"--container=nodejs5143",
+			"--service=nodejs5143",
 			"--no-color"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/foo",
@@ -164,7 +164,7 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContextFilteringByContainer(t *
 	e.Assert(t, cmd)
 }
 
-func TestLogsFromCurrentWorkingOnContainerDirectoryContext(t *testing.T) {
+func TestLogsFromCurrentWorkingOnServiceDirectoryContext(t *testing.T) {
 	defer Teardown()
 	Setup()
 

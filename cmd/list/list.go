@@ -6,17 +6,17 @@ import (
 
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
 
 	"github.com/spf13/cobra"
 )
 
-// ListCmd is used for getting a list of projects and containers
+// ListCmd is used for getting a list of projects and services
 var ListCmd = &cobra.Command{
 	Use: "list",
-	Example: `   we list --project chat --container data
+	Example: `   we list --project chat --service data
    we list --url data-chat.wedeploy.me
    we list --url data-chat.wedeploy.io`,
 	Short:   "Show list of projects and services",
@@ -31,7 +31,7 @@ var (
 
 var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern: cmdflagsfromhost.FullHostPattern,
-	UseProjectDirectoryForContainer: true,
+	UseProjectDirectoryForService: true,
 	Requires: cmdflagsfromhost.Requires{
 		Auth: true,
 	},
@@ -47,15 +47,15 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if !watch {
-		return checkProjectOrContainerExists()
+		return checkProjectOrServiceExists()
 	}
 
 	return nil
 }
 
-func checkProjectOrContainerExists() (err error) {
-	if setupHost.Container() != "" {
-		if _, err = containers.Get(context.Background(), setupHost.Project(), setupHost.Container()); err != nil {
+func checkProjectOrServiceExists() (err error) {
+	if setupHost.Service() != "" {
+		if _, err = services.Get(context.Background(), setupHost.Project(), setupHost.Service()); err != nil {
 			return err
 		}
 
@@ -79,9 +79,9 @@ func listRun(cmd *cobra.Command, args []string) {
 		Project: setupHost.Project(),
 	}
 
-	if setupHost.Container() != "" {
-		filter.Containers = []string{
-			setupHost.Container(),
+	if setupHost.Service() != "" {
+		filter.Services = []string{
+			setupHost.Service(),
 		}
 	}
 
@@ -102,7 +102,7 @@ func init() {
 
 	ListCmd.Flags().BoolVarP(
 		&detailed,
-		"detailed", "d", false, "Show more containers details")
+		"detailed", "d", false, "Show more services details")
 
 	ListCmd.Flags().BoolVarP(&watch, "watch", "w", false, "Watch for changes")
 }

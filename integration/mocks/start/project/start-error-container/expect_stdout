@@ -1,3 +1,0 @@
-> [start-error-container] before_start : echo before
-before
-> [start-error-container] start : false

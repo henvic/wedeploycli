@@ -24,7 +24,7 @@ import (
 	"github.com/wedeploy/cli/activities"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/prompt"
@@ -148,7 +148,7 @@ func (d *Deploy) stageAllFiles() (err error) {
 }
 
 func (d *Deploy) stageChangedServiceFile() error {
-	var cp, err = containers.Read(d.Path)
+	var cp, err = services.Read(d.Path)
 
 	if err != nil {
 		return err

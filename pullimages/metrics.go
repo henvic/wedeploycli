@@ -13,17 +13,17 @@ type pullMetrics struct {
 
 func (p *pullMetrics) reportStart() {
 	p.report("pull_image_start",
-		fmt.Sprintf("Starting to pull container image %v", p.image))
+		fmt.Sprintf("Starting to pull service image %v", p.image))
 }
 
 func (p *pullMetrics) reportError() {
 	p.report("pull_image_error",
-		fmt.Sprintf("Error while trying to pull container image %v", p.image))
+		fmt.Sprintf("Error while trying to pull service image %v", p.image))
 }
 
 func (p *pullMetrics) reportSuccess() {
 	p.report("pull_image_success",
-		fmt.Sprintf("Container image %v successfully pulled", p.image))
+		fmt.Sprintf("Service image %v successfully pulled", p.image))
 }
 
 func (p *pullMetrics) report(metricsType, text string) {

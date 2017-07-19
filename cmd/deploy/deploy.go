@@ -17,7 +17,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 	Requires: cmdflagsfromhost.Requires{
 		Auth: true,
 	},
-	UseProjectDirectoryForContainer: true,
+	UseProjectDirectoryForService: true,
 }
 
 var (
@@ -25,7 +25,7 @@ var (
 )
 
 // DeployCmd runs the WeDeploy local infrastructure
-// and / or a project or container
+// and / or a project or service
 var DeployCmd = &cobra.Command{
 	Use:     "deploy",
 	Short:   "Perform services deployment",
@@ -115,7 +115,7 @@ func runRun(cmd *cobra.Command, args []string) error {
 
 	var rd = &cmddeployremote.RemoteDeployment{
 		ProjectID: setupHost.Project(),
-		ServiceID: setupHost.Container(),
+		ServiceID: setupHost.Service(),
 		Remote:    setupHost.Remote(),
 		Quiet:     quiet,
 	}

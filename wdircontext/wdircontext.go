@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/projects"
 )
 
@@ -31,8 +31,8 @@ func GetProjectID() (id string, err error) {
 	return project.ID, err
 }
 
-// GetProjectOrContainerID from current working directory container
-func GetProjectOrContainerID() (projectID, containerID string, err error) {
+// GetProjectOrServiceID from current working directory service
+func GetProjectOrServiceID() (projectID, serviceID string, err error) {
 	if config.Context == nil {
 		return "", "", ErrContextNotFound
 	}
@@ -41,26 +41,26 @@ func GetProjectOrContainerID() (projectID, containerID string, err error) {
 
 	if err == nil {
 		var errc error
-		containerID, errc = GetContainerID()
+		serviceID, errc = GetServiceID()
 
-		if errc != containers.ErrContainerNotFound {
+		if errc != services.ErrServiceNotFound {
 			err = errc
 		}
 	}
 
-	return projectID, containerID, err
+	return projectID, serviceID, err
 }
 
-// GetContainerID from current working directory container
-func GetContainerID() (id string, err error) {
+// GetServiceID from current working directory service
+func GetServiceID() (id string, err error) {
 	if config.Context == nil {
 		return "", ErrContextNotFound
 	}
 
-	var path = config.Context.ContainerRoot
-	var cp *containers.ContainerPackage
+	var path = config.Context.ServiceRoot
+	var cp *services.ServicePackage
 
-	cp, err = containers.Read(path)
+	cp, err = services.Read(path)
 
 	if err != nil {
 		return "", err

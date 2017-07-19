@@ -22,37 +22,37 @@ import (
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/prompt"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/verbose"
 )
 
 var (
 	projectCustomDomain string
-	containerType       string
+	serviceType         string
 )
 
 var generateRunner = runner{}
 
-// GenerateCmd generates a project or container
+// GenerateCmd generates a project or service
 var GenerateCmd = &cobra.Command{
 	Use:   "generate",
-	Short: "Generates a project or container",
-	Long: `Use "we generate" to generate projects and containers.
+	Short: "Generates a project or service",
+	Long: `Use "we generate" to generate projects and services.
 You can generate a project anywhere on your machine and on the cloud.
-Containers can only be generated from inside projects and
+Services can only be generated from inside projects and
 are stored on the first subdirectory of its project.
 
 --directory should point to either the parent dir of a project directory to be
 generated or to a existing project directory.`,
 	PreRunE: generateRunner.PreRun,
 	RunE:    generateRunner.Run,
-	Example: `we generate --project cinema --container projector room`,
+	Example: `we generate --project cinema --service projector room`,
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern: cmdflagsfromhost.ProjectAndContainerPattern,
+	Pattern: cmdflagsfromhost.ProjectAndServicePattern,
 	Requires: cmdflagsfromhost.Requires{
 		NoHost: true,
 		Local:  true,
@@ -60,7 +60,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 }
 
 const (
-	containerTypeMessage = "Container type"
+	serviceTypeMessage = "Service type"
 )
 
 func init() {
@@ -78,28 +78,28 @@ func init() {
 		"Overrides current working directory")
 
 	GenerateCmd.Flags().StringVar(
-		&containerType,
-		"container-type",
+		&serviceType,
+		"service-type",
 		"",
-		containerTypeMessage)
+		serviceTypeMessage)
 
 	GenerateCmd.Flags().BoolVar(
 		&generateRunner.boilerplate,
-		"container-boilerplate",
+		"service-boilerplate",
 		true,
-		"Generate container boilerplate")
+		"Generate service boilerplate")
 
 	GenerateCmd.Hidden = true
 }
 
-func shouldPromptToGenerateContainer() (bool, error) {
+func shouldPromptToGenerateService() (bool, error) {
 	if !terminal.IsTerminal(int(os.Stdin.Fd())) {
 		return false, errors.New("Project is required when detached from terminal")
 	}
 
 	fmt.Println("Generate:")
 	fmt.Println("1) a project")
-	fmt.Println("2) a project and a container inside it")
+	fmt.Println("2) a project and a service inside it")
 
 	index, err := prompt.SelectOption(2, nil)
 
@@ -125,11 +125,11 @@ func promptProject() (project string, err error) {
 	return project, nil
 }
 
-func checkContainerDirectory(container, path string) error {
-	switch containerExists, err := exists(filepath.Join(path, "wedeploy.json")); {
-	case containerExists:
-		return fmt.Errorf("Container %v already exists in:\n%v",
-			color.Format(color.FgBlue, container), path)
+func checkServiceDirectory(service, path string) error {
+	switch serviceExists, err := exists(filepath.Join(path, "wedeploy.json")); {
+	case serviceExists:
+		return fmt.Errorf("Service %v already exists in:\n%v",
+			color.Format(color.FgBlue, service), path)
 	default:
 		return err
 	}
@@ -149,14 +149,14 @@ func getUsedFlagsPrefixList(cmd *cobra.Command, prefix string) (list []string) {
 	return list
 }
 
-func (r *runner) checkNoContainerFlagsWhenContainerIsNotGenerated() error {
-	var list = getUsedFlagsPrefixList(r.cmd, "container")
+func (r *runner) checkNoServiceFlagsWhenServiceIsNotGenerated() error {
+	var list = getUsedFlagsPrefixList(r.cmd, "service")
 
 	if len(list) == 0 {
 		return nil
 	}
 
-	return fmt.Errorf("%v: Flag --container is required by --container-type", strings.Join(list, ", "))
+	return fmt.Errorf("%v: Flag --service is required by --service-type", strings.Join(list, ", "))
 }
 
 func checkNoProjectFlagsWhenProjectAlreadyExists(cmd *cobra.Command) error {
@@ -170,16 +170,16 @@ func checkNoProjectFlagsWhenProjectAlreadyExists(cmd *cobra.Command) error {
 }
 
 type runner struct {
-	base              string
-	project           string
-	projectBase       string
-	container         string
-	askWithPrompt     bool
-	generateContainer bool
-	boilerplate       bool
-	cmd               *cobra.Command
-	baseIsProject     bool
-	flagsErr          error
+	base            string
+	project         string
+	projectBase     string
+	service         string
+	askWithPrompt   bool
+	generateService bool
+	boilerplate     bool
+	cmd             *cobra.Command
+	baseIsProject   bool
+	flagsErr        error
 }
 
 func (r *runner) setBase() (err error) {
@@ -212,7 +212,7 @@ func (r *runner) setup() error {
 	}
 
 	if r.baseIsProject {
-		return r.setupContainerOnProject()
+		return r.setupServiceOnProject()
 	}
 
 	return errwrap.Wrapf("{{err}} unless on a project directory", r.flagsErr)
@@ -220,19 +220,19 @@ func (r *runner) setup() error {
 
 func (r *runner) setupProject() {
 	r.project = setupHost.Project()
-	r.container = setupHost.Container()
+	r.service = setupHost.Service()
 
 	if r.project == "" {
 		r.askWithPrompt = true
 	}
 }
 
-func (r *runner) setupContainerOnProject() error {
+func (r *runner) setupServiceOnProject() error {
 	var ec error
-	r.container, ec = r.cmd.Flags().GetString("container")
+	r.service, ec = r.cmd.Flags().GetString("service")
 
 	if ec != nil {
-		return errwrap.Wrapf("Can not get container generated within project: {{err}}", ec)
+		return errwrap.Wrapf("Can not get service generated within project: {{err}}", ec)
 	}
 
 	return nil
@@ -280,8 +280,8 @@ func (r *runner) Run(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	if r.generateContainer {
-		return r.handleGenerateContainer()
+	if r.generateService {
+		return r.handleGenerateService()
 	}
 
 	return nil
@@ -297,21 +297,21 @@ func (r *runner) handleProjectBase() error {
 		return err
 	}
 
-	r.generateContainer = true
+	r.generateService = true
 	return nil
 }
 
 func (r *runner) handleGenerateWhatPrompts() (err error) {
-	if r.container != "" {
-		r.generateContainer = true
-	} else if r.project == "" && r.container == "" {
-		if r.generateContainer, err = shouldPromptToGenerateContainer(); err != nil {
+	if r.service != "" {
+		r.generateService = true
+	} else if r.project == "" && r.service == "" {
+		if r.generateService, err = shouldPromptToGenerateService(); err != nil {
 			return err
 		}
 	}
 
-	if !r.generateContainer {
-		if err := r.checkNoContainerFlagsWhenContainerIsNotGenerated(); err != nil {
+	if !r.generateService {
+		if err := r.checkNoServiceFlagsWhenServiceIsNotGenerated(); err != nil {
 			return err
 		}
 	}
@@ -334,7 +334,7 @@ func (r *runner) handleProject() error {
 	}
 
 	if projectExists {
-		if !r.generateContainer {
+		if !r.generateService {
 			return fmt.Errorf("Project %v already exists in:\n%v",
 				color.Format(color.FgBlue, r.project), r.projectBase)
 		}
@@ -348,47 +348,47 @@ func (r *runner) handleProject() error {
 	return r.newProject()
 }
 
-func (r *runner) handleGenerateContainer() error {
-	if r.container != "" {
-		if err := checkContainerDirectory(r.container,
-			filepath.Join(r.projectBase, r.container)); err != nil {
+func (r *runner) handleGenerateService() error {
+	if r.service != "" {
+		if err := checkServiceDirectory(r.service,
+			filepath.Join(r.projectBase, r.service)); err != nil {
 			return err
 		}
 	}
 
-	var cc = &containerCreator{
+	var cc = &serviceCreator{
 		ProjectDirectory: r.projectBase,
-		ContainerPackage: &containers.ContainerPackage{
-			ID: r.container,
+		ServicePackage: &services.ServicePackage{
+			ID: r.service,
 		},
 		boilerplate:            r.boilerplate,
-		boilerplateFlagChanged: r.cmd.Flags().Changed("container-boilerplate"),
+		boilerplateFlagChanged: r.cmd.Flags().Changed("service-boilerplate"),
 	}
 
 	return cc.run()
 }
 
-type containerCreator struct {
-	ContainerPackage       *containers.ContainerPackage
-	Registry               []containers.Register
-	Register               containers.Register
+type serviceCreator struct {
+	ServicePackage         *services.ServicePackage
+	Registry               []services.Register
+	Register               services.Register
 	ProjectDirectory       string
-	ContainerDirectory     string
+	ServiceDirectory       string
 	boilerplate            bool
 	boilerplateFlagChanged bool
 	boilerplateGenerated   bool
 }
 
-func (cc *containerCreator) run() error {
-	if err := cc.handleContainerType(); err != nil {
+func (cc *serviceCreator) run() error {
+	if err := cc.handleServiceType(); err != nil {
 		return err
 	}
 
-	if err := cc.chooseContainerID(); err != nil {
+	if err := cc.chooseServiceID(); err != nil {
 		return err
 	}
 
-	cc.ContainerDirectory = filepath.Join(cc.ProjectDirectory, cc.ContainerPackage.ID)
+	cc.ServiceDirectory = filepath.Join(cc.ProjectDirectory, cc.ServicePackage.ID)
 
 	if err := cc.handleBoilerplate(); err != nil {
 		return err
@@ -397,30 +397,30 @@ func (cc *containerCreator) run() error {
 	// 1. mkdir repo; 2. git clone u@h:/p or git scheme://404 repo =>
 	// On error git clone actually removes the existing directory. Odd. Weird.
 	if !cc.boilerplateGenerated {
-		if err := tryGenerateDirectory(cc.ContainerDirectory); err != nil {
+		if err := tryGenerateDirectory(cc.ServiceDirectory); err != nil {
 			return err
 		}
 	}
 
-	return cc.saveContainerPackage()
+	return cc.saveServicePackage()
 }
 
-func (cc *containerCreator) handleContainerType() error {
-	registry, err := containers.GetRegistry(context.Background())
+func (cc *serviceCreator) handleServiceType() error {
+	registry, err := services.GetRegistry(context.Background())
 
 	if err != nil {
-		return errwrap.Wrapf("Can not get the registry to create container: {{err}}", err)
+		return errwrap.Wrapf("Can not get the registry to create service: {{err}}", err)
 	}
 
 	cc.Registry = registry
 
-	if containerType == "" {
-		return cc.chooseContainerType()
+	if serviceType == "" {
+		return cc.chooseServiceType()
 	}
 
 	for _, r := range cc.Registry {
-		if containerType == r.Type {
-			cc.ContainerPackage.Type = r.Type
+		if serviceType == r.Type {
+			cc.ServicePackage.Type = r.Type
 			return nil
 		}
 	}
@@ -428,17 +428,17 @@ func (cc *containerCreator) handleContainerType() error {
 	// if matching for the exact type is not possible, try to find it
 	// by getting only possible matches from WeDeploy, without versions
 	for _, r := range cc.Registry {
-		if containerType == getBoilerplateContainerType(r.Type) {
-			cc.ContainerPackage.Type = r.Type
+		if serviceType == getBoilerplateServiceType(r.Type) {
+			cc.ServicePackage.Type = r.Type
 			return nil
 		}
 	}
 
-	return errors.New("Container type not found on register")
+	return errors.New("Service type not found on register")
 }
 
-func (cc *containerCreator) chooseContainerType() error {
-	fmt.Println(containerTypeMessage + ":")
+func (cc *serviceCreator) chooseServiceType() error {
+	fmt.Println(serviceTypeMessage + ":")
 
 	var mapSelectOptions = map[string]int{}
 
@@ -464,37 +464,37 @@ func (cc *containerCreator) chooseContainerType() error {
 	}
 
 	cc.Register = cc.Registry[option]
-	cc.ContainerPackage.Type = cc.Register.Type
+	cc.ServicePackage.Type = cc.Register.Type
 	return nil
 }
 
-func (cc *containerCreator) chooseContainerID() (err error) {
-	var container = cc.ContainerPackage.ID
+func (cc *serviceCreator) chooseServiceID() (err error) {
+	var service = cc.ServicePackage.ID
 
-	if container == "" {
-		container, err = prompt.Prompt("Container ID [default: " + cc.Register.ID + "]")
+	if service == "" {
+		service, err = prompt.Prompt("Service ID [default: " + cc.Register.ID + "]")
 
 		if err != nil {
 			return err
 		}
 
-		if container == "" {
-			container = cc.Register.ID
+		if service == "" {
+			service = cc.Register.ID
 		}
 
-		err := checkContainerDirectory(container,
-			filepath.Join(cc.ProjectDirectory, container))
+		err := checkServiceDirectory(service,
+			filepath.Join(cc.ProjectDirectory, service))
 
 		if err != nil {
 			return err
 		}
 	}
 
-	cc.ContainerPackage.ID = container
+	cc.ServicePackage.ID = service
 	return nil
 }
 
-func getBoilerplateContainerType(cType string) string {
+func getBoilerplateServiceType(cType string) string {
 	cType = strings.TrimPrefix(cType, "wedeploy/")
 
 	if strings.Contains(cType, ":") {
@@ -508,8 +508,8 @@ func getBoilerplateContainerType(cType string) string {
 	return cType
 }
 
-func (cc *containerCreator) checkIfDirectoryEmptyForInstallingBoilerplate() (empty bool, err error) {
-	notEmpty, err := exists(cc.ContainerDirectory)
+func (cc *serviceCreator) checkIfDirectoryEmptyForInstallingBoilerplate() (empty bool, err error) {
+	notEmpty, err := exists(cc.ServiceDirectory)
 
 	if err != nil {
 		return false, err
@@ -518,17 +518,17 @@ func (cc *containerCreator) checkIfDirectoryEmptyForInstallingBoilerplate() (emp
 	if notEmpty {
 		if !cc.boilerplateFlagChanged {
 			fmt.Fprintf(os.Stderr,
-				"Container directory already exists (bypassing installing boilerplate).\n")
+				"Service directory already exists (bypassing installing boilerplate).\n")
 			return false, nil
 		}
 
-		return false, errors.New("container directory already exists. Can not install boilerplate")
+		return false, errors.New("service directory already exists. Can not install boilerplate")
 	}
 
 	return true, nil
 }
 
-func (cc *containerCreator) handleBoilerplate() (err error) {
+func (cc *serviceCreator) handleBoilerplate() (err error) {
 	if !cc.boilerplate {
 		return nil
 	}
@@ -538,11 +538,11 @@ func (cc *containerCreator) handleBoilerplate() (err error) {
 	}
 
 	var (
-		container = cc.ContainerPackage.ID
-		cType     = cc.ContainerPackage.Type
+		service = cc.ServicePackage.ID
+		cType   = cc.ServicePackage.Type
 	)
 
-	var boilerplateType = getBoilerplateContainerType(cType)
+	var boilerplateType = getBoilerplateServiceType(cType)
 	var boilerplateAddress = fmt.Sprintf(
 		"https://github.com/wedeploy/boilerplate-%v.git",
 		boilerplateType)
@@ -559,7 +559,7 @@ func (cc *containerCreator) handleBoilerplate() (err error) {
 	// This would, at most, cause destruction of a link, instead of the data
 	// it points to, in the worst case.
 
-	var boilerplateDotGit = filepath.Join(cc.ContainerDirectory, ".boilerplate-git")
+	var boilerplateDotGit = filepath.Join(cc.ServiceDirectory, ".boilerplate-git")
 
 	cmd := exec.Command("git",
 		"clone",
@@ -567,7 +567,7 @@ func (cc *containerCreator) handleBoilerplate() (err error) {
 		"--quiet",
 		"--separate-git-dir="+boilerplateDotGit,
 		boilerplateAddress,
-		cc.ContainerDirectory)
+		cc.ServiceDirectory)
 
 	var cmdStderr = new(bytes.Buffer)
 
@@ -594,40 +594,40 @@ func (cc *containerCreator) handleBoilerplate() (err error) {
 	}
 
 	// never use os.RemoveAll here, see block comment on generateBoilerplate()
-	if err = os.Remove(filepath.Join(cc.ContainerDirectory, ".git")); err != nil {
-		return errwrap.Wrapf("Error removing .git ref file for container's boilerplate: {{err}}", err)
+	if err = os.Remove(filepath.Join(cc.ServiceDirectory, ".git")); err != nil {
+		return errwrap.Wrapf("Error removing .git ref file for service's boilerplate: {{err}}", err)
 	}
 
-	if cc.ContainerPackage, err = containers.Read(cc.ContainerDirectory); err != nil {
-		return errwrap.Wrapf("Can not read boilerplate's container file: {{err}}", err)
+	if cc.ServicePackage, err = services.Read(cc.ServiceDirectory); err != nil {
+		return errwrap.Wrapf("Can not read boilerplate's service file: {{err}}", err)
 	}
 
-	cc.ContainerPackage.ID = container
-	cc.ContainerPackage.Type = cType
+	cc.ServicePackage.ID = service
+	cc.ServicePackage.Type = cType
 	return nil
 }
 
-func (cc *containerCreator) saveContainerPackage() error {
-	bin, err := json.MarshalIndent(cc.ContainerPackage, "", "    ")
+func (cc *serviceCreator) saveServicePackage() error {
+	bin, err := json.MarshalIndent(cc.ServicePackage, "", "    ")
 
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(cc.ContainerDirectory, "wedeploy.json"),
+	err = ioutil.WriteFile(filepath.Join(cc.ServiceDirectory, "wedeploy.json"),
 		bin, 0644)
 
 	if err == nil {
-		abs, aerr := filepath.Abs(cc.ContainerDirectory)
+		abs, aerr := filepath.Abs(cc.ServiceDirectory)
 
 		if aerr != nil {
 			fmt.Fprintf(os.Stderr, "Error getting absolute path: %v\n", aerr)
 		}
 
-		fmt.Fprintf(os.Stdout, `Container generated at %v
-Go to the container directory to keep hacking! :)
+		fmt.Fprintf(os.Stdout, `Service generated at %v
+Go to the service directory to keep hacking! :)
 Some tips:
-	Run the container on your local machine with: "we link"
+	Run the service on your local machine with: "we link"
 	Check wedeploy.json for additional configuration.
 `, abs)
 	}
@@ -669,7 +669,7 @@ func (r *runner) saveProject(p *projects.Project) error {
 Go to the project directory and happy hacking! :)
 Some tips:
 	Run the project on your local machine with: "we link"
-	Generate a container there with: "we generate"
+	Generate a service there with: "we generate"
 	Check project.json for additional configuration.
 `, abs)
 	}

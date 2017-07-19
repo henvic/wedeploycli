@@ -1,12 +1,20 @@
 ; Configuration file for WeDeploy CLI
 ; https://wedeploy.com
-auto_update       = true
-release_channel   = stable
-last_update_check = 
-next_version      = 
-notify_updates    = true
-disable_colors    = true
-username          = 
-password          = 
-token             = 
+auto_update                      = true
+release_channel                  = stable
+notify_updates                   = true
+disable_colors                   = true
+username                         = 
+password                         = 
+token                            = 
+default_remote                   = wedeploy
+local_http_port                  = 80
+local_https_port                 = 443
+disable_autocomplete_autoinstall = false
+enable_analytics                 = true
+analytics_id                     = d9b2920e-564b-4c5b-a414-d6da9af2bcdd
+
+[remote "wedeploy"]
+    ; Default cloud remote
+    url = wedeploy.io
 

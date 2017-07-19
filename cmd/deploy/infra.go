@@ -129,7 +129,7 @@ func runLocal(cmd *cobra.Command) error {
 		return nil
 	}
 
-	// on termination, don't try to link the containers
+	// on termination, don't try to link the services
 	if terminated {
 		return nil
 	}

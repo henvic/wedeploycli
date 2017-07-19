@@ -1,8 +1,8 @@
 [
     {
         "projectId": "foo",
-        "containerId": "bar",
-        "containerUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+        "serviceId": "bar",
+        "serviceUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
         "level": 6,
         "logger": {
             "line": 125,
@@ -17,8 +17,8 @@
     },
     {
         "projectId": "foo",
-        "containerId": "bar",
-        "containerUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+        "serviceId": "bar",
+        "serviceUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
         "level": 6,
         "logger": {
             "line": 163,

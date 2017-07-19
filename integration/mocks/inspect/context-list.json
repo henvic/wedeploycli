@@ -1,8 +1,8 @@
 {
     "Scope": "global",
     "ProjectRoot": "",
-    "ContainerRoot": "",
+    "ServiceRoot": "",
     "ProjectID": "",
     "ServiceID": "",
-    "ProjectContainers": null
+    "ProjectServices": null
 }

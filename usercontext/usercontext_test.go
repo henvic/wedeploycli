@@ -11,7 +11,7 @@ import (
 var workingDir, _ = os.Getwd()
 
 func TestGetProjectRootDirectory(t *testing.T) {
-	chdir(filepath.Join(workingDir, "mocks/project/container"))
+	chdir(filepath.Join(workingDir, "mocks/project/service"))
 	defer chdir(workingDir)
 
 	var dir, err = GetProjectRootDirectory(".")
@@ -27,17 +27,17 @@ func TestGetProjectRootDirectory(t *testing.T) {
 	}
 }
 
-func TestGetContainerRootDirectory(t *testing.T) {
-	chdir(filepath.Join(workingDir, "mocks/project/container"))
+func TestGetServiceRootDirectory(t *testing.T) {
+	chdir(filepath.Join(workingDir, "mocks/project/service"))
 	defer chdir(workingDir)
 
-	var dir, err = GetContainerRootDirectory(".")
+	var dir, err = GetServiceRootDirectory(".")
 
 	if err != nil {
 		t.Errorf("Wanted err to be nil, got %v instead", err)
 	}
 
-	var wantDir = filepath.Join(workingDir, "mocks/project/container")
+	var wantDir = filepath.Join(workingDir, "mocks/project/service")
 
 	if dir != wantDir {
 		t.Errorf("Wanted dir to be %v, got %v instead", wantDir, dir)
@@ -66,7 +66,7 @@ func TestGlobalContext(t *testing.T) {
 	}
 }
 
-func TestProjectAndContainerInvalidContext(t *testing.T) {
+func TestProjectAndServiceInvalidContext(t *testing.T) {
 	setSysRootOrPanic(abs("./mocks"))
 	chdir(filepath.Join(workingDir, "mocks/schizophrenic"))
 	defer chdir(workingDir)
@@ -77,8 +77,8 @@ func TestProjectAndContainerInvalidContext(t *testing.T) {
 		err = cx.Load()
 	)
 
-	if err != ErrContainerInProjectRoot {
-		t.Errorf("Expected to have %v error, got %v instead", ErrContainerInProjectRoot, err)
+	if err != ErrServiceInProjectRoot {
+		t.Errorf("Expected to have %v error, got %v instead", ErrServiceInProjectRoot, err)
 	}
 }
 
@@ -102,8 +102,8 @@ func TestProjectContext(t *testing.T) {
 		t.Errorf("Wanted projectDir %s, got %s instead", projectDir, cx.ProjectRoot)
 	}
 
-	if cx.ContainerRoot != "" {
-		t.Errorf("Expected container root to be empty, got %s instead", cx.ContainerRoot)
+	if cx.ServiceRoot != "" {
+		t.Errorf("Expected service root to be empty, got %s instead", cx.ServiceRoot)
 	}
 
 	if err != nil {
@@ -111,12 +111,12 @@ func TestProjectContext(t *testing.T) {
 	}
 }
 
-func TestContainerContext(t *testing.T) {
+func TestServiceContext(t *testing.T) {
 	var projectDir = filepath.Join(workingDir, "mocks/project")
-	var containerDir = filepath.Join(projectDir, "container")
+	var serviceDir = filepath.Join(projectDir, "service")
 
 	setSysRootOrPanic(abs("./mocks"))
-	chdir(containerDir)
+	chdir(serviceDir)
 	defer setSysRootOrPanic(abs("./mocks"))
 	defer chdir(workingDir)
 
@@ -125,16 +125,16 @@ func TestContainerContext(t *testing.T) {
 		err = cx.Load()
 	)
 
-	if cx.Scope != ContainerScope {
-		t.Errorf("Expected context to be container, got %s instead", cx.Scope)
+	if cx.Scope != ServiceScope {
+		t.Errorf("Expected context to be service, got %s instead", cx.Scope)
 	}
 
 	if cx.ProjectRoot != projectDir {
 		t.Errorf("Wanted projectDir %s, got %s instead", projectDir, cx.ProjectRoot)
 	}
 
-	if cx.ContainerRoot != containerDir {
-		t.Errorf("Wanted containerDir %s, got %s instead", containerDir, cx.ContainerRoot)
+	if cx.ServiceRoot != serviceDir {
+		t.Errorf("Wanted serviceDir %s, got %s instead", serviceDir, cx.ServiceRoot)
 	}
 
 	if err != nil {
@@ -142,9 +142,9 @@ func TestContainerContext(t *testing.T) {
 	}
 }
 
-func TestOrphanContainerContext(t *testing.T) {
+func TestOrphanServiceContext(t *testing.T) {
 	setSysRootOrPanic(abs("./mocks"))
-	chdir(filepath.Join(workingDir, "mocks/orphan_container"))
+	chdir(filepath.Join(workingDir, "mocks/orphan_service"))
 	defer setSysRootOrPanic(abs("/"))
 	defer chdir(workingDir)
 
@@ -161,8 +161,8 @@ func TestOrphanContainerContext(t *testing.T) {
 		t.Errorf("Expected error to be nil, got %s instead", err)
 	}
 
-	if cx.ContainerRoot != "" {
-		t.Errorf("Expected Container root to be empty, got %s instead", cx.ContainerRoot)
+	if cx.ServiceRoot != "" {
+		t.Errorf("Expected Service root to be empty, got %s instead", cx.ServiceRoot)
 	}
 
 	if cx.ProjectRoot != "" {
@@ -189,12 +189,12 @@ func TestInvalidContext(t *testing.T) {
 		t.Errorf("Unexpected project root")
 	}
 
-	if cx.ContainerRoot != "" {
-		t.Errorf("Unexpected container root")
+	if cx.ServiceRoot != "" {
+		t.Errorf("Unexpected service root")
 	}
 
-	if err != ErrContainerInProjectRoot {
-		t.Errorf("Expected error to be "+ErrContainerInProjectRoot.Error()+", got %s instead", err)
+	if err != ErrServiceInProjectRoot {
+		t.Errorf("Expected error to be "+ErrServiceInProjectRoot.Error()+", got %s instead", err)
 	}
 }
 

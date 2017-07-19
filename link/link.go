@@ -10,7 +10,7 @@ import (
 
 	"io"
 
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
@@ -45,51 +45,51 @@ func (r RenameServiceID) Match(serviceID string) bool {
 	return r.Any || serviceID == r.From
 }
 
-// Link holds the information of container to be linked
+// Link holds the information of service to be linked
 type Link struct {
-	Container     *containers.Container
-	ContainerPath string
+	Service     *services.Service
+	ServicePath string
 }
 
-// ContainerError struct
-type ContainerError struct {
-	ContainerPath string
+// ServiceError struct
+type ServiceError struct {
+	ServicePath string
 	Error         error
 }
 
 // Errors list
 type Errors struct {
-	List []ContainerError
+	List []ServiceError
 }
 
-// New Container link
+// New Service link
 func New(dir string) (*Link, error) {
 	return new(dir)
 }
 
 func new(dir string, renames ...RenameServiceID) (*Link, error) {
 	var l = &Link{
-		ContainerPath: dir,
+		ServicePath: dir,
 	}
 
-	cp, err := containers.Read(l.ContainerPath)
+	cp, err := services.Read(l.ServicePath)
 
 	if err != nil {
 		return nil, err
 	}
 
-	l.Container = cp.Container()
-	maybeRenameContainer(l.Container, renames)
+	l.Service = cp.Service()
+	maybeRenameService(l.Service, renames)
 
-	verbose.Debug(fmt.Sprintf("Container ServiceID %v (local: %v) for directory %v",
-		l.Container.ServiceID,
+	verbose.Debug(fmt.Sprintf("Service ServiceID %v (local: %v) for directory %v",
+		l.Service.ServiceID,
 		cp.ID,
 		dir))
 
 	return l, err
 }
 
-func maybeRenameContainer(c *containers.Container, renames []RenameServiceID) {
+func maybeRenameService(c *services.Service, renames []RenameServiceID) {
 	for _, r := range renames {
 		if r.Match(c.ServiceID) {
 			c.ServiceID = r.To
@@ -102,16 +102,16 @@ func (le Errors) Error() string {
 	var msgs = []string{}
 
 	for _, e := range le.List {
-		msgs = append(msgs, fmt.Sprintf("%v: %v", e.ContainerPath, e.Error.Error()))
+		msgs = append(msgs, fmt.Sprintf("%v: %v", e.ServicePath, e.Error.Error()))
 	}
 
 	return fmt.Sprintf("Local deployment errors:\n%v", strings.Join(msgs, "\n"))
 }
 
-var errMissingProjectID = errors.New("Missing project ID for linking containers")
+var errMissingProjectID = errors.New("Missing project ID for linking services")
 
 // Setup the linking machine
-func (m *Machine) Setup(containersList []string, renameServiceID ...RenameServiceID) error {
+func (m *Machine) Setup(servicesList []string, renameServiceID ...RenameServiceID) error {
 	if m.Project.ProjectID == "" {
 		return errMissingProjectID
 	}
@@ -121,12 +121,12 @@ func (m *Machine) Setup(containersList []string, renameServiceID ...RenameServic
 	}
 
 	m.Errors = &Errors{
-		List: []ContainerError{},
+		List: []ServiceError{},
 	}
 
 	m.renameSID = renameServiceID
 
-	for _, dir := range containersList {
+	for _, dir := range servicesList {
 		m.mount(dir)
 	}
 
@@ -148,7 +148,7 @@ func (m *Machine) initializeHealthUIDTable() error {
 		mt[s.ServiceID] = s.HealthUID
 	}
 
-	m.RWList.SetInitialContainersHealthUID(mt)
+	m.RWList.SetInitialServicesHealthUID(mt)
 	return nil
 }
 
@@ -157,12 +157,12 @@ func (m *Machine) Watch() {
 	var cs []string
 
 	for _, l := range m.Links {
-		cs = append(cs, l.Container.ServiceID)
+		cs = append(cs, l.Service.ServiceID)
 	}
 
 	m.RWList = list.RestartWatchList{
 		Project:        m.Project.ProjectID,
-		Containers:     cs,
+		Services:     cs,
 		IsStillRunning: m.hasLinkingFinished,
 	}
 
@@ -175,7 +175,7 @@ func (m *Machine) hasLinkingFinished() bool {
 	return m.end
 }
 
-// Run links the containers of the list input
+// Run links the services of the list input
 func (m *Machine) Run(cancel func()) {
 	m.queue.Add(len(m.Links))
 	m.linkAll()
@@ -202,10 +202,10 @@ func (m *Machine) doLink(cl *Link) {
 	switch err {
 	case nil:
 		if m.ErrStream != nil {
-			fmt.Fprintf(m.ErrStream, "Container %v deployed locally.\n", cl.Container.ServiceID)
+			fmt.Fprintf(m.ErrStream, "Service %v deployed locally.\n", cl.Service.ServiceID)
 		}
 	default:
-		m.logError(cl.ContainerPath, err)
+		m.logError(cl.ServicePath, err)
 	}
 
 	m.queue.Done()
@@ -213,10 +213,10 @@ func (m *Machine) doLink(cl *Link) {
 
 func (m *Machine) link(l *Link) error {
 	m.dirMutex.Lock()
-	var err = containers.Link(context.Background(),
+	var err = services.Link(context.Background(),
 		m.Project.ProjectID,
-		*l.Container,
-		l.ContainerPath)
+		*l.Service,
+		l.ServicePath)
 	m.dirMutex.Unlock()
 	runtime.Gosched()
 
@@ -225,8 +225,8 @@ func (m *Machine) link(l *Link) error {
 
 func (m *Machine) logError(dir string, err error) {
 	m.ErrorsMutex.Lock()
-	m.Errors.List = append(m.Errors.List, ContainerError{
-		ContainerPath: dir,
+	m.Errors.List = append(m.Errors.List, ServiceError{
+		ServicePath: dir,
 		Error:         errorhandling.Handle(err),
 	})
 

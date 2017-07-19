@@ -1,8 +1,8 @@
-> [container] before_build : ls
+> [service] before_build : ls
 wedeploy.json
-> [container] build : cd .. && ls
-container
+> [service] build : cd .. && ls
+service
 expect
 project.json
-> [container] after_build : ls
+> [service] after_build : ls
 wedeploy.json

@@ -3,14 +3,14 @@ package cmdstart
 import (
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/hooks"
 )
 
-// StartCmd starts the current project or container
+// StartCmd starts the current project or service
 var StartCmd = &cobra.Command{
 	Use:   "start",
-	Short: "Run start container hook",
+	Short: "Run start service hook",
 	RunE:  startRun,
 }
 
@@ -19,7 +19,7 @@ func init() {
 }
 
 func startRun(cmd *cobra.Command, args []string) error {
-	var cp, err = containers.Read(".")
+	var cp, err = services.Read(".")
 
 	if err != nil {
 		return errwrap.Wrapf("wedeploy.json error: {{err}}", err)

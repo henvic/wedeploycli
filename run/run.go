@@ -122,7 +122,7 @@ func StopOutdatedImage(nextImage string) error {
 		return err
 	}
 
-	if dm.Container == "" {
+	if dm.Service == "" {
 		return nil
 	}
 
@@ -206,7 +206,7 @@ func checkDockerAvailable() error {
 Update it or download a new version from http://docker.com/
 	If this doesn't work:
 	1) check for multiple older docker versions on your system
-	2) if you find them, backup any containers or settings you need
+	2) if you find them, backup any services or settings you need
 	3) stop and uninstall all docker instances ` +
 			color.Format(color.Bold, "until the docker command fails") + "\n" +
 			`	4) install docker again`)
@@ -255,17 +255,17 @@ func getWeDeployHost() string {
 	return address
 }
 
-func startCmd(args ...string) (dockerContainer string, err error) {
+func startCmd(args ...string) (dockerService string, err error) {
 	var docker = exec.Command(bin, args...)
-	var dockerContainerBuf bytes.Buffer
+	var dockerServiceBuf bytes.Buffer
 	docker.Stderr = os.Stderr
-	docker.Stdout = &dockerContainerBuf
+	docker.Stdout = &dockerServiceBuf
 
 	if err = docker.Run(); err != nil {
 		return "", errwrap.Wrapf("docker run error: {{err}}", err)
 	}
 
-	return strings.TrimSpace(dockerContainerBuf.String()), err
+	return strings.TrimSpace(dockerServiceBuf.String()), err
 }
 
 func unlinkProjects() error {
@@ -285,11 +285,11 @@ func unlinkProjects() error {
 }
 
 func cleanupEnvironment() error {
-	verbose.Debug("Cleaning up processes and containers.")
+	verbose.Debug("Cleaning up processes and services.")
 
-	_ = stopContainers()
+	_ = stopServices()
 
-	if err := rmContainers(); err != nil {
+	if err := rmServices(); err != nil {
 		return err
 	}
 
@@ -299,22 +299,22 @@ func cleanupEnvironment() error {
 
 	verbose.Debug("End of environment clean up.")
 
-	ids, err := getDockerContainers(true)
+	ids, err := getDockerServices(true)
 
 	if err != nil {
-		return errwrap.Wrapf("Can not verify containers are down: {{err}}", err)
+		return errwrap.Wrapf("Can not verify services are down: {{err}}", err)
 	}
 
 	if len(ids) != 0 {
-		err = fmt.Errorf("Containers still up after shutdown procedure: %v", ids)
+		err = fmt.Errorf("Services still up after shutdown procedure: %v", ids)
 	}
 
 	return err
 }
 
-func stopContainers() error {
-	verbose.Debug("Trying to stop WeDeploy containers and infrastructure containers.")
-	var ids, err = getDockerContainers(true)
+func stopServices() error {
+	verbose.Debug("Trying to stop WeDeploy services and infrastructure services.")
+	var ids, err = getDockerServices(true)
 
 	if err != nil {
 		return err
@@ -341,8 +341,8 @@ func stopContainers() error {
 	}
 }
 
-func rmContainers() error {
-	var ids, err = getDockerContainers(false)
+func rmServices() error {
+	var ids, err = getDockerServices(false)
 
 	if err != nil {
 		return err
@@ -360,7 +360,7 @@ func rmContainers() error {
 	rm.Stderr = os.Stderr
 
 	if err = rm.Run(); err != nil {
-		return errwrap.Wrapf("Error trying to remove containers: {{err}}", err)
+		return errwrap.Wrapf("Error trying to remove services: {{err}}", err)
 	}
 
 	return err
@@ -392,7 +392,7 @@ func rmOldInfrastructureImages() error {
 	return err
 }
 
-func getDockerContainers(onlyRunning bool) (cids []string, err error) {
+func getDockerServices(onlyRunning bool) (cids []string, err error) {
 	var params = []string{
 		"ps", "--format", "{{.ID}}|{{.Image}}|{{.Names}}|{{.Labels}}", "--no-trunc",
 	}
@@ -409,13 +409,13 @@ func getDockerContainers(onlyRunning bool) (cids []string, err error) {
 	list.Stdout = &buf
 
 	if err := list.Run(); err != nil {
-		return []string{}, errwrap.Wrapf("Can not get containers list: {{err}}", err)
+		return []string{}, errwrap.Wrapf("Can not get services list: {{err}}", err)
 	}
 
-	return filterWeDeployDockerContainers(strings.Fields(buf.String())), nil
+	return filterWeDeployDockerServices(strings.Fields(buf.String())), nil
 }
 
-func filterWeDeployDockerContainers(cs []string) []string {
+func filterWeDeployDockerServices(cs []string) []string {
 	var filtered = []string{}
 
 	for _, c := range cs {

@@ -30,7 +30,7 @@ var Executables = []*Executable{
 		Command:     "docker images",
 	},
 	&Executable{
-		Description: "Checking docker containers",
+		Description: "Checking docker services",
 		LogFile:     "docker_ps",
 		Command:     `docker ps -a --format "table {{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Names}}"`,
 	},

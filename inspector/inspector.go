@@ -7,9 +7,9 @@ import (
 	"reflect"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/findresource"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/templates"
 	"github.com/wedeploy/cli/usercontext"
 	"github.com/wedeploy/cli/verbose"
@@ -29,12 +29,12 @@ func GetSpec(t interface{}) []string {
 
 // ContextOverview for the context visualization
 type ContextOverview struct {
-	Scope             usercontext.Scope
-	ProjectRoot       string
-	ContainerRoot     string
-	ProjectID         string
-	ServiceID         string
-	ProjectContainers []containers.ContainerInfo
+	Scope           usercontext.Scope
+	ProjectRoot     string
+	ServiceRoot     string
+	ProjectID       string
+	ServiceID       string
+	ProjectServices []services.ServiceInfo
 }
 
 func (overview *ContextOverview) loadProjectPackage(directory string) error {
@@ -51,37 +51,37 @@ func (overview *ContextOverview) loadProjectPackage(directory string) error {
 	overview.ProjectRoot = projectPath
 	overview.ProjectID = project.ID
 
-	return overview.loadProjectContainersList()
+	return overview.loadProjectServicesList()
 }
 
-func (overview *ContextOverview) loadProjectContainersList() error {
-	var list, err = containers.GetListFromDirectory(overview.ProjectRoot)
+func (overview *ContextOverview) loadProjectServicesList() error {
+	var list, err = services.GetListFromDirectory(overview.ProjectRoot)
 
 	if err != nil {
-		return errwrap.Wrapf("Error while trying to read list of containers on project: {{err}}", err)
+		return errwrap.Wrapf("Error while trying to read list of services on project: {{err}}", err)
 	}
 
 	for i, l := range list {
 		list[i].Location = filepath.Join(overview.ProjectRoot, l.Location)
 	}
 
-	overview.ProjectContainers = list
+	overview.ProjectServices = list
 	return nil
 }
 
-func (overview *ContextOverview) loadContainer(directory string) error {
-	var containerPath, cp, cerr = getContainerPackage(directory)
+func (overview *ContextOverview) loadService(directory string) error {
+	var servicePath, cp, cerr = getServicePackage(directory)
 
 	switch {
 	case os.IsNotExist(cerr):
 	case cerr != nil:
-		return errwrap.Wrapf("Can not load container context on "+containerPath+": {{err}}", cerr)
+		return errwrap.Wrapf("Can not load service context on "+servicePath+": {{err}}", cerr)
 	default:
 		if overview.Scope == usercontext.ProjectScope {
-			overview.Scope = usercontext.ContainerScope
+			overview.Scope = usercontext.ServiceScope
 		}
 
-		overview.ContainerRoot = containerPath
+		overview.ServiceRoot = servicePath
 		overview.ServiceID = cp.ID
 	}
 
@@ -96,7 +96,7 @@ func (overview *ContextOverview) Load(directory string) error {
 		return err
 	}
 
-	if err := overview.loadContainer(directory); err != nil {
+	if err := overview.loadService(directory); err != nil {
 		return err
 	}
 
@@ -147,42 +147,42 @@ func getProjectPackage(directory string) (path string, project *projects.Project
 	return projectPath, project, nil
 }
 
-func getContainerPackage(directory string) (path string, cp *containers.ContainerPackage, err error) {
-	var containerPath, cerr = getContainerRootDirectory(directory)
+func getServicePackage(directory string) (path string, cp *services.ServicePackage, err error) {
+	var servicePath, cerr = getServiceRootDirectory(directory)
 
 	if cerr != nil {
 		return "", nil, cerr
 	}
 
-	cp, err = containers.Read(containerPath)
+	cp, err = services.Read(servicePath)
 
 	if err != nil {
-		return containerPath, nil, errwrap.Wrapf("Inspection failure on container: {{err}}", err)
+		return servicePath, nil, errwrap.Wrapf("Inspection failure on service: {{err}}", err)
 	}
 
-	return containerPath, cp, nil
+	return servicePath, cp, nil
 }
 
-// InspectContainer on a given directory, filtering by format
-func InspectContainer(format, directory string) (string, error) {
-	var containerPath, container, cerr = getContainerPackage(directory)
+// InspectService on a given directory, filtering by format
+func InspectService(format, directory string) (string, error) {
+	var servicePath, service, cerr = getServicePackage(directory)
 
 	switch {
 	case os.IsNotExist(cerr):
-		return "", errwrap.Wrapf("Inspection failure: can not find container", cerr)
+		return "", errwrap.Wrapf("Inspection failure: can not find service", cerr)
 	case cerr != nil:
 		return "", cerr
 	}
 
-	verbose.Debug("Reading container at " + containerPath)
-	return templates.ExecuteOrList(format, container)
+	verbose.Debug("Reading service at " + servicePath)
+	return templates.ExecuteOrList(format, service)
 }
 
 func getProjectRootDirectory(dir string) (string, error) {
 	return getRootDirectory(dir, "project.json")
 }
 
-func getContainerRootDirectory(dir string) (string, error) {
+func getServiceRootDirectory(dir string) (string, error) {
 	return getRootDirectory(dir, "wedeploy.json")
 }
 

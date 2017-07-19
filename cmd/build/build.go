@@ -10,16 +10,16 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/hooks"
 	"github.com/wedeploy/cli/usercontext"
 	"github.com/wedeploy/cli/wdircontext"
 )
 
-// BuildCmd builds the current project or container
+// BuildCmd builds the current project or service
 var BuildCmd = &cobra.Command{
 	Use:     "build",
-	Short:   "Build container(s) (current or all containers of a project)",
+	Short:   "Build service(s) (current or all services of a project)",
 	PreRunE: cmdargslen.ValidateCmd(0, 0),
 	RunE:    buildRun,
 }
@@ -28,13 +28,13 @@ func init() {
 	BuildCmd.Hidden = true
 }
 
-func getContainersFromScope() ([]string, error) {
-	if config.Context.ContainerRoot != "" {
-		_, container := filepath.Split(config.Context.ContainerRoot)
-		return []string{container}, nil
+func getServicesFromScope() ([]string, error) {
+	if config.Context.ServiceRoot != "" {
+		_, service := filepath.Split(config.Context.ServiceRoot)
+		return []string{service}, nil
 	}
 
-	var list, listErr = containers.GetListFromDirectory(config.Context.ProjectRoot)
+	var list, listErr = services.GetListFromDirectory(config.Context.ProjectRoot)
 
 	if listErr != nil {
 		return []string{}, listErr
@@ -44,15 +44,15 @@ func getContainersFromScope() ([]string, error) {
 }
 
 func buildRun(cmd *cobra.Command, args []string) error {
-	if err := checkProjectOrContainer(); err != nil {
+	if err := checkProjectOrService(); err != nil {
 		return err
 	}
 
 	if config.Context.Scope == usercontext.GlobalScope {
-		return buildContainer(".")
+		return buildService(".")
 	}
 
-	var list, err = getContainersFromScope()
+	var list, err = getServicesFromScope()
 
 	if err != nil {
 		return err
@@ -61,7 +61,7 @@ func buildRun(cmd *cobra.Command, args []string) error {
 	var hasError = false
 
 	for _, c := range list {
-		var err = buildContainer(filepath.Join(config.Context.ProjectRoot, c))
+		var err = buildService(filepath.Join(config.Context.ProjectRoot, c))
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%v\n", err)
@@ -76,8 +76,8 @@ func buildRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func buildContainer(path string) error {
-	var cp, err = containers.Read(path)
+func buildService(path string) error {
+	var cp, err = services.Read(path)
 
 	if err != nil {
 		return err
@@ -93,12 +93,12 @@ func buildContainer(path string) error {
 	return cp.Hooks.Run(hooks.Build, filepath.Join(path), cp.ID)
 }
 
-func checkProjectOrContainer() error {
-	var _, _, err = wdircontext.GetProjectOrContainerID()
-	var _, errc = containers.Read(".")
+func checkProjectOrService() error {
+	var _, _, err = wdircontext.GetProjectOrServiceID()
+	var _, errc = services.Read(".")
 
 	if err != nil && os.IsNotExist(errc) {
-		return errors.New("fatal: not a project or container")
+		return errors.New("fatal: not a project or service")
 	}
 
 	if err != nil && errc != nil {

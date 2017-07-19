@@ -1,0 +1,13 @@
+{
+    "id": "app",
+    "health": "up",
+    "services": {
+        "service": {
+            "template": "wedeploy-email",
+            "maxScale": 1,
+            "health": "up",
+            "scale": 1,
+            "id": "service"
+        }
+    }
+}

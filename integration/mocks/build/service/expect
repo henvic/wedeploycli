@@ -1,0 +1,7 @@
+> [service] before_build : echo before
+before
+> [service] build : echo during
+during
+> [service] after_build : echo after
+after
+

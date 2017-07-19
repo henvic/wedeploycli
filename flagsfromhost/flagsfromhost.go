@@ -15,18 +15,18 @@ func (ErrorRemoteFlagAndHost) Error() string {
 	return "Incompatible use: --remote flag can not be used along host format with remote address"
 }
 
-// ErrorMultiMode happens when --project and --container are used with host URL flag
+// ErrorMultiMode happens when --project and --service are used with host URL flag
 type ErrorMultiMode struct{}
 
 func (ErrorMultiMode) Error() string {
-	return "Incompatible use: --project and --container are not allowed with host URL flag"
+	return "Incompatible use: --project and --service are not allowed with host URL flag"
 }
 
-// ErrorContainerWithNoProject hapens when --container is used without --project
-type ErrorContainerWithNoProject struct{}
+// ErrorServiceWithNoProject hapens when --service is used without --project
+type ErrorServiceWithNoProject struct{}
 
-func (ErrorContainerWithNoProject) Error() string {
-	return "Incompatible use: --container requires --project"
+func (ErrorServiceWithNoProject) Error() string {
+	return "Incompatible use: --service requires --project"
 }
 
 // ErrorLoadingRemoteList happens when the remote list is needed, but not injected into the module
@@ -66,10 +66,10 @@ func (e ErrorFoundMultipleRemote) Error() string {
 		strings.Join(e.Remotes, ", "))
 }
 
-// FlagsFromHost holds the project, container, and remote parsed
+// FlagsFromHost holds the project, service, and remote parsed
 type FlagsFromHost struct {
 	project          string
-	container        string
+	service          string
 	remote           string
 	isRemoteFromHost bool
 }
@@ -79,9 +79,9 @@ func (f *FlagsFromHost) Project() string {
 	return f.project
 }
 
-// Container of the parsed flags or host
-func (f *FlagsFromHost) Container() string {
-	return f.container
+// Service of the parsed flags or host
+func (f *FlagsFromHost) Service() string {
+	return f.service
 }
 
 // Remote of the parsed flags or host
@@ -104,27 +104,27 @@ func InjectRemotes(list *remotes.List) {
 
 // ParseFlags for the flags received by the CLI
 type ParseFlags struct {
-	Project   string
-	Container string
-	Remote    string
-	Host      string
+	Project string
+	Service string
+	Remote  string
+	Host    string
 }
 
 // Parse host and flags
 func Parse(pf ParseFlags) (*FlagsFromHost, error) {
 	pf.Host = strings.ToLower(pf.Host)
 	pf.Project = strings.ToLower(pf.Project)
-	pf.Container = strings.ToLower(pf.Container)
+	pf.Service = strings.ToLower(pf.Service)
 	pf.Remote = strings.ToLower(pf.Remote)
 
-	var flagsFromHost, err = parse(pf.Host, pf.Project, pf.Container, pf.Remote)
+	var flagsFromHost, err = parse(pf.Host, pf.Project, pf.Service, pf.Remote)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if flagsFromHost.Container() != "" && flagsFromHost.Project() == "" {
-		err = ErrorContainerWithNoProject{}
+	if flagsFromHost.Service() != "" && flagsFromHost.Project() == "" {
+		err = ErrorServiceWithNoProject{}
 	}
 
 	return flagsFromHost, err
@@ -134,7 +134,7 @@ func Parse(pf ParseFlags) (*FlagsFromHost, error) {
 // but with 'default custom remote' support
 type ParseFlagsWithDefaultCustomRemote struct {
 	Project       string
-	Container     string
+	Service       string
 	Remote        string
 	Host          string
 	RemoteChanged bool
@@ -147,10 +147,10 @@ func ParseWithDefaultCustomRemote(pf ParseFlagsWithDefaultCustomRemote, customRe
 	}
 
 	var f, err = Parse(ParseFlags{
-		Project:   pf.Project,
-		Container: pf.Container,
-		Remote:    pf.Remote,
-		Host:      pf.Host,
+		Project: pf.Project,
+		Service: pf.Service,
+		Remote:  pf.Remote,
+		Host:    pf.Host,
 	})
 
 	if f != nil {
@@ -165,9 +165,9 @@ func ParseWithDefaultCustomRemote(pf ParseFlagsWithDefaultCustomRemote, customRe
 	return f, err
 }
 
-func parse(host, project, container, remote string) (*FlagsFromHost, error) {
+func parse(host, project, service, remote string) (*FlagsFromHost, error) {
 	if host != "" {
-		if project != "" || container != "" {
+		if project != "" || service != "" {
 			return nil, ErrorMultiMode{}
 		}
 
@@ -181,9 +181,9 @@ func parse(host, project, container, remote string) (*FlagsFromHost, error) {
 	}
 
 	return &FlagsFromHost{
-		project:   project,
-		container: container,
-		remote:    remote,
+		project: project,
+		service: service,
+		remote:  remote,
 	}, nil
 }
 
@@ -238,19 +238,19 @@ func parseHost(host string) (*FlagsFromHost, error) {
 		parseDot    = strings.SplitN(host, ".", 2)
 		parseHyphen = splitHyphenedHostPart(parseDot[0])
 		project     string
-		container   string
+		service     string
 	)
 
 	if len(parseDot) == 1 {
 		if len(parseHyphen) == 1 {
 			return &FlagsFromHost{
-				container: parseHyphen[0],
+				service: parseHyphen[0],
 			}, nil
 		}
 
 		return &FlagsFromHost{
-			container: parseHyphen[0],
-			project:   parseHyphen[1],
+			service: parseHyphen[0],
+			project: parseHyphen[1],
 		}, nil
 	}
 
@@ -258,14 +258,14 @@ func parseHost(host string) (*FlagsFromHost, error) {
 	case 1:
 		project = parseHyphen[0]
 	default:
-		container = parseHyphen[0]
+		service = parseHyphen[0]
 		project = parseHyphen[1]
 	}
 
-	return parseHostWithRemote(project, container, host, parseDot[1])
+	return parseHostWithRemote(project, service, host, parseDot[1])
 }
 
-func parseHostWithRemote(project, container, host, remoteHost string) (*FlagsFromHost, error) {
+func parseHostWithRemote(project, service, host, remoteHost string) (*FlagsFromHost, error) {
 	var remote, err = ParseRemoteAddress(remoteHost)
 	// notice that the logic above implies we MUST NOT
 	// have a immediate foo.bar if bar is already a remote address
@@ -285,9 +285,9 @@ func parseHostWithRemote(project, container, host, remoteHost string) (*FlagsFro
 	}
 
 	var flagsFromHost = &FlagsFromHost{
-		project:   project,
-		container: container,
-		remote:    remote,
+		project: project,
+		service: service,
+		remote:  remote,
 	}
 
 	if remote != "" ||

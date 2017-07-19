@@ -10,7 +10,7 @@ import (
 
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/servertest"
@@ -29,30 +29,30 @@ func TestMain(m *testing.M) {
 }
 
 func TestNew(t *testing.T) {
-	if _, err := New("mocks/myproject/mycontainer"); err != nil {
+	if _, err := New("mocks/myproject/myservice"); err != nil {
 		t.Errorf("Expected New error to be null, got %v instead", err)
 	}
 }
 
-func TestNewErrorContainerNotFound(t *testing.T) {
-	if _, err := New("foo"); err != containers.ErrContainerNotFound {
-		t.Errorf("Expected container to be not found, got %v instead", err)
+func TestNewErrorServiceNotFound(t *testing.T) {
+	if _, err := New("foo"); err != services.ErrServiceNotFound {
+		t.Errorf("Expected service to be not found, got %v instead", err)
 	}
 }
 
 func TestErrors(t *testing.T) {
-	var fooe = ContainerError{
-		ContainerPath: "foo",
+	var fooe = ServiceError{
+		ServicePath: "foo",
 		Error:         os.ErrExist,
 	}
 
-	var bare = ContainerError{
-		ContainerPath: "bar",
+	var bare = ServiceError{
+		ServicePath: "bar",
 		Error:         os.ErrNotExist,
 	}
 
 	var e error = Errors{
-		List: []ContainerError{fooe, bare},
+		List: []ServiceError{fooe, bare},
 	}
 
 	var want = `Local deployment errors:
@@ -68,7 +68,7 @@ func TestMissingProject(t *testing.T) {
 	servertest.Setup()
 
 	var m Machine
-	var err = m.Setup([]string{"mocks/myproject/mycontainer"})
+	var err = m.Setup([]string{"mocks/myproject/myservice"})
 
 	if err != errMissingProjectID {
 		t.Errorf("Expected error to be %v, got %v instead", errMissingProjectID, err)
@@ -92,7 +92,7 @@ func TestAll(t *testing.T) {
 		},
 	}
 
-	var err = m.Setup([]string{"mocks/myproject/mycontainer"})
+	var err = m.Setup([]string{"mocks/myproject/myservice"})
 
 	if err != nil {
 		t.Errorf("Unexpected error %v on linking", err)
@@ -127,7 +127,7 @@ func TestAllQuiet(t *testing.T) {
 	var bufErrStream bytes.Buffer
 	m.ErrStream = &bufErrStream
 
-	var err = m.Setup([]string{"mocks/myproject/mycontainer"})
+	var err = m.Setup([]string{"mocks/myproject/myservice"})
 
 	if err != nil {
 		t.Errorf("Unexpected error %v on linking", err)
@@ -137,9 +137,9 @@ func TestAllQuiet(t *testing.T) {
 	m.Run(cancel)
 	<-ctx.Done()
 
-	var wantContainerLinkedMessage = "Container container deployed locally.\n"
-	if bufErrStream.String() != wantContainerLinkedMessage {
-		t.Errorf("Wanted container deployed locally message, got %v instead.", bufErrStream.String())
+	var wantServiceLinkedMessage = "Service service deployed locally.\n"
+	if bufErrStream.String() != wantServiceLinkedMessage {
+		t.Errorf("Wanted service deployed locally message, got %v instead.", bufErrStream.String())
 	}
 
 	if len(m.Errors.List) != 0 {
@@ -165,7 +165,7 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 	}
 
 	var err = m.Setup(
-		[]string{"mocks/myproject/mycontainer", "mocks/myproject/nil", "mocks/myproject/nil2"})
+		[]string{"mocks/myproject/myservice", "mocks/myproject/nil", "mocks/myproject/nil2"})
 
 	if err != nil {
 		panic(err)
@@ -187,16 +187,16 @@ func TestAllMultipleWithOnlyNewError(t *testing.T) {
 	}
 
 	for _, e := range list {
-		if !find[e.ContainerPath] {
+		if !find[e.ServicePath] {
 			t.Errorf("Unexpected %v on the error list %v",
-				e.ContainerPath, list)
+				e.ServicePath, list)
 		}
 	}
 
 	servertest.Teardown()
 }
 
-func TestAllInstallContainerError(t *testing.T) {
+func TestAllInstallServiceError(t *testing.T) {
 	servertest.Setup()
 
 	servertest.Mux.HandleFunc("/projects/foo/services",
@@ -210,7 +210,7 @@ func TestAllInstallContainerError(t *testing.T) {
 		},
 	}
 
-	var err = m.Setup([]string{"mocks/myproject/mycontainer"})
+	var err = m.Setup([]string{"mocks/myproject/myservice"})
 	var af = err.(*apihelper.APIFault)
 
 	if err == nil || af.Status != 403 {

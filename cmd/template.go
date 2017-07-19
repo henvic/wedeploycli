@@ -100,7 +100,7 @@ func (up usagePrinter) printFlags() {
 	up.f.VisitAll(up.preparePrintFlag)
 
 	var begin = up.useFlagsHelpDescriptionFiltered([]string{
-		"container",
+		"service",
 		"project",
 		"remote",
 		"url",

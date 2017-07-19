@@ -1,0 +1,8 @@
+{
+    "id": "start-error-service",
+    "hooks": {
+        "before_start": "echo before",
+        "start": "false",
+        "after_start": "echo after"
+    }
+}

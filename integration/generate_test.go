@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/projects"
 )
 
@@ -30,9 +30,9 @@ func TestGenerateDirectoryNotExists(t *testing.T) {
 	}
 }
 
-func TestGenerateErrorContainerTypeOnContainerOnly(t *testing.T) {
+func TestGenerateErrorServiceTypeOnServiceOnly(t *testing.T) {
 	var cmd = &Command{
-		Args: []string{"generate", "--project", "foo", "--container-type", "auth"},
+		Args: []string{"generate", "--project", "foo", "--service-type", "auth"},
 	}
 
 	cmd.Run()
@@ -41,7 +41,7 @@ func TestGenerateErrorContainerTypeOnContainerOnly(t *testing.T) {
 		t.Errorf("Expected stdout to be empty, got %v instead", cmd.Stdout)
 	}
 
-	var wantErr = "Flag --container is required by --container-type"
+	var wantErr = "Flag --service is required by --service-type"
 
 	if !strings.Contains(cmd.Stderr.String(), wantErr) {
 		t.Errorf("Wanted stderr to have %v, got %v instead", wantErr, cmd.Stderr)
@@ -81,7 +81,7 @@ func TestGenerateProjectAlreadyExistsInsideBase(t *testing.T) {
 			"foo",
 			"--directory",
 			"mocks/generate/foo",
-			"--container",
+			"--service",
 			"bar",
 			"--no-color"},
 	}
@@ -137,7 +137,7 @@ func TestGenerateProject(t *testing.T) {
 	}
 }
 
-func TestGenerateProjectAndContainerWithoutContainerBoilerplate(t *testing.T) {
+func TestGenerateProjectAndServiceWithoutServiceBoilerplate(t *testing.T) {
 	t.Skipf("Registry is changed and the generate command is hidden on releases currently")
 	removeAll("mocks/generate/example")
 	defer removeAll("mocks/generate/example")
@@ -146,11 +146,11 @@ func TestGenerateProjectAndContainerWithoutContainerBoilerplate(t *testing.T) {
 		Args: []string{"generate",
 			"--project",
 			"example",
-			"--container",
+			"--service",
 			"email",
-			"--container-type",
+			"--service-type",
 			"auth",
-			"--container-boilerplate=false",
+			"--service-boilerplate=false",
 			"--directory",
 			"mocks/generate",
 		},
@@ -163,9 +163,9 @@ func TestGenerateProjectAndContainerWithoutContainerBoilerplate(t *testing.T) {
 		t.Errorf("Wanted stdout to have %v, got %v instead", wantProject, cmd.Stdout)
 	}
 
-	var wantContainer = "Container generated at"
-	if !strings.Contains(cmd.Stdout.String(), wantContainer) {
-		t.Errorf("Wanted stdout to have %v, got %v instead", wantContainer, cmd.Stdout)
+	var wantService = "Service generated at"
+	if !strings.Contains(cmd.Stdout.String(), wantService) {
+		t.Errorf("Wanted stdout to have %v, got %v instead", wantService, cmd.Stdout)
 	}
 
 	if cmd.Stderr.Len() != 0 {
@@ -187,7 +187,7 @@ func TestGenerateProjectAndContainerWithoutContainerBoilerplate(t *testing.T) {
 	}
 }
 
-func TestGenerateContainerInsideAlreadyExistingProjectWithoutContainerBoilerplate(t *testing.T) {
+func TestGenerateServiceInsideAlreadyExistingProjectWithoutServiceBoilerplate(t *testing.T) {
 	t.Skipf("Registry is changed and the generate command is hidden on releases currently")
 
 	removeAll("mocks/generate/foo/data")
@@ -195,11 +195,11 @@ func TestGenerateContainerInsideAlreadyExistingProjectWithoutContainerBoilerplat
 
 	var cmd = &Command{
 		Args: []string{"generate",
-			"--container",
+			"--service",
 			"data",
-			"--container-type",
+			"--service-type",
 			"data",
-			"--container-boilerplate=false",
+			"--service-boilerplate=false",
 			"--directory",
 			"mocks/generate/foo",
 		},
@@ -212,9 +212,9 @@ func TestGenerateContainerInsideAlreadyExistingProjectWithoutContainerBoilerplat
 		t.Errorf("Wanted stdout to not have %v, got %v instead", dontWantProject, cmd.Stdout)
 	}
 
-	var wantContainer = "Container generated at"
-	if !strings.Contains(cmd.Stdout.String(), wantContainer) {
-		t.Errorf("Wanted stdout to have %v, got %v instead", wantContainer, cmd.Stdout)
+	var wantService = "Service generated at"
+	if !strings.Contains(cmd.Stdout.String(), wantService) {
+		t.Errorf("Wanted stdout to have %v, got %v instead", wantService, cmd.Stdout)
 	}
 
 	if cmd.Stderr.Len() != 0 {
@@ -225,28 +225,28 @@ func TestGenerateContainerInsideAlreadyExistingProjectWithoutContainerBoilerplat
 		t.Errorf("Expected exit code to be 0, got %v instead", cmd.ExitCode)
 	}
 
-	var cp, err = containers.Read("mocks/generate/foo/data")
+	var cp, err = services.Read("mocks/generate/foo/data")
 
 	if err != nil {
-		t.Errorf("Expected reading container file, got error %v instead", err)
+		t.Errorf("Expected reading service file, got error %v instead", err)
 	}
 
 	if cp.ID != "data" {
-		t.Errorf(`Expected container to be generated with ID "data" got %v instead`, cp.ID)
+		t.Errorf(`Expected service to be generated with ID "data" got %v instead`, cp.ID)
 	}
 }
 
-func TestGenerateContainerWithoutProjectError(t *testing.T) {
+func TestGenerateServiceWithoutProjectError(t *testing.T) {
 	removeAll("mocks/generate/example")
 	defer removeAll("mocks/generate/example")
 
 	var cmd = &Command{
-		Args: []string{"generate", "--container", "foo", "--directory", "mocks/generate"},
+		Args: []string{"generate", "--service", "foo", "--directory", "mocks/generate"},
 	}
 
 	cmd.Run()
 
-	var wantErr = "Incompatible use: --container requires --project unless on a project directory"
+	var wantErr = "Incompatible use: --service requires --project unless on a project directory"
 
 	if !strings.Contains(cmd.Stderr.String(), wantErr) {
 		t.Errorf("Wanted stdout to have %v, got %v instead", wantErr, cmd.Stdout)

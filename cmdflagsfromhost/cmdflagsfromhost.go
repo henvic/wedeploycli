@@ -7,36 +7,36 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/containers"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/flagsfromhost"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/wdircontext"
 )
 
 // Requires configuration for the host and flags
 type Requires struct {
-	NoHost    bool
-	Auth      bool
-	Remote    bool
-	Local     bool
-	Project   bool
-	Container bool
+	NoHost  bool
+	Auth    bool
+	Remote  bool
+	Local   bool
+	Project bool
+	Service bool
 }
 
 // SetupHost is the structure for host and flags parsing
 type SetupHost struct {
-	Pattern                         Pattern
-	Requires                        Requires
-	UseProjectDirectory             bool
-	UseProjectDirectoryForContainer bool
-	UseContainerDirectory           bool
-	url                             string
-	project                         string
-	container                       string
-	remote                          string
-	cmd                             *cobra.Command
-	parsed                          *flagsfromhost.FlagsFromHost
+	Pattern                       Pattern
+	Requires                      Requires
+	UseProjectDirectory           bool
+	UseProjectDirectoryForService bool
+	UseServiceDirectory           bool
+	url                           string
+	project                       string
+	service                       string
+	remote                        string
+	cmd                           *cobra.Command
+	parsed                        *flagsfromhost.FlagsFromHost
 }
 
 // Pattern for the host and flags
@@ -46,16 +46,16 @@ const (
 	missing Pattern = 1 << iota
 	// RemotePattern takes only --remote
 	RemotePattern
-	// ContainerPattern takes only --container
-	ContainerPattern
+	// ServicePattern takes only --service
+	ServicePattern
 	// ProjectPattern takes only --project
 	ProjectPattern
-	// ProjectAndContainerPattern takes only --project and --container
-	ProjectAndContainerPattern = ProjectPattern | ContainerPattern
+	// ProjectAndServicePattern takes only --project and --service
+	ProjectAndServicePattern = ProjectPattern | ServicePattern
 	// ProjectAndRemotePattern takes only --project, and --remote
 	ProjectAndRemotePattern = ProjectPattern | RemotePattern
-	// FullHostPattern takes --project, --container, and --remote
-	FullHostPattern = RemotePattern | ProjectAndContainerPattern
+	// FullHostPattern takes --project, --service, and --remote
+	FullHostPattern = RemotePattern | ProjectAndServicePattern
 )
 
 // Project of the parsed flags or host
@@ -63,9 +63,9 @@ func (s *SetupHost) Project() string {
 	return s.project
 }
 
-// Container of the parsed flags or host
-func (s *SetupHost) Container() string {
-	return s.container
+// Service of the parsed flags or host
+func (s *SetupHost) Service() string {
+	return s.service
 }
 
 // Remote of the parsed flags or host
@@ -83,7 +83,7 @@ func (s *SetupHost) Init(cmd *cobra.Command) {
 	var none = true
 	s.cmd = cmd
 
-	if !s.Requires.NoHost && (s.Pattern&RemotePattern != 0 || s.Pattern&ContainerPattern != 0) {
+	if !s.Requires.NoHost && (s.Pattern&RemotePattern != 0 || s.Pattern&ServicePattern != 0) {
 		s.addURLFlag(cmd)
 	}
 
@@ -97,8 +97,8 @@ func (s *SetupHost) Init(cmd *cobra.Command) {
 		none = false
 	}
 
-	if s.Pattern&ContainerPattern != 0 {
-		s.addContainerFlag(cmd)
+	if s.Pattern&ServicePattern != 0 {
+		s.addServiceFlag(cmd)
 		none = false
 	}
 
@@ -119,10 +119,10 @@ func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 	if s.Requires.Local {
 		return s.applyParseFlagsFilters(flagsfromhost.Parse(
 			flagsfromhost.ParseFlags{
-				Host:      s.url,
-				Project:   s.project,
-				Container: s.container,
-				Remote:    remoteFlagValue,
+				Host:    s.url,
+				Project: s.project,
+				Service: s.service,
+				Remote:  remoteFlagValue,
 			}))
 	}
 
@@ -130,7 +130,7 @@ func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 		flagsfromhost.ParseFlagsWithDefaultCustomRemote{
 			Host:          s.url,
 			Project:       s.project,
-			Container:     s.container,
+			Service:       s.service,
 			Remote:        remoteFlagValue,
 			RemoteChanged: remoteFlagChanged,
 		},
@@ -139,9 +139,9 @@ func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 
 func (s *SetupHost) applyParseFlagsFilters(f *flagsfromhost.FlagsFromHost, err error) (
 	*flagsfromhost.FlagsFromHost, error) {
-	if (s.UseProjectDirectory || s.UseProjectDirectoryForContainer) && err != nil {
+	if (s.UseProjectDirectory || s.UseProjectDirectoryForService) && err != nil {
 		switch err.(type) {
-		case flagsfromhost.ErrorContainerWithNoProject:
+		case flagsfromhost.ErrorServiceWithNoProject:
 			err = nil
 		}
 	}
@@ -182,25 +182,25 @@ func (s *SetupHost) addProjectFlag(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&s.project, "project", "p", "", "Perform the operation for a specific project")
 }
 
-func (s *SetupHost) addContainerFlag(cmd *cobra.Command) {
-	cmd.Flags().StringVarP(&s.container, "container", "c", "", "Perform the operation for a specific service")
+func (s *SetupHost) addServiceFlag(cmd *cobra.Command) {
+	cmd.Flags().StringVarP(&s.service, "service", "c", "", "Perform the operation for a specific service")
 }
 
-func (s *SetupHost) getContainerFromCurrentWorkingDirectory() (container string, err error) {
+func (s *SetupHost) getServiceFromCurrentWorkingDirectory() (service string, err error) {
 	if s.Pattern&ProjectPattern == 0 {
 		return "", nil
 	}
 
-	container, err = wdircontext.GetContainerID()
+	service, err = wdircontext.GetServiceID()
 
 	switch {
-	case err != nil && err != containers.ErrContainerNotFound:
-		return "", errwrap.Wrapf("Error reading current container: {{err}}", err)
-	case err == containers.ErrContainerNotFound:
+	case err != nil && err != services.ErrServiceNotFound:
+		return "", errwrap.Wrapf("Error reading current service: {{err}}", err)
+	case err == services.ErrServiceNotFound:
 		return "", nil
 	}
 
-	return container, nil
+	return service, nil
 }
 
 func (s *SetupHost) getProjectFromCurrentWorkingDirectory() (project string, err error) {
@@ -214,24 +214,24 @@ func (s *SetupHost) getProjectFromCurrentWorkingDirectory() (project string, err
 	case err != nil && err != projects.ErrProjectNotFound:
 		return "", errwrap.Wrapf("Error reading current project: {{err}}", err)
 	case err == projects.ErrProjectNotFound:
-		if !s.Requires.Container || s.Pattern&ContainerPattern == 0 {
+		if !s.Requires.Service || s.Pattern&ServicePattern == 0 {
 			return "", errwrap.Wrapf(
 				"Use flag --project or call this from inside a project directory", err)
 		}
 
-		if !s.UseContainerDirectory {
-			return "", errwrap.Wrapf("Use flags --project and --container", err)
+		if !s.UseServiceDirectory {
+			return "", errwrap.Wrapf("Use flags --project and --service", err)
 		}
 
 		return "", errwrap.Wrapf(
-			"Use flags --project and --container or call this from inside a project container directory", err)
+			"Use flags --project and --service or call this from inside a project service directory", err)
 	}
 
 	return project, nil
 }
 
 func (s *SetupHost) loadValues() (err error) {
-	var container = s.parsed.Container()
+	var service = s.parsed.Service()
 	var project = s.parsed.Project()
 	var remote = s.parsed.Remote()
 
@@ -247,30 +247,30 @@ func (s *SetupHost) loadValues() (err error) {
 		return errors.New("Project is not allowed for this command")
 	}
 
-	if s.Pattern&ContainerPattern == 0 && container != "" {
-		return errors.New("Container is not allowed for this command")
+	if s.Pattern&ServicePattern == 0 && service != "" {
+		return errors.New("Service is not allowed for this command")
 	}
 
-	if project == "" && (s.UseProjectDirectory || (s.UseProjectDirectoryForContainer && container != "")) {
+	if project == "" && (s.UseProjectDirectory || (s.UseProjectDirectoryForService && service != "")) {
 		project, err = s.getProjectFromCurrentWorkingDirectory()
 		if err != nil {
 			return err
 		}
 	}
 
-	if container == "" && s.UseContainerDirectory && s.parsed.Project() == "" {
-		container, err = s.getContainerFromCurrentWorkingDirectory()
+	if service == "" && s.UseServiceDirectory && s.parsed.Project() == "" {
+		service, err = s.getServiceFromCurrentWorkingDirectory()
 		if err != nil {
 			return err
 		}
 	}
 
-	if (s.Pattern&ProjectPattern == 0 && s.Pattern&ContainerPattern == 0) && container != "" {
-		return errors.New("Container parameter is not allowed for this command")
+	if (s.Pattern&ProjectPattern == 0 && s.Pattern&ServicePattern == 0) && service != "" {
+		return errors.New("Service parameter is not allowed for this command")
 	}
 
-	if s.Requires.Container && container == "" {
-		return errors.New("Container and project are required")
+	if s.Requires.Service && service == "" {
+		return errors.New("Service and project are required")
 	}
 
 	if s.Requires.Project && project == "" {
@@ -285,7 +285,7 @@ func (s *SetupHost) loadValues() (err error) {
 		return errors.New("Remote parameter is not allowed for this command")
 	}
 
-	s.container = container
+	s.service = service
 	s.project = project
 	s.remote = remote
 

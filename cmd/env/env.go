@@ -9,7 +9,7 @@ import (
 	cmdenvset "github.com/wedeploy/cli/cmd/env/set"
 	cmdenvunset "github.com/wedeploy/cli/cmd/env/unset"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -20,7 +20,7 @@ var EnvCmd = &cobra.Command{
 	Long: `Show and configure environment variables for services
 
 	Changing these values does not change wedeploy.json hard coded values.
-	You must restart containers for changed values to apply.`,
+	You must restart services for changed values to apply.`,
 	Example: `   we env (to list environment variables)
    we env set foo bar
    we env rm foo`,
@@ -29,13 +29,13 @@ var EnvCmd = &cobra.Command{
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern:               cmdflagsfromhost.FullHostPattern,
-	UseProjectDirectory:   true,
-	UseContainerDirectory: true,
+	Pattern:             cmdflagsfromhost.FullHostPattern,
+	UseProjectDirectory: true,
+	UseServiceDirectory: true,
 	Requires: cmdflagsfromhost.Requires{
-		Auth:      true,
-		Project:   true,
-		Container: true,
+		Auth:    true,
+		Project: true,
+		Service: true,
 	},
 }
 
@@ -48,9 +48,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	var envs, err = containers.GetEnvironmentVariables(context.Background(),
+	var envs, err = services.GetEnvironmentVariables(context.Background(),
 		setupHost.Project(),
-		setupHost.Container())
+		setupHost.Service())
 
 	if err != nil {
 		return err

@@ -7,7 +7,7 @@ import (
 
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/projects"
 )
@@ -38,28 +38,28 @@ func (l *List) printProject(p projects.Project) {
 		return
 	}
 
-	l.printContainers(p.ProjectID, services)
+	l.printServices(p.ProjectID, services)
 }
 
-func (l *List) printContainers(projectID string, cs []containers.Container) {
-	for _, container := range cs {
-		if len(l.Filter.Containers) != 0 && !inArray(container.ServiceID, l.Filter.Containers) {
+func (l *List) printServices(projectID string, cs []services.Service) {
+	for _, service := range cs {
+		if len(l.Filter.Services) != 0 && !inArray(service.ServiceID, l.Filter.Services) {
 			continue
 		}
 
-		l.printContainer(projectID, container)
+		l.printService(projectID, service)
 	}
 
 	if len(cs) == 0 {
-		l.Printf(fmt.Sprintln(color.Format(color.FgHiRed, "✖") + " no container found"))
+		l.Printf(fmt.Sprintln(color.Format(color.FgHiRed, "✖") + " no service found"))
 		return
 	}
 }
 
-func (l *List) printContainer(projectID string, c containers.Container) {
+func (l *List) printService(projectID string, c services.Service) {
 	l.Printf(color.Format(getHealthForegroundColor(c.Health), "• "))
-	containerDomain := getContainerDomain(projectID, c.ServiceID)
-	l.Printf("%v\t", containerDomain)
+	serviceDomain := getServiceDomain(projectID, c.ServiceID)
+	l.Printf("%v\t", serviceDomain)
 	l.printInstances(c.Scale)
 	l.Printf(color.Format(color.FgHiBlack, "%v\t", c.Image))
 	l.Printf("%v\n", c.Health)
@@ -121,9 +121,9 @@ func pad(space int) string {
 	return strings.Join(make([]string, space), " ")
 }
 
-func getContainerDomain(projectID, containerID string) string {
+func getServiceDomain(projectID, serviceID string) string {
 	return fmt.Sprintf("%v.%v", color.Format(
-		color.Bold, "%v-%v", containerID, projectID), config.Context.RemoteAddress)
+		color.Bold, "%v-%v", serviceID, projectID), config.Context.RemoteAddress)
 }
 
 func inArray(key string, haystack []string) bool {

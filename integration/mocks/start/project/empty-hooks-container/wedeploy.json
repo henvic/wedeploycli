@@ -1,8 +1,0 @@
-{
-    "id": "empty-hooks-container",
-    "hooks": {
-        "before_start": "",
-        "start": "",
-        "after_start": ""
-    }
-}

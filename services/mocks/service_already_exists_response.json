@@ -1,0 +1,10 @@
+{
+    "status": 400,
+    "message": "Bad Request",
+    "errors": [
+        {
+            "reason": "serviceAlreadyExists",
+            "message": "serviceAlreadyExists"
+        }
+    ]
+}

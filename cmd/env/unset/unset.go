@@ -6,26 +6,26 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 )
 
 // Cmd for removing a domain
 var Cmd = &cobra.Command{
 	Use:     "rm",
-	Short:   "Remove an environment variable for a given container",
+	Short:   "Remove an environment variable for a given service",
 	Example: "  we env rm foo",
 	PreRunE: preRun,
 	RunE:    run,
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern:               cmdflagsfromhost.FullHostPattern,
-	UseProjectDirectory:   true,
-	UseContainerDirectory: true,
+	Pattern:             cmdflagsfromhost.FullHostPattern,
+	UseProjectDirectory: true,
+	UseServiceDirectory: true,
 	Requires: cmdflagsfromhost.Requires{
-		Auth:      true,
-		Project:   true,
-		Container: true,
+		Auth:    true,
+		Project: true,
+		Service: true,
 	},
 }
 
@@ -42,9 +42,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	return containers.UnsetEnvironmentVariable(
+	return services.UnsetEnvironmentVariable(
 		context.Background(),
 		setupHost.Project(),
-		setupHost.Container(),
+		setupHost.Service(),
 		args[0])
 }

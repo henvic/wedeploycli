@@ -1,8 +1,8 @@
 [
     {
         "projectId": "foo",
-        "containerId": "bar",
-        "containerUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+        "serviceId": "bar",
+        "serviceUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
         "level": 6,
         "logger": null,
         "message": "Mar 29, 2016 7:43:30 PM com.hazelcast.client.connection.nio.ClientConnectionManagerImpl\r",
@@ -12,8 +12,8 @@
     },
     {
         "projectId": "foo",
-        "containerId": "bar",
-        "containerUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+        "serviceId": "bar",
+        "serviceUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
         "level": 6,
         "logger": null,
         "message": "INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_CONNECTED\r",
@@ -23,8 +23,8 @@
     },
     {
         "projectId": "foo",
-        "containerId": "bar",
-        "containerUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
+        "serviceId": "bar",
+        "serviceUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
         "level": 6,
         "logger": null,
         "message": "INFO: \r",

@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/inspector"
 	"github.com/wedeploy/cli/projects"
 )
@@ -20,14 +20,14 @@ import (
 var InspectCmd = &cobra.Command{
 	Use:   "inspect",
 	Short: "Inspect environment info",
-	Long: `Use "we inspect" to peek inside a project or a container on your file system.
-<type> = context | project | container`,
+	Long: `Use "we inspect" to peek inside a project or a service on your file system.
+<type> = context | project | service`,
 	Hidden:  true,
 	PreRunE: cmdargslen.ValidateCmd(0, 1),
 	RunE:    inspectRun,
 	Example: `  we inspect context
   we inspect project
-  we inspect container --format "{{.ID}}"`,
+  we inspect service --format "{{.ID}}"`,
 }
 
 var (
@@ -53,7 +53,7 @@ func inspectRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(args) != 1 {
-		return errors.New("Expected: we inspect [context|project|container]")
+		return errors.New("Expected: we inspect [context|project|service]")
 	}
 
 	if showTypeFields && format != "" {
@@ -80,8 +80,8 @@ func inspect(field string) (string, error) {
 		return inspector.InspectContext(format, directory)
 	case "project":
 		return inspector.InspectProject(format, directory)
-	case "container":
-		return inspector.InspectContainer(format, directory)
+	case "service":
+		return inspector.InspectService(format, directory)
 	default:
 		return "", fmt.Errorf(`inspecting "%v" is not implemented`, field)
 	}
@@ -94,8 +94,8 @@ func printTypeFieldsSpec(field string) error {
 		i = inspector.ContextOverview{}
 	case "project":
 		i = projects.Project{}
-	case "container":
-		i = containers.Container{}
+	case "service":
+		i = services.Service{}
 	}
 
 	if i == nil {

@@ -7,9 +7,9 @@ Commands:
   list         List deployments
   log          Show deployment logs
   domain       Manages your domain names
-  env          Environment variables for containers
-  restart      Restart project or container
-  remove       Remove a project or container
+  env          Environment variables for services
+  restart      Restart project or service
+  remove       Remove a project or service
   login        Authenticate on WeDeploy
   logout       Revoke credentials
 

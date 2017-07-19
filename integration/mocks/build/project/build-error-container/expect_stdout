@@ -1,3 +1,0 @@
-> [build-error-container] before_build : echo before
-before
-> [build-error-container] build : false

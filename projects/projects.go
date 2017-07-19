@@ -12,7 +12,7 @@ import (
 
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/verbosereq"
 )
 
@@ -37,8 +37,8 @@ func (pp ProjectPackage) Project() Project {
 }
 
 // Services of a given project
-func (p *Project) Services(ctx context.Context) (containers.Containers, error) {
-	return containers.List(ctx, p.ProjectID)
+func (p *Project) Services(ctx context.Context) (services.Services, error) {
+	return services.List(ctx, p.ProjectID)
 }
 
 var (

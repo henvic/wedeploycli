@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/containers"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/createuser"
 	"github.com/wedeploy/cli/link"
 	"github.com/wedeploy/cli/projectctx"
@@ -51,13 +51,13 @@ func (l *linker) Run() error {
 		return errProjectID
 	}
 
-	csDirs, err := l.getContainersDirectoriesFromScope()
+	csDirs, err := l.getServicesDirectoriesFromScope()
 
 	if err != nil {
 		return err
 	}
 
-	if err = pullimages.PullMissingContainersImages(csDirs); err != nil {
+	if err = pullimages.PullMissingServicesImages(csDirs); err != nil {
 		return err
 	}
 
@@ -71,7 +71,7 @@ func (l *linker) Run() error {
 	return l.linkMachineSetup(projectRec, csDirs)
 }
 
-func (l *linker) getContainersDirectoriesFromScope() ([]string, error) {
+func (l *linker) getServicesDirectoriesFromScope() ([]string, error) {
 	if config.Context.ProjectRoot == "" {
 		wd, err := os.Getwd()
 
@@ -79,29 +79,29 @@ func (l *linker) getContainersDirectoriesFromScope() ([]string, error) {
 			return []string{}, err
 		}
 
-		_, err = containers.Read(wd)
+		_, err = services.Read(wd)
 
 		switch {
-		case err == containers.ErrContainerNotFound:
+		case err == services.ErrServiceNotFound:
 			err = errwrap.Wrapf("Missing wedeploy.json on directory.", err)
 		case err != nil:
-			err = errwrap.Wrapf("Can not read container with no project: {{err}}", err)
+			err = errwrap.Wrapf("Can not read service with no project: {{err}}", err)
 		}
 
 		return []string{wd}, err
 	}
 
-	if config.Context.ContainerRoot != "" {
-		return []string{config.Context.ContainerRoot}, nil
+	if config.Context.ServiceRoot != "" {
+		return []string{config.Context.ServiceRoot}, nil
 	}
 
-	var list, err = containers.GetListFromDirectory(config.Context.ProjectRoot)
+	var list, err = services.GetListFromDirectory(config.Context.ProjectRoot)
 
 	if err != nil {
 		return nil, err
 	}
 
-	list, err = FilterContainerListFromProjectList(setupHost.Container(), list)
+	list, err = FilterServiceListFromProjectList(setupHost.Service(), list)
 	var absList = []string{}
 
 	if err != nil {
@@ -115,14 +115,14 @@ func (l *linker) getContainersDirectoriesFromScope() ([]string, error) {
 	return absList, err
 }
 
-// FilterContainerListFromProjectList using a given service ID as filter
-func FilterContainerListFromProjectList(service string, list containers.ContainerInfoList) (containers.ContainerInfoList, error) {
+// FilterServiceListFromProjectList using a given service ID as filter
+func FilterServiceListFromProjectList(service string, list services.ServiceInfoList) (services.ServiceInfoList, error) {
 	if service == "" {
 		return list, nil
 	}
 
 	var c, err = list.Get(service)
-	return containers.ContainerInfoList{c}, err
+	return services.ServiceInfoList{c}, err
 }
 
 func (l *linker) getProject() (projectID string, err error) {
@@ -150,10 +150,10 @@ func (l *linker) linkMachineSetup(project projects.Project, csDirs []string) err
 
 	var renameServiceIDs = []link.RenameServiceID{}
 
-	if setupHost.Container() != "" {
+	if setupHost.Service() != "" {
 		renameServiceIDs = append(renameServiceIDs, link.RenameServiceID{
 			Any: true,
-			To:  setupHost.Container(),
+			To:  setupHost.Service(),
 		})
 	}
 

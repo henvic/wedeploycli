@@ -1,7 +1,7 @@
 {
     "id": "images",
     "version": "0.0.1",
-    "description": "Image hosting container example",
+    "description": "Image hosting service example",
     "runtime": "static",
     "basePath": "/",
     "webPath": "/",

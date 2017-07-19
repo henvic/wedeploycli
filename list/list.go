@@ -19,10 +19,10 @@ import (
 // Filter parameters for the list command
 type Filter struct {
 	Project    string
-	Containers []string
+	Services []string
 }
 
-// List containers object
+// List services object
 type List struct {
 	Detailed           bool
 	Filter             Filter

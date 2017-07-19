@@ -1,10 +1,10 @@
 {
-    "Scope": "container",
+    "Scope": "service",
     "ProjectRoot": "%v/mocks/inspect/my-project",
-    "ContainerRoot": "%v/mocks/inspect/my-project/email",
+    "ServiceRoot": "%v/mocks/inspect/my-project/email",
     "ProjectID": "my-project",
     "ServiceID": "email",
-    "ProjectContainers": [
+    "ProjectServices": [
         {
             "ServiceID": "email",
             "Location": "%v/mocks/inspect/my-project/email"

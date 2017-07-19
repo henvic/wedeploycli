@@ -1,0 +1,8 @@
+{
+    "id": "build-error-service",
+    "hooks": {
+        "before_build": "echo before",
+        "build": "false",
+        "after_build": "echo after"
+    }
+}

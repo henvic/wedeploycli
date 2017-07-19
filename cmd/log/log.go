@@ -25,9 +25,9 @@ var setupHost = cmdflagsfromhost.SetupHost{
 		Auth:    true,
 		Project: true,
 	},
-	Pattern:               cmdflagsfromhost.FullHostPattern,
-	UseProjectDirectory:   true,
-	UseContainerDirectory: true,
+	Pattern:             cmdflagsfromhost.FullHostPattern,
+	UseProjectDirectory: true,
+	UseServiceDirectory: true,
 }
 
 func init() {
@@ -40,9 +40,9 @@ var LogCmd = &cobra.Command{
 	Short:   "Show logs of the services",
 	PreRunE: preRun,
 	RunE:    logRun,
-	Example: `  we log --project chat --container data
-  we log --container data
-  we log --project chat --container data
+	Example: `  we log --project chat --service data
+  we log --service data
+  we log --project chat --service data
   we log --url data-chat.wedeploy.me
   we log --url data-chat.wedeploy.io --instance abc`,
 }
@@ -57,7 +57,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 func logRun(cmd *cobra.Command, args []string) error {
 	var project = setupHost.Project()
-	var container = setupHost.Container()
+	var service = setupHost.Service()
 
 	level, levelErr := logs.GetLevel(severityArg)
 
@@ -76,11 +76,11 @@ func logRun(cmd *cobra.Command, args []string) error {
 	}
 
 	filter := &logs.Filter{
-		Project:   project,
-		Container: container,
-		Instance:  instanceArg,
-		Level:     level,
-		Since:     since,
+		Project:  project,
+		Service:  service,
+		Instance: instanceArg,
+		Level:    level,
+		Since:    since,
 	}
 
 	switch watchArg {

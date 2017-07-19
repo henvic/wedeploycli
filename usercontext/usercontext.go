@@ -13,7 +13,7 @@ import (
 type Context struct {
 	Scope         Scope
 	ProjectRoot   string
-	ContainerRoot string
+	ServiceRoot string
 	Remote        string
 	RemoteAddress string
 	Endpoint      string
@@ -26,18 +26,18 @@ type Context struct {
 type Scope string
 
 const (
-	// GlobalScope is the scope when no container on project or project is active
+	// GlobalScope is the scope when no service on project or project is active
 	GlobalScope Scope = "global"
 
-	// ProjectScope is the scope for when a project is active, but no container is active
+	// ProjectScope is the scope for when a project is active, but no service is active
 	ProjectScope Scope = "project"
 
-	// ContainerScope is the scope for when a container on a project is active
-	ContainerScope Scope = "container"
+	// ServiceScope is the scope for when a service on a project is active
+	ServiceScope Scope = "service"
 )
 
-// ErrContainerInProjectRoot happens when a project.json and wedeploy.json is found at the same directory level
-var ErrContainerInProjectRoot = errors.New("Container and project definition files at the same directory level")
+// ErrServiceInProjectRoot happens when a project.json and wedeploy.json is found at the same directory level
+var ErrServiceInProjectRoot = errors.New("Service and project definition files at the same directory level")
 
 func (cx *Context) loadProject() error {
 	var project, errProject = GetProjectRootDirectory(findresource.GetSysRoot())
@@ -55,23 +55,23 @@ func (cx *Context) loadProject() error {
 	return nil
 }
 
-func (cx *Context) loadContainer() error {
-	var container, errContainer = GetContainerRootDirectory(cx.ProjectRoot)
+func (cx *Context) loadService() error {
+	var service, errService = GetServiceRootDirectory(cx.ProjectRoot)
 
-	if errContainer != nil && os.IsNotExist(errContainer) {
+	if errService != nil && os.IsNotExist(errService) {
 		return nil
 	}
 
-	if errContainer != nil {
-		return errwrap.Wrapf("Error trying to read container: {{err}}", errContainer)
+	if errService != nil {
+		return errwrap.Wrapf("Error trying to read service: {{err}}", errService)
 	}
 
-	if filepath.Dir(container) == filepath.Dir(cx.ProjectRoot) {
-		return ErrContainerInProjectRoot
+	if filepath.Dir(service) == filepath.Dir(cx.ProjectRoot) {
+		return ErrServiceInProjectRoot
 	}
 
-	cx.Scope = ContainerScope
-	cx.ContainerRoot = container
+	cx.Scope = ServiceScope
+	cx.ServiceRoot = service
 	return nil
 }
 
@@ -83,7 +83,7 @@ func (cx *Context) Load() error {
 		return err
 	}
 
-	if err := cx.loadContainer(); err != nil {
+	if err := cx.loadService(); err != nil {
 		return err
 	}
 
@@ -95,8 +95,8 @@ func GetProjectRootDirectory(delimiter string) (string, error) {
 	return getRootDirectory(delimiter, "project.json")
 }
 
-// GetContainerRootDirectory returns container dir for the current scope
-func GetContainerRootDirectory(delimiter string) (string, error) {
+// GetServiceRootDirectory returns service dir for the current scope
+func GetServiceRootDirectory(delimiter string) (string, error) {
 	return getRootDirectory(delimiter, "wedeploy.json")
 }
 

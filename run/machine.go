@@ -33,7 +33,7 @@ type Flags struct {
 
 // DockerMachine for the run command
 type DockerMachine struct {
-	Container      string
+	Service        string
 	Image          string
 	Flags          Flags
 	wlm            waitlivemsg.WaitLiveMsg
@@ -71,7 +71,7 @@ func Run(ctx context.Context, flags Flags) (terminated bool, err error) {
 }
 
 func (dm *DockerMachine) checkDockerDebug() (ok bool, err error) {
-	var docker = exec.CommandContext(dm.Context, bin, "port", dm.Container)
+	var docker = exec.CommandContext(dm.Context, bin, "port", dm.Service)
 	exechelper.AddCommandToNewProcessGroup(docker)
 	docker.Stderr = os.Stderr
 	var buf bytes.Buffer
@@ -106,7 +106,7 @@ func (dm *DockerMachine) Run() (err error) {
 		return err
 	}
 
-	if dm.Container == "" {
+	if dm.Service == "" {
 		switch dashboardID, dashboardOnHostErr := dm.checkDashboardIsOnOnHost(); {
 		case dashboardOnHostErr != nil:
 			return err
@@ -120,14 +120,14 @@ func (dm *DockerMachine) Run() (err error) {
 
 	dm.setupPorts()
 
-	if !dm.Flags.DryRun && dm.Container != "" {
+	if !dm.Flags.DryRun && dm.Service != "" {
 		verbose.Debug(`Infrastructure is on.`)
 
 		if dm.Flags.Debug {
 			var ok, errd = dm.checkDockerDebug()
 
 			if errd != nil {
-				return errwrap.Wrapf("Can not get docker ports for container: {{err}}", errd)
+				return errwrap.Wrapf("Can not get docker ports for service: {{err}}", errd)
 			}
 
 			if !ok {
@@ -139,7 +139,7 @@ func (dm *DockerMachine) Run() (err error) {
 To run the infrastructure with debug mode:
 	1. Shutdown with "we deploy --stop-local-infra"
 	2. Run with "we deploy --infra --debug"
-	3. Run any project or containers you want`)
+	3. Run any project or services you want`)
 			}
 		}
 
@@ -200,7 +200,7 @@ func (dm *DockerMachine) createUser() (err error) {
 }
 
 func (dm *DockerMachine) dockerWait() {
-	var docker = exec.CommandContext(dm.Context, bin, "wait", dm.Container)
+	var docker = exec.CommandContext(dm.Context, bin, "wait", dm.Service)
 	exechelper.AddCommandToNewProcessGroup(docker)
 	_ = docker.Run()
 	dm.contextCancel()
@@ -352,11 +352,11 @@ func (dm *DockerMachine) start() (err error) {
 		os.Exit(0)
 	}
 
-	if dm.Container, err = startCmd(args...); err != nil {
+	if dm.Service, err = startCmd(args...); err != nil {
 		return err
 	}
 
-	verbose.Debug("Docker container ID:", dm.Container)
+	verbose.Debug("Docker service ID:", dm.Service)
 	return err
 }
 
@@ -451,7 +451,7 @@ func (dm *DockerMachine) LoadDockerInfo() error {
 	case 0:
 		dm.checkImage()
 	case 2:
-		dm.Container = strings.TrimSpace(parts[0])
+		dm.Service = strings.TrimSpace(parts[0])
 		dm.Image = strings.TrimSpace(parts[1])
 	default:
 		verbose.Debug("Running docker not found on docker ps")
