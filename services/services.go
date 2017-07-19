@@ -178,19 +178,25 @@ func (l *listFromDirectoryGetter) walkFunc(path string, info os.FileInfo, err er
 		return err
 	}
 
-	if info.Name() == ".noservice" {
-		return filepath.SkipDir
+	if !info.IsDir() {
+		return nil
 	}
 
-	if info.IsDir() || info.Name() != "wedeploy.json" {
-		return nil
+	_, noServiceErr := os.Stat(filepath.Join(path, ".noservice"))
+
+	switch {
+	case os.IsNotExist(noServiceErr):
+	case noServiceErr == nil:
+		return filepath.SkipDir
+	default:
+		return noServiceErr
 	}
 
 	return l.readFunc(path)
 }
 
-func (l *listFromDirectoryGetter) readFunc(path string) error {
-	var dir = strings.TrimSuffix(path, string(os.PathSeparator)+"wedeploy.json")
+func (l *listFromDirectoryGetter) readFunc(dir string) error {
+	var wedeployFile = filepath.Join(dir, "wedeploy.json")
 	var service, errRead = Read(dir)
 
 	switch {
@@ -199,9 +205,7 @@ func (l *listFromDirectoryGetter) readFunc(path string) error {
 	case errRead == ErrServiceNotFound:
 		return nil
 	default:
-		return errwrap.Wrapf("Can not list services: error reading "+
-			path+
-			": {{err}}", errRead)
+		return errwrap.Wrapf("Can not list services: error reading "+wedeployFile+": {{err}}", errRead)
 	}
 }
 
