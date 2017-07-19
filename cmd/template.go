@@ -41,7 +41,7 @@ func printCommandsAndFlags(useLine, example string, cs []*cobra.Command, f *pfla
 	up.tw = formatter.NewTabWriter(up.buf)
 	up.printCommands()
 	up.printFlags()
-	up.tw.Flush()
+	_ = up.tw.Flush()
 	return up.buf.String()
 }
 
