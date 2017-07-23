@@ -4,11 +4,11 @@ main:
 	echo "WeDeploy CLI build tool commands:"
 	echo "get-dependencies, list-packages, build, fast-test, test, build-functional-tests, release, promote"
 get-dependencies: check-go
-	if ! which glide &> /dev/null; \
-	then >&2 echo "Missing dependency: Glide is required https://glide.sh/"; \
+	if ! which dep &> /dev/null; \
+	then >&2 echo "Install dep to manage dependencies with go get -u github.com/golang/dep/cmd/dep"; \
 	fi;
 
-	glide install
+	dep ensure
 list-packages:
 	go list ./... | grep -v /vendor/
 build:
