@@ -141,7 +141,7 @@ function runTests() {
   # skip integration testing with -race because pseudoterm has some data race condition at this time
   go test $(go list ./... | grep -v /vendor/ | grep -v /integration$) -race
   if [[ $skipIntegrationTests != true ]] ; then
-    go test $(go list ./... | grep /integration)
+    go test $(go list ./... | grep -v /vendor/)
   fi
 }
 
