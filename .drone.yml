@@ -1,5 +1,5 @@
 build:
-  image: golang:1.7.3
+  image: golang:1.8.3
   commands:
     - go version
     - go get -u github.com/golang/dep/cmd/dep
