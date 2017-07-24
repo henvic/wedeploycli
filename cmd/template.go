@@ -55,12 +55,12 @@ func (up usagePrinter) printCommands() {
 	fmt.Fprintf(up.buf, "%s%s",
 		color.Format(color.FgYellow, color.BgHiYellow, "!"),
 		fmt.Sprintf("%v\n", color.Format(color.FgHiYellow,
-			fmt.Sprintf("  Usage: %s%s [flag]", up.useLine, cmdPart))))
+			fmt.Sprintf(" Usage: %s%s [flag]", up.useLine, cmdPart))))
 
 	if up.example != "" {
 		fmt.Fprintf(up.buf,
 			"%s%s\n\n",
-			color.Format(color.FgHiYellow, "   Examples:\n"),
+			color.Format(color.FgHiYellow, "  Examples:\n"),
 			up.example,
 		)
 	}
@@ -69,15 +69,15 @@ func (up usagePrinter) printCommands() {
 		return
 	}
 
-	fmt.Fprint(up.tw, color.Format(color.FgHiBlack, "   Command\t"+colorSpacingOffset()+"Description")+"\n")
+	fmt.Fprint(up.tw, color.Format(color.FgHiBlack, "  Command\t"+colorSpacingOffset()+"Description")+"\n")
 
 	for _, c := range up.cs {
 		if c.IsAvailableCommand() {
-			fmt.Fprintf(up.tw, "   %v\t%v\n", c.Name(), c.Short)
+			fmt.Fprintf(up.tw, "  %v\t%v\n", c.Name(), c.Short)
 		}
 	}
 
-	fmt.Fprintln(up.tw, "")
+	fmt.Fprintln(up.tw, "\t") // \t here keeps the alignment between commands and flags
 }
 
 func (up usagePrinter) printFlags() {
@@ -90,11 +90,11 @@ func (up usagePrinter) printFlags() {
 	if up.showFlagsParamField {
 		fmt.Fprintf(up.tw, "%s\n",
 			color.Format(color.FgHiBlack,
-				"   Flag\t"+colorSpacingOffset()+"Parameter\t"+colorSpacingOffset()+"Description"))
+				"  Flag\t"+colorSpacingOffset()+"Parameter\t"+colorSpacingOffset()+"Description"))
 	} else {
 		fmt.Fprintf(up.tw, "%s\n",
 			color.Format(color.FgHiBlack,
-				"   Flag\t"+colorSpacingOffset()+"Description"))
+				"  Flag\t"+colorSpacingOffset()+"Description"))
 	}
 
 	up.f.VisitAll(up.preparePrintFlag)
@@ -142,12 +142,12 @@ func (up usagePrinter) preparePrintFlag(flag *pflag.Flag) {
 		return
 	}
 
-	var buf = bytes.NewBufferString("   ")
+	var buf = bytes.NewBufferString("  ")
 
 	if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
 		buf.WriteString(fmt.Sprintf("-%s, ", flag.Shorthand))
 	} else {
-		buf.WriteString("    ")
+		buf.WriteString("   ")
 	}
 
 	buf.WriteString(fmt.Sprintf("--%s", flag.Name))
@@ -201,7 +201,7 @@ func isDefaultFlagValueZero(f *pflag.Flag) bool {
 func init() {
 	cobra.AddTemplateFunc("printCommandsAndFlags", printCommandsAndFlags)
 	RootCmd.SetUsageTemplate(`{{printCommandsAndFlags .UseLine .Example .Commands .Flags}}`)
-	RootCmd.SetHelpTemplate(`{{if not (eq .CommandPath "we")}}{{with or .Long .Short }}{{color FgYellow BgHiYellow "!"}}  {{. | trim | color FgHiYellow}}
+	RootCmd.SetHelpTemplate(`{{if not (eq .CommandPath "we")}}{{with or .Long .Short }}{{color FgYellow BgHiYellow "!"}} {{. | trim | color FgHiYellow}}
 {{end}}{{end}}{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}
 `)
 }
