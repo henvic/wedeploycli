@@ -14,7 +14,8 @@ const (
 	Down = "down"
 )
 
-type domains struct {
+// Domains of the infrastructure
+type Domains struct {
 	Infrastructure string `json:"infrastructure"`
 	Service        string `json:"service"`
 }
@@ -23,7 +24,7 @@ type domains struct {
 type Status struct {
 	Status  string  `json:"status"`
 	Version string  `json:"version"`
-	Domains domains `json:"domains"`
+	Domains Domains `json:"domains"`
 }
 
 // IsUp is returned if the infrastructure is up
