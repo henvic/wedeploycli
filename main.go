@@ -117,11 +117,10 @@ func printError(e error) {
 }
 
 func hideHelpFlag() {
-	// 'help' can be used here as persistent given that it exists in all commands
-	// with consistent behavior. If it wasn't like this, I couldn't as it might affect
-	// subcommands.
-	var x bool
-	cmd.RootCmd.PersistentFlags().BoolVarP(&x, "help", "h", false, "Show help message")
+	// hide the --help flag on all commands, but top-level
+	cmd.RootCmd.PersistentFlags().BoolP("help", "h", false, "Show help message")
+	_ = cmd.RootCmd.PersistentFlags().MarkHidden("help")
+	cmd.RootCmd.Flags().BoolP("help", "h", false, "Show help message")
 }
 
 func (m *mainProgram) executeCommand() {
