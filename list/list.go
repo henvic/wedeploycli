@@ -73,7 +73,7 @@ func (l *List) printList() {
 
 func (l *List) handleRequestError(err error) string {
 	l.retry++
-	return fmt.Sprintf("%v %v #%d\n", color.Format(color.FgRed, "Error:"), errorhandling.Handle(err), l.retry)
+	return fmt.Sprintf("%v %v #%d\n", color.Format(color.BgHiRed, color.FgRed, "!"), errorhandling.Handle(err), l.retry)
 }
 
 // Start for the list
