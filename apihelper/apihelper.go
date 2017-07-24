@@ -236,7 +236,7 @@ func SetBody(request *wedeploy.WeDeploy, data interface{}) error {
 
 // URL creates a WeDeploy URL instance
 func URL(ctx context.Context, paths ...string) *wedeploy.WeDeploy {
-	u := wedeploy.URL(config.Context.Endpoint, paths...)
+	u := wedeploy.URL(config.Context.Infrastructure, paths...)
 	u.SetContext(ctx)
 	return u
 }
@@ -267,6 +267,8 @@ func handleURLError(ue *url.Error) error {
 		return ue
 	}
 
+	// only show this error if
+	// the active infrastructure domain is related to...
 	var s = "WeDeploy platform error:"
 
 	switch {

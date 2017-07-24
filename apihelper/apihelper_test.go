@@ -546,7 +546,7 @@ func TestRequestVerboseFeedback(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> GET http://api.wedeploy.me/foo HTTP/1.1",
+		"> GET http://localhost/foo HTTP/1.1",
 		"Content-Type: text/plain; charset=utf-8",
 		"Accept: [application/json text/plain]",
 		"X-Test-Multiple: [a b]",
@@ -602,7 +602,7 @@ func TestRequestVerboseFeedbackUpload(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> GET http://api.wedeploy.me/foo HTTP/1.1",
+		"> GET http://localhost/foo HTTP/1.1",
 		"Sending file as request body:\nmocks/config.json",
 	}
 
@@ -649,7 +649,7 @@ func TestRequestVerboseFeedbackStringReader(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> GET http://api.wedeploy.me/foo HTTP/1.1",
+		"> GET http://localhost/foo HTTP/1.1",
 		"\ncustom body\n",
 	}
 
@@ -705,7 +705,7 @@ func TestRequestVerboseFeedbackBytesReader(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> GET http://api.wedeploy.me/foo HTTP/1.1",
+		"> GET http://localhost/foo HTTP/1.1",
 		"\ncustom body\n",
 	}
 
@@ -756,7 +756,7 @@ func TestRequestVerboseFeedbackOtherReader(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> GET http://api.wedeploy.me/foo HTTP/1.1",
+		"> GET http://localhost/foo HTTP/1.1",
 		"\n(request body: *io.teeReader)\n",
 	}
 
@@ -818,7 +818,7 @@ func TestRequestVerboseFeedbackJSONResponse(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> POST http://api.wedeploy.me/foo HTTP/1.1",
+		"> POST http://localhost/foo HTTP/1.1",
 		`{"bar":"one"}`,
 		"{\n    \"Hello\": \"World\"\n}",
 	}
@@ -902,7 +902,7 @@ func TestRequestVerboseFeedbackNotComplete(t *testing.T) {
 	}
 
 	stringlib.AssertSimilar(t,
-		"> (wait) http://api.wedeploy.me/foo",
+		"> (wait) http://localhost/foo",
 		bufErrStream.String())
 
 	verbose.Enabled = defaultVerboseEnabled
@@ -959,7 +959,7 @@ func TestSetBody(t *testing.T) {
 
 func TestURL(t *testing.T) {
 	var request = URL(context.Background(), "x", "y", "z/k")
-	var want = "http://api.wedeploy.me/x/y/z/k"
+	var want = "http://localhost/x/y/z/k"
 
 	if request.URL != want {
 		t.Errorf("Wanted URL %v, got %v instead", want, request.URL)
@@ -1036,7 +1036,7 @@ func TestValidateUnexpectedResponse(t *testing.T) {
 }`)
 	})
 
-	var want = "WeDeploy API error: 403 Forbidden (GET http://api.wedeploy.me/foo/bah)\n\t" +
+	var want = "WeDeploy API error: 403 Forbidden (GET http://localhost/foo/bah)\n\t" +
 		"forbidden: The requested operation failed because you do not have access."
 
 	r := URL(context.Background(), "/foo/bah")
@@ -1135,7 +1135,7 @@ func TestValidateUnexpectedResponseNonBody(t *testing.T) {
 		w.WriteHeader(403)
 	})
 
-	var want = `WeDeploy API error: 403 Forbidden (GET http://api.wedeploy.me/foo/bah)`
+	var want = `WeDeploy API error: 403 Forbidden (GET http://localhost/foo/bah)`
 
 	r := URL(context.Background(), "/foo/bah")
 	err := Validate(r, r.Get())
