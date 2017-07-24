@@ -697,8 +697,8 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 
 	var prefixes = map[string]string{
 		activities.BuildFailed:     "build failed",
-		activities.BuildPending:    "build pending",
 		activities.BuildStarted:    "building",
+		activities.BuildPushed:     "pushing",
 		activities.BuildSucceeded:  "build successful",
 		activities.DeployFailed:    "deploy failed",
 		activities.DeployPending:   "deploy pending",
@@ -727,9 +727,9 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 func isActitityTypeDeploymentRelated(activityType string) bool {
 	switch activityType {
 	case
-		activities.BuildPending,
 		activities.BuildStarted,
 		activities.BuildFailed,
+		activities.BuildPushed,
 		activities.BuildSucceeded,
 		activities.DeployPending,
 		activities.DeployStarted,
