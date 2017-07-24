@@ -691,7 +691,7 @@ func exists(file string) (bool, error) {
 }
 
 func tryGenerateDirectory(directory string) error {
-	var err = os.MkdirAll(directory, 0775)
+	var err = os.MkdirAll(directory, 0700)
 
 	if err != nil {
 		return errwrap.Wrapf("Can not generate directory: {{err}}", err)

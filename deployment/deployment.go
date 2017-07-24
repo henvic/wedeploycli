@@ -86,7 +86,7 @@ func (d *Deploy) Cleanup() error {
 
 // CreateGitDirectory creates the git directory for the deployment
 func (d *Deploy) CreateGitDirectory() error {
-	return os.MkdirAll(d.getGitPath(), 0775)
+	return os.MkdirAll(d.getGitPath(), 0700)
 }
 
 // InitializeRepository as a git repo
