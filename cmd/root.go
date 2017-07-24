@@ -8,7 +8,6 @@ import (
 	"github.com/wedeploy/cli/autocomplete"
 	"github.com/wedeploy/cli/cmd/activities"
 	"github.com/wedeploy/cli/cmd/autocomplete"
-	"github.com/wedeploy/cli/cmd/build"
 	"github.com/wedeploy/cli/cmd/cmdmanager"
 	"github.com/wedeploy/cli/cmd/deploy"
 	"github.com/wedeploy/cli/cmd/diagnostics"
@@ -24,7 +23,6 @@ import (
 	"github.com/wedeploy/cli/cmd/remove"
 	"github.com/wedeploy/cli/cmd/removed"
 	"github.com/wedeploy/cli/cmd/restart"
-	"github.com/wedeploy/cli/cmd/start"
 	"github.com/wedeploy/cli/cmd/update"
 	"github.com/wedeploy/cli/cmd/version"
 	"github.com/wedeploy/cli/cmd/who"
@@ -62,8 +60,6 @@ var commands = []*cobra.Command{
 	cmdlogout.LogoutCmd,
 	cmdautocomplete.AutocompleteCmd,
 	cmdgenerate.GenerateCmd,
-	cmdbuild.BuildCmd,
-	cmdstart.StartCmd,
 	cmdremote.RemoteCmd,
 	cmddiagnostics.DiagnosticsCmd,
 	cmdversion.VersionCmd,

@@ -1,8 +1,0 @@
-{
-    "id": "service",
-    "hooks": {
-        "before_start": "echo before",
-        "start": "echo during",
-        "after_start": "echo after"
-    }
-}

@@ -1,7 +1,0 @@
-> echo before
-> true
-> echo after
-> echo before
-> echo during
-> echo after
-> [empty-hooks-service] has no build hooks

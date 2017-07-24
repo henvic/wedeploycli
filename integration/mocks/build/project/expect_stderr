@@ -1,8 +1,0 @@
-> echo before
-> false
-Command false failure: exit status 1
-> echo before
-> echo during
-> echo after
-> [empty-hooks-service] has no build hooks
-Error: Build hooks failure

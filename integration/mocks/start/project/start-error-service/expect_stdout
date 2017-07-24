@@ -1,3 +1,0 @@
-> [start-error-service] before_start : echo before
-before
-> [start-error-service] start : false

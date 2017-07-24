@@ -1,8 +1,0 @@
-> [service] before_build : ls
-wedeploy.json
-> [service] build : cd .. && ls
-service
-expect
-project.json
-> [service] after_build : ls
-wedeploy.json
