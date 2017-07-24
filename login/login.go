@@ -70,7 +70,7 @@ func validatePassword(password string) (bool, error) {
 // Authentication service
 type Authentication struct {
 	NoLaunchBrowser bool
-	serviceDomain   string
+	Domains         status.Domains
 	wlm             *waitlivemsg.WaitLiveMsg
 	msg             *waitlivemsg.Message
 }
@@ -133,13 +133,13 @@ promptForPassword:
 
 // Run authentication process
 func (a *Authentication) Run(ctx context.Context) error {
-	status, err := status.UnsafeGet(ctx)
+	s, err := status.UnsafeGet(ctx)
 
 	if err != nil {
 		return err
 	}
 
-	a.serviceDomain = status.Domains.Service
+	a.Domains = s.Domains
 
 	if a.NoLaunchBrowser {
 		return a.basicAuthLogin()
@@ -241,7 +241,8 @@ func (a *Authentication) saveUser(username, token string) (err error) {
 	remote.Username = username
 	remote.Password = ""
 	remote.Token = token
-	remote.Service = a.serviceDomain
+	remote.Infrastructure = a.Domains.Infrastructure
+	remote.Service = a.Domains.Service
 
 	g.Remotes[config.Context.Remote] = remote
 
