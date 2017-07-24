@@ -45,22 +45,17 @@ func TestInspectPrintServiceStructure(t *testing.T) {
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
-	var want = `ServiceID string
-		Health string
-		Image string
-		Version string
-		Hooks *hooks.Hooks
-		CustomDomains []string
-		Env map[string]string
-		Scale int
-		HealthUID string`
+	cmd.Run()
+
+	if update {
+		tdata.ToFile("mocks/inspect/print-service-structure", cmd.Stdout.String())
+	}
 
 	var e = &Expect{
 		ExitCode: 0,
-		Stdout:   want,
+		Stdout:   tdata.FromFile("mocks/inspect/print-service-structure"),
 	}
 
-	cmd.Run()
 	e.Assert(t, cmd)
 }
 
@@ -74,19 +69,17 @@ func TestInspectPrintContextStructure(t *testing.T) {
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
-	var want = `Scope usercontext.Scope
-ProjectRoot string
-ServiceRoot string
-ProjectID string
-ServiceID string
-ProjectServices []services.ServiceInfo`
+	cmd.Run()
+
+	if update {
+		tdata.ToFile("mocks/inspect/print-context-structure", cmd.Stdout.String())
+	}
 
 	var e = &Expect{
 		ExitCode: 0,
-		Stdout:   want,
+		Stdout:   tdata.FromFile("mocks/inspect/print-context-structure"),
 	}
 
-	cmd.Run()
 	e.Assert(t, cmd)
 }
 
@@ -176,7 +169,7 @@ func TestInspectServiceFormat(t *testing.T) {
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"inspect", "service", "--format", "{{.Type}}"},
+		Args: []string{"inspect", "service", "--format", "{{.Image}}"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "./mocks/inspect/my-project/email",
@@ -198,7 +191,7 @@ func TestInspectServiceFormatVerbose(t *testing.T) {
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"inspect", "service", "--format", "{{.Type}}", "--verbose"},
+		Args: []string{"inspect", "service", "--format", "{{.Image}}", "--verbose"},
 		Env: []string{
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "./mocks/inspect/my-project/email",

@@ -37,13 +37,17 @@ func TestRestartInternalServerError(t *testing.T) {
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
+	cmd.Run()
+
+	if update {
+		tdata.ToFile("mocks/restart/internal-server-error", cmd.Stderr.String())
+	}
+
 	var e = &Expect{
-		Stderr: `Error: The request failed due to an internal error
-Contact us: support@wedeploy.com`,
+		Stderr:   tdata.FromFile("mocks/restart/internal-server-error"),
 		ExitCode: 1,
 	}
 
-	cmd.Run()
 	e.Assert(t, cmd)
 }
 

@@ -3,6 +3,8 @@ package integration
 import (
 	"strings"
 	"testing"
+
+	"github.com/wedeploy/cli/tdata"
 )
 
 func TestCorruptConfig(t *testing.T) {
@@ -30,11 +32,16 @@ func TestLoggedOut(t *testing.T) {
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLogoutHome()},
 	}
 
+	cmd.Run()
+
+	if update {
+		tdata.ToFile("mocks/logout/logged-out-stderr", cmd.Stderr.String())
+	}
+
 	var e = &Expect{
-		Stderr:   "Error: Remote foo not found\n",
+		Stderr:   tdata.FromFile("mocks/logout/logged-out-stderr"),
 		ExitCode: 1,
 	}
 
-	cmd.Run()
 	e.Assert(t, cmd)
 }

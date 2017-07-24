@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/henvic/pseudoterm"
-	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/services"
 )
 
 func TestGeneratePromptProjectThenService(t *testing.T) {
@@ -59,7 +59,7 @@ func TestGeneratePromptProjectAndServiceAtOnce(t *testing.T) {
 			SkipWrite: true,
 		},
 		pseudoterm.Step{
-			Read:  "Select from 1..2:",
+			Read:  "Select:",
 			Write: "2",
 		},
 		pseudoterm.Step{
@@ -150,7 +150,7 @@ func testGeneratePromptProject(t *testing.T) {
 			SkipWrite: true,
 		},
 		pseudoterm.Step{
-			Read:  "Select from 1..2:",
+			Read:  "Select:",
 			Write: "1",
 		},
 		pseudoterm.Step{

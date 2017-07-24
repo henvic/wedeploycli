@@ -1,26 +1,21 @@
-WeDeploy CLI tool wedeploy.com
+! Usage: we [command] [flag]
+  Command               Description
+  deploy           Perform services deployment
+  list             Show list of projects and services
+  console          Open the console on your browser
+  log              Show logs of the services
+  domain           Show and configure domain names for services
+  env              Show and configure environment variables for services
+  restart          Restart project or services
+  remove           Delete project or services
+  login            Log in WeDeploy
+  logout           Log out WeDeploy
+  remote           Configure WeDeploy remotes
+  diagnostics      Run system diagnostics and show report
+  version          Show CLI version
+  update           Update CLI to the latest version
+                   
+  Flag                  Description
+  -h, --help       Show help message
+  -v, --verbose    Show more information about an operation
 
-● we [command] [flags]
-
-Commands:
-  deploy       Performs a deployment
-  list         List deployments
-  log          Show deployment logs
-  domain       Manages your domain names
-  env          Environment variables for services
-  restart      Restart project or service
-  remove       Remove a project or service
-  login        Authenticate on WeDeploy
-  logout       Revoke credentials
-
-  remote       Configure WeDeploy remotes
-  metrics      Analytics reporting and settings
-  update       Updates this tool to the latest version
-  version      Print version information and quit
-
-  diagnostics  Troubleshoot problems and submit system diagnostics
-
-Flags:
-  -v, --verbose   Verbose output
-
-Use "we [command] --help" for more information about a command.

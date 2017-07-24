@@ -1,4 +1,4 @@
 {
-    "type": "nodejs",
+    "image": "nodejs",
     "id": "bar"
 }

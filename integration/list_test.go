@@ -44,12 +44,17 @@ func TestListIncompatibleUseServiceRequiresProject(t *testing.T) {
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
+	cmd.Run()
+
+	if update {
+		tdata.ToFile("mocks/list/incompatible-use", cmd.Stderr.String())
+	}
+
 	var e = &Expect{
 		Stderr:   tdata.FromFile("mocks/list/incompatible-use"),
 		ExitCode: 1,
 	}
 
-	cmd.Run()
 	e.Assert(t, cmd)
 }
 
@@ -109,11 +114,16 @@ func TestListServiceFromInsideProjectNotExists(t *testing.T) {
 		Dir:  "mocks/home/bucket/project",
 	}
 
+	cmd.Run()
+
+	if update {
+		tdata.ToFile("mocks/list/not-exists", cmd.Stderr.String())
+	}
+
 	var e = &Expect{
-		Stderr:   "Error: Not found\n",
+		Stderr:   tdata.FromFile("mocks/list/not-exists"),
 		ExitCode: 1,
 	}
 
-	cmd.Run()
 	e.Assert(t, cmd)
 }

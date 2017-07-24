@@ -3,6 +3,7 @@ package integration
 import (
 	"bytes"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"net"
@@ -44,7 +45,13 @@ var (
 
 	binary    string
 	errStream io.Writer = os.Stderr
+
+	update bool
 )
+
+func init() {
+	flag.BoolVar(&update, "update", false, "update golden files")
+}
 
 // GetExitCode tries to retrieve the exit code from an exit error
 func GetExitCode(err error) int {

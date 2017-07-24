@@ -27,6 +27,10 @@ func TestHelp(t *testing.T) {
 		t.Errorf("Wanted stderr to be empty, got %v instead", cmd.Stderr.String())
 	}
 
+	if update {
+		tdata.ToFile("mocks/help", cmd.Stdout.String())
+	}
+
 	var want = tdata.FromFile("mocks/help")
 
 	var strippedGot = stripSpaces(cmd.Stdout.String())

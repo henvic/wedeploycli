@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/wedeploy/cli/tdata"
 )
 
 type HomesProvider struct {
@@ -185,19 +187,22 @@ func TestInvalidCommand(t *testing.T) {
 }
 
 func TestInvalidArgument(t *testing.T) {
-	var invalidArg = fmt.Sprintf("invalid-arg-%d", rand.Int())
+	var invalidArg = "invalid-arg-392101588246756453"
 	var cmd = &Command{
 		Args: []string{invalidArg},
 	}
 
+	cmd.Run()
+
+	if update {
+		tdata.ToFile("mocks/invalid-argument", cmd.Stderr.String())
+	}
+
 	var e = &Expect{
-		Stderr: fmt.Sprintf(`Error: unknown command "%v" for "we"
-Run 'we --help' for usage.
-`, invalidArg),
+		Stderr:   tdata.FromFile("mocks/invalid-argument"),
 		ExitCode: 1,
 	}
 
-	cmd.Run()
 	e.Assert(t, cmd)
 }
 

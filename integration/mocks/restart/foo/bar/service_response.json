@@ -1,5 +1,5 @@
 {
-    "type": "nodejs",
+    "image": "nodejs",
     "serviceId": "bar",
     "health": "on"
 }

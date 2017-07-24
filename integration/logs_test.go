@@ -22,12 +22,17 @@ func TestLogsTooManyArguments(t *testing.T) {
 		Dir:  "mocks/home/",
 	}
 
+	cmd.Run()
+
+	if update {
+		tdata.ToFile("mocks/logs/too-many-arguments", cmd.Stderr.String())
+	}
+
 	var e = &Expect{
-		Stderr:   "Error: Invalid number of arguments: too many",
+		Stderr:   tdata.FromFile("mocks/logs/too-many-arguments"),
 		ExitCode: 1,
 	}
 
-	cmd.Run()
 	e.Assert(t, cmd)
 }
 
@@ -41,12 +46,17 @@ func TestLogsIncompatibleUse(t *testing.T) {
 		Dir:  "mocks/home/",
 	}
 
+	cmd.Run()
+
+	if update {
+		tdata.ToFile("mocks/home/logs-incompatible-use", cmd.Stderr.String())
+	}
+
 	var e = &Expect{
-		Stderr:   "Error: Use flag --project or call this from inside a project directory",
+		Stderr:   tdata.FromFile("mocks/home/logs-incompatible-use"),
 		ExitCode: 1,
 	}
 
-	cmd.Run()
 	e.Assert(t, cmd)
 }
 
@@ -193,13 +203,13 @@ func TestLogsFromCurrentWorkingOnServiceDirectoryContext(t *testing.T) {
 	e.Assert(t, cmd)
 }
 
-func TestLogsWithWeDeployDotMeAddress(t *testing.T) {
+func TestLogsWithLocalhostAddress(t *testing.T) {
 	defer Teardown()
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc("/projects/foo/services/nodejs5143/logs",
 		func(w http.ResponseWriter, r *http.Request) {
-			if strings.Index(r.Host, "api.wedeploy.me:") != 0 {
+			if strings.Index(r.Host, "localhost:") != 0 {
 				t.Errorf("Expected host to be localhost, got %v instead", r.Host)
 			}
 

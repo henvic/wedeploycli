@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/services"
 )
 
 func TestGenerateDirectoryNotExists(t *testing.T) {
@@ -32,7 +32,7 @@ func TestGenerateDirectoryNotExists(t *testing.T) {
 
 func TestGenerateErrorServiceTypeOnServiceOnly(t *testing.T) {
 	var cmd = &Command{
-		Args: []string{"generate", "--project", "foo", "--service-type", "auth"},
+		Args: []string{"generate", "--project", "foo", "--service-image", "auth"},
 	}
 
 	cmd.Run()
@@ -41,7 +41,7 @@ func TestGenerateErrorServiceTypeOnServiceOnly(t *testing.T) {
 		t.Errorf("Expected stdout to be empty, got %v instead", cmd.Stdout)
 	}
 
-	var wantErr = "Flag --service is required by --service-type"
+	var wantErr = "Flag --service is required by --service-image"
 
 	if !strings.Contains(cmd.Stderr.String(), wantErr) {
 		t.Errorf("Wanted stderr to have %v, got %v instead", wantErr, cmd.Stderr)
@@ -148,7 +148,7 @@ func TestGenerateProjectAndServiceWithoutServiceBoilerplate(t *testing.T) {
 			"example",
 			"--service",
 			"email",
-			"--service-type",
+			"--service-image",
 			"auth",
 			"--service-boilerplate=false",
 			"--directory",
@@ -197,7 +197,7 @@ func TestGenerateServiceInsideAlreadyExistingProjectWithoutServiceBoilerplate(t 
 		Args: []string{"generate",
 			"--service",
 			"data",
-			"--service-type",
+			"--service-image",
 			"data",
 			"--service-boilerplate=false",
 			"--directory",

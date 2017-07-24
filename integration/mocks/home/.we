@@ -12,7 +12,8 @@ analytics_option_date            = Tue May 16 13:17:30 -0300 2017
 
 [remote "wedeploy"]
     ; Default cloud remote
-    url      = wedeploy.io
-    username = admin
-    password = safe
+    infrastructure = wedeploy.com
+    service        = wedeploy.io
+    username       = admin
+    password       = safe
 

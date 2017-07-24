@@ -16,5 +16,4 @@ analytics_id                     = d9b2920e-564b-4c5b-a414-d6da9af2bcdd
 
 [remote "wedeploy"]
     ; Default cloud remote
-    url = wedeploy.io
-
+    infrastructure = wedeploy.com

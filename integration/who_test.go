@@ -1,6 +1,10 @@
 package integration
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/wedeploy/cli/tdata"
+)
 
 func TestWho(t *testing.T) {
 	defer Teardown()
@@ -12,12 +16,17 @@ func TestWho(t *testing.T) {
 		Dir:  "mocks/home/",
 	}
 
+	cmd.Run()
+
+	if update {
+		tdata.ToFile("mocks/who/found", cmd.Stdout.String())
+	}
+
 	var e = &Expect{
-		Stdout:   "admin in wedeploy (wedeploy.io)",
+		Stdout:   tdata.FromFile("mocks/who/found"),
 		ExitCode: 0,
 	}
 
-	cmd.Run()
 	e.Assert(t, cmd)
 }
 
@@ -31,11 +40,16 @@ func TestWhoNotFound(t *testing.T) {
 		Dir:  "mocks/home/",
 	}
 
+	cmd.Run()
+
+	if update {
+		tdata.ToFile("mocks/who/not-found", cmd.Stderr.String())
+	}
+
 	var e = &Expect{
-		Stderr:   "Error: User is not available",
+		Stderr:   tdata.FromFile("mocks/who/not-found"),
 		ExitCode: 1,
 	}
 
-	cmd.Run()
 	e.Assert(t, cmd)
 }
