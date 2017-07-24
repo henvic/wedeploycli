@@ -36,9 +36,6 @@ type APIFault struct {
 	Errors  APIFaultErrors `json:"errors"`
 }
 
-// DefaultToken for the API server
-var DefaultToken = "1"
-
 var errMissingResponse = errors.New("Request is not fulfilled by a response")
 
 func (a APIFault) Error() string {
