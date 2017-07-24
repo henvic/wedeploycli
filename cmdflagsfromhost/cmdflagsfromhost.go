@@ -1,6 +1,7 @@
 package cmdflagsfromhost
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -8,7 +9,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/flagsfromhost"
+	"github.com/wedeploy/cli/login"
+	"github.com/wedeploy/cli/metrics"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/wdircontext"
@@ -314,7 +318,35 @@ func (s *SetupHost) verifyCmdReqAuth() error {
 		return nil
 	}
 
-	return fmt.Errorf(`not logged on remote "%v". Please run "we login" before using "we %v"`,
-		s.Remote(),
-		s.cmd.Name())
+	metrics.Rec(metrics.Event{
+		Type: "required_auth_cmd_precondition_failure",
+		Text: fmt.Sprintf(`Command "%v" requires authentication, but one is not set.`, s.cmd.CommandPath()),
+		Extra: map[string]string{
+			"cmd": s.cmd.CommandPath(),
+		},
+	})
+
+	return authenticateOrCancel(s.cmd)
+}
+
+func authenticateOrCancel(cmd *cobra.Command) error {
+	var options = fancy.Options{}
+	options.Add("A", "Yes")
+	options.Add("B", "Cancel")
+
+	var choice, err = options.Ask(fmt.Sprintf(`You need to log in before performing "%s". Do you want to log in?`, cmd.UseLine()))
+
+	if err != nil {
+		return err
+	}
+
+	if choice == "B" {
+		return login.CancelCommand("Login canceled.")
+	}
+
+	a := login.Authentication{
+		NoLaunchBrowser: false,
+	}
+
+	return a.Run(context.Background())
 }
