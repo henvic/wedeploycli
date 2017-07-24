@@ -17,6 +17,8 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/templates"
+	"github.com/wedeploy/cli/verbose"
 )
 
 const panicTemplate = `An unrecoverable error has occurred.
@@ -66,10 +68,10 @@ func extractParentCommand(cmd string) string {
 	return strings.Join(splitCmd[:len(splitCmd)-1], " ")
 }
 
-// tryGetMessage tries to get a human-friendly error message from the
+// tryGetPersonalizedMessage tries to get a human-friendly error message from the
 // command / local error message lists falling back to the parent command
 // and at last instance to the global
-func tryGetMessage(cmd, reason string) (string, bool) {
+func tryGetPersonalizedMessage(cmd, reason string, context apihelper.APIFaultErrorContext) (string, bool) {
 	local := cmd
 getMessage:
 	if haystack, ok := errorReasonCommandMessageOverrides[local]; ok {
@@ -83,7 +85,19 @@ getMessage:
 	}
 
 	msg, ok := errorReasonMessage[reason]
-	return msg, ok
+
+	if !ok {
+		return msg, ok
+	}
+
+	personalizedMsg, err := templates.Execute(msg, context)
+
+	if err != nil {
+		verbose.Debug(errwrap.Wrapf("Error getting personalized message: {{err}}", err))
+		return msg, ok
+	}
+
+	return personalizedMsg, ok
 }
 
 func (h *handler) unwrap() {
@@ -114,7 +128,7 @@ func (h *handler) handleAPIFaultError() error {
 	var anyFriendly bool
 
 	for _, e := range err.Errors {
-		rtm, ok := tryGetMessage(CommandName, e.Reason)
+		rtm, ok := tryGetPersonalizedMessage(CommandName, e.Reason, e.Context)
 		if ok {
 			anyFriendly = true
 			msgs = append(msgs, rtm)
