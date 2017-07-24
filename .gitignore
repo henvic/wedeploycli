@@ -11,6 +11,7 @@ metrics/mocks/.we
 metrics/mocks/.we_metrics
 integration/mocks/login/.we
 integration/mocks/login/.we_metrics
+integration/mocks/logout/.we_metrics
 integration/mocks/generate/example
 integration/mocks/generate/foo/data
 
