@@ -7,5 +7,5 @@ IFS=$'\n\t'
 
 cd $GOPATH/src/github.com/wedeploy/cli
 go install -race
-cd -
+cd ~-
 $GOPATH/bin/cli $@
