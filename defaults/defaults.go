@@ -1,6 +1,6 @@
 package defaults
 
-var (
+const (
 	// Version of the WeDeploy Project CLI tool
 	Version = "master"
 
