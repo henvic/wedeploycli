@@ -25,8 +25,10 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/errorhandling"
+	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/flagsfromhost"
 	"github.com/wedeploy/cli/formatter"
+	"github.com/wedeploy/cli/login"
 	"github.com/wedeploy/cli/metrics"
 	"github.com/wedeploy/cli/update"
 	"github.com/wedeploy/cli/userhome"
@@ -94,10 +96,7 @@ func (m *mainProgram) setupMetrics() {
 }
 
 func printError(e error) {
-	fmt.Fprintf(os.Stderr,
-		"%v %v\n",
-		color.Format(color.FgRed, "Error:"),
-		e)
+	fmt.Fprintf(os.Stderr, "%v\n", fancy.Error(e))
 
 	var aft = errwrap.GetType(e, &apihelper.APIFault{})
 
@@ -111,9 +110,8 @@ func printError(e error) {
 		return
 	}
 
-	fmt.Fprintf(os.Stderr, "%v %v\n",
-		color.Format(color.FgRed, "Contact us:"),
-		defaults.SupportEmail)
+	fmt.Fprintf(os.Stderr, "%v\n",
+		fancy.Error("Contact us: "+defaults.SupportEmail))
 }
 
 func hideHelpFlag() {
@@ -128,7 +126,15 @@ func (m *mainProgram) executeCommand() {
 	m.cmd, m.cmdErr = cmd.RootCmd.ExecuteC()
 	m.cmdFriendlyErr = errorhandling.Handle(m.cmdErr)
 
+	switch m.cmdErr.(type) {
+	case login.CanceledCommand:
+		fmt.Fprintln(os.Stderr, fancy.Success(m.cmdErr))
+		m.cmdErr = nil
+	}
+
 	if m.cmdErr != nil {
+		fmt.Fprintln(os.Stderr, fancy.Error(
+			fmt.Sprintf(`Something went wrong with your "%s" operation.`, m.cmd.UseLine())))
 		printError(m.cmdFriendlyErr)
 	}
 
@@ -300,6 +306,6 @@ func (m *mainProgram) commandErrorConditionalUsage() {
 			panic(ue)
 		}
 	} else if strings.HasPrefix(emsg, "unknown command ") {
-		println("Run 'we --help' for usage.")
+		println(fancy.Error("Run 'we --help' for usage."))
 	}
 }
