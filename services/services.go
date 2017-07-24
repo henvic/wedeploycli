@@ -16,7 +16,6 @@ import (
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/hooks"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 )
@@ -41,7 +40,6 @@ type Service struct {
 	Health        string            `json:"health,omitempty"`
 	Image         string            `json:"image,omitempty"`
 	Version       string            `json:"version,omitempty"`
-	Hooks         *hooks.Hooks      `json:"hooks,omitempty"`
 	CustomDomains []string          `json:"customDomains,omitempty"`
 	Env           map[string]string `json:"env,omitempty"`
 	Scale         int               `json:"scale,omitempty"`
@@ -53,7 +51,6 @@ type ServicePackage struct {
 	ID            string            `json:"id,omitempty"`
 	Scale         int               `json:"scale,omitempty"`
 	Type          string            `json:"type,omitempty"`
-	Hooks         *hooks.Hooks      `json:"hooks,omitempty"`
 	CustomDomains []string          `json:"customDomains,omitempty"`
 	Env           map[string]string `json:"env,omitempty"`
 }
@@ -67,7 +64,6 @@ func (cp ServicePackage) Service() *Service {
 		Scale:         cp.Scale,
 		Image:         image,
 		Version:       version,
-		Hooks:         cp.Hooks,
 		CustomDomains: cp.CustomDomains,
 		Env:           cp.Env,
 	}
