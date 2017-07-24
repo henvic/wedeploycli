@@ -228,13 +228,12 @@ type accessToken struct {
 
 // OAuthTokenFromBasicAuth gets a token from a Basic Auth flow
 func OAuthTokenFromBasicAuth(remoteAddress, username, password string) (token string, err error) {
-	var request = apihelper.URL(context.Background(), "/oauth/token")
+	var request = apihelper.URL(context.Background(), "/login")
 
-	request.Param("username", username)
-	request.Param("password", password)
-	request.Param("grant_type", "password")
+	request.Form("email", username)
+	request.Form("password", password)
 
-	if err := apihelper.Validate(request, request.Get()); err != nil {
+	if err := apihelper.Validate(request, request.Post()); err != nil {
 		return "", err
 	}
 
