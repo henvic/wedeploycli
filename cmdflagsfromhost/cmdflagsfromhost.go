@@ -192,7 +192,7 @@ func (s *SetupHost) addProjectFlag(cmd *cobra.Command) {
 }
 
 func (s *SetupHost) addServiceFlag(cmd *cobra.Command) {
-	cmd.Flags().StringVarP(&s.service, "service", "c", "", "Perform the operation for a specific service")
+	cmd.Flags().StringVarP(&s.service, "service", "s", "", "Perform the operation for a specific service")
 }
 
 func (s *SetupHost) getServiceFromCurrentWorkingDirectory() (service string, err error) {

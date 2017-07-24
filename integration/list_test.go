@@ -58,6 +58,29 @@ func TestListIncompatibleUseServiceRequiresProject(t *testing.T) {
 	e.Assert(t, cmd)
 }
 
+func TestListIncompatibleUseServiceRequiresProjectWithShortFlags(t *testing.T) {
+	defer Teardown()
+	Setup()
+
+	var cmd = &Command{
+		Args: []string{"list", "-s", "service", "-r", "local", "--no-color"},
+		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
+	}
+
+	cmd.Run()
+
+	if update {
+		tdata.ToFile("mocks/list/incompatible-use", cmd.Stderr.String())
+	}
+
+	var e = &Expect{
+		Stderr:   tdata.FromFile("mocks/list/incompatible-use"),
+		ExitCode: 1,
+	}
+
+	e.Assert(t, cmd)
+}
+
 func TestListServiceFromInsideProject(t *testing.T) {
 	defer Teardown()
 	Setup()
