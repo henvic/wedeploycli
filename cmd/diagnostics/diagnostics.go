@@ -60,8 +60,8 @@ func diagnosticsRun(cmd *cobra.Command, args []string) error {
 	fmt.Printf("Diagnostics report size: %v\n", color.Format(color.Bold, color.FgHiBlue, humanize.Bytes(uint64(report.Len()))))
 
 	if !send && !cmd.Flag("send").Changed {
-		const question = "Press [Enter] or type \"yes\" to send diagnostics report to WeDeploy [yes/no]"
-		switch ask, askErr := prompt.Prompt(question); {
+		fmt.Println("Press [Enter] or type \"yes\" to send diagnostics report to WeDeploy [yes/no]: ")
+		switch ask, askErr := prompt.Prompt(); {
 		case askErr != nil:
 			return errwrap.Wrapf("Skipping diagnostics submission: {{err}}", askErr)
 		case len(ask) == 0 || strings.ToLower(ask[:1]) == "y":

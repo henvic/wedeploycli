@@ -911,7 +911,8 @@ func (d *Deploy) checkDeployment() (failedBuilds []string, failedDeploys []strin
 
 func (d *Deploy) maybeOpenLogs(failedBuilds, failedDeploys []string) {
 shouldOpenPrompt:
-	var p, err = prompt.Prompt("Do you want to check the logs (yes/no)? [no]")
+	fmt.Println("Do you want to check the logs (yes/no)? [no]: ")
+	var p, err = prompt.Prompt()
 
 	if err != nil {
 		verbose.Debug(err)

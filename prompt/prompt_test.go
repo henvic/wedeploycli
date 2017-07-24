@@ -8,23 +8,15 @@ import (
 
 var (
 	bufInStream       bytes.Buffer
-	bufErrStream      bytes.Buffer
-	bufOutStream      bytes.Buffer
 	defaultIsTerminal = isTerminal
 )
 
 func TestMain(m *testing.M) {
 	var defaultInStream = inStream
-	var defaultErrStream = errStream
-	var defaultOutStream = outStream
 	inStream = &bufInStream
-	errStream = &bufErrStream
-	outStream = &bufOutStream
 	ec := m.Run()
 	isTerminal = defaultIsTerminal
 	inStream = defaultInStream
-	errStream = defaultErrStream
-	outStream = defaultOutStream
 	os.Exit(ec)
 }
 
@@ -33,8 +25,6 @@ func TestSelectOption(t *testing.T) {
 		isTerminal = defaultIsTerminal
 	}()
 	bufInStream.Reset()
-	bufErrStream.Reset()
-	bufOutStream.Reset()
 	isTerminal = true
 	var _, err = bufInStream.WriteString("2\n")
 
@@ -51,14 +41,6 @@ func TestSelectOption(t *testing.T) {
 	if errt != nil {
 		t.Errorf("Expected option error to be nil, got %v instead", errt)
 	}
-
-	if bufErrStream.Len() != 0 {
-		t.Error("Expected error stream to be empty")
-	}
-
-	if bufOutStream.String() != "\nSelect from 1..4: " {
-		t.Error("Unexpected output stream")
-	}
 }
 
 func TestSelectOptionEquivalentChoosen(t *testing.T) {
@@ -66,8 +48,6 @@ func TestSelectOptionEquivalentChoosen(t *testing.T) {
 		isTerminal = defaultIsTerminal
 	}()
 	bufInStream.Reset()
-	bufErrStream.Reset()
-	bufOutStream.Reset()
 	isTerminal = true
 	var _, err = bufInStream.WriteString("pass2\n")
 
@@ -89,14 +69,6 @@ func TestSelectOptionEquivalentChoosen(t *testing.T) {
 	if errt != nil {
 		t.Errorf("Expected option error to be nil, got %v instead", errt)
 	}
-
-	if bufErrStream.Len() != 0 {
-		t.Error("Expected error stream to be empty")
-	}
-
-	if bufOutStream.String() != "\nSelect from 1..4: " {
-		t.Error("Unexpected output stream")
-	}
 }
 
 func TestSelectOptionEquivalentNotChoosen(t *testing.T) {
@@ -104,8 +76,6 @@ func TestSelectOptionEquivalentNotChoosen(t *testing.T) {
 		isTerminal = defaultIsTerminal
 	}()
 	bufInStream.Reset()
-	bufErrStream.Reset()
-	bufOutStream.Reset()
 	isTerminal = true
 	var _, err = bufInStream.WriteString("2\n")
 
@@ -127,14 +97,6 @@ func TestSelectOptionEquivalentNotChoosen(t *testing.T) {
 	if errt != nil {
 		t.Errorf("Expected option error to be nil, got %v instead", errt)
 	}
-
-	if bufErrStream.Len() != 0 {
-		t.Error("Expected error stream to be empty")
-	}
-
-	if bufOutStream.String() != "\nSelect from 1..4: " {
-		t.Error("Unexpected output stream")
-	}
 }
 
 func TestSelectOptionIsNotTerminal(t *testing.T) {
@@ -142,8 +104,6 @@ func TestSelectOptionIsNotTerminal(t *testing.T) {
 		isTerminal = defaultIsTerminal
 	}()
 	bufInStream.Reset()
-	bufErrStream.Reset()
-	bufOutStream.Reset()
 	isTerminal = false
 	var _, err = bufInStream.WriteString("value\n")
 
@@ -157,18 +117,10 @@ func TestSelectOptionIsNotTerminal(t *testing.T) {
 		t.Errorf("Expected option to be -1, got %v instead", option)
 	}
 
-	var wantErr = "Input device is not a terminal. Can not read \"\nSelect from 1..5\""
+	var wantErr = "input device is not a terminal"
 
 	if errt == nil || errt.Error() != wantErr {
 		t.Errorf("Expected option error to be %v, got %v instead", wantErr, errt)
-	}
-
-	if bufErrStream.Len() != 0 {
-		t.Error("Expected error stream to be empty")
-	}
-
-	if bufOutStream.String() != "" {
-		t.Error("Unexpected output stream")
 	}
 }
 
@@ -177,8 +129,6 @@ func TestSelectOptionNoneAvailable(t *testing.T) {
 		isTerminal = defaultIsTerminal
 	}()
 	bufInStream.Reset()
-	bufErrStream.Reset()
-	bufOutStream.Reset()
 	isTerminal = true
 	var _, err = bufInStream.WriteString("value\n")
 
@@ -197,14 +147,6 @@ func TestSelectOptionNoneAvailable(t *testing.T) {
 	if errt == nil || errt.Error() != wantErr {
 		t.Errorf("Expected option error to be %v, got %v instead", wantErr, errt)
 	}
-
-	if bufErrStream.Len() != 0 {
-		t.Error("Expected error stream to be empty")
-	}
-
-	if bufOutStream.String() != "" {
-		t.Error("Unexpected output stream")
-	}
 }
 
 func TestSelectOptionNoneAvailableEquivalent(t *testing.T) {
@@ -212,8 +154,6 @@ func TestSelectOptionNoneAvailableEquivalent(t *testing.T) {
 		isTerminal = defaultIsTerminal
 	}()
 	bufInStream.Reset()
-	bufErrStream.Reset()
-	bufOutStream.Reset()
 	isTerminal = true
 	var _, err = bufInStream.WriteString("value\n")
 
@@ -234,14 +174,6 @@ func TestSelectOptionNoneAvailableEquivalent(t *testing.T) {
 	if errt == nil || errt.Error() != wantErr {
 		t.Errorf("Expected option error to be %v, got %v instead", wantErr, errt)
 	}
-
-	if bufErrStream.Len() != 0 {
-		t.Error("Expected error stream to be empty")
-	}
-
-	if bufOutStream.String() != "" {
-		t.Error("Unexpected output stream")
-	}
 }
 
 func TestSelectOptionInvalidOption(t *testing.T) {
@@ -249,8 +181,6 @@ func TestSelectOptionInvalidOption(t *testing.T) {
 		isTerminal = defaultIsTerminal
 	}()
 	bufInStream.Reset()
-	bufErrStream.Reset()
-	bufOutStream.Reset()
 	isTerminal = true
 	var _, err = bufInStream.WriteString("value\n")
 
@@ -269,14 +199,6 @@ func TestSelectOptionInvalidOption(t *testing.T) {
 	if errt == nil || errt.Error() != wantErr {
 		t.Errorf("Expected option error to be %v, got %v instead", wantErr, errt)
 	}
-
-	if bufErrStream.Len() != 0 {
-		t.Error("Expected error stream to be empty")
-	}
-
-	if bufOutStream.String() != "\nSelect from 1..4: " {
-		t.Error("Unexpected output stream")
-	}
 }
 
 func TestSelectOptionInvalidOptionOffByOne(t *testing.T) {
@@ -284,8 +206,6 @@ func TestSelectOptionInvalidOptionOffByOne(t *testing.T) {
 		isTerminal = defaultIsTerminal
 	}()
 	bufInStream.Reset()
-	bufErrStream.Reset()
-	bufOutStream.Reset()
 	isTerminal = true
 	var _, err = bufInStream.WriteString("5\n")
 
@@ -304,14 +224,6 @@ func TestSelectOptionInvalidOptionOffByOne(t *testing.T) {
 	if errt == nil || errt.Error() != wantErr {
 		t.Errorf("Expected option error to be %v, got %v instead", wantErr, errt)
 	}
-
-	if bufErrStream.Len() != 0 {
-		t.Error("Expected error stream to be empty")
-	}
-
-	if bufOutStream.String() != "\nSelect from 1..4: " {
-		t.Error("Unexpected output stream")
-	}
 }
 
 func TestSelectOptionInvalidOptionEquivalent(t *testing.T) {
@@ -319,8 +231,6 @@ func TestSelectOptionInvalidOptionEquivalent(t *testing.T) {
 		isTerminal = defaultIsTerminal
 	}()
 	bufInStream.Reset()
-	bufErrStream.Reset()
-	bufOutStream.Reset()
 	isTerminal = true
 	var _, err = bufInStream.WriteString("value\n")
 
@@ -342,14 +252,6 @@ func TestSelectOptionInvalidOptionEquivalent(t *testing.T) {
 	if errt == nil || errt.Error() != wantErr {
 		t.Errorf("Expected option error to be %v, got %v instead", wantErr, errt)
 	}
-
-	if bufErrStream.Len() != 0 {
-		t.Error("Expected error stream to be empty")
-	}
-
-	if bufOutStream.String() != "\nSelect from 1..4: " {
-		t.Error("Unexpected output stream")
-	}
 }
 
 func TestPrompt(t *testing.T) {
@@ -358,8 +260,6 @@ func TestPrompt(t *testing.T) {
 	}()
 	var want = "value"
 	bufInStream.Reset()
-	bufErrStream.Reset()
-	bufOutStream.Reset()
 	isTerminal = true
 	var _, err = bufInStream.WriteString("value\n")
 
@@ -367,7 +267,7 @@ func TestPrompt(t *testing.T) {
 		panic(err)
 	}
 
-	var u, errt = Prompt("question")
+	var u, errt = Prompt()
 
 	if errt != nil {
 		t.Errorf("Expected prompt error to be nil, got %v instead", errt)
@@ -375,14 +275,6 @@ func TestPrompt(t *testing.T) {
 
 	if u != want {
 		t.Errorf("Expected prompt value %v, got %v instead", want, u)
-	}
-
-	if bufErrStream.Len() != 0 {
-		t.Error("Expected error stream to be empty")
-	}
-
-	if bufOutStream.String() != "question: " {
-		t.Error("Unexpected output stream")
 	}
 }
 
@@ -392,8 +284,6 @@ func TestPromptEmpty(t *testing.T) {
 	}()
 	var want = ""
 	bufInStream.Reset()
-	bufErrStream.Reset()
-	bufOutStream.Reset()
 	isTerminal = true
 	var _, err = bufInStream.WriteString("\n")
 
@@ -401,7 +291,7 @@ func TestPromptEmpty(t *testing.T) {
 		panic(err)
 	}
 
-	var u, errt = Prompt("question")
+	var u, errt = Prompt()
 
 	if errt != nil {
 		t.Errorf("Expected prompt error to be nil, got %v instead", errt)
@@ -409,14 +299,6 @@ func TestPromptEmpty(t *testing.T) {
 
 	if u != want {
 		t.Errorf("Expected prompt value %v, got %v instead", want, u)
-	}
-
-	if bufErrStream.Len() != 0 {
-		t.Error("Expected error stream to be empty")
-	}
-
-	if bufOutStream.String() != "question: " {
-		t.Error("Unexpected output stream")
 	}
 }
 
@@ -426,12 +308,10 @@ func TestPromptWithSpace(t *testing.T) {
 	}()
 	var want = "my value"
 	bufInStream.Reset()
-	bufErrStream.Reset()
-	bufOutStream.Reset()
 	isTerminal = true
 	_, _ = bufInStream.WriteString("my value\n")
 
-	var u, errt = Prompt("question")
+	var u, errt = Prompt()
 
 	if errt != nil {
 		t.Errorf("Expected prompt error to be nil, got %v instead", errt)
@@ -440,14 +320,6 @@ func TestPromptWithSpace(t *testing.T) {
 	if u != want {
 		t.Errorf("Expected prompt value %v, got %v instead", want, u)
 	}
-
-	if bufErrStream.Len() != 0 {
-		t.Error("Expected error stream to be empty")
-	}
-
-	if bufOutStream.String() != "question: " {
-		t.Error("Unexpected output stream")
-	}
 }
 
 func TestPromptIsNotterminal(t *testing.T) {
@@ -455,8 +327,6 @@ func TestPromptIsNotterminal(t *testing.T) {
 		isTerminal = defaultIsTerminal
 	}()
 	bufInStream.Reset()
-	bufErrStream.Reset()
-	bufOutStream.Reset()
 	isTerminal = false
 	var _, err = bufInStream.WriteString("value\n")
 
@@ -464,13 +334,13 @@ func TestPromptIsNotterminal(t *testing.T) {
 		panic(err)
 	}
 
-	var u, errt = Prompt("question")
+	var u, errt = Prompt()
 
 	if errt == nil {
 		t.Errorf("Expected prompt error to be not nil, got %v instead", errt)
 	}
 
-	var wantErr = `Input device is not a terminal. Can not read "question"`
+	var wantErr = `input device is not a terminal`
 
 	if errt.Error() != wantErr {
 		t.Errorf("Expected error message %v, got %v instead", wantErr, errt)
@@ -478,14 +348,6 @@ func TestPromptIsNotterminal(t *testing.T) {
 
 	if u != "" {
 		t.Errorf("Expected prompt value empty, got %v instead", u)
-	}
-
-	if bufErrStream.Len() != 0 {
-		t.Error("Expected error stream to be empty")
-	}
-
-	if bufOutStream.String() != "" {
-		t.Error("Unexpected output stream")
 	}
 }
 
@@ -494,8 +356,6 @@ func TestHiddenIsNotterminal(t *testing.T) {
 		isTerminal = defaultIsTerminal
 	}()
 	bufInStream.Reset()
-	bufErrStream.Reset()
-	bufOutStream.Reset()
 	isTerminal = false
 	var _, err = bufInStream.WriteString("value\n")
 
@@ -503,13 +363,13 @@ func TestHiddenIsNotterminal(t *testing.T) {
 		panic(err)
 	}
 
-	var u, errt = Hidden("question")
+	var u, errt = Hidden()
 
 	if errt == nil {
 		t.Errorf("Expected prompt error to be not nil, got %v instead", errt)
 	}
 
-	var wantErr = `Input device is not a terminal. Can not read "question"`
+	var wantErr = `input device is not a terminal: can't read password`
 
 	if errt.Error() != wantErr {
 		t.Errorf("Expected error message %v, got %v instead", wantErr, errt)
@@ -517,13 +377,5 @@ func TestHiddenIsNotterminal(t *testing.T) {
 
 	if u != "" {
 		t.Errorf("Expected prompt value empty, got %v instead", u)
-	}
-
-	if bufErrStream.Len() != 0 {
-		t.Error("Expected error stream to be empty")
-	}
-
-	if bufOutStream.String() != "" {
-		t.Error("Unexpected output stream")
 	}
 }

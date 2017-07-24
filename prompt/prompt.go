@@ -3,7 +3,6 @@ package prompt
 import (
 	"bufio"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -17,7 +16,6 @@ import (
 var (
 	inStream  io.Reader = os.Stdin
 	outStream io.Writer = os.Stdout
-	errStream io.Writer = os.Stderr
 
 	isTerminal = terminal.IsTerminal(int(os.Stdin.Fd()))
 )
@@ -28,8 +26,7 @@ func SelectOption(indexLength int, equivalents map[string]int) (index int, err e
 		return -1, errors.New("no options available")
 	}
 
-	var option string
-	option, err = Prompt(fmt.Sprintf("\nSelect from 1..%d", indexLength))
+	option, err := Prompt()
 
 	if err != nil {
 		return -1, err
@@ -58,13 +55,11 @@ func getSelectOptionIndex(index, indexLength int, err error) (int, error) {
 
 // Prompt returns a prompt to receive the value of a parameter.
 // If the key is on a secret keys list it suppresses the feedback.
-func Prompt(param string) (string, error) {
+func Prompt() (string, error) {
 	if !isTerminal {
-		return "", errors.New("Input device is not a terminal. " +
-			`Can not read "` + param + `"`)
+		return "", errors.New("input device is not a terminal")
 	}
 
-	fmt.Fprintf(outStream, param+": ")
 	reader := bufio.NewReader(inStream)
 	value, err := reader.ReadString('\n')
 
@@ -73,24 +68,22 @@ func Prompt(param string) (string, error) {
 	value = strings.TrimPrefix(value, "\r")
 
 	if err != nil {
-		return "", errwrap.Wrapf("Can not read stdin for "+param+": {{err}}", err)
+		return "", errwrap.Wrapf("can't read stdin : {{err}}", err)
 	}
 
 	return value[:len(value)-1], nil
 }
 
 // Hidden provides a prompt without echoing the value entered
-func Hidden(param string) (string, error) {
+func Hidden() (string, error) {
 	if !isTerminal {
-		return "", errors.New("Input device is not a terminal. " +
-			`Can not read "` + param + `"`)
+		return "", errors.New("input device is not a terminal: can't read password")
 	}
 
-	fmt.Fprintf(outStream, param+": ")
 	var b, err = terminal.ReadPassword(int(syscall.Stdin))
 
 	if err != nil {
-		return "", errwrap.Wrapf("Can not read stdin for "+param+": {{err}}", err)
+		return "", errwrap.Wrapf("can't read stdin (hidden): {{err}}", err)
 	}
 
 	return string(b), nil
