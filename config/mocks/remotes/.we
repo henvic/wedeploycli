@@ -6,17 +6,17 @@ last_update_check =
 next_version      = 
 
 [remote "alternative"]
-    url = http://example.net/
+    infrastructure = http://example.net/
 [remote "staging"]
-    url = http://staging.example.net/
+    infrastructure = http://staging.example.net/
 [remote "beta"]
     ; my beta comment
-    url = http://beta.example.com/
+    infrastructure = http://beta.example.com/
 ; commented vars remains even when empty
 [remote "remain"]
-    url = http://localhost/
+    infrastructure = http://localhost/
 ; commented vars remains even when empty
 [remote "dontremain"]
-    url = http://localhost/
+    infrastructure = http://localhost/
 [remote "dontremain2"]
-    url = http://localhost/
+    infrastructure = http://localhost/

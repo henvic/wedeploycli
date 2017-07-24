@@ -10,6 +10,12 @@ var (
 	// BuildTime is the time when the build was generated
 	BuildTime = ""
 
+	// Infrastructure is the default remote address
+	Infrastructure = "wedeploy.com"
+
+	// LocalServiceDomain is the local service domain for the local infrastructure
+	LocalServiceDomain = "wedeploy.me"
+
 	// DashboardAddressPrefix for a given remote
 	DashboardAddressPrefix = "console."
 

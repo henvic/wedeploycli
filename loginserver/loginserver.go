@@ -173,7 +173,7 @@ func (s *Service) homeHandler(w http.ResponseWriter, r *http.Request) {
 	referer, _ := url.Parse(r.Header.Get("Referer"))
 
 	// this is a compromise
-	var dashboard = defaults.DashboardAddressPrefix + config.Context.RemoteAddress
+	var dashboard = defaults.DashboardAddressPrefix + config.Context.InfrastructureDomain
 	if referer.Host != "" && referer.Host != dashboard {
 		s.err = errors.New("Token origin is not from given dashboard")
 		safeErrorHandler(w, "403 Forbidden", http.StatusForbidden)

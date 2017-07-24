@@ -45,11 +45,11 @@ func TestSetupNonExistingConfigFileAndTeardown(t *testing.T) {
 	}
 
 	var (
-		wantUsername      = ""
-		wantPassword      = ""
-		wantToken         = ""
-		wantRemote        = "wedeploy"
-		wantRemoteAddress = "wedeploy.io"
+		wantUsername = ""
+		wantPassword = ""
+		wantToken    = ""
+		wantRemote   = "wedeploy"
+		wantInfrastructureDomain = "wedeploy.com"
 	)
 
 	if len(Global.Remotes) != 2 {
@@ -72,8 +72,8 @@ func TestSetupNonExistingConfigFileAndTeardown(t *testing.T) {
 		t.Errorf("Wanted remote to be %v, got %v instead", wantRemote, Context.Remote)
 	}
 
-	if Context.RemoteAddress != wantRemoteAddress {
-		t.Errorf("Wanted remoteAddress to be %v, got %v instead", wantRemoteAddress, Context.RemoteAddress)
+	if Context.InfrastructureDomain != wantInfrastructureDomain {
+		t.Errorf("Wanted InfrastructureDomain to be %v, got %v instead", wantInfrastructureDomain, Context.InfrastructureDomain)
 	}
 
 	Teardown()
@@ -109,11 +109,11 @@ func TestSetupLocalAndTeardown(t *testing.T) {
 	}
 
 	var (
-		wantUsername      = "foo@example.com"
-		wantPassword      = ""
-		wantToken         = "mock_token"
-		wantRemote        = "local"
-		wantRemoteAddress = "wedeploy.me"
+		wantUsername       = "foo@example.com"
+		wantPassword       = ""
+		wantToken          = "mock_token"
+		wantRemote         = "local"
+		wantInfrastructure = "localhost"
 	)
 
 	if len(Global.Remotes) != 3 {
@@ -136,8 +136,8 @@ func TestSetupLocalAndTeardown(t *testing.T) {
 		t.Errorf("Wanted remote to be %v, got %v instead", wantRemote, Context.Remote)
 	}
 
-	if Context.RemoteAddress != wantRemoteAddress {
-		t.Errorf("Wanted remoteAddress to be %v, got %v instead", wantRemoteAddress, Context.RemoteAddress)
+	if Context.InfrastructureDomain != wantInfrastructure {
+		t.Errorf("Wanted remoteAddress to be %v, got %v instead", wantInfrastructure, Context.InfrastructureDomain)
 	}
 
 	Teardown()
@@ -173,11 +173,11 @@ func TestSetupRemoteAndTeardown(t *testing.T) {
 	}
 
 	var (
-		wantUsername      = "foo@example.com"
-		wantPassword      = "bar"
-		wantToken         = ""
-		wantRemote        = "wedeploy"
-		wantRemoteAddress = "wedeploy.io"
+		wantUsername       = "foo@example.com"
+		wantPassword       = "bar"
+		wantToken          = ""
+		wantRemote         = "wedeploy"
+		wantInfrastructure = "wedeploy.io"
 	)
 
 	if len(Global.Remotes) != 3 {
@@ -200,8 +200,8 @@ func TestSetupRemoteAndTeardown(t *testing.T) {
 		t.Errorf("Wanted remote to be %v, got %v instead", wantRemote, Context.Remote)
 	}
 
-	if Context.RemoteAddress != wantRemoteAddress {
-		t.Errorf("Wanted remoteAddress to be %v, got %v instead", wantRemoteAddress, Context.RemoteAddress)
+	if Context.InfrastructureDomain != wantInfrastructure {
+		t.Errorf("Wanted remoteAddress to be %v, got %v instead", wantInfrastructure, Context.InfrastructureDomain)
 	}
 
 	if Global.NotifyUpdates {
@@ -327,20 +327,20 @@ func TestSave(t *testing.T) {
 		`enable_analytics                 = false`,
 		`[remote "wedeploy"]
     ; Default cloud remote
-    url      = wedeploy.io
-    username = foo@example.com
-    password = bar
+    infrastructure = wedeploy.io
+    username       = foo@example.com
+    password       = bar
 `,
 		`[remote "local"]
     ; Default local remote
-    url      = http://wedeploy.me
-    username = foo@example.com
-    token    = mock_token
+    infrastructure = http://localhost
+    username       = foo@example.com
+    token          = mock_token
 `,
 		`[remote "xyz"]
-    url      = wedeploy.xyz
-    username = foobar@example.net
-    password = 123`,
+    infrastructure = wedeploy.xyz
+    username       = foobar@example.net
+    password       = 123`,
 	}
 
 	for _, w := range want {
@@ -376,16 +376,16 @@ func TestRemotes(t *testing.T) {
 	}
 
 	Global.Remotes.Set("staging", remotes.Entry{
-		URL: "https://staging.example.net/",
+		Infrastructure: "https://staging.example.net/",
 	})
 
 	Global.Remotes.Set("beta", remotes.Entry{
-		URL:     "https://beta.example.com/",
-		Comment: "remote for beta testing",
+		Infrastructure: "https://beta.example.com/",
+		Comment:        "remote for beta testing",
 	})
 
 	Global.Remotes.Set("new", remotes.Entry{
-		URL: "http://foo/",
+		Infrastructure: "http://foo/",
 	})
 
 	Global.Remotes.Del("temporary")
@@ -408,16 +408,16 @@ func TestRemotes(t *testing.T) {
 	var got = tdata.FromFile(Global.Path)
 	var want = []string{`
 [remote "alternative"]
-    url = http://example.net/
+    infrastructure = http://example.net/
 `,
 		`
 [remote "staging"]
-    url = https://staging.example.net/
+    infrastructure = https://staging.example.net/
 `,
 		`
 ; remote for beta testing
 [remote "beta"]
-    url = https://beta.example.com/
+    infrastructure = https://beta.example.com/
 `,
 		`
 ; commented vars remains even when empty
@@ -426,11 +426,11 @@ func TestRemotes(t *testing.T) {
 		`
 [remote "wedeploy"]
     ; Default cloud remote
-    url = wedeploy.io
+    infrastructure = wedeploy.com
 `,
 		`
 [remote "new"]
-    url = http://foo/
+    infrastructure = http://foo/
 `}
 
 	for _, w := range want {
@@ -465,35 +465,36 @@ func TestRemotesListAndGet(t *testing.T) {
 
 	var wantOriginalRemotes = remotes.List{
 		"wedeploy": remotes.Entry{
-			URL:        "wedeploy.io",
-			URLComment: "Default cloud remote",
+			Infrastructure:        "wedeploy.com",
+			InfrastructureComment: "Default cloud remote",
 		},
 		"local": remotes.Entry{
-			URL:        "http://wedeploy.me",
-			URLComment: "Default local remote",
-			Username:   "no-reply@wedeploy.com",
-			Password:   "cli-tool-password",
+			Infrastructure:        "http://localhost",
+			InfrastructureComment: "Default local remote",
+			Service:               "wedeploy.me",
+			Username:              "no-reply@wedeploy.com",
+			Password:              "cli-tool-password",
 		},
 		"alternative": remotes.Entry{
-			URL: "http://example.net/",
+			Infrastructure: "http://example.net/",
 		},
 		"staging": remotes.Entry{
-			URL: "http://staging.example.net/",
+			Infrastructure: "http://staging.example.net/",
 		},
 		"beta": remotes.Entry{
-			URL:        "http://beta.example.com/",
-			URLComment: "; my beta comment",
+			Infrastructure:        "http://beta.example.com/",
+			InfrastructureComment: "; my beta comment",
 		},
 		"remain": remotes.Entry{
-			URL:     "http://localhost/",
-			Comment: "; commented vars remains even when empty",
+			Infrastructure: "http://localhost/",
+			Comment:        "; commented vars remains even when empty",
 		},
 		"dontremain": remotes.Entry{
-			URL:     "http://localhost/",
-			Comment: "; commented vars remains even when empty",
+			Infrastructure: "http://localhost/",
+			Comment:        "; commented vars remains even when empty",
 		},
 		"dontremain2": remotes.Entry{
-			URL: "http://localhost/",
+			Infrastructure: "http://localhost/",
 		},
 	}
 
@@ -525,8 +526,8 @@ func TestRemotesListAndGet(t *testing.T) {
 	}
 
 	var wantRemain = remotes.Entry{
-		URL:     "http://localhost/",
-		Comment: "; commented vars remains even when empty",
+		Infrastructure: "http://localhost/",
+		Comment:        "; commented vars remains even when empty",
 	}
 
 	var gotRemain, gotRemainOK = Global.Remotes["remain"]

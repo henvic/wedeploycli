@@ -838,7 +838,7 @@ func (d *Deploy) checkActivitiesLoop() {
 }
 
 func (d *Deploy) printServiceAddress(service string) string {
-	var address = d.ProjectID + "." + d.RemoteAddress
+	var address = d.ProjectID + "." + d.ServiceDomain
 
 	if service != "" {
 		address = service + "-" + address
@@ -929,7 +929,7 @@ shouldOpenPrompt:
 
 	var logsURL = fmt.Sprintf("https://%v%v/projects/%v/logs",
 		defaults.DashboardAddressPrefix,
-		d.RemoteAddress,
+		d.InfrastructureDomain,
 		d.ProjectID)
 
 	switch {

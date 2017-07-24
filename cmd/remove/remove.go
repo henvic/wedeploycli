@@ -34,14 +34,15 @@ var RemoveCmd = &cobra.Command{
 }
 
 type undeployer struct {
-	context       context.Context
-	project       string
-	service       string
-	remoteAddress string
-	list          *list.List
-	end           bool
-	endMutex      sync.Mutex
-	err           chan error
+	context              context.Context
+	project              string
+	service              string
+	infrastructureDomain string
+	serviceDomain        string
+	list                 *list.List
+	end                  bool
+	endMutex             sync.Mutex
+	err                  chan error
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
@@ -74,11 +75,12 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 func run(cmd *cobra.Command, args []string) error {
 	var u = undeployer{
-		context:       context.Background(),
-		project:       setupHost.Project(),
-		service:       setupHost.Service(),
-		remoteAddress: setupHost.RemoteAddress(),
-		err:           make(chan error, 1),
+		context:              context.Background(),
+		project:              setupHost.Project(),
+		service:              setupHost.Service(),
+		infrastructureDomain: setupHost.InfrastructureDomain(),
+		serviceDomain:        setupHost.ServiceDomain(),
+		err:                  make(chan error, 1),
 	}
 
 	if err := u.checkProjectOrServiceExists(); err != nil {
@@ -108,7 +110,7 @@ func (u *undeployer) do() {
 }
 
 func (u *undeployer) getAddress() string {
-	var address = fmt.Sprintf("%v.%v", u.project, u.remoteAddress)
+	var address = fmt.Sprintf("%v.%v", u.project, u.serviceDomain)
 
 	if u.service != "" {
 		address = u.service + "." + address

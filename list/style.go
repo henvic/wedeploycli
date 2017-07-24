@@ -7,9 +7,9 @@ import (
 
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/services"
 )
 
 func (l *List) printProjects() {
@@ -58,7 +58,7 @@ func (l *List) printServices(projectID string, cs []services.Service) {
 
 func (l *List) printService(projectID string, c services.Service) {
 	l.Printf(color.Format(getHealthForegroundColor(c.Health), "• "))
-	serviceDomain := getServiceDomain(projectID, c.ServiceID)
+	serviceDomain := l.getServiceDomain(projectID, c.ServiceID)
 	l.Printf("%v\t", serviceDomain)
 	l.printInstances(c.Scale)
 	l.Printf(color.Format(color.FgHiBlack, "%v\t", c.Image))
@@ -121,9 +121,9 @@ func pad(space int) string {
 	return strings.Join(make([]string, space), " ")
 }
 
-func getServiceDomain(projectID, serviceID string) string {
+func (l *List) getServiceDomain(projectID, serviceID string) string {
 	return fmt.Sprintf("%v.%v", color.Format(
-		color.Bold, "%v-%v", serviceID, projectID), config.Context.RemoteAddress)
+		color.Bold, "%v-%v", serviceID, projectID), config.Context.ServiceDomain)
 }
 
 func inArray(key string, haystack []string) bool {

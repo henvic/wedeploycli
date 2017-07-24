@@ -52,10 +52,10 @@ func TestParseRemoteAddressMultipleRemote(t *testing.T) {
 	defer resetDefaults()
 	remotesList = &remotes.List{
 		"foo": remotes.Entry{
-			URL: "foo-bar.wedeploy.me",
+			Service: "foo-bar.wedeploy.me",
 		},
 		"bar": remotes.Entry{
-			URL: "foo-bar.wedeploy.me",
+			Service: "foo-bar.wedeploy.me",
 		},
 	}
 
@@ -80,7 +80,7 @@ func TestParseLocalRemoteAddress(t *testing.T) {
 	defer resetDefaults()
 	remotesList = &remotes.List{
 		"foo": remotes.Entry{
-			URL: "foo-bar.wedeploy.me",
+			Service: "foo-bar.wedeploy.me",
 		},
 	}
 
@@ -97,10 +97,10 @@ func TestParseRemoteAddresses(t *testing.T) {
 	defer resetDefaults()
 	remotesList = &remotes.List{
 		"cloud": remotes.Entry{
-			URL: "wedeploy.io",
+			Service: "wedeploy.io",
 		},
 		"demo": remotes.Entry{
-			URL: "demo.wedeploy.com",
+			Service: "demo.wedeploy.com",
 		},
 	}
 
@@ -140,7 +140,7 @@ func TestParseByFlagsOnly(t *testing.T) {
 	defer resetDefaults()
 	remotesList = &remotes.List{
 		"hollywood": remotes.Entry{
-			URL: "example.com",
+			Service: "example.com",
 		},
 	}
 
@@ -167,7 +167,7 @@ func TestServiceWithMissingProject(t *testing.T) {
 	defer resetDefaults()
 	remotesList = &remotes.List{
 		"hollywood": remotes.Entry{
-			URL: "example.com",
+			Service: "example.com",
 		},
 	}
 
@@ -241,7 +241,7 @@ func TestParseHostWithErrorRemoteFlagAndHost(t *testing.T) {
 	defer resetDefaults()
 	remotesList = &remotes.List{
 		"xyz": remotes.Entry{
-			URL: "wedeploy.com",
+			Service: "wedeploy.com",
 		},
 	}
 
@@ -269,7 +269,7 @@ func TestParseNoMatchFromExternalHost(t *testing.T) {
 	defer resetDefaults()
 	remotesList = &remotes.List{
 		"xyz": remotes.Entry{
-			URL: "wedeploy.com",
+			Service: "wedeploy.com",
 		},
 	}
 
@@ -551,16 +551,16 @@ func TestParse(t *testing.T) {
 	defer resetDefaults()
 	remotesList = &remotes.List{
 		"foo": remotes.Entry{
-			URL: "example.com",
+			Service: "example.com",
 		},
 		"alphabet": remotes.Entry{
-			URL: "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
+			Service: "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
 		},
 		"ip": remotes.Entry{
-			URL: "11.22.33.44:5555",
+			Service: "11.22.33.44:5555",
 		},
 		"wedeploy": remotes.Entry{
-			URL: "wedeploy.io",
+			Service: "wedeploy.io",
 		},
 	}
 
@@ -816,19 +816,19 @@ func TestParseWithDefaultCustomRemote(t *testing.T) {
 	defer resetDefaults()
 	remotesList = &remotes.List{
 		"foo": remotes.Entry{
-			URL: "example.com",
+			Service: "example.com",
 		},
 		"alphabet": remotes.Entry{
-			URL: "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
+			Service: "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
 		},
 		"ip": remotes.Entry{
-			URL: "11.22.33.44:5555",
+			Service: "11.22.33.44:5555",
 		},
 		"wedeploy": remotes.Entry{
-			URL: "wedeploy.io",
+			Service: "wedeploy.io",
 		},
 		"local": remotes.Entry{
-			URL: "wedeploy.me",
+			Service: "wedeploy.me",
 		},
 	}
 

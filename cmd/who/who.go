@@ -22,7 +22,7 @@ func whoRun(cmd *cobra.Command, args []string) error {
 		fmt.Printf("%s in %s (%s)\n",
 			config.Context.Username,
 			config.Context.Remote,
-			config.Context.RemoteAddress)
+			config.Context.InfrastructureDomain)
 		return nil
 	}
 

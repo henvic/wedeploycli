@@ -11,17 +11,17 @@ enable_analytics                 = false
 
 [remote "wedeploy"]
     ; Default cloud remote
-    url      = wedeploy.io
-    username = foo@example.com
-    password = bar
+    infrastructure = wedeploy.io
+    username       = foo@example.com
+    password       = bar
 
 [remote "local"]
     ; Default local remote
-    url      = http://wedeploy.me
-    username = foo@example.com
-    token    = mock_token
+    infrastructure = http://localhost
+    username       = foo@example.com
+    token          = mock_token
 
 [remote "xyz"]
-    url      = wedeploy.xyz
-    username = foobar@example.net
-    password = 123
+    infrastructure = wedeploy.xyz
+    username       = foobar@example.net
+    password       = 123

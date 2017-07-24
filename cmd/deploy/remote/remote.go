@@ -127,7 +127,7 @@ func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 
 	var gitServer = fmt.Sprintf("%vgit.%v/%v.git",
 		gitSchema,
-		config.Context.RemoteAddress,
+		config.Context.InfrastructureDomain,
 		rd.ProjectID)
 
 	var ctx = context.Background()
@@ -137,18 +137,19 @@ func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 	}
 
 	var deploy = &deployment.Deploy{
-		Context:           ctx,
-		AuthorEmail:       config.Context.Username,
-		ProjectID:         rd.ProjectID,
-		ServiceID:         rd.ServiceID,
-		ChangedServiceID:  rd.changedSID,
-		Path:              rd.path,
-		Remote:            config.Context.Remote,
-		RemoteAddress:     config.Context.RemoteAddress,
-		GitRemoteAddress:  gitServer,
-		Services:          rd.services.GetIDs(),
-		Quiet:             rd.Quiet,
+		Context:              ctx,
+		AuthorEmail:          config.Context.Username,
+		ProjectID:            rd.ProjectID,
+		ServiceID:            rd.ServiceID,
+		ChangedServiceID:     rd.changedSID,
+		Path:                 rd.path,
+		Remote:               config.Context.Remote,
+		InfrastructureDomain: config.Context.InfrastructureDomain,
+		ServiceDomain:        config.Context.ServiceDomain,
 		Token:                config.Context.Token,
+		GitRemoteAddress:     gitServer,
+		Services:             rd.services.GetIDs(),
+		Quiet:                rd.Quiet,
 	}
 
 	err = deploy.Do()
@@ -254,7 +255,7 @@ func (rd *RemoteDeployment) loadServicesListForGlobalScope() (err error) {
 }
 
 func (rd *RemoteDeployment) printAddress(service string) string {
-	var address = rd.ProjectID + "." + config.Global.Remotes[rd.Remote].URL
+	var address = rd.ProjectID + "." + config.Global.Remotes[rd.Remote].Service
 
 	if service != "" {
 		address = service + "-" + address

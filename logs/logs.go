@@ -26,21 +26,21 @@ import (
 type Logs struct {
 	ServiceID  string `json:"serviceId"`
 	ServiceUID string `json:"serviceUid"`
-	DeployUID    string `json:"deployUid"`
-	ProjectID    string `json:"projectId"`
-	Level        int    `json:"level"`
-	Message      string `json:"message"`
-	Severity     string `json:"severity"`
-	Timestamp    int64  `json:"timestamp"`
+	DeployUID  string `json:"deployUid"`
+	ProjectID  string `json:"projectId"`
+	Level      int    `json:"level"`
+	Message    string `json:"message"`
+	Severity   string `json:"severity"`
+	Timestamp  int64  `json:"timestamp"`
 }
 
 // Filter structure
 type Filter struct {
-	Project   string `json:"-"`
-	Service string `json:"serviceId,omitempty"`
-	Instance  string `json:"serviceUid,omitempty"`
-	Level     int    `json:"level,omitempty"`
-	Since     string `json:"start,omitempty"`
+	Project  string `json:"-"`
+	Service  string `json:"serviceId,omitempty"`
+	Instance string `json:"serviceUid,omitempty"`
+	Level    int    `json:"level,omitempty"`
+	Since    string `json:"start,omitempty"`
 }
 
 // Watcher structure
@@ -212,7 +212,7 @@ func printList(list []Logs) {
 		fd := color.Format(iw,
 			log.ServiceID+"-"+
 				log.ProjectID+"."+
-				config.Context.RemoteAddress+
+				config.Context.ServiceDomain+
 				"["+trim(log.ServiceUID, 7)+"]")
 		outStreamMutex.Lock()
 		fmt.Fprintf(outStream, "%v %v\n", fd, log.Message)

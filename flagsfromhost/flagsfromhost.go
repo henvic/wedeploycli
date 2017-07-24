@@ -323,10 +323,10 @@ func parseRemoteAddress(remoteAddress string) (found []string) {
 	for _, k := range remotesList.Keys() {
 		var v = (*remotesList)[k]
 
-		var sameHTTP = matchStringWithPrefix("http://", remoteAddress, v.URL)
-		var sameHTTPS = matchStringWithPrefix("https://", remoteAddress, v.URL)
+		var sameHTTP = matchStringWithPrefix("http://", remoteAddress, v.Service)
+		var sameHTTPS = matchStringWithPrefix("https://", remoteAddress, v.Service)
 
-		if sameHTTP || sameHTTPS || remoteAddress == v.URL {
+		if sameHTTP || sameHTTPS || remoteAddress == v.Service {
 			found = append(found, k)
 		}
 	}

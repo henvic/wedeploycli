@@ -8,24 +8,26 @@ import (
 func TestKeysIsSorted(t *testing.T) {
 	var list = List{
 		"alternative": Entry{
-			URL: "http://example.net/",
+			// probably want to remove the "http:// everywhere on this file"
+			Infrastructure: "http://example.net/",
+			Service:        "foobar.com",
 		},
 		"staging": Entry{
-			URL: "http://staging.example.net/",
+			Infrastructure: "http://staging.example.net/",
 		},
 		"beta": Entry{
-			URL:        "http://beta.example.com/",
-			URLComment: "my beta comment",
+			Infrastructure:        "http://beta.example.com/",
+			InfrastructureComment: "my beta comment",
 		},
 		"remain": Entry{
-			URL:     "http://localhost/",
-			Comment: "commented vars remains even when empty",
+			Infrastructure: "http://localhost/",
+			Comment:        "commented vars remains even when empty",
 		},
 		"dontremain": Entry{
-			URL: "http://localhost/",
+			Infrastructure: "http://localhost/",
 		},
 		"dontremain2": Entry{
-			URL: "http://localhost/",
+			Infrastructure: "http://localhost/",
 		},
 	}
 
@@ -40,18 +42,18 @@ func TestKeysIsSorted(t *testing.T) {
 func TestGetAndDelete(t *testing.T) {
 	var list = List{
 		"alternative": Entry{
-			URL:        "http://example.net/",
-			Comment:    "123",
-			URLComment: "abc",
+			Infrastructure:        "http://example.net/",
+			Comment:               "123",
+			InfrastructureComment: "abc",
 		},
 		"staging": Entry{
-			URL: "http://staging.example.net/",
+			Infrastructure: "http://staging.example.net/",
 		},
 	}
 
 	alt, ok := list["alternative"]
 
-	if !ok || alt.URL != "http://example.net/" || alt.Comment != "123" || alt.URLComment != "abc" {
+	if !ok || alt.Infrastructure != "http://example.net/" || alt.Comment != "123" || alt.InfrastructureComment != "abc" {
 		t.Errorf("Expected values ((http://example.net/, 123, abc), true), got (%v, %v) instead", alt, ok)
 	}
 
@@ -66,13 +68,13 @@ func TestSet(t *testing.T) {
 	var list = List{}
 
 	list.Set("alternative", Entry{
-		URL:     "http://example.net/",
-		Comment: "123",
+		Infrastructure: "http://example.net/",
+		Comment:        "123",
 	})
 
 	alt, ok := list["alternative"]
 
-	if !ok || alt.URL != "http://example.net/" || alt.Comment != "123" {
+	if !ok || alt.Infrastructure != "http://example.net/" || alt.Comment != "123" {
 		t.Errorf("Expected values ((http://example.net/, 123), true), got (%v, %v) instead", alt, ok)
 	}
 }

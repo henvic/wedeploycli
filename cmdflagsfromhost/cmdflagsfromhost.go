@@ -73,9 +73,14 @@ func (s *SetupHost) Remote() string {
 	return s.remote
 }
 
-// RemoteAddress of the parsed flags or host
-func (s *SetupHost) RemoteAddress() string {
-	return config.Global.Remotes[s.remote].URL
+// InfrastructureDomain of the parsed flags or host
+func (s *SetupHost) InfrastructureDomain() string {
+	return config.Global.Remotes[s.remote].Infrastructure
+}
+
+// ServiceDomain of the parsed flags or host
+func (s *SetupHost) ServiceDomain() string {
+	return config.Global.Remotes[s.remote].Service
 }
 
 // Init flags on a given command

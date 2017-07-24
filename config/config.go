@@ -15,7 +15,6 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/remotes"
-	"github.com/wedeploy/cli/remoteuriparser"
 	"github.com/wedeploy/cli/usercontext"
 	"github.com/wedeploy/cli/verbose"
 )
@@ -78,24 +77,25 @@ func (c *Config) openOrCreate() error {
 }
 
 func (c *Config) loadDefaultRemotes() {
-	switch c.Remotes[defaults.CloudRemote].URL {
-	case "wedeploy.io":
+	switch c.Remotes[defaults.CloudRemote].Infrastructure {
+	case defaults.Infrastructure:
 	case "":
 		c.Remotes.Set(defaults.CloudRemote, remotes.Entry{
-			URL:        "wedeploy.io",
-			URLComment: "Default cloud remote",
+			Infrastructure:        defaults.Infrastructure,
+			InfrastructureComment: "Default cloud remote",
 		})
 	default:
 		println(color.Format(color.FgHiRed, "Warning: Non-standard wedeploy remote cloud detected"))
 	}
 
-	switch c.Remotes[defaults.LocalRemote].URL {
+	switch c.Remotes[defaults.LocalRemote].Infrastructure {
 	case "":
 		c.Remotes.Set(defaults.LocalRemote, remotes.Entry{
-			URL:        c.getLocalEndpoint(),
-			URLComment: "Default local remote",
-			Username:   "no-reply@wedeploy.com",
-			Password:   "cli-tool-password",
+			Infrastructure:        c.getLocalEndpoint(),
+			InfrastructureComment: "Default local remote",
+			Service:               defaults.LocalServiceDomain,
+			Username:              "no-reply@wedeploy.com",
+			Password:              "cli-tool-password",
 		})
 	default:
 		println(color.Format(color.FgHiRed, "Warning: Custom local remote detected"))
@@ -137,18 +137,6 @@ func (c *Config) Save() error {
 	return nil
 }
 
-// IsEndpoint returns a boolean telling whether the URL is within a WeDeploy endpoint or not
-func (c *Config) IsEndpoint(host string) bool {
-	for _, remote := range c.Remotes {
-		// this could be improved
-		if len(remote.URL) != 0 && strings.Contains(remote.URL, host) {
-			return true
-		}
-	}
-
-	return false
-}
-
 // Setup the environment
 func Setup(path string) (err error) {
 	path, err = filepath.Abs(path)
@@ -179,8 +167,16 @@ func SetEndpointContext(remote string) error {
 	}
 
 	Context.Remote = remote
-	Context.RemoteAddress = getRemoteAddress(r.URL)
-	Context.Endpoint = remoteuriparser.Parse(r.URL)
+
+	switch {
+	case strings.HasPrefix(r.Infrastructure, "http://localhost"):
+		Context.Infrastructure = Global.getLocalEndpoint()
+	default:
+		Context.Infrastructure = "https://api." + r.Infrastructure
+	}
+
+	Context.InfrastructureDomain = getRemoteAddress(r.Infrastructure)
+	Context.ServiceDomain = r.Service
 	Context.Username = r.Username
 	Context.Password = r.Password
 	Context.Token = r.Token
@@ -298,23 +294,26 @@ func (c *Config) readRemotes() {
 	c.Remotes = remotes.List{}
 
 	for _, k := range c.listRemotes() {
-		s := c.getRemote(k)
-		u := s.Key("url")
-		username := s.Key("username")
-		password := s.Key("password")
-		token := s.Key("token")
-		comment := s.Comment
+		remote := c.getRemote(k)
+		infrastructure := remote.Key("infrastructure")
+		service := remote.Key("service")
+		username := remote.Key("username")
+		password := remote.Key("password")
+		token := remote.Key("token")
+		comment := remote.Comment
 
 		c.Remotes[k] = remotes.Entry{
-			URL:             strings.TrimSpace(u.String()),
-			URLComment:      strings.TrimSpace(u.Comment),
-			Comment:         strings.TrimSpace(comment),
-			Username:        strings.TrimSpace(username.String()),
-			UsernameComment: strings.TrimSpace(username.Comment),
-			Password:        strings.TrimSpace(password.String()),
-			PasswordComment: strings.TrimSpace(password.Comment),
-			Token:           strings.TrimSpace(token.String()),
-			TokenComment:    strings.TrimSpace(token.Comment),
+			Comment:               strings.TrimSpace(comment),
+			Infrastructure:        strings.TrimSpace(infrastructure.String()),
+			InfrastructureComment: strings.TrimSpace(infrastructure.Comment),
+			Service:               strings.TrimSpace(service.String()),
+			ServiceComment:        strings.TrimSpace(service.Comment),
+			Username:              strings.TrimSpace(username.String()),
+			UsernameComment:       strings.TrimSpace(username.Comment),
+			Password:              strings.TrimSpace(password.String()),
+			PasswordComment:       strings.TrimSpace(password.Comment),
+			Token:                 strings.TrimSpace(token.String()),
+			TokenComment:          strings.TrimSpace(token.Comment),
 		}
 	}
 }
@@ -333,23 +332,28 @@ func (c *Config) simplify() {
 
 func (c *Config) simplifyRemotes() {
 	for _, k := range c.listRemotes() {
-		s := c.getRemote(k)
-		u := s.Key("url")
+		remote := c.getRemote(k)
+		infrastructure := remote.Key("infrastructure")
+		service := remote.Key("service")
 
-		if u.Value() == "" && u.Comment == "" {
-			s.DeleteKey("url")
+		if infrastructure.Value() == "" && infrastructure.Comment == "" {
+			remote.DeleteKey("infrastructure")
 		}
 
-		if len(s.Keys()) == 0 && s.Comment == "" {
+		if service.Value() == "" && service.Comment == "" {
+			remote.DeleteKey("service")
+		}
+
+		if len(remote.Keys()) == 0 && remote.Comment == "" {
 			c.deleteRemote(k)
 		}
 
 		var omitempty = []string{"username", "password", "token"}
 
 		for _, k := range omitempty {
-			var key = s.Key(k)
+			var key = remote.Key(k)
 			if key.Value() == "" && key.Comment == "" {
-				s.DeleteKey(k)
+				remote.DeleteKey(k)
 			}
 		}
 	}
@@ -367,24 +371,29 @@ func (c *Config) updateRemotes() {
 			continue
 		}
 
-		s := c.getRemote(k)
-		keyURL := s.Key("url")
-		keyURL.SetValue(v.URL)
-		keyURL.Comment = v.URLComment
+		remote := c.getRemote(k)
 
-		keyUsername := s.Key("username")
+		keyInfrastructure := remote.Key("infrastructure")
+		keyInfrastructure.SetValue(v.Infrastructure)
+		keyInfrastructure.Comment = v.InfrastructureComment
+
+		keyService := remote.Key("service")
+		keyService.SetValue(v.Service)
+		keyService.Comment = v.ServiceComment
+
+		keyUsername := remote.Key("username")
 		keyUsername.SetValue(v.Username)
 		keyUsername.Comment = v.UsernameComment
 
-		keyPassword := s.Key("password")
+		keyPassword := remote.Key("password")
 		keyPassword.SetValue(v.Password)
 		keyPassword.Comment = v.PasswordComment
 
-		keyToken := s.Key("token")
+		keyToken := remote.Key("token")
 		keyToken.SetValue(v.Token)
 		keyToken.Comment = v.TokenComment
 
-		s.Comment = v.Comment
+		remote.Comment = v.Comment
 	}
 
 	c.simplifyRemotes()
@@ -396,7 +405,7 @@ func (c *Config) banner() {
 }
 
 func (c *Config) getLocalEndpoint() string {
-	var endpoint = "http://wedeploy.me"
+	var endpoint = "http://localhost"
 
 	if c.LocalHTTPPort != 80 {
 		endpoint += fmt.Sprintf(":%d", c.LocalHTTPPort)

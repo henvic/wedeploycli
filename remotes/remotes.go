@@ -4,15 +4,17 @@ import "sort"
 
 // Entry for a remote
 type Entry struct {
-	URL             string
-	URLComment      string
-	Username        string
-	UsernameComment string
-	Password        string
-	PasswordComment string
-	Token           string
-	TokenComment    string
-	Comment         string
+	Infrastructure        string
+	InfrastructureComment string
+	ServiceComment        string
+	Service               string
+	Username              string
+	UsernameComment       string
+	Password              string
+	PasswordComment       string
+	Token                 string
+	TokenComment          string
+	Comment               string
 }
 
 // List of remotes

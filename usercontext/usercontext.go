@@ -11,15 +11,16 @@ import (
 
 // Context structure
 type Context struct {
-	Scope         Scope
-	ProjectRoot   string
-	ServiceRoot string
-	Remote        string
-	RemoteAddress string
-	Endpoint      string
-	Username      string
-	Password      string
-	Token         string
+	Scope                Scope
+	ProjectRoot          string
+	ServiceRoot          string
+	Remote               string
+	Infrastructure       string
+	InfrastructureDomain string
+	ServiceDomain        string
+	Username             string
+	Password             string
+	Token                string
 }
 
 // Scope is the type for the current mode of the CLI tool (based on current working directory)

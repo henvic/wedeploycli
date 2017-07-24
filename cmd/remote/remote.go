@@ -70,13 +70,13 @@ func remoteRun(cmd *cobra.Command, args []string) error {
 
 	for _, k := range remotes.Keys() {
 		var key, _ = remotes[k]
-		var u = key.URL
+		var infrastructure = key.Infrastructure
 
 		if k == defaults.LocalRemote {
-			u = strings.TrimPrefix(u, "http://")
+			infrastructure = strings.TrimPrefix(infrastructure, "http://")
 		}
 
-		fmt.Fprintf(w, "%s\t%s", k, u)
+		fmt.Fprintf(w, "%s\t%s", k, infrastructure)
 
 		if k == config.Global.DefaultRemote {
 			fmt.Fprintf(w, " (default)")
@@ -100,7 +100,7 @@ func setRun(cmd *cobra.Command, args []string) error {
 	}
 
 	r.Set(name, remotes.Entry{
-		URL: args[1],
+		Infrastructure: args[1],
 	})
 
 	return global.Save()
@@ -163,7 +163,7 @@ func getURLRun(cmd *cobra.Command, args []string) error {
 		return errors.New("fatal: remote " + name + " does not exists.")
 	}
 
-	fmt.Println(remote.URL)
+	fmt.Println(remote.Infrastructure)
 	return nil
 }
 
@@ -178,7 +178,7 @@ func setURLRun(cmd *cobra.Command, args []string) error {
 	}
 
 	r.Set(name, remotes.Entry{
-		URL: uri,
+		Infrastructure: uri,
 	})
 	return global.Save()
 }
