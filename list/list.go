@@ -18,7 +18,7 @@ import (
 
 // Filter parameters for the list command
 type Filter struct {
-	Project    string
+	Project  string
 	Services []string
 }
 
