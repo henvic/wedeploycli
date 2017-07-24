@@ -3,6 +3,7 @@ package errorhandling
 var errorReasonMessage = messages{
 	"restricted":                     "Access is restricted to collaborators",
 	"unauthorized":                   "Access is denied due to invalid credentials",
+	"invalidCredentials":             "Access is denied due to invalid credentials",
 	"documentNotFound":               "Not found",
 	"notFound":                       "Not found",
 	"projectNotFound":                "Not found",
@@ -10,7 +11,8 @@ var errorReasonMessage = messages{
 	"badRequest":                     "The API request is invalid or improperly formed",
 	"internalError":                  "The request failed due to an internal error",
 	"projectQuotaExceeded":           "Project quota exceeded",
-	"invalidParameter":               "Invalid parameter",
+	"exceededProjectMaximum":         "Project quota exceeded",
+	"invalidParameter":               `Invalid parameter "{{.param}}" for "{{.value}}"`,
 	"invalidService":                 "Invalid service",
 	"invalidProject":                 "Invalid project",
 	"invalidAccountEmail":            "Invalid email account",
