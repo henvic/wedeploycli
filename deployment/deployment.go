@@ -42,25 +42,26 @@ var (
 
 // Deploy project
 type Deploy struct {
-	Context           context.Context
-	AuthorEmail       string
-	ProjectID         string
-	ServiceID         string
-	ChangedServiceID  bool
-	Path              string
-	Remote            string
-	RemoteAddress     string
-	RepoAuthorization string
-	GitRemoteAddress  string
-	Services          []string
-	Quiet             bool
-	groupUID          string
-	pushStartTime     time.Time
-	pushEndTime       time.Time
-	sActivities       servicesMap
-	wlm               waitlivemsg.WaitLiveMsg
-	stepMessage       *waitlivemsg.Message
-	uploadMessage     *waitlivemsg.Message
+	Context              context.Context
+	AuthorEmail          string
+	ProjectID            string
+	ServiceID            string
+	ChangedServiceID     bool
+	Path                 string
+	Remote               string
+	InfrastructureDomain string
+	ServiceDomain        string
+	Token                string
+	GitRemoteAddress string
+	Services         []string
+	Quiet            bool
+	groupUID         string
+	pushStartTime    time.Time
+	pushEndTime      time.Time
+	sActivities      servicesMap
+	wlm              waitlivemsg.WaitLiveMsg
+	stepMessage      *waitlivemsg.Message
+	uploadMessage    *waitlivemsg.Message
 }
 
 func (d *Deploy) getGitPath() string {
@@ -267,7 +268,7 @@ func (d *Deploy) verboseOnPush() {
 
 	verbose.Debug(color.Format(color.FgBlue, "Push Authorization") +
 		color.Format(color.FgRed, ": ") +
-		verbose.SafeEscape(d.RepoAuthorization))
+		verbose.SafeEscape(d.Token))
 }
 
 func copyErrStreamAndVerbose(cmd *exec.Cmd) *bytes.Buffer {
@@ -295,18 +296,11 @@ func (d *Deploy) Push() (groupUID string, err error) {
 	}
 
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	if d.RepoAuthorization != "" {
-		d.verboseOnPush()
-		params = append([]string{
-			"-c",
-			"https." + d.GitRemoteAddress + ".extraHeader=Authorization: " + d.RepoAuthorization,
-		}, params...)
-	}
-
 	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = append(cmd.Env,
+	cmd.Env = append(os.Environ(),
 		"GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path,
 		"GIT_TERMINAL_PROMPT=0",
+		GitCredentialEnvRemoteToken+"="+d.Token,
 	)
 	cmd.Dir = d.Path
 
@@ -597,7 +591,28 @@ func (d *Deploy) preparePackage() (err error) {
 		return err
 	}
 
-	return d.AddRemote()
+	if err = d.AddRemote(); err != nil {
+		return err
+	}
+
+	return d.addCredentialHelper()
+}
+
+// GitCredentialEnvRemoteToken is the environment variable used for git credential-helper
+const GitCredentialEnvRemoteToken = "WEDEPLOY_REMOTE_TOKEN"
+
+func (d *Deploy) addCredentialHelper() (err error) {
+	var params = []string{"config", "--add", "credential.helper", os.Args[0] + " git-credential-helper"}
+	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
+	var cmd = exec.CommandContext(d.Context, "git", params...)
+	cmd.Env = append(cmd.Env,
+		"GIT_DIR="+d.getGitPath(),
+		"GIT_WORK_TREE="+d.Path,
+	)
+	cmd.Dir = d.Path
+	cmd.Stderr = errStream
+	cmd.Stdout = outStream
+	return cmd.Run()
 }
 
 func (d *Deploy) uploadPackage() (err error) {

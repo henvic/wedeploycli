@@ -14,6 +14,7 @@ import (
 	"github.com/wedeploy/cli/cmd/domain"
 	"github.com/wedeploy/cli/cmd/env"
 	"github.com/wedeploy/cli/cmd/generate"
+	"github.com/wedeploy/cli/cmd/gitcredentialhelper"
 	"github.com/wedeploy/cli/cmd/inspect"
 	"github.com/wedeploy/cli/cmd/list"
 	"github.com/wedeploy/cli/cmd/log"
@@ -66,6 +67,7 @@ var commands = []*cobra.Command{
 	cmdupdate.UpdateCmd,
 	cmdinspect.InspectCmd,
 	cmdwho.WhoCmd,
+	cmdgitcredentialhelper.GitCredentialHelperCmd,
 }
 
 // see note on usage of maybeEnableVerboseByEnv

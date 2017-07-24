@@ -34,23 +34,6 @@ type RemoteDeployment struct {
 	changedSID bool
 }
 
-func getAuthCredentials() string {
-	// hacky way to get the credentials
-	// instead of duplicating code, let's use existing one
-	// that already does so
-	var request = apihelper.URL(context.Background(), "")
-	apihelper.Auth(request)
-	return request.Headers.Get("Authorization")
-}
-
-func getRepoAuthorization() (string, error) {
-	if config.Context.Username == "" {
-		return "", errors.New("User is not configured yet")
-	}
-
-	return getAuthCredentials(), nil
-}
-
 func (rd *RemoteDeployment) getPath() (path string, err error) {
 	switch config.Context.Scope {
 	case usercontext.ProjectScope:
@@ -142,12 +125,6 @@ func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 		return "", errors.New("no service available for deployment was found")
 	}
 
-	var repoAuthorization, repoAuthorizationErr = getRepoAuthorization()
-
-	if repoAuthorizationErr != nil {
-		return "", repoAuthorizationErr
-	}
-
 	var gitServer = fmt.Sprintf("%vgit.%v/%v.git",
 		gitSchema,
 		config.Context.RemoteAddress,
@@ -168,10 +145,10 @@ func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 		Path:              rd.path,
 		Remote:            config.Context.Remote,
 		RemoteAddress:     config.Context.RemoteAddress,
-		RepoAuthorization: repoAuthorization,
 		GitRemoteAddress:  gitServer,
 		Services:          rd.services.GetIDs(),
 		Quiet:             rd.Quiet,
+		Token:                config.Context.Token,
 	}
 
 	err = deploy.Do()
