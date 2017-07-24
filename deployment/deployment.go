@@ -319,8 +319,8 @@ func (d *Deploy) Push() (groupUID string, err error) {
 }
 
 var (
-	gitRemoteDeployPrefix      = []byte("remote: deploy=")
-	gitRemoteDeployErrorPrefix = []byte("remote: deployError=")
+	gitRemoteDeployPrefix      = []byte("remote: wedeploy=")
+	gitRemoteDeployErrorPrefix = []byte("remote: wedeployError=")
 )
 
 func tryGetPushGroupUID(buff bytes.Buffer) (groupUID string, err error) {
