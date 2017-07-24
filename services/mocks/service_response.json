@@ -1,5 +1,4 @@
 {
-    "type": "cloudsearch",
     "basePath": "\/search",
     "scale": 7,
     "serviceId": "search7606",

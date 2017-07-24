@@ -68,8 +68,8 @@ func (rd *RemoteDeployment) getPathForGlobalScope() (path string, err error) {
 
 func createServicePackage(id, path string) error {
 	var c = &services.ServicePackage{
-		ID:   filepath.Base(path),
-		Type: "wedeploy/hosting",
+		ID:    filepath.Base(path),
+		Image: "wedeploy/hosting",
 	}
 
 	bin, err := json.MarshalIndent(c, "", "    ")

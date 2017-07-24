@@ -1,12 +1,4 @@
 {
     "id": "email",
-    "scale": 1,
-    "hooks": {
-        "before_build": "",
-        "build": "",
-        "after_build": "",
-        "before_start": "",
-        "start": "",
-        "after_start": ""
-    }
+    "scale": 1
 }

@@ -53,7 +53,7 @@ func getServiceTypesFromServicesDirectories(csDirs []string) (servicesImages map
 			return nil, errwrap.Wrapf("Failure trying to read services types availability: {{err}}", err)
 		}
 
-		servicesImages[c] = cp.Type
+		servicesImages[c] = cp.Image
 	}
 
 	return servicesImages, nil

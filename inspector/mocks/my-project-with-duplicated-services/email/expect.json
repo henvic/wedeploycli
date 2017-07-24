@@ -1,4 +1,4 @@
 {
     "serviceId": "email",
-    "type": "wedeploy/email:latest"
+    "image": "wedeploy/email:latest"
 }

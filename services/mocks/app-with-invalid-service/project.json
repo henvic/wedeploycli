@@ -1,12 +1,3 @@
 {
-    "id": "app-with-invalid-service",
-    "description": "App example project",
-    "environment": {
-        "TOKEN": "1234567890"
-    },
-    "hooks": {
-        "before_build": "",
-        "build": "ls -la",
-        "after_build": ""
-    }
+    "id": "app-with-invalid-service"
 }

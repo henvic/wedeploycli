@@ -39,7 +39,6 @@ type Service struct {
 	ServiceID     string            `json:"serviceId,omitempty"`
 	Health        string            `json:"health,omitempty"`
 	Image         string            `json:"image,omitempty"`
-	Version       string            `json:"version,omitempty"`
 	CustomDomains []string          `json:"customDomains,omitempty"`
 	Env           map[string]string `json:"env,omitempty"`
 	Scale         int               `json:"scale,omitempty"`
@@ -50,20 +49,17 @@ type Service struct {
 type ServicePackage struct {
 	ID            string            `json:"id,omitempty"`
 	Scale         int               `json:"scale,omitempty"`
-	Type          string            `json:"type,omitempty"`
+	Image         string            `json:"image,omitempty"`
 	CustomDomains []string          `json:"customDomains,omitempty"`
 	Env           map[string]string `json:"env,omitempty"`
 }
 
 // Service returns a Service type created taking wedeploy.json as base
 func (cp ServicePackage) Service() *Service {
-	var image, version = extractType(cp)
-
 	return &Service{
 		ServiceID:     cp.ID,
 		Scale:         cp.Scale,
-		Image:         image,
-		Version:       version,
+		Image:         cp.Image,
 		CustomDomains: cp.CustomDomains,
 		Env:           cp.Env,
 	}
@@ -72,7 +68,7 @@ func (cp ServicePackage) Service() *Service {
 // Register for the service structure
 type Register struct {
 	ID          string `json:"id"`
-	Type        string `json:"type"`
+	Image       string `json:"image"`
 	Category    string `json:"category"`
 	Description string `json:"description"`
 }
@@ -328,16 +324,6 @@ func GetEnvironmentVariables(ctx context.Context, projectID, serviceID string) (
 	return envs, err
 }
 
-func extractType(cp ServicePackage) (image, version string) {
-	var s = strings.SplitN(cp.Type, ":", 2)
-
-	if len(s) == 1 {
-		return s[0], ""
-	}
-
-	return s[0], s[1]
-}
-
 type linkRequestBody struct {
 	ServiceID string            `json:"serviceId,omitempty"`
 	Image     string            `json:"image,omitempty"`
@@ -355,7 +341,6 @@ func Link(ctx context.Context, projectID string, service Service, source string)
 		Image:     service.Image,
 		Scale:     service.Scale,
 		Env:       service.Env,
-		Version:   service.Version,
 		Source:    source,
 	}
 

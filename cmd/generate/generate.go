@@ -30,7 +30,7 @@ import (
 
 var (
 	projectCustomDomain string
-	serviceType         string
+	serviceImage        string
 )
 
 var generateRunner = runner{}
@@ -40,12 +40,10 @@ var GenerateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generates a project or service",
 	Long: `Use "we generate" to generate projects and services.
-You can generate a project anywhere on your machine and on the cloud.
-Services can only be generated from inside projects and
-are stored on the first subdirectory of its project.
+  You can generate a project anywhere on your machine and on the cloud.
+  Services can only be generated from inside projects and are stored on the first subdirectory of its project.
 
---directory should point to either the parent dir of a project directory to be
-generated or to a existing project directory.`,
+  --directory should point to either the parent dir of a project directory to be generated or to a existing project directory.`,
 	PreRunE: generateRunner.PreRun,
 	RunE:    generateRunner.Run,
 	Example: `we generate --project cinema --service projector room`,
@@ -60,7 +58,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 }
 
 const (
-	serviceTypeMessage = "Service type"
+	serviceImageMessage = "Service Image"
 )
 
 func init() {
@@ -78,10 +76,10 @@ func init() {
 		"Overrides current working directory")
 
 	GenerateCmd.Flags().StringVar(
-		&serviceType,
-		"service-type",
+		&serviceImage,
+		"service-image",
 		"",
-		serviceTypeMessage)
+		serviceImageMessage)
 
 	GenerateCmd.Flags().BoolVar(
 		&generateRunner.boilerplate,
@@ -99,8 +97,8 @@ func shouldPromptToGenerateService() (bool, error) {
 
 	fmt.Println("Generate:")
 	fmt.Println("1) a project")
-	fmt.Println("2) a project and a service inside it")
-
+	fmt.Print("2) a project and a service inside it\n\n")
+	fmt.Println("Select: ")
 	index, err := prompt.SelectOption(2, nil)
 
 	if err != nil {
@@ -112,7 +110,8 @@ func shouldPromptToGenerateService() (bool, error) {
 }
 
 func promptProject() (project string, err error) {
-	project, err = prompt.Prompt("Project")
+	fmt.Println("Project: ")
+	project, err = prompt.Prompt()
 
 	if err != nil {
 		return "", err
@@ -156,7 +155,7 @@ func (r *runner) checkNoServiceFlagsWhenServiceIsNotGenerated() error {
 		return nil
 	}
 
-	return fmt.Errorf("%v: Flag --service is required by --service-type", strings.Join(list, ", "))
+	return fmt.Errorf("%v: Flag --service is required by --service-image", strings.Join(list, ", "))
 }
 
 func checkNoProjectFlagsWhenProjectAlreadyExists(cmd *cobra.Command) error {
@@ -380,7 +379,7 @@ type serviceCreator struct {
 }
 
 func (cc *serviceCreator) run() error {
-	if err := cc.handleServiceType(); err != nil {
+	if err := cc.handleServiceImage(); err != nil {
 		return err
 	}
 
@@ -405,7 +404,7 @@ func (cc *serviceCreator) run() error {
 	return cc.saveServicePackage()
 }
 
-func (cc *serviceCreator) handleServiceType() error {
+func (cc *serviceCreator) handleServiceImage() error {
 	registry, err := services.GetRegistry(context.Background())
 
 	if err != nil {
@@ -414,13 +413,13 @@ func (cc *serviceCreator) handleServiceType() error {
 
 	cc.Registry = registry
 
-	if serviceType == "" {
+	if serviceImage == "" {
 		return cc.chooseServiceType()
 	}
 
 	for _, r := range cc.Registry {
-		if serviceType == r.Type {
-			cc.ServicePackage.Type = r.Type
+		if serviceImage == r.Image {
+			cc.ServicePackage.Image = r.Image
 			return nil
 		}
 	}
@@ -428,17 +427,17 @@ func (cc *serviceCreator) handleServiceType() error {
 	// if matching for the exact type is not possible, try to find it
 	// by getting only possible matches from WeDeploy, without versions
 	for _, r := range cc.Registry {
-		if serviceType == getBoilerplateServiceType(r.Type) {
-			cc.ServicePackage.Type = r.Type
+		if serviceImage == getBoilerplateServiceImage(r.Image) {
+			cc.ServicePackage.Image = r.Image
 			return nil
 		}
 	}
 
-	return errors.New("Service type not found on register")
+	return errors.New("Service image not found on register")
 }
 
 func (cc *serviceCreator) chooseServiceType() error {
-	fmt.Println(serviceTypeMessage + ":")
+	fmt.Println(serviceImageMessage + ":")
 
 	var mapSelectOptions = map[string]int{}
 
@@ -447,16 +446,17 @@ func (cc *serviceCreator) chooseServiceType() error {
 		mapSelectOptions[strings.TrimPrefix(r.ID, "wedeploy-")] = pos + 1
 		ne := fmt.Sprintf("%d) %v", pos+1, r.ID)
 
-		p := 80 - len(ne) - len(r.Type) + 1
+		p := 80 - len(ne) - len(r.Image) + 1
 
 		if p < 1 {
 			p = 1
 		}
 
-		fmt.Fprintf(os.Stdout, "%v%v%v\n", ne, pad(p), r.Type)
+		fmt.Fprintf(os.Stdout, "%v%v%v\n", ne, pad(p), r.Image)
 		fmt.Fprintf(os.Stdout, "%v\n\n", color.Format(color.FgHiBlack, wordwrap.WrapString(r.Description, 80)))
 	}
 
+	fmt.Fprintf(os.Stdout, "\nSelect from 1..%d: ", len(cc.Registry))
 	option, err := prompt.SelectOption(len(cc.Registry), mapSelectOptions)
 
 	if err != nil {
@@ -464,7 +464,7 @@ func (cc *serviceCreator) chooseServiceType() error {
 	}
 
 	cc.Register = cc.Registry[option]
-	cc.ServicePackage.Type = cc.Register.Type
+	cc.ServicePackage.Image = cc.Register.Image
 	return nil
 }
 
@@ -472,7 +472,8 @@ func (cc *serviceCreator) chooseServiceID() (err error) {
 	var service = cc.ServicePackage.ID
 
 	if service == "" {
-		service, err = prompt.Prompt("Service ID [default: " + cc.Register.ID + "]")
+		fmt.Println("Service ID [default: " + cc.Register.ID + "]: ")
+		service, err = prompt.Prompt()
 
 		if err != nil {
 			return err
@@ -494,18 +495,18 @@ func (cc *serviceCreator) chooseServiceID() (err error) {
 	return nil
 }
 
-func getBoilerplateServiceType(cType string) string {
-	cType = strings.TrimPrefix(cType, "wedeploy/")
+func getBoilerplateServiceImage(cImage string) string {
+	cImage = strings.TrimPrefix(cImage, "wedeploy/")
 
-	if strings.Contains(cType, ":") {
-		ws := strings.SplitN(cType, ":", 2)
+	if strings.Contains(cImage, ":") {
+		ws := strings.SplitN(cImage, ":", 2)
 
 		if len(ws) > 1 {
-			cType = ws[0]
+			cImage = ws[0]
 		}
 	}
 
-	return cType
+	return cImage
 }
 
 func (cc *serviceCreator) checkIfDirectoryEmptyForInstallingBoilerplate() (empty bool, err error) {
@@ -539,13 +540,13 @@ func (cc *serviceCreator) handleBoilerplate() (err error) {
 
 	var (
 		service = cc.ServicePackage.ID
-		cType   = cc.ServicePackage.Type
+		cImage  = cc.ServicePackage.Image
 	)
 
-	var boilerplateType = getBoilerplateServiceType(cType)
+	var boilerplateImage = getBoilerplateServiceImage(cImage)
 	var boilerplateAddress = fmt.Sprintf(
 		"https://github.com/wedeploy/boilerplate-%v.git",
-		boilerplateType)
+		boilerplateImage)
 
 	// There isn't a way to simply curl | unzip here.
 	// the separate-git-dir is used just as a safeguard against removing
@@ -603,7 +604,7 @@ func (cc *serviceCreator) handleBoilerplate() (err error) {
 	}
 
 	cc.ServicePackage.ID = service
-	cc.ServicePackage.Type = cType
+	cc.ServicePackage.Image = cImage
 	return nil
 }
 

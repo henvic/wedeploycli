@@ -2,6 +2,7 @@ package inspector
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -17,6 +18,12 @@ import (
 
 	"github.com/wedeploy/cli/findresource"
 )
+
+var update bool
+
+func init() {
+	flag.BoolVar(&update, "update", false, "update golden files")
+}
 
 func TestMain(m *testing.M) {
 	var (
@@ -57,8 +64,7 @@ func TestPrintServiceSpec(t *testing.T) {
 	var got = GetSpec(services.ServicePackage{})
 	var want = []string{`ID string`,
 		`Scale int`,
-		`Type string`,
-		`Hooks *hooks.Hooks`,
+		`Image string`,
 		`CustomDomains []string`,
 		`Env map[string]string`,
 	}
@@ -167,11 +173,21 @@ func TestInspectServiceList(t *testing.T) {
 		t.Errorf("Expected error to be nil, got %v instead", err)
 	}
 
+	if update {
+		var b, err = json.Marshal(m)
+
+		if err != nil {
+			panic(err)
+		}
+
+		tdata.ToFile("./mocks/my-project/email/expect.json", string(b))
+	}
+
 	jsonlib.AssertJSONMarshal(t, tdata.FromFile("./mocks/my-project/email/expect.json"), m)
 }
 
-func TestInspectServiceType(t *testing.T) {
-	var got, err = InspectService("{{.Type}}", "./mocks/my-project/email")
+func TestInspectServiceImage(t *testing.T) {
+	var got, err = InspectService("{{.Image}}", "./mocks/my-project/email")
 
 	if err != nil {
 		t.Errorf("Expected error to be nil, got %v instead", err)

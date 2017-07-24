@@ -1,5 +1,1 @@
-{
-    "id": "email",
-    "type": "wedeploy/email:latest",
-    "customDomains": ["example.net"]
-}
+{"customDomains":["example.net"],"id":"email","image":"wedeploy/email:latest"}
