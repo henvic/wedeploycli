@@ -398,7 +398,7 @@ func (d *Deploy) listenCleanupOnCancel() {
 }
 
 func (d *Deploy) printFailureStep(s string) {
-	d.stepMessage.SetText(waitlivemsg.RedCrossSymbol() + " " + s)
+	d.stepMessage.SetText(waitlivemsg.FailureSymbol() + " " + s)
 }
 
 func (d *Deploy) printDeploymentFailed() {
@@ -485,7 +485,7 @@ func (d *Deploy) notifyDeploymentOnQuiet(err error) {
 
 	fmt.Printf("Deployment %v is in progress on remote %v\n",
 		color.Format(color.FgBlue, d.GetGroupUID()),
-		color.Format(color.FgBlue, d.RemoteAddress))
+		color.Format(color.FgBlue, d.InfrastructureDomain))
 }
 
 // Do deployment
@@ -534,14 +534,14 @@ func (d *Deploy) notifyFailedUpload() {
 	d.wlm.RemoveMessage(d.uploadMessage)
 	for serviceID, s := range d.sActivities {
 		s.msgWLM.SetText(d.makeServiceStatusMessage(serviceID, "Upload failed"))
-		s.msgWLM.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
+		s.msgWLM.SetSymbolEnd(waitlivemsg.FailureSymbol())
 	}
 }
 
 func (d *Deploy) getDeployingMessage() string {
 	return fmt.Sprintf("Deploying services on project %v in %v...",
 		color.Format(color.FgBlue, d.ProjectID),
-		color.Format(color.FgBlue, d.RemoteAddress),
+		color.Format(color.FgBlue, d.InfrastructureDomain),
 	)
 }
 
@@ -619,7 +619,7 @@ func (d *Deploy) uploadPackage() (err error) {
 	defer d.uploadMessage.End()
 	if d.groupUID, err = d.Push(); err != nil {
 		d.uploadMessage.SetText("Upload failed")
-		d.uploadMessage.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
+		d.uploadMessage.SetSymbolEnd(waitlivemsg.FailureSymbol())
 		if _, ok := err.(*exec.ExitError); ok {
 			return errwrap.Wrapf("deployment push failed", err)
 		}
@@ -716,7 +716,7 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 	case
 		activities.BuildFailed,
 		activities.DeployFailed:
-		wlm.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
+		wlm.SetSymbolEnd(waitlivemsg.FailureSymbol())
 		wlm.End()
 	case
 		activities.DeploySucceeded:

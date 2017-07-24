@@ -59,7 +59,7 @@ func (d *Diagnostics) exec(e *Executable) {
 		if e.IgnoreError {
 			dm += fmt.Sprintf(" (error: %v; probably safe to ignore due to command not available on system)", e.err)
 		} else {
-			desc.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
+			desc.SetSymbolEnd(waitlivemsg.FailureSymbol())
 			dm += fmt.Sprintf(" (error: %v)", e.err)
 		}
 	}

@@ -35,7 +35,7 @@ func TryStartDocker() {
 	var err = tryStartDocker()
 
 	if err != nil {
-		wlmMsg.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
+		wlmMsg.SetSymbolEnd(waitlivemsg.FailureSymbol())
 		wlmMsg.SetText("docker could not be autostarted (ignoring)")
 		verbose.Debug("Ignoring error while trying to start docker: " + err.Error())
 		return
@@ -57,7 +57,7 @@ func TryStartDocker() {
 		}
 
 		if err := rlimit.Wait(ctx); err != nil {
-			wlmMsg.SetSymbolEnd(waitlivemsg.RedCrossSymbol())
+			wlmMsg.SetSymbolEnd(waitlivemsg.FailureSymbol())
 			wlmMsg.SetText("docker might not be running")
 			return
 		}

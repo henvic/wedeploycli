@@ -24,11 +24,6 @@ var spinners = []string{
 	"⠏",
 }
 
-const (
-	tick  = "✔"
-	cross = "✖"
-)
-
 // Message to print
 type Message struct {
 	text      string
@@ -93,7 +88,7 @@ func (m *Message) getSymbol() string {
 		return m.symbolEnd
 	}
 
-	return GreenTickSymbol()
+	return SuccessSymbol()
 }
 
 // SetSymbolEnd of message
@@ -122,14 +117,14 @@ func (m *Message) End() {
 	m.mutex.Unlock()
 }
 
-// GreenTickSymbol for stop messages
-func GreenTickSymbol() string {
-	return color.Format(color.FgGreen, tick)
+// SuccessSymbol for stop messages
+func SuccessSymbol() string {
+	return color.Format(color.FgGreen, "!")
 }
 
-// RedCrossSymbol for stop messages
-func RedCrossSymbol() string {
-	return color.Format(color.FgRed, cross)
+// FailureSymbol for stop messages
+func FailureSymbol() string {
+	return color.Format(color.FgRed, "!")
 }
 
 // WaitLiveMsg is used for "waiting" live message
