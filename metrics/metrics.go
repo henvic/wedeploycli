@@ -31,6 +31,7 @@ import (
 var (
 	pid         string
 	metricsPath string
+	server      = defaults.AnalyticsEndpoint
 
 	errStream io.Writer = os.Stderr
 )
@@ -339,7 +340,7 @@ func (s *Sender) countLines() {
 }
 
 func (s *Sender) send() (err error) {
-	var request = wedeploy.URL(defaults.AnalyticsEndpoint)
+	var request = wedeploy.URL(server)
 	request.Body(bytes.NewReader(s.content))
 
 	var ctx, cancelFunc = context.WithTimeout(context.Background(), MetricsSubmissionTimeout)

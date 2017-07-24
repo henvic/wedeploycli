@@ -246,13 +246,12 @@ func testReadingMetricsFile(t *testing.T) {
 }
 
 func testTrySubmitError(t *testing.T) {
-	var defaultEndpoint = defaults.AnalyticsEndpoint
 	defer func() {
-		defaults.AnalyticsEndpoint = defaultEndpoint
+		server = defaults.AnalyticsEndpoint
 	}()
 
 	var s = Sender{}
-	defaults.AnalyticsEndpoint = "http://localhost:-1/"
+	server = "http://localhost:-1/"
 
 	lines, err := s.TrySubmit()
 
@@ -266,15 +265,14 @@ func testTrySubmitError(t *testing.T) {
 }
 
 func testTrySubmit(t *testing.T) {
-	var defaultEndpoint = defaults.AnalyticsEndpoint
 	defer func() {
-		defaults.AnalyticsEndpoint = defaultEndpoint
+		server = defaults.AnalyticsEndpoint
 	}()
 
 	servertest.SetupIntegration()
 	defer servertest.TeardownIntegration()
 
-	defaults.AnalyticsEndpoint = servertest.IntegrationServer.URL
+	server = servertest.IntegrationServer.URL
 
 	servertest.IntegrationMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		var wantMethod = "POST"
