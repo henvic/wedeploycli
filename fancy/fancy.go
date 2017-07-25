@@ -49,7 +49,7 @@ func Tip(a interface{}) string {
 
 // Prompt with fancy "> "
 func Prompt() (string, error) {
-	fmt.Println(color.Format(color.FgHiBlack, "> "))
+	fmt.Print(color.Format(color.FgHiBlack, "> "))
 	return prompt.Prompt()
 }
 
