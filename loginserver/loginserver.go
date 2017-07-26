@@ -13,13 +13,13 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/verbose"
 )
 
 // Service server for receiving JSON Web Token
 type Service struct {
+	Infrastructure string
 	ctx            context.Context
 	ctxCancel      context.CancelFunc
 	netListener    net.Listener
@@ -110,7 +110,8 @@ func (o oauthClaims) Valid() error {
 }
 
 func (s *Service) redirectToDashboard(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, defaults.Docs, http.StatusSeeOther)
+	var success = fmt.Sprintf("https://%v%v/static/cli/login-success/", defaults.DashboardAddressPrefix, s.Infrastructure)
+	http.Redirect(w, r, success, http.StatusSeeOther)
 }
 
 func getJWTErrors(err error) error {
@@ -173,7 +174,7 @@ func (s *Service) homeHandler(w http.ResponseWriter, r *http.Request) {
 	referer, _ := url.Parse(r.Header.Get("Referer"))
 
 	// this is a compromise
-	var dashboard = defaults.DashboardAddressPrefix + config.Context.InfrastructureDomain
+	var dashboard = defaults.DashboardAddressPrefix + s.Infrastructure
 	if referer.Host != "" && referer.Host != dashboard {
 		s.err = errors.New("Token origin is not from given dashboard")
 		safeErrorHandler(w, "403 Forbidden", http.StatusForbidden)

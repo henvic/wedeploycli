@@ -174,7 +174,9 @@ func (a *Authentication) browserWorkflowAuth() error {
 	a.wlm.AddMessage(a.msg)
 	go a.wlm.Wait()
 	defer a.wlm.Stop()
-	var service = &loginserver.Service{}
+	var service = &loginserver.Service{
+		Infrastructure: a.Domains.Infrastructure,
+	}
 	var host, err = service.Listen(context.Background())
 
 	if err != nil {
