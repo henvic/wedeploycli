@@ -53,16 +53,16 @@ type Deploy struct {
 	InfrastructureDomain string
 	ServiceDomain        string
 	Token                string
-	GitRemoteAddress string
-	Services         []string
-	Quiet            bool
-	groupUID         string
-	pushStartTime    time.Time
-	pushEndTime      time.Time
-	sActivities      servicesMap
-	wlm              waitlivemsg.WaitLiveMsg
-	stepMessage      *waitlivemsg.Message
-	uploadMessage    *waitlivemsg.Message
+	GitRemoteAddress     string
+	Services             []string
+	Quiet                bool
+	groupUID             string
+	pushStartTime        time.Time
+	pushEndTime          time.Time
+	sActivities          servicesMap
+	wlm                  waitlivemsg.WaitLiveMsg
+	stepMessage          *waitlivemsg.Message
+	uploadMessage        *waitlivemsg.Message
 }
 
 func (d *Deploy) getGitPath() string {
