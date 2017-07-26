@@ -8,7 +8,6 @@ disable_colors                   = true
 notify_updates                   = true
 release_channel                  = stable
 enable_analytics                 = false
-analytics_option_date            = Tue May 16 13:17:30 -0300 2017
 
 [remote "wedeploy"]
     ; Default cloud remote
