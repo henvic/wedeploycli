@@ -610,7 +610,13 @@ func (d *Deploy) preparePackage() (err error) {
 const GitCredentialEnvRemoteToken = "WEDEPLOY_REMOTE_TOKEN"
 
 func (d *Deploy) addCredentialHelper() (err error) {
-	var params = []string{"config", "--add", "credential.helper", os.Args[0] + " git-credential-helper"}
+	bin, err := filepath.Abs(os.Args[0])
+
+	if err != nil {
+		return err
+	}
+
+	var params = []string{"config", "--add", "credential.helper", bin + " git-credential-helper"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Env = append(cmd.Env,
