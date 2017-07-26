@@ -14,7 +14,7 @@ import (
 // LogoutCmd unsets the user credential
 var LogoutCmd = &cobra.Command{
 	Use:     "logout",
-	Short:   "Log out WeDeploy",
+	Short:   "Logout from your account",
 	PreRunE: preRun,
 	RunE:    logoutRun,
 }
