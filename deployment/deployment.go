@@ -398,7 +398,7 @@ func (d *Deploy) listenCleanupOnCancel() {
 }
 
 func (d *Deploy) printFailureStep(s string) {
-	d.stepMessage.SetText(waitlivemsg.FailureSymbol() + " " + s)
+	d.stepMessage.StopText(fancy.Error(s))
 }
 
 func (d *Deploy) printDeploymentFailed() {
@@ -406,8 +406,7 @@ func (d *Deploy) printDeploymentFailed() {
 }
 
 func (d *Deploy) createStatusMessages() {
-	d.stepMessage.SetText("Initializing deployment process")
-	d.stepMessage.NoSymbol()
+	d.stepMessage.PlayText("Initializing deployment process")
 	d.wlm.AddMessage(d.stepMessage)
 	d.wlm.AddMessage(waitlivemsg.EmptyLine())
 
@@ -424,7 +423,8 @@ func (d *Deploy) createStatusMessages() {
 func (d *Deploy) createServicesActivitiesMap() {
 	d.sActivities = servicesMap{}
 	for _, s := range d.Services {
-		var m = waitlivemsg.NewMessage(d.makeServiceStatusMessage(s, "waiting for deployment"))
+		var m = &waitlivemsg.Message{}
+		m.StopText(d.makeServiceStatusMessage(s, ""))
 
 		d.sActivities[s] = &serviceWatch{
 			msgWLM: m,
@@ -439,9 +439,9 @@ func (d *Deploy) updateDeploymentEndStep(err error) {
 
 	switch err {
 	case nil:
-		d.stepMessage.SetText(fmt.Sprintf("Deployment successful in " + timeElapsed))
+		d.stepMessage.StopText(fmt.Sprintf("Deployment successful in " + timeElapsed))
 	default:
-		d.stepMessage.SetText(color.Format(color.FgRed, "Deployment failure in ") + timeElapsed)
+		d.stepMessage.StopText(color.Format(color.FgRed, "Deployment failure in ") + timeElapsed)
 	}
 }
 
@@ -533,8 +533,7 @@ func (d *Deploy) Do() error {
 func (d *Deploy) notifyFailedUpload() {
 	d.wlm.RemoveMessage(d.uploadMessage)
 	for serviceID, s := range d.sActivities {
-		s.msgWLM.SetText(d.makeServiceStatusMessage(serviceID, "Upload failed"))
-		s.msgWLM.SetSymbolEnd(waitlivemsg.FailureSymbol())
+		s.msgWLM.PlayText(fancy.Error(d.makeServiceStatusMessage(serviceID, "Upload failed")))
 	}
 }
 
@@ -566,7 +565,7 @@ func (d *Deploy) do() (err error) {
 		return err
 	}
 
-	d.stepMessage.SetText(d.getDeployingMessage())
+	d.stepMessage.StopText(d.getDeployingMessage())
 
 	if err = d.uploadPackage(); err != nil {
 		return err
@@ -577,7 +576,7 @@ func (d *Deploy) do() (err error) {
 }
 
 func (d *Deploy) preparePackage() (err error) {
-	d.stepMessage.SetText(
+	d.stepMessage.StopText(
 		fmt.Sprintf("Preparing deployment for project %v in %v...",
 			color.Format(color.FgBlue, d.ProjectID),
 			color.Format(d.Remote)),
@@ -618,8 +617,7 @@ func (d *Deploy) addCredentialHelper() (err error) {
 func (d *Deploy) uploadPackage() (err error) {
 	defer d.uploadMessage.End()
 	if d.groupUID, err = d.Push(); err != nil {
-		d.uploadMessage.SetText("Upload failed")
-		d.uploadMessage.SetSymbolEnd(waitlivemsg.FailureSymbol())
+		d.uploadMessage.StopText(fancy.Error("Upload failed"))
 		if _, ok := err.(*exec.ExitError); ok {
 			return errwrap.Wrapf("deployment push failed", err)
 		}
@@ -627,7 +625,7 @@ func (d *Deploy) uploadPackage() (err error) {
 		return errwrap.Wrapf("deployment failed: {{err}}", err)
 	}
 
-	d.uploadMessage.SetText(
+	d.uploadMessage.StopText(
 		fmt.Sprintf("Upload completed in %v",
 			color.Format(color.FgBlue, timehelper.RoundDuration(d.UploadDuration(), time.Second))))
 	return nil
@@ -692,7 +690,7 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 	}
 
 	d.markActivityState(serviceID, a.Type)
-	var wlm = d.sActivities[serviceID].msgWLM
+	var m = d.sActivities[serviceID].msgWLM
 	var pre string
 
 	var prefixes = map[string]string{
@@ -710,17 +708,15 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 		pre = a.Type
 	}
 
-	wlm.SetText(d.makeServiceStatusMessage(serviceID, pre))
-
 	switch a.Type {
 	case
 		activities.BuildFailed,
 		activities.DeployFailed:
-		wlm.SetSymbolEnd(waitlivemsg.FailureSymbol())
-		wlm.End()
+		m.PlayText(fancy.Error(d.makeServiceStatusMessage(serviceID, pre)))
 	case
 		activities.DeploySucceeded:
-		wlm.End()
+		m.StopText(fancy.Success(d.makeServiceStatusMessage(serviceID, pre)))
+	default:
 	}
 }
 
@@ -821,14 +817,14 @@ func (d *Deploy) checkActivitiesLoop() {
 		var stepText = d.stepMessage.GetText()
 
 		if err != nil {
-			d.stepMessage.SetText(updateMessageErrorStringCounter(stepText))
+			d.stepMessage.StopText(fancy.Error(updateMessageErrorStringCounter(stepText)))
 			verbose.Debug(err)
 			continue
 		}
 
 		if strings.Contains(stepText, "retrying to get status #") {
 			// it is not cleaning always
-			d.stepMessage.SetText(clearMessageErrorStringCounter(stepText))
+			d.stepMessage.StopText(fancy.Error(clearMessageErrorStringCounter(stepText)))
 		}
 
 		if end {

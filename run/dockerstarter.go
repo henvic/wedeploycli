@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/henvic/uilive"
+	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/waitlivemsg"
 
@@ -35,8 +36,7 @@ func TryStartDocker() {
 	var err = tryStartDocker()
 
 	if err != nil {
-		wlmMsg.SetSymbolEnd(waitlivemsg.FailureSymbol())
-		wlmMsg.SetText("docker could not be autostarted (ignoring)")
+		wlmMsg.StopText(fancy.Error("docker could not be autostarted (ignoring)"))
 		verbose.Debug("Ignoring error while trying to start docker: " + err.Error())
 		return
 	}
@@ -52,13 +52,12 @@ func TryStartDocker() {
 
 		if err == nil {
 			cancel()
-			wlmMsg.SetText("docker is now running")
+			wlmMsg.PlayText("docker is now running")
 			return
 		}
 
 		if err := rlimit.Wait(ctx); err != nil {
-			wlmMsg.SetSymbolEnd(waitlivemsg.FailureSymbol())
-			wlmMsg.SetText("docker might not be running")
+			wlmMsg.StopText(fancy.Error("docker might not be running"))
 			return
 		}
 	}

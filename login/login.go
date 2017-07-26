@@ -123,8 +123,7 @@ promptForPassword:
 	token, err = loginserver.OAuthTokenFromBasicAuth(remoteAddress, username, password)
 
 	if err != nil {
-		a.msg.NoSymbol()
-		a.msg.SetText(fancy.Error("Authentication failed [1/2]"))
+		a.msg.StopText(fancy.Error("Authentication failed [1/2]"))
 		return err
 	}
 
@@ -165,7 +164,7 @@ func (a *Authentication) maybeOpenBrowser(loginURL string) {
 	time.Sleep(710 * time.Millisecond)
 
 	if err := browser.OpenURL(loginURL); err != nil {
-		a.msg.SetText(a.msg.GetText() + ": " + err.Error() + ": please visit link " + loginURL)
+		a.msg.StopText(a.msg.GetText() + ": " + err.Error() + ": please visit link " + loginURL)
 	}
 }
 
@@ -179,8 +178,7 @@ func (a *Authentication) browserWorkflowAuth() error {
 	var host, err = service.Listen(context.Background())
 
 	if err != nil {
-		a.msg.NoSymbol()
-		a.msg.SetText(fancy.Error("Authentication failed [1/2]"))
+		a.msg.StopText(fancy.Error("Authentication failed [1/2]"))
 		return err
 	}
 
@@ -197,16 +195,14 @@ func (a *Authentication) browserWorkflowAuth() error {
 	a.maybeOpenBrowser(loginURL)
 
 	if err = service.Serve(); err != nil {
-		a.msg.NoSymbol()
-		a.msg.SetText(fancy.Error("Authentication failed [1/2]"))
+		a.msg.StopText(fancy.Error("Authentication failed [1/2]"))
 		return err
 	}
 
 	var username, token, tokenErr = service.Credentials()
 
 	if tokenErr != nil {
-		a.msg.NoSymbol()
-		a.msg.SetText(fancy.Error("Authentication failed [1/2]"))
+		a.msg.StopText(fancy.Error("Authentication failed [1/2]"))
 		return tokenErr
 	}
 
@@ -231,8 +227,7 @@ func (a *Authentication) success(username string) {
 	fmt.Fprintln(tw, "  we docs\tOpen docs on your browser")
 	_ = tw.Flush()
 	fmt.Fprint(buf, fancy.Info("Type a command and press Enter to execute it."))
-	a.msg.NoSymbol()
-	a.msg.SetText(buf.String())
+	a.msg.StopText(buf.String())
 }
 
 func (a *Authentication) saveUser(username, token string) (err error) {
@@ -247,14 +242,12 @@ func (a *Authentication) saveUser(username, token string) (err error) {
 	g.Remotes[config.Context.Remote] = remote
 
 	if err = config.SetEndpointContext(config.Context.Remote); err != nil {
-		a.msg.NoSymbol()
-		a.msg.SetText(fancy.Error("Authentication failed [1/2]"))
+		a.msg.StopText(fancy.Error("Authentication failed [1/2]"))
 		return err
 	}
 
 	if err = g.Save(); err != nil {
-		a.msg.NoSymbol()
-		a.msg.SetText(fancy.Error("Authentication failed [1/2]"))
+		a.msg.StopText(fancy.Error("Authentication failed [1/2]"))
 		return err
 	}
 

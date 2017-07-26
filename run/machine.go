@@ -19,6 +19,7 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/createuser"
 	"github.com/wedeploy/cli/exechelper"
+	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/status"
 	"github.com/wedeploy/cli/timehelper"
 	"github.com/wedeploy/cli/verbose"
@@ -189,10 +190,10 @@ func (dm *DockerMachine) createUser() (err error) {
 		return err
 	}
 
-	dm.wlmMessage.SetText(
+	dm.wlmMessage.StopText(fancy.Success(
 		fmt.Sprintf("WeDeploy is deployed! %v",
 			timehelper.RoundDuration(
-				dm.wlm.Duration(), time.Second)))
+				dm.wlm.Duration(), time.Second))))
 	dm.wlm.Stop()
 	_ = dm.livew.Flush()
 
@@ -305,7 +306,7 @@ func (dm *DockerMachine) waitReadyState() {
 
 	dm.wlm.SetStream(dm.livew)
 	dm.wlm.SetMessage(dm.wlmMessage)
-	dm.wlmMessage.SetText("WeDeploy is starting")
+	dm.wlmMessage.PlayText("WeDeploy is starting")
 	go dm.wlm.Wait()
 
 	// Starting WeDeploy

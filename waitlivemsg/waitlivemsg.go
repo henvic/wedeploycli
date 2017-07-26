@@ -8,7 +8,6 @@ import (
 	"bytes"
 
 	"github.com/henvic/uilive"
-	"github.com/wedeploy/cli/color"
 )
 
 var spinners = []string{
@@ -26,18 +25,16 @@ var spinners = []string{
 
 // Message to print
 type Message struct {
-	text      string
-	symbolEnd string
-	end       bool
-	counter   int
-	noSymbol  bool
-	mutex     sync.RWMutex
+	text     string
+	counter  int
+	noSymbol bool
+	mutex    sync.RWMutex
 }
 
 // NewMessage creates a Message with a given text
 func NewMessage(text string) *Message {
 	var m = Message{}
-	m.SetText(text)
+	m.PlayText(text)
 	return &m
 }
 
@@ -47,17 +44,21 @@ func EmptyLine() *Message {
 	return NewMessage("")
 }
 
-// NoSymbol hides the symbol for the given message
-func (m *Message) NoSymbol() {
+// PlayText as a live message
+func (m *Message) PlayText(text string) {
 	m.mutex.Lock()
-	m.noSymbol = true
+	m.text = text
+	if m.counter == -1 {
+		m.counter = 0
+	}
 	m.mutex.Unlock()
 }
 
-// SetText of message
-func (m *Message) SetText(text string) {
+// StopText of the live messages
+func (m *Message) StopText(text string) {
 	m.mutex.Lock()
 	m.text = text
+	m.counter = -1
 	m.mutex.Unlock()
 }
 
@@ -73,35 +74,14 @@ func (m *Message) getSymbol() string {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
 
-	if m.text == "" || m.noSymbol {
+	if m.counter == -1 || m.text == "" || m.noSymbol {
 		return ""
 	}
 
 	var symbol = spinners[m.counter]
 	m.counter = (m.counter + 1) % len(spinners)
 
-	if !m.end {
-		return symbol
-	}
-
-	if m.symbolEnd != "" {
-		return m.symbolEnd
-	}
-
-	return SuccessSymbol()
-}
-
-// SetSymbolEnd of message
-func (m *Message) SetSymbolEnd(symbolEnd string) {
-	m.mutex.Lock()
-	m.symbolEnd = symbolEnd
-	m.mutex.Unlock()
-}
-
-func (m *Message) isEnd() bool {
-	m.mutex.RLock()
-	defer m.mutex.RUnlock()
-	return m.end
+	return symbol
 }
 
 func (m *Message) getText() string {
@@ -110,21 +90,11 @@ func (m *Message) getText() string {
 	return m.text
 }
 
-// End message
+// End of live message
 func (m *Message) End() {
 	m.mutex.Lock()
-	m.end = true
+	m.counter = -1
 	m.mutex.Unlock()
-}
-
-// SuccessSymbol for stop messages
-func SuccessSymbol() string {
-	return color.Format(color.FgGreen, "!")
-}
-
-// FailureSymbol for stop messages
-func FailureSymbol() string {
-	return color.Format(color.FgRed, "!")
 }
 
 // WaitLiveMsg is used for "waiting" live message
@@ -239,12 +209,14 @@ func (w *WaitLiveMsg) waitLoop() {
 func (w *WaitLiveMsg) Stop() {
 	w.msgsMutex.RLock()
 	for _, m := range w.msgs {
-		if !m.isEnd() {
+		m.mutex.RLock()
+		c := m.counter
+		m.mutex.RUnlock()
+		if c != -1 {
 			m.End()
 		}
 	}
 	w.msgsMutex.RUnlock()
-
 	w.tickerdMutex.Lock()
 	w.tickerd <- true
 	w.tickerdMutex.Unlock()

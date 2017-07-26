@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/henvic/uilive"
 	wedeploy "github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
@@ -59,7 +58,6 @@ func (d *Diagnostics) exec(e *Executable) {
 		if e.IgnoreError {
 			dm += fmt.Sprintf(" (error: %v; probably safe to ignore due to command not available on system)", e.err)
 		} else {
-			desc.SetSymbolEnd(waitlivemsg.FailureSymbol())
 			dm += fmt.Sprintf(" (error: %v)", e.err)
 		}
 	}
@@ -75,8 +73,7 @@ func (d *Diagnostics) exec(e *Executable) {
 }
 
 func (d *Diagnostics) execAll() {
-	d.wlm = waitlivemsg.WaitLiveMsg{}
-	d.wlm.SetStream(uilive.New())
+	d.wlm = *waitlivemsg.New(nil)
 	go d.wlm.Wait()
 	defer d.wlm.Stop()
 

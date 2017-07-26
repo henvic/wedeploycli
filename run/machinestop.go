@@ -49,7 +49,7 @@ func (dm *DockerMachine) Stop() error {
 		return err
 	}
 
-	stopping.SetText("WeDeploy is stopped.")
+	stopping.StopText("WeDeploy is stopped.")
 	dm.wlm.Stop()
 
 	return nil
@@ -68,7 +68,7 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 	verbose.Debug("Started end signal received.")
 
 	dm.wlm.ResetDuration()
-	dm.wlmMessage.SetText("WeDeploy is stopping")
+	dm.wlmMessage.PlayText("WeDeploy is stopping")
 	dm.wlm.SetMessage(dm.wlmMessage)
 	dm.wlm.SetStream(dm.livew)
 	go dm.wlm.Wait()
@@ -84,7 +84,7 @@ func (dm *DockerMachine) stopEvent(sigs chan os.Signal) {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 	}
 
-	dm.wlmMessage.SetText("WeDeploy is stopped")
+	dm.wlmMessage.PlayText("WeDeploy is stopped")
 	dm.wlm.Stop()
 	dm.endRun()
 }
