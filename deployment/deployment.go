@@ -26,6 +26,7 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/errorhandling"
+	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/prompt"
 	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/timehelper"
@@ -149,17 +150,23 @@ func (d *Deploy) stageAllFiles() (err error) {
 }
 
 func (d *Deploy) stageChangedServiceFile() error {
-	var cp, err = services.Read(d.Path)
+	var sp, err = services.Read(d.Path)
 
-	if err != nil {
+	switch err {
+	case nil:
+	case services.ErrServiceNotFound:
+		verbose.Debug("Service not found. Creating service package on git repo only.")
+		sp = &services.ServicePackage{}
+		err = nil
+	default:
 		return err
 	}
 
-	cp.ID = d.ServiceID
+	sp.ID = d.ServiceID
 
 	var tmpDirPath = d.getGitPath()
 
-	bin, err := json.MarshalIndent(cp, "", "    ")
+	bin, err := json.MarshalIndent(sp, "", "    ")
 	if err != nil {
 		return err
 	}
@@ -307,12 +314,14 @@ func (d *Deploy) Push() (groupUID string, err error) {
 	var bufErr = copyErrStreamAndVerbose(cmd)
 	err = cmd.Run()
 
-	if err != nil && strings.Contains(bufErr.String(), "could not read Username") {
-		return "", errors.New("Invalid credentials")
-	}
-
 	if err != nil {
-		return "", err
+		switch {
+		case strings.Contains(bufErr.String(), "fatal: Authentication failed for"),
+			strings.Contains(bufErr.String(), "could not read Username"):
+			return "", errors.New("Invalid credentials")
+		default:
+			return "", err
+		}
 	}
 
 	return tryGetPushGroupUID(*bufErr)

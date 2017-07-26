@@ -14,24 +14,28 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/deployment"
+	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/inspector"
+	"github.com/wedeploy/cli/namesgenerator"
 	"github.com/wedeploy/cli/projectctx"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/usercontext"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 const gitSchema = "https://"
 
 // RemoteDeployment of services
 type RemoteDeployment struct {
-	ProjectID  string
-	ServiceID  string
-	Remote     string
-	Quiet      bool
-	path       string
-	services   services.ServiceInfoList
-	changedSID bool
+	ProjectID    string
+	ServiceID    string
+	Remote       string
+	Quiet        bool
+	path         string
+	services     services.ServiceInfoList
+	createTmpPkg bool
+	changedSID   bool
 }
 
 func (rd *RemoteDeployment) getPath() (path string, err error) {
@@ -58,7 +62,8 @@ func (rd *RemoteDeployment) getPathForGlobalScope() (path string, err error) {
 
 	switch {
 	case err == services.ErrServiceNotFound:
-		return wd, createServicePackage(rd.ServiceID, wd)
+		rd.createTmpPkg = true
+		return wd, nil
 	case err == nil:
 		return wd, nil
 	}
@@ -176,6 +181,10 @@ func (rd *RemoteDeployment) loadServicesList() (err error) {
 		err = rd.loadServicesListForServiceScope(allProjectServices)
 	default:
 		err = rd.loadServicesListForGlobalScope()
+
+		if err == services.ErrServiceNotFound {
+			err = nil
+		}
 	}
 
 	if err == nil {
@@ -186,7 +195,35 @@ func (rd *RemoteDeployment) loadServicesList() (err error) {
 }
 
 func (rd *RemoteDeployment) maybeFilterOrRenameService() error {
-	if rd.ServiceID == "" {
+	if rd.ServiceID == "" && !rd.createTmpPkg {
+		return nil
+	}
+
+	if rd.ServiceID == "" && rd.createTmpPkg {
+		if !terminal.IsTerminal(int(os.Stdin.Fd())) {
+			return errors.New("Service ID is missing")
+		}
+
+		fmt.Println(fancy.Question("Your service doesn't have an ID. Type one") + " " + fancy.Tip("default: random"))
+
+		var serviceID, err = fancy.Prompt()
+
+		if err != nil {
+			return err
+		}
+
+		if serviceID == "" {
+			serviceID = namesgenerator.GetRandomAdjective()
+		}
+
+		rd.ServiceID = serviceID
+
+		rd.services[0] = services.ServiceInfo{
+			ServiceID: serviceID,
+			Location:  rd.services[0].Location,
+		}
+
+		rd.changedSID = true
 		return nil
 	}
 
@@ -240,15 +277,23 @@ func (rd *RemoteDeployment) loadServicesListForServiceScope(services services.Se
 }
 
 func (rd *RemoteDeployment) loadServicesListForGlobalScope() (err error) {
-	cp, err := services.Read(rd.path)
+	sp, err := services.Read(rd.path)
 
-	if err != nil {
-		return errwrap.Wrapf("Error reading service after deployment: {{err}}", err)
+	switch {
+	case err == nil:
+	case err == services.ErrServiceNotFound:
+		rd.services = append(rd.services, services.ServiceInfo{
+			Location:  rd.path,
+			ServiceID: rd.ServiceID,
+		})
+		return
+	default:
+		return errwrap.Wrapf("Error reading service: {{err}}", err)
 	}
 
 	rd.services = append(rd.services, services.ServiceInfo{
 		Location:  rd.path,
-		ServiceID: cp.ID,
+		ServiceID: sp.ID,
 	})
 
 	return nil
