@@ -18,7 +18,7 @@ var noLaunchBrowser bool
 // LoginCmd sets the user credential
 var LoginCmd = &cobra.Command{
 	Use:     "login",
-	Short:   "Log in WeDeploy",
+	Short:   "Login into your account",
 	PreRunE: preRun,
 	RunE:    loginRun,
 }
