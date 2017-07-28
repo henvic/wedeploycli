@@ -315,16 +315,37 @@ func (d *Deploy) Push() (groupUID string, err error) {
 	err = cmd.Run()
 
 	if err != nil {
+		bs := bufErr.String()
 		switch {
-		case strings.Contains(bufErr.String(), "fatal: Authentication failed for"),
-			strings.Contains(bufErr.String(), "could not read Username"):
+		// I need to see if there are any "error:" strings as well
+		case strings.Contains(bs, "fatal: Authentication failed for"),
+			strings.Contains(bs, "could not read Username"):
 			return "", errors.New("Invalid credentials")
+		case strings.Contains(bs, "error: "):
+			return "", getGitErrors(bs)
 		default:
 			return "", err
 		}
 	}
 
 	return tryGetPushGroupUID(*bufErr)
+}
+
+func getGitErrors(s string) error {
+	var parts = strings.Split(s, "\n")
+	var list = []string{}
+	for _, p := range parts {
+		if strings.Contains(p, "error: ") {
+			fmt.Println(p)
+			list = append(list, p)
+		}
+	}
+
+	if len(list) == 0 {
+		return nil
+	}
+
+	return fmt.Errorf("push: %v", strings.Join(list, "\n"))
 }
 
 var (
@@ -637,7 +658,8 @@ func (d *Deploy) uploadPackage() (err error) {
 			return errwrap.Wrapf("deployment push failed", err)
 		}
 
-		return errwrap.Wrapf("deployment failed: {{err}}", err)
+		// don't wrap: expect apihelper.APIFault
+		return err
 	}
 
 	d.uploadMessage.StopText(
