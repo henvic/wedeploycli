@@ -100,12 +100,10 @@ func (m *Message) End() {
 type WaitLiveMsg struct {
 	msgs         []*Message
 	stream       *uilive.Writer
-	streamMutex  sync.RWMutex
 	msgsMutex    sync.RWMutex
 	start        time.Time
 	tickerd      chan bool
 	tickerdMutex sync.RWMutex
-	startMutex   sync.RWMutex
 	waitEnd      sync.WaitGroup
 }
 
@@ -163,9 +161,9 @@ func (w *WaitLiveMsg) ResetMessages() {
 
 // SetStream to output to
 func (w *WaitLiveMsg) SetStream(ws *uilive.Writer) {
-	w.streamMutex.Lock()
+	w.msgsMutex.Lock()
 	w.stream = ws
-	w.streamMutex.Unlock()
+	w.msgsMutex.Unlock()
 }
 
 // Wait starts the waiting message
@@ -173,16 +171,12 @@ func (w *WaitLiveMsg) Wait() {
 	w.waitEnd.Add(1)
 	w.tickerdMutex.Lock()
 	w.tickerd = make(chan bool, 1)
-	w.tickerdMutex.Unlock()
-	w.startMutex.Lock()
 	w.start = time.Now()
-	w.startMutex.Unlock()
+	w.tickerdMutex.Unlock()
 
 	w.waitLoop()
 
-	w.msgsMutex.RLock()
 	w.print()
-	w.msgsMutex.RUnlock()
 	w.waitEnd.Done()
 }
 
@@ -192,9 +186,7 @@ func (w *WaitLiveMsg) waitLoop() {
 		w.tickerdMutex.RLock()
 		select {
 		case _ = <-ticker.C:
-			w.msgsMutex.RLock()
 			w.print()
-			w.msgsMutex.RUnlock()
 		case <-w.tickerd:
 			ticker.Stop()
 			ticker = nil
@@ -224,25 +216,27 @@ func (w *WaitLiveMsg) Stop() {
 
 // ResetDuration to restart counter
 func (w *WaitLiveMsg) ResetDuration() {
-	w.startMutex.RLock()
+	w.tickerdMutex.RLock()
 	w.start = time.Now()
-	w.startMutex.RUnlock()
+	w.tickerdMutex.RUnlock()
 }
 
 // Duration in seconds
 func (w *WaitLiveMsg) Duration() time.Duration {
-	w.startMutex.RLock()
+	w.tickerdMutex.RLock()
 	var duration = time.Now().Sub(w.start)
-	w.startMutex.RUnlock()
+	w.tickerdMutex.RUnlock()
 	return duration
 }
 
 func (w *WaitLiveMsg) print() {
-	w.streamMutex.Lock()
-
 	var buf = bytes.Buffer{}
 
-	for _, m := range w.msgs {
+	w.msgsMutex.RLock()
+	var msgs = w.msgs
+	w.msgsMutex.RUnlock()
+
+	for _, m := range msgs {
 		var s = m.getSymbol()
 
 		if len(s) != 0 {
@@ -254,7 +248,8 @@ func (w *WaitLiveMsg) print() {
 		buf.WriteString("\n")
 	}
 
+	w.msgsMutex.Lock()
 	fmt.Fprintf(w.stream, "%v", buf.String())
 	_ = w.stream.Flush()
-	w.streamMutex.Unlock()
+	w.msgsMutex.Unlock()
 }
