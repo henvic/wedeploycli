@@ -25,10 +25,9 @@ var spinners = []string{
 
 // Message to print
 type Message struct {
-	text     string
-	counter  int
-	noSymbol bool
-	mutex    sync.RWMutex
+	text    string
+	counter int
+	mutex   sync.RWMutex
 }
 
 // NewMessage creates a Message with a given text
@@ -74,7 +73,7 @@ func (m *Message) getSymbol() string {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
 
-	if m.counter == -1 || m.text == "" || m.noSymbol {
+	if m.counter == -1 || m.text == "" {
 		return ""
 	}
 
