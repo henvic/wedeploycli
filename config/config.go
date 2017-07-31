@@ -15,9 +15,18 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/remotes"
-	"github.com/wedeploy/cli/usercontext"
 	"github.com/wedeploy/cli/verbose"
 )
+
+type contextType struct {
+	Remote               string
+	Infrastructure       string
+	InfrastructureDomain string
+	ServiceDomain        string
+	Username             string
+	Password             string
+	Token                string
+}
 
 // Config of the application
 type Config struct {
@@ -44,7 +53,7 @@ var (
 	Global *Config
 
 	// Context stores the environmental context
-	Context *usercontext.Context
+	Context *contextType
 
 	parseRemoteSectionNameRegex = regexp.MustCompile(`remote \"(.*)\"`)
 )
@@ -154,8 +163,8 @@ func Setup(path string) (err error) {
 		return err
 	}
 
-	Context = &usercontext.Context{}
-	return Context.Load()
+	Context = &contextType{}
+	return nil
 }
 
 // SetEndpointContext for a given remote

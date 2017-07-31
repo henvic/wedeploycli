@@ -30,7 +30,6 @@ var EnvCmd = &cobra.Command{
 
 var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern:             cmdflagsfromhost.FullHostPattern,
-	UseProjectDirectory: true,
 	UseServiceDirectory: true,
 	Requires: cmdflagsfromhost.Requires{
 		Auth:    true,

@@ -6,9 +6,9 @@ import (
 
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/services"
 
 	"github.com/spf13/cobra"
 )
@@ -31,7 +31,6 @@ var (
 
 var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern: cmdflagsfromhost.FullHostPattern,
-	UseProjectDirectoryForService: true,
 	Requires: cmdflagsfromhost.Requires{
 		Auth: true,
 	},

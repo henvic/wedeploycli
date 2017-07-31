@@ -37,7 +37,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	UseProjectDirectory: true,
 	Requires: cmdflagsfromhost.Requires{
 		Project: true,
 		Auth:    true,

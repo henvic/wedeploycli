@@ -1,6 +1,7 @@
 package cmddeploy
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -17,7 +18,6 @@ var setupHost = cmdflagsfromhost.SetupHost{
 	Requires: cmdflagsfromhost.Requires{
 		Auth: true,
 	},
-	UseProjectDirectoryForService: true,
 }
 
 var (
@@ -120,7 +120,7 @@ func runRun(cmd *cobra.Command, args []string) error {
 		Quiet:     quiet,
 	}
 
-	var _, err = rd.Run()
+	var _, err = rd.Run(context.Background())
 	return err
 }
 

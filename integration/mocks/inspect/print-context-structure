@@ -1,6 +1,2 @@
-Scope usercontext.Scope
-ProjectRoot string
-ServiceRoot string
-ProjectID string
 ServiceID string
 ProjectServices []services.ServiceInfo

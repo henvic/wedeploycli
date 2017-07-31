@@ -73,7 +73,6 @@ type event struct {
 	PID     string            `json:"pid,omitempty"`
 	SID     string            `json:"sid,omitempty"`
 	Time    string            `json:"time,omitempty"`
-	Scope   string            `json:"scope,omitempty"`
 	Version string            `json:"version,omitempty"`
 	OS      string            `json:"os,omitempty"`
 	Arch    string            `json:"arch,omitempty"`
@@ -101,7 +100,6 @@ func RecOrFail(e Event) (saved bool, err error) {
 		PID:     pid,
 		SID:     config.Global.AnalyticsID,
 		Time:    time.Now().Format(time.RubyDate),
-		Scope:   string(config.Context.Scope),
 		Version: defaults.Version,
 		OS:      runtime.GOOS,
 		Arch:    runtime.GOARCH,

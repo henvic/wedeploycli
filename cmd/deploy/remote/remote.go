@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"path/filepath"
 
 	"os"
@@ -17,10 +18,8 @@ import (
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/inspector"
 	"github.com/wedeploy/cli/namesgenerator"
-	"github.com/wedeploy/cli/projectctx"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/services"
-	"github.com/wedeploy/cli/usercontext"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -36,26 +35,14 @@ type RemoteDeployment struct {
 	services     services.ServiceInfoList
 	createTmpPkg bool
 	changedSID   bool
+	ctx          context.Context
 }
 
 func (rd *RemoteDeployment) getPath() (path string, err error) {
-	switch config.Context.Scope {
-	case usercontext.ProjectScope:
-		return config.Context.ProjectRoot, nil
-	case usercontext.ServiceScope:
-		return config.Context.ServiceRoot, nil
-	case usercontext.GlobalScope:
-		return rd.getPathForGlobalScope()
-	}
-
-	return "", fmt.Errorf("Scope not identified: %v", err)
-}
-
-func (rd *RemoteDeployment) getPathForGlobalScope() (path string, err error) {
 	wd, err := os.Getwd()
 
 	if err != nil {
-		return "", errwrap.Wrapf("Can not get current working directory: {{err}}", err)
+		return "", errwrap.Wrapf("can't get current working directory: {{err}}", err)
 	}
 
 	_, err = services.Read(wd)
@@ -85,40 +72,48 @@ func createServicePackage(id, path string) error {
 	return ioutil.WriteFile(filepath.Join(path, "wedeploy.json"), bin, 0644)
 }
 
-func (rd *RemoteDeployment) getProjectID() (string, error) {
-	var projectID = rd.ProjectID
-
-	if projectID == "" {
-		var pp, err = projects.Read(config.Context.ProjectRoot)
-
-		switch {
-		case err == nil:
-			projectID = pp.ID
-		case err != projects.ErrProjectNotFound:
-			return "", errwrap.Wrapf("Error trying to read project: {{err}}", err)
+func (rd *RemoteDeployment) getProjectID() (err error) {
+	if rd.ProjectID == "" {
+		if !terminal.IsTerminal(int(os.Stdin.Fd())) {
+			return errors.New("Project ID is missing")
 		}
 
-		if projectID != "" {
-			return projectID, nil
+		fmt.Println(fancy.Question("Choose a project ID") + " " + fancy.Tip("default: random"))
+		rd.ProjectID, err = fancy.Prompt()
+
+		if err != nil {
+			return err
+		}
+	}
+
+	if rd.ProjectID != "" {
+		_, err := projects.Get(context.Background(), rd.ProjectID)
+
+		if err == nil {
+			return nil
+		}
+
+		if epf, ok := err.(*apihelper.APIFault); !ok || epf.Status != http.StatusNotFound {
+			return err
 		}
 	}
 
 	var p, ep = projects.Create(context.Background(), projects.Project{
-		ProjectID: projectID,
+		ProjectID: rd.ProjectID,
 	})
 
-	if epf, ok := ep.(*apihelper.APIFault); ok && epf.Has("projectAlreadyExists") {
-		return projectID, nil
+	if ep != nil {
+		return ep
 	}
 
-	return p.ProjectID, ep
+	rd.ProjectID = p.ProjectID
+	return nil
 }
 
 // Run does the remote deployment procedures
-func (rd *RemoteDeployment) Run() (groupUID string, err error) {
-	rd.ProjectID, err = rd.getProjectID()
-
-	if err != nil {
+func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error) {
+	rd.ctx = ctx
+	if err = rd.getProjectID(); err != nil {
 		return "", err
 	}
 
@@ -134,12 +129,6 @@ func (rd *RemoteDeployment) Run() (groupUID string, err error) {
 		gitSchema,
 		config.Context.InfrastructureDomain,
 		rd.ProjectID)
-
-	var ctx = context.Background()
-
-	if _, err = projectctx.CreateOrUpdate(rd.ProjectID); err != nil {
-		return "", err
-	}
 
 	var deploy = &deployment.Deploy{
 		Context:              ctx,
@@ -168,26 +157,13 @@ func (rd *RemoteDeployment) loadServicesList() (err error) {
 		return err
 	}
 
-	allProjectServices, err := getServicesInfoListFromProject(rd.path)
+	err = rd.loadServicesListFromPath()
 
-	if err != nil {
-		return err
+	if err == services.ErrServiceNotFound {
+		err = nil
 	}
 
-	switch config.Context.Scope {
-	case usercontext.ProjectScope:
-		err = rd.loadServicesListForProjectScope(allProjectServices)
-	case usercontext.ServiceScope:
-		err = rd.loadServicesListForServiceScope(allProjectServices)
-	default:
-		err = rd.loadServicesListForGlobalScope()
-
-		if err == services.ErrServiceNotFound {
-			err = nil
-		}
-	}
-
-	if err == nil {
+	if err == nil && len(rd.services) <= 1 {
 		err = rd.maybeFilterOrRenameService()
 	}
 
@@ -214,21 +190,13 @@ func (rd *RemoteDeployment) maybeFilterOrRenameService() error {
 
 		if serviceID == "" {
 			serviceID = namesgenerator.GetRandomAdjective()
+			// I should check until I find it available
 		}
 
 		rd.ServiceID = serviceID
-
-		rd.services[0] = services.ServiceInfo{
-			ServiceID: serviceID,
-			Location:  rd.services[0].Location,
-		}
-
+		rd.services[0].ServiceID = serviceID
 		rd.changedSID = true
 		return nil
-	}
-
-	if config.Context.Scope == usercontext.ProjectScope {
-		return rd.maybeFilterOrRenameServiceForProjectScope()
 	}
 
 	// for service and global...
@@ -240,61 +208,20 @@ func (rd *RemoteDeployment) maybeFilterOrRenameService() error {
 	return nil
 }
 
-func (rd *RemoteDeployment) maybeFilterOrRenameServiceForProjectScope() error {
-	var s, err = rd.services.Get(rd.ServiceID)
-
-	if err != nil {
+func (rd *RemoteDeployment) loadServicesListFromPath() (err error) {
+	var overview = inspector.ContextOverview{}
+	if err = overview.Load(rd.path); err != nil {
 		return err
 	}
 
-	rd.services = services.ServiceInfoList{
-		s,
-	}
+	rd.services = overview.Services
 
-	rd.path = s.Location
-	rd.changedSID = true
-	return nil
-
-}
-
-func (rd *RemoteDeployment) loadServicesListForProjectScope(services services.ServiceInfoList) (err error) {
-	for _, c := range services {
-		rd.services = append(rd.services, c)
-	}
-
-	return nil
-}
-
-func (rd *RemoteDeployment) loadServicesListForServiceScope(services services.ServiceInfoList) (err error) {
-	for _, c := range services {
-		if c.Location == rd.path {
-			rd.services = append(rd.services, c)
-			break
-		}
-	}
-
-	return nil
-}
-
-func (rd *RemoteDeployment) loadServicesListForGlobalScope() (err error) {
-	sp, err := services.Read(rd.path)
-
-	switch {
-	case err == nil:
-	case err == services.ErrServiceNotFound:
+	if len(rd.services) == 0 {
 		rd.services = append(rd.services, services.ServiceInfo{
 			Location:  rd.path,
 			ServiceID: rd.ServiceID,
 		})
-		return
-	default:
-		return errwrap.Wrapf("Error reading service: {{err}}", err)
 	}
-
-	rd.services = append(rd.services, services.ServiceInfo{
-		Location:  rd.path,
-		ServiceID: sp.ID,
-	})
 
 	return nil
 }
@@ -307,21 +234,4 @@ func (rd *RemoteDeployment) printAddress(service string) string {
 	}
 
 	return address
-}
-
-// getServicesInfoListFromProject get a list of services on a given project directory
-func getServicesInfoListFromProject(projectPath string) (services.ServiceInfoList, error) {
-	var i = &inspector.ContextOverview{}
-
-	if err := i.Load(projectPath); err != nil {
-		return services.ServiceInfoList{}, errwrap.Wrapf("Can not list services from project: {{err}}", err)
-	}
-
-	var list = services.ServiceInfoList{}
-
-	for _, c := range i.ProjectServices {
-		list = append(list, c)
-	}
-
-	return list, nil
 }

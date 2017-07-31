@@ -30,7 +30,6 @@ var setupHost = cmdflagsfromhost.SetupHost{
 		Auth: true,
 	},
 	Pattern:             cmdflagsfromhost.FullHostPattern,
-	UseProjectDirectory: true,
 	UseServiceDirectory: true,
 }
 

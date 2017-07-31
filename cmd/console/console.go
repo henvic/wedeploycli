@@ -16,7 +16,6 @@ var setupHost = cmdflagsfromhost.SetupHost{
 	Requires: cmdflagsfromhost.Requires{
 		Auth: true,
 	},
-	UseProjectDirectoryForService: true,
 }
 
 // ConsoleCmd runs the WeDeploy structure for development locally

@@ -4,18 +4,14 @@ import (
 	"context"
 	"net/http"
 	"os"
-	"path/filepath"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/createuser"
 	"github.com/wedeploy/cli/link"
-	"github.com/wedeploy/cli/projectctx"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/pullimages"
-	"github.com/wedeploy/cli/wdircontext"
+	"github.com/wedeploy/cli/services"
 )
 
 type linker struct {
@@ -45,13 +41,9 @@ func (l *linker) Run() error {
 		return err
 	}
 
-	var projectID, errProjectID = l.getProject()
+	var projectID = setupHost.Project()
 
-	if errProjectID != nil {
-		return errProjectID
-	}
-
-	csDirs, err := l.getServicesDirectoriesFromScope()
+	csDirs, err := l.getServicesDirectories()
 
 	if err != nil {
 		return err
@@ -61,8 +53,9 @@ func (l *linker) Run() error {
 		return err
 	}
 
-	var projectRec projects.Project
-	projectRec, err = projectctx.CreateOrUpdate(projectID)
+	projectRec, _, err := projects.CreateOrUpdate(context.Background(), projects.Project{
+		ProjectID: projectID,
+	})
 
 	if !checkProjectOK(err) {
 		return err
@@ -71,74 +64,23 @@ func (l *linker) Run() error {
 	return l.linkMachineSetup(projectRec, csDirs)
 }
 
-func (l *linker) getServicesDirectoriesFromScope() ([]string, error) {
-	if config.Context.ProjectRoot == "" {
-		wd, err := os.Getwd()
-
-		if err != nil {
-			return []string{}, err
-		}
-
-		_, err = services.Read(wd)
-
-		switch {
-		case err == services.ErrServiceNotFound:
-			err = errwrap.Wrapf("Missing wedeploy.json on directory.", err)
-		case err != nil:
-			err = errwrap.Wrapf("Can not read service with no project: {{err}}", err)
-		}
-
-		return []string{wd}, err
-	}
-
-	if config.Context.ServiceRoot != "" {
-		return []string{config.Context.ServiceRoot}, nil
-	}
-
-	var list, err = services.GetListFromDirectory(config.Context.ProjectRoot)
+func (l *linker) getServicesDirectories() ([]string, error) {
+	wd, err := os.Getwd()
 
 	if err != nil {
-		return nil, err
+		return []string{}, err
 	}
 
-	list, err = FilterServiceListFromProjectList(setupHost.Service(), list)
-	var absList = []string{}
+	_, err = services.Read(wd)
 
-	if err != nil {
-		return nil, err
+	switch {
+	case err == services.ErrServiceNotFound:
+		err = errwrap.Wrapf("Missing wedeploy.json on directory.", err)
+	case err != nil:
+		err = errwrap.Wrapf("Can not read service with no project: {{err}}", err)
 	}
 
-	for _, item := range list {
-		absList = append(absList, filepath.Join(config.Context.ProjectRoot, item.Location))
-	}
-
-	return absList, err
-}
-
-// FilterServiceListFromProjectList using a given service ID as filter
-func FilterServiceListFromProjectList(service string, list services.ServiceInfoList) (services.ServiceInfoList, error) {
-	if service == "" {
-		return list, nil
-	}
-
-	var c, err = list.Get(service)
-	return services.ServiceInfoList{c}, err
-}
-
-func (l *linker) getProject() (projectID string, err error) {
-	projectID = setupHost.Project()
-
-	if projectID != "" {
-		return projectID, nil
-	}
-
-	projectID, err = wdircontext.GetProjectID()
-
-	if err == projects.ErrProjectNotFound {
-		return "", nil
-	}
-
-	return projectID, err
+	return []string{wd}, err
 }
 
 func (l *linker) linkMachineSetup(project projects.Project, csDirs []string) error {

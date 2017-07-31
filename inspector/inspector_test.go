@@ -76,11 +76,7 @@ func TestPrintServiceSpec(t *testing.T) {
 
 func TestPrintContextSpec(t *testing.T) {
 	var got = GetSpec(ContextOverview{})
-	var want = []string{`Scope usercontext.Scope`,
-		`ProjectRoot string`,
-		`ServiceRoot string`,
-		`ProjectID string`,
-		`ServiceID string`,
+	var want = []string{`ServiceID string`,
 		`ProjectServices []services.ServiceInfo`}
 
 	if !reflect.DeepEqual(want, got) {

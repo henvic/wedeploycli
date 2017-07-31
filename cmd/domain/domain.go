@@ -30,7 +30,6 @@ http://wedeploy.com/docs/intro/custom-domains.html`,
 
 var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern:             cmdflagsfromhost.FullHostPattern,
-	UseProjectDirectory: true,
 	UseServiceDirectory: true,
 	Requires: cmdflagsfromhost.Requires{
 		Auth:    true,

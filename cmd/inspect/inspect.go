@@ -11,22 +11,20 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
-	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/inspector"
-	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/services"
 )
 
 // InspectCmd returns information about current environment
 var InspectCmd = &cobra.Command{
 	Use:   "inspect",
 	Short: "Inspect environment info",
-	Long: `Use "we inspect" to peek inside a project or a service on your file system.
-<type> = context | project | service`,
+	Long: `Use "we inspect" to peek inside a services directory list.
+<type> = context | service`,
 	Hidden:  true,
 	PreRunE: cmdargslen.ValidateCmd(0, 1),
 	RunE:    inspectRun,
 	Example: `  we inspect context
-  we inspect project
   we inspect service --format "{{.ID}}"`,
 }
 
@@ -53,7 +51,7 @@ func inspectRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(args) != 1 {
-		return errors.New("Expected: we inspect [context|project|service]")
+		return errors.New("Expected: we inspect [context|service]")
 	}
 
 	if showTypeFields && format != "" {
@@ -78,8 +76,6 @@ func inspect(field string) (string, error) {
 	switch field {
 	case "context":
 		return inspector.InspectContext(format, directory)
-	case "project":
-		return inspector.InspectProject(format, directory)
 	case "service":
 		return inspector.InspectService(format, directory)
 	default:
@@ -92,8 +88,6 @@ func printTypeFieldsSpec(field string) error {
 	switch field {
 	case "context":
 		i = inspector.ContextOverview{}
-	case "project":
-		i = projects.Project{}
 	case "service":
 		i = services.Service{}
 	}

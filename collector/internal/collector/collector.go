@@ -94,7 +94,6 @@ type Event struct {
 	Time          string            `json:"time,omitempty"`
 	Tags          []string          `json:"tags,omitempty"`
 	Extra         map[string]string `json:"extra,omitempty"`
-	Scope         string            `json:"scope,omitempty"`
 	Version       string            `json:"version,omitempty"`
 	OS            string            `json:"os,omitempty"`
 	Arch          string            `json:"arch,omitempty"`

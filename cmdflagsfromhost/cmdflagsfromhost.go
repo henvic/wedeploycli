@@ -13,9 +13,7 @@ import (
 	"github.com/wedeploy/cli/flagsfromhost"
 	"github.com/wedeploy/cli/login"
 	"github.com/wedeploy/cli/metrics"
-	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/services"
-	"github.com/wedeploy/cli/wdircontext"
 )
 
 // Requires configuration for the host and flags
@@ -30,17 +28,15 @@ type Requires struct {
 
 // SetupHost is the structure for host and flags parsing
 type SetupHost struct {
-	Pattern                       Pattern
-	Requires                      Requires
-	UseProjectDirectory           bool
-	UseProjectDirectoryForService bool
-	UseServiceDirectory           bool
-	url                           string
-	project                       string
-	service                       string
-	remote                        string
-	cmd                           *cobra.Command
-	parsed                        *flagsfromhost.FlagsFromHost
+	Pattern             Pattern
+	Requires            Requires
+	UseServiceDirectory bool
+	url                 string
+	project             string
+	service             string
+	remote              string
+	cmd                 *cobra.Command
+	parsed              *flagsfromhost.FlagsFromHost
 }
 
 // Pattern for the host and flags
@@ -126,16 +122,16 @@ func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 	}
 
 	if s.Requires.Local {
-		return s.applyParseFlagsFilters(flagsfromhost.Parse(
+		return flagsfromhost.Parse(
 			flagsfromhost.ParseFlags{
 				Host:    s.url,
 				Project: s.project,
 				Service: s.service,
 				Remote:  remoteFlagValue,
-			}))
+			})
 	}
 
-	return s.applyParseFlagsFilters(flagsfromhost.ParseWithDefaultCustomRemote(
+	return flagsfromhost.ParseWithDefaultCustomRemote(
 		flagsfromhost.ParseFlagsWithDefaultCustomRemote{
 			Host:          s.url,
 			Project:       s.project,
@@ -143,19 +139,7 @@ func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 			Remote:        remoteFlagValue,
 			RemoteChanged: remoteFlagChanged,
 		},
-		config.Global.DefaultRemote))
-}
-
-func (s *SetupHost) applyParseFlagsFilters(f *flagsfromhost.FlagsFromHost, err error) (
-	*flagsfromhost.FlagsFromHost, error) {
-	if (s.UseProjectDirectory || s.UseProjectDirectoryForService) && err != nil {
-		switch err.(type) {
-		case flagsfromhost.ErrorServiceWithNoProject:
-			err = nil
-		}
-	}
-
-	return f, err
+		config.Global.DefaultRemote)
 }
 
 // Process flags
@@ -200,7 +184,13 @@ func (s *SetupHost) getServiceFromCurrentWorkingDirectory() (service string, err
 		return "", nil
 	}
 
-	service, err = wdircontext.GetServiceID()
+	sp, err := services.Read(".")
+
+	if err != nil {
+		return "", err
+	}
+
+	service = sp.ID
 
 	switch {
 	case err != nil && err != services.ErrServiceNotFound:
@@ -210,33 +200,6 @@ func (s *SetupHost) getServiceFromCurrentWorkingDirectory() (service string, err
 	}
 
 	return service, nil
-}
-
-func (s *SetupHost) getProjectFromCurrentWorkingDirectory() (project string, err error) {
-	if s.Pattern&ProjectPattern == 0 {
-		return "", nil
-	}
-
-	project, err = wdircontext.GetProjectID()
-
-	switch {
-	case err != nil && err != projects.ErrProjectNotFound:
-		return "", errwrap.Wrapf("Error reading current project: {{err}}", err)
-	case err == projects.ErrProjectNotFound:
-		if !s.Requires.Service || s.Pattern&ServicePattern == 0 {
-			return "", errwrap.Wrapf(
-				"Use flag --project or call this from inside a project directory", err)
-		}
-
-		if !s.UseServiceDirectory {
-			return "", errwrap.Wrapf("Use flags --project and --service", err)
-		}
-
-		return "", errwrap.Wrapf(
-			"Use flags --project and --service or call this from inside a project service directory", err)
-	}
-
-	return project, nil
 }
 
 func (s *SetupHost) loadValues() (err error) {
@@ -258,13 +221,6 @@ func (s *SetupHost) loadValues() (err error) {
 
 	if s.Pattern&ServicePattern == 0 && service != "" {
 		return errors.New("Service is not allowed for this command")
-	}
-
-	if project == "" && (s.UseProjectDirectory || (s.UseProjectDirectoryForService && service != "")) {
-		project, err = s.getProjectFromCurrentWorkingDirectory()
-		if err != nil {
-			return err
-		}
 	}
 
 	if service == "" && s.UseServiceDirectory && s.parsed.Project() == "" {

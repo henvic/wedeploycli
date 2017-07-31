@@ -2,12 +2,8 @@ package projects
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"net/url"
-	"os"
-	"path/filepath"
 	"sort"
 
 	"github.com/wedeploy/api-go"
@@ -22,18 +18,6 @@ type Project struct {
 	Health      string `json:"health,omitempty"`
 	Description string `json:"description,omitempty"`
 	HealthUID   string `json:"healthUid,omitempty"`
-}
-
-// ProjectPackage is the structure for project.json
-type ProjectPackage struct {
-	ID string `json:"id"`
-}
-
-// Project returns a Project type created taking project.json as base
-func (pp ProjectPackage) Project() Project {
-	return Project{
-		ProjectID: pp.ID,
-	}
 }
 
 // Services of a given project
@@ -118,35 +102,6 @@ func List(ctx context.Context) (list []Project, err error) {
 		return list[i].ProjectID < list[j].ProjectID
 	})
 	return list, err
-}
-
-// Read a project directory properties (defined by a project.json on it)
-func Read(path string) (*ProjectPackage, error) {
-	var content, err = ioutil.ReadFile(filepath.Join(path, "project.json"))
-	var data ProjectPackage
-
-	if err != nil {
-		return nil, readValidate(data, err)
-	}
-
-	if err = readValidate(data, json.Unmarshal(content, &data)); err != nil {
-		return nil, err
-	}
-
-	return &data, err
-}
-
-func readValidate(pp ProjectPackage, err error) error {
-	switch {
-	case os.IsNotExist(err):
-		return ErrProjectNotFound
-	case err != nil:
-		return err
-	case pp.ID == "":
-		return ErrInvalidProjectID
-	default:
-		return err
-	}
 }
 
 // Restart restarts a project
