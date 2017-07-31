@@ -80,12 +80,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/mitchellh/go-wordwrap"
-  packages = ["."]
-  revision = "ad45545899c7b13c020ea92b2072220eefad42b8"
-
-[[projects]]
-  branch = "master"
   name = "github.com/pkg/browser"
   packages = ["."]
   revision = "8189194c9f158043d6d45a0b939a47a924ea4b13"

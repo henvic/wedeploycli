@@ -51,10 +51,6 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/mitchellh/go-wordwrap"
-
-[[constraint]]
-  branch = "master"
   name = "github.com/pkg/browser"
 
 [[constraint]]
