@@ -147,7 +147,7 @@ func (up usagePrinter) preparePrintFlag(flag *pflag.Flag) {
 	if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
 		buf.WriteString(fmt.Sprintf("-%s, ", flag.Shorthand))
 	} else {
-		buf.WriteString("   ")
+		buf.WriteString("    ")
 	}
 
 	buf.WriteString(fmt.Sprintf("--%s", flag.Name))
