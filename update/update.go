@@ -14,6 +14,7 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/run"
 	"github.com/wedeploy/cli/verbose"
 )
@@ -126,10 +127,8 @@ func Notify() {
 
 // Update this tool
 func Update(channel string) error {
-	fmt.Println("Trying to update using the",
-		color.Format(color.Bold, color.Underline, "%v", channel),
-		"distribution channel")
-	fmt.Println("Current installed version is " + defaults.Version)
+	fmt.Println(fancy.Success(fmt.Sprintf(`Channel "%s" is now selected.`, channel)))
+	fmt.Println(fancy.Success("Current installed version is " + defaults.Version))
 
 	var resp, err = check(channel)
 
@@ -143,7 +142,7 @@ func Update(channel string) error {
 		return err
 	}
 
-	fmt.Println("Updated to new version:", resp.ReleaseVersion)
+	fmt.Println(fancy.Success("Updated to version " + resp.ReleaseVersion))
 	return err
 }
 
@@ -165,8 +164,8 @@ func getCurrentTime() string {
 }
 
 func handleUpdateCheckError(channel string, err error) error {
-	switch err {
-	case equinox.NotAvailableErr:
+	switch {
+	case err == equinox.NotAvailableErr:
 		var g = config.Global
 		g.NextVersion = ""
 		g.ReleaseChannel = channel
@@ -174,8 +173,10 @@ func handleUpdateCheckError(channel string, err error) error {
 		if err := g.Save(); err != nil {
 			return err
 		}
-		fmt.Println("No updates available.")
+		fmt.Println(fancy.Info("No updates available."))
 		return nil
+	case strings.Contains(err.Error(), fmt.Sprintf("No channel with the name '%s' can be found.", channel)):
+		return errwrap.Wrapf(fmt.Sprintf(`channel "%s" was not found`, channel), err)
 	default:
 		return errwrap.Wrapf("Update failed: {{err}}", err)
 	}
