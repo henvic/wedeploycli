@@ -27,7 +27,6 @@ import (
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/fancy"
-	"github.com/wedeploy/cli/prompt"
 	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/timehelper"
 	"github.com/wedeploy/cli/userhome"
@@ -427,18 +426,9 @@ func (d *Deploy) listenCleanupOnCancel() {
 	}()
 }
 
-func (d *Deploy) printFailureStep(s string) {
-	d.stepMessage.StopText(fancy.Error(s))
-}
-
-func (d *Deploy) printDeploymentFailed() {
-	d.printFailureStep("Deployment failed")
-}
-
 func (d *Deploy) createStatusMessages() {
 	d.stepMessage.PlayText("Initializing deployment process")
 	d.wlm.AddMessage(d.stepMessage)
-	d.wlm.AddMessage(waitlivemsg.EmptyLine())
 
 	const udpm = "Uploading deployment package..."
 
@@ -454,7 +444,7 @@ func (d *Deploy) createServicesActivitiesMap() {
 	d.sActivities = servicesMap{}
 	for _, s := range d.Services {
 		var m = &waitlivemsg.Message{}
-		m.StopText(d.makeServiceStatusMessage(s, ""))
+		m.StopText(d.makeServiceStatusMessage(s, "⠦"))
 
 		d.sActivities[s] = &serviceWatch{
 			msgWLM: m,
@@ -464,14 +454,13 @@ func (d *Deploy) createServicesActivitiesMap() {
 }
 
 func (d *Deploy) updateDeploymentEndStep(err error) {
-	var timeElapsed = color.Format(color.FgBlue, "%v",
-		timehelper.RoundDuration(d.wlm.Duration(), time.Second))
+	var timeElapsed = timehelper.RoundDuration(d.wlm.Duration(), time.Second)
 
 	switch err {
 	case nil:
-		d.stepMessage.StopText(fmt.Sprintf("Deployment successful in " + timeElapsed))
+		d.stepMessage.StopText(fancy.Success(fmt.Sprintf("Deployment successful in %s", timeElapsed)))
 	default:
-		d.stepMessage.StopText(color.Format(color.FgRed, "Deployment failure in ") + timeElapsed)
+		d.stepMessage.StopText(fancy.Error(fmt.Sprintf("Deployment failed in %s", timeElapsed)))
 	}
 }
 
@@ -663,8 +652,8 @@ func (d *Deploy) uploadPackage() (err error) {
 	}
 
 	d.uploadMessage.StopText(
-		fmt.Sprintf("Upload completed in %v",
-			color.Format(color.FgBlue, timehelper.RoundDuration(d.UploadDuration(), time.Second))))
+		fancy.Success(fmt.Sprintf("Upload completed in %v",
+			timehelper.RoundDuration(d.UploadDuration(), time.Second))))
 	return nil
 }
 
@@ -731,14 +720,14 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 	var pre string
 
 	var prefixes = map[string]string{
-		activities.BuildFailed:     "build failed",
-		activities.BuildStarted:    "building",
-		activities.BuildPushed:     "pushing",
-		activities.BuildSucceeded:  "build successful",
-		activities.DeployFailed:    "deploy failed",
-		activities.DeployPending:   "deploy pending",
-		activities.DeploySucceeded: "deployed",
-		activities.DeployStarted:   "deploying",
+		activities.BuildFailed:     "Build failed",
+		activities.BuildStarted:    "Building",
+		activities.BuildPushed:     "Build push",
+		activities.BuildSucceeded:  "Build successful",
+		activities.DeployFailed:    "Deploy failed",
+		activities.DeployPending:   "Deploy pending",
+		activities.DeploySucceeded: "Deployed",
+		activities.DeployStarted:   "Deploying",
 	}
 
 	if pre, ok = prefixes[a.Type]; !ok {
@@ -746,14 +735,21 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 	}
 
 	switch a.Type {
+	case activities.BuildStarted,
+		activities.BuildPushed,
+		activities.BuildSucceeded,
+		activities.DeployPending,
+		activities.DeployStarted:
+		m.PlayText(d.makeServiceStatusMessage(serviceID, pre))
 	case
 		activities.BuildFailed,
 		activities.DeployFailed:
-		m.PlayText(fancy.Error(d.makeServiceStatusMessage(serviceID, pre)))
+		m.StopText(fancy.Error(d.makeServiceStatusMessage(serviceID, pre)))
 	case
 		activities.DeploySucceeded:
 		m.StopText(fancy.Success(d.makeServiceStatusMessage(serviceID, pre)))
 	default:
+		m.StopText(d.makeServiceStatusMessage(serviceID, pre))
 	}
 }
 
@@ -882,7 +878,7 @@ func (d *Deploy) printServiceAddress(service string) string {
 
 func (d *Deploy) coloredServiceAddress(serviceID string) string {
 	return color.Format(
-		color.FgBlue,
+		color.Bold,
 		d.printServiceAddress(serviceID))
 }
 
@@ -922,7 +918,7 @@ func (d *Deploy) checkDeployment() (failedBuilds []string, failedDeploys []strin
 			feedback += "s"
 		}
 
-		feedback += " " + color.Format(color.FgBlue, strings.Join(failedBuilds, ", "))
+		feedback += " " + color.Format(color.Bold, strings.Join(failedBuilds, ", "))
 	}
 
 	if len(failedBuilds) != 0 && len(failedDeploys) != 0 {
@@ -936,29 +932,24 @@ func (d *Deploy) checkDeployment() (failedBuilds []string, failedDeploys []strin
 			feedback += "s"
 		}
 
-		feedback += " " + color.Format(color.FgBlue, strings.Join(failedDeploys, ", "))
+		feedback += " " + color.Format(color.Bold, strings.Join(failedDeploys, ", "))
 	}
 
 	return failedBuilds, failedDeploys, errors.New(feedback)
 }
 
 func (d *Deploy) maybeOpenLogs(failedBuilds, failedDeploys []string) {
-shouldOpenPrompt:
-	fmt.Println("Do you want to check the logs (yes/no)? [no]: ")
-	var p, err = prompt.Prompt()
+	var options = fancy.Options{}
+	options.Add("A", "Open Browser")
+	options.Add("B", "Cancel")
+	choice, err := options.Ask("Do you want to check the logs?")
 
 	if err != nil {
-		verbose.Debug(err)
-		return
+		fmt.Fprintf(os.Stderr, "%v", err)
 	}
 
-	switch strings.ToLower(p) {
-	case "yes", "y":
-		break
-	case "no", "n", "":
+	if choice == "B" {
 		return
-	default:
-		goto shouldOpenPrompt
 	}
 
 	var logsURL = fmt.Sprintf("https://%v%v/projects/%v/logs",
