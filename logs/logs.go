@@ -24,21 +24,21 @@ import (
 
 // Logs structure
 type Logs struct {
-	ServiceID  string `json:"serviceId"`
-	ServiceUID string `json:"serviceUid"`
-	DeployUID  string `json:"deployUid"`
-	ProjectID  string `json:"projectId"`
-	Level      int    `json:"level"`
-	Message    string `json:"message"`
-	Severity   string `json:"severity"`
-	Timestamp  int64  `json:"timestamp"`
+	ServiceID    string `json:"serviceId"`
+	ContainerUID string `json:"containerUid"`
+	DeployUID    string `json:"deployUid"`
+	ProjectID    string `json:"projectId"`
+	Level        int    `json:"level"`
+	Message      string `json:"message"`
+	Severity     string `json:"severity"`
+	Timestamp    int64  `json:"timestamp"`
 }
 
 // Filter structure
 type Filter struct {
 	Project  string `json:"-"`
 	Service  string `json:"serviceId,omitempty"`
-	Instance string `json:"serviceUid,omitempty"`
+	Instance string `json:"containerUid,omitempty"`
 	Level    int    `json:"level,omitempty"`
 	Since    string `json:"start,omitempty"`
 }
@@ -141,7 +141,7 @@ func filterInstanceInLogs(list []Logs, instance string) []Logs {
 	var l = []Logs{}
 
 	for _, il := range list {
-		if strings.HasPrefix(il.ServiceUID, instance) {
+		if strings.HasPrefix(il.ContainerUID, instance) {
 			l = append(l, il)
 		}
 	}
@@ -208,12 +208,21 @@ func (w *Watcher) Stop() {
 
 func printList(list []Logs) {
 	for _, log := range list {
-		iw := instancesWheel.Get(log.ServiceUID)
-		fd := color.Format(iw,
-			log.ServiceID+"-"+
-				log.ProjectID+"."+
-				config.Context.ServiceDomain+
-				"["+trim(log.ServiceUID, 7)+"]")
+		iw := instancesWheel.Get(log.ContainerUID)
+
+		s := log.ServiceID
+
+		if s != "" {
+			s += "-"
+		}
+
+		m := fmt.Sprintf("%s%s.%s", s, log.ProjectID, config.Context.ServiceDomain)
+
+		if log.ContainerUID != "" {
+			m += "[" + trim(log.ContainerUID, 7) + "]"
+		}
+
+		fd := color.Format(iw, m)
 		outStreamMutex.Lock()
 		fmt.Fprintf(outStream, "%v %v\n", fd, log.Message)
 		outStreamMutex.Unlock()
