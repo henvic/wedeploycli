@@ -1,6 +1,7 @@
 package defaults
 
-const (
+// don't change this to const as it would make go build -ldflags fail silently
+var (
 	// Version of the WeDeploy Project CLI tool
 	Version = "master"
 
