@@ -14,6 +14,7 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/waitlivemsg"
 )
@@ -35,8 +36,14 @@ func (d *Diagnostics) exec(e *Executable) {
 		ctxCmdCancel()
 	}()
 
-	var desc = waitlivemsg.NewMessage(e.Description)
-	defer desc.End()
+	var desc = waitlivemsg.NewMessage("Checking\t" + e.Description)
+	defer func() {
+		if e.IgnoreError || e.err == nil {
+			desc.StopText(fancy.Success("Checked\t") + e.Description)
+		} else {
+			desc.StopText(fancy.Error("Error\t") + e.Description)
+		}
+	}()
 
 	// only add message if it is not empty
 	if e.Description != "" {

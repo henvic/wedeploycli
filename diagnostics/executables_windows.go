@@ -4,12 +4,12 @@ package diagnostics
 
 var windowsExecutables = []*Executable{
 	&Executable{
-		Description: "Checking system version",
+		Description: "system version",
 		LogFile:     "system",
 		Command:     "ver",
 	},
 	&Executable{
-		Description: "Checking system overview",
+		Description: "system overview",
 		LogFile:     "system",
 		Command:     "systeminfo",
 	},

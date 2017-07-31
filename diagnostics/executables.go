@@ -10,7 +10,7 @@ var Executables = []*Executable{
 		Command: we + " who",
 	},
 	&Executable{
-		Description: "Checking installed version",
+		Description: "Installed version",
 		Command:     we + " version",
 	},
 	&Executable{
@@ -25,12 +25,12 @@ var Executables = []*Executable{
 		Command:     we + " list --remote local",
 	},
 	&Executable{
-		Description: "Checking system docker images",
+		Description: "System docker images",
 		LogFile:     "docker_images",
 		Command:     "docker images",
 	},
 	&Executable{
-		Description: "Checking docker services",
+		Description: "Docker services",
 		LogFile:     "docker_ps",
 		Command:     `docker ps -a --format "table {{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Names}}"`,
 	},
@@ -39,12 +39,12 @@ var Executables = []*Executable{
 		Command: "docker ps",
 	},
 	&Executable{
-		Description: "Checking docker system-wide information",
+		Description: "Docker system-wide information",
 		LogFile:     "docker_info",
 		Command:     "docker info",
 	},
 	&Executable{
-		Description: "Checking docker network list",
+		Description: "Docker network list",
 		LogFile:     "docker_network",
 		Command:     "docker network ls",
 	},

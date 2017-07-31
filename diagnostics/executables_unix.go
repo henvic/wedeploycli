@@ -4,29 +4,29 @@ package diagnostics
 
 var unixExecutables = []*Executable{
 	&Executable{
-		Description: "Checking operating system",
+		Description: "Operating system",
 		LogFile:     "system",
 		Command:     "uname -a",
 	},
 	&Executable{
-		Description: "Checking CPU info",
+		Description: "CPU info",
 		LogFile:     "system",
 		Command:     "cat /proc/cpuinfo",
 		IgnoreError: true,
 	},
 	&Executable{
-		Description: "Checking memory info",
+		Description: "Memory info",
 		LogFile:     "system",
 		Command:     "cat /proc/meminfo",
 		IgnoreError: true,
 	},
 	&Executable{
-		Description: "Checking disk usage",
+		Description: "Disk usage",
 		LogFile:     "system",
 		Command:     "df",
 	},
 	&Executable{
-		Description: "Checking available memory",
+		Description: "Available memory",
 		LogFile:     "system",
 		Command:     "free -m",
 		IgnoreError: true,

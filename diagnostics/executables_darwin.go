@@ -4,22 +4,22 @@ package diagnostics
 
 var macExecutables = []*Executable{
 	&Executable{
-		Description: "Checking system software overview",
+		Description: "System software overview",
 		LogFile:     "system",
 		Command:     "system_profiler SPSoftwareDataType",
 	},
 	&Executable{
-		Description: "Checking hardware overview",
+		Description: "Hardware overview",
 		LogFile:     "system",
 		Command:     "system_profiler SPHardwareDataType",
 	},
 	&Executable{
-		Description: "Checking memory",
+		Description: "Memory",
 		LogFile:     "system",
 		Command:     "system_profiler SPMemoryDataType",
 	},
 	&Executable{
-		Description: "Checking firewall settings",
+		Description: "Firewall settings",
 		LogFile:     "system",
 		Command:     "system_profiler SPFirewallDataType",
 	},
