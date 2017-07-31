@@ -28,8 +28,7 @@ func (l *List) printProjects() {
 }
 
 func (l *List) printProject(p projects.Project) {
-	l.Printf(color.Format(getHealthForegroundColor(p.Health), "• "))
-	l.Printf("Project: %v\n", color.Format(color.FgBlue, p.ProjectID))
+	l.Printf("Project %v\n", color.Format(color.FgBlue, p.ProjectID))
 
 	var services, err = p.Services(context.Background())
 
