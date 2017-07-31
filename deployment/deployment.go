@@ -619,8 +619,19 @@ func (d *Deploy) preparePackage() (err error) {
 // GitCredentialEnvRemoteToken is the environment variable used for git credential-helper
 const GitCredentialEnvRemoteToken = "WEDEPLOY_REMOTE_TOKEN"
 
+func getWeExecutable() (string, error) {
+	var exec, err = os.Executable()
+
+	if err != nil {
+		verbose.Debug(fmt.Sprintf("%v; falling back to os.Args[0]", err))
+		return filepath.Abs(os.Args[0])
+	}
+
+	return exec, nil
+}
+
 func (d *Deploy) addCredentialHelper() (err error) {
-	bin, err := filepath.Abs(os.Args[0])
+	bin, err := getWeExecutable()
 
 	if err != nil {
 		return err
