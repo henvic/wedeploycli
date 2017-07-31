@@ -1,4 +1,4 @@
-package cmddiagnostics
+package cmdcheck
 
 import (
 	"context"
@@ -6,10 +6,7 @@ import (
 	"os"
 	"time"
 
-	"strings"
-
 	humanize "github.com/dustin/go-humanize"
-	"github.com/hashicorp/errwrap"
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
@@ -17,7 +14,7 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/diagnostics"
-	"github.com/wedeploy/cli/prompt"
+	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/run"
 	"github.com/wedeploy/cli/verbose"
 )
@@ -30,9 +27,9 @@ var (
 	timeout = 15
 )
 
-// DiagnosticsCmd sets the user credential
-var DiagnosticsCmd = &cobra.Command{
-	Use:     "diagnostics",
+// CheckCmd sets the user credential
+var CheckCmd = &cobra.Command{
+	Use:     "check",
 	Short:   "Run system diagnostics and show report",
 	PreRunE: cmdargslen.ValidateCmd(0, 0),
 	RunE:    diagnosticsRun,
@@ -57,14 +54,20 @@ func diagnosticsRun(cmd *cobra.Command, args []string) error {
 		diagnostics.Write(os.Stderr, report)
 	}
 
-	fmt.Printf("Diagnostics report size: %v\n", color.Format(color.Bold, color.FgHiBlue, humanize.Bytes(uint64(report.Len()))))
+	fmt.Println(fancy.Info("Diagnostics report size: ") +
+		color.Format(color.Bold, humanize.Bytes(uint64(report.Len()))))
 
 	if !send && !cmd.Flag("send").Changed {
-		fmt.Println("Press [Enter] or type \"yes\" to send diagnostics report to WeDeploy [yes/no]: ")
-		switch ask, askErr := prompt.Prompt(); {
-		case askErr != nil:
-			return errwrap.Wrapf("Skipping diagnostics submission: {{err}}", askErr)
-		case len(ask) == 0 || strings.ToLower(ask[:1]) == "y":
+		var options = fancy.Options{}
+		options.Add("A", "Send report")
+		options.Add("B", "Cancel")
+		var choice, askErr = options.Ask("Send this report to WeDeploy?")
+
+		if askErr != nil {
+			return askErr
+		}
+
+		if choice == "A" {
 			send = true
 		}
 	}
@@ -105,39 +108,36 @@ func submit(report diagnostics.Report) error {
 		return err
 	}
 
-	if username != "" {
-		fmt.Println("Username: " + username)
-	}
-
-	fmt.Println("Diagnostics ID: " + entry.ID)
+	fmt.Println(fancy.Info("Report ID: ") + entry.ID)
+	fmt.Println(fancy.Info("In case you need support, providing the ID will help us to diagnose your situation."))
 	return nil
 }
 
 func init() {
-	DiagnosticsCmd.Flags().BoolVar(
+	CheckCmd.Flags().BoolVar(
 		&serial,
 		"serial",
 		false,
 		"Do not run diagnostics in parallel")
 
-	DiagnosticsCmd.Flags().BoolVar(
+	CheckCmd.Flags().BoolVar(
 		&print,
 		"print",
 		false,
 		"Print diagnostics")
 
-	DiagnosticsCmd.Flags().BoolVar(
+	CheckCmd.Flags().BoolVar(
 		&send,
 		"send",
 		false,
 		"send to WeDeploy")
 
-	DiagnosticsCmd.Flags().IntVar(
+	CheckCmd.Flags().IntVar(
 		&timeout,
 		"timeout",
 		15,
 		"Timeout for the diagnostics in seconds")
 
-	DiagnosticsCmd.Flag("serial").Hidden = true
-	DiagnosticsCmd.Flag("timeout").Hidden = true
+	CheckCmd.Flag("serial").Hidden = true
+	CheckCmd.Flag("timeout").Hidden = true
 }
