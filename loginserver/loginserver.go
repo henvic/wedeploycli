@@ -110,8 +110,13 @@ func (o oauthClaims) Valid() error {
 }
 
 func (s *Service) redirectToDashboard(w http.ResponseWriter, r *http.Request) {
-	var success = fmt.Sprintf("https://%v%v/static/cli/login-success/", defaults.DashboardAddressPrefix, s.Infrastructure)
-	http.Redirect(w, r, success, http.StatusSeeOther)
+	var page = "static/cli/login-success/"
+	if s.err != nil {
+		page = "static/cli/login-failure/"
+	}
+
+	var redirect = fmt.Sprintf("https://%v%v/%v", defaults.DashboardAddressPrefix, s.Infrastructure, page)
+	http.Redirect(w, r, redirect, http.StatusSeeOther)
 }
 
 func getJWTErrors(err error) error {
