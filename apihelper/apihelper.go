@@ -114,7 +114,7 @@ type APIFaultError struct {
 }
 
 // APIFaultErrorContext map
-type APIFaultErrorContext map[string]string
+type APIFaultErrorContext map[string]interface{}
 
 // Message for a given APIFaultError
 func (c APIFaultErrorContext) Message() string {
@@ -122,7 +122,7 @@ func (c APIFaultErrorContext) Message() string {
 		return ""
 	}
 
-	return c["message"]
+	return fmt.Sprintf("%v", c["message"])
 }
 
 var (
