@@ -14,7 +14,6 @@ import (
 	"github.com/wedeploy/cli/cmd/diagnostics"
 	"github.com/wedeploy/cli/cmd/domain"
 	"github.com/wedeploy/cli/cmd/env"
-	"github.com/wedeploy/cli/cmd/generate"
 	"github.com/wedeploy/cli/cmd/gitcredentialhelper"
 	"github.com/wedeploy/cli/cmd/inspect"
 	"github.com/wedeploy/cli/cmd/list"
@@ -62,7 +61,6 @@ var commands = []*cobra.Command{
 	cmdlogin.LoginCmd,
 	cmdlogout.LogoutCmd,
 	cmdautocomplete.AutocompleteCmd,
-	cmdgenerate.GenerateCmd,
 	cmdremote.RemoteCmd,
 	cmddiagnostics.DiagnosticsCmd,
 	cmdversion.VersionCmd,
