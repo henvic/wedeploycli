@@ -1,14 +1,11 @@
 package cmdlogout
 
 import (
-	"os"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/userhome"
 )
 
 // LogoutCmd unsets the user credential
@@ -19,15 +16,12 @@ var LogoutCmd = &cobra.Command{
 	RunE:    logoutRun,
 }
 
-var rmConfig bool
-
 var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern: cmdflagsfromhost.RemotePattern,
 }
 
 func init() {
 	setupHost.Init(LogoutCmd)
-	LogoutCmd.Flags().BoolVar(&rmConfig, "rm-config-file", false, "Remove configuration file")
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
@@ -39,10 +33,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func logoutRun(cmd *cobra.Command, args []string) error {
-	if rmConfig {
-		return os.Remove(filepath.Join(userhome.GetHomeDir(), ".we"))
-	}
-
 	var g = config.Global
 	var remote = g.Remotes[config.Context.Remote]
 
