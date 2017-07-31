@@ -61,7 +61,7 @@ func (l *List) printService(projectID string, c services.Service) {
 	serviceDomain := l.getServiceDomain(projectID, c.ServiceID)
 	l.Printf("%v\t", serviceDomain)
 	l.printInstances(c.Scale)
-	l.Printf(color.Format(color.FgHiBlack, "%v\t", c.Image))
+	l.Printf(color.Format(color.FgHiBlack, "%v\t", c.ImageHint))
 	l.Printf("%v\n", c.Health)
 }
 

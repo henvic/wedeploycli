@@ -39,6 +39,7 @@ type Service struct {
 	ServiceID     string            `json:"serviceId,omitempty"`
 	Health        string            `json:"health,omitempty"`
 	Image         string            `json:"image,omitempty"`
+	ImageHint     string            `json:"imageHint,omitempty"`
 	CustomDomains []string          `json:"customDomains,omitempty"`
 	Env           map[string]string `json:"env,omitempty"`
 	Scale         int               `json:"scale,omitempty"`
