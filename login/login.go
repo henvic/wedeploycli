@@ -121,6 +121,7 @@ promptForPassword:
 	defer a.wlm.Stop()
 
 	token, err = loginserver.OAuthTokenFromBasicAuth(remoteAddress, username, password)
+	a.maybePrintReceivedToken(token)
 
 	if err != nil {
 		a.msg.StopText(fancy.Error("Authentication failed [1/2]"))
@@ -202,6 +203,7 @@ func (a *Authentication) browserWorkflowAuth() error {
 	}
 
 	var username, token, tokenErr = service.Credentials()
+	a.maybePrintReceivedToken(token)
 
 	if tokenErr != nil {
 		a.msg.StopText(fancy.Error("Authentication failed [1/2]"))
@@ -255,4 +257,12 @@ func (a *Authentication) saveUser(username, token string) (err error) {
 
 	a.success(username)
 	return nil
+}
+
+func (a *Authentication) maybePrintReceivedToken(token string) {
+	if verbose.Enabled {
+		tokenMsg := &waitlivemsg.Message{}
+		tokenMsg.StopText("Token: " + verbose.SafeEscape(token))
+		a.wlm.AddMessage(tokenMsg)
+	}
 }
