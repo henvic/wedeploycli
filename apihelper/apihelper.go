@@ -39,14 +39,21 @@ type APIFault struct {
 var errMissingResponse = errors.New("Request is not fulfilled by a response")
 
 func (a APIFault) Error() string {
-	return fmt.Sprintf("WeDeploy API error:%s%s%s",
-		a.getErrorMessage(),
-		a.getErrorURL(),
-		a.getErrorMessages())
+	var s []string
+
+	if a.Errors == nil {
+		return a.getErrorMessage()
+	}
+
+	for _, value := range a.Errors {
+		s = append(s, fmt.Sprintf("%v", value.Context.Message()))
+	}
+
+	return strings.Join(s, "; ")
 }
 
 func (a APIFault) getErrorMessage() string {
-	var s string
+	var s = a.getErrorURL()
 
 	if a.Status != 0 {
 		s += fmt.Sprintf(" %v", a.Status)
@@ -88,20 +95,6 @@ func (a APIFault) Get(reason string) (bool, string) {
 func (a APIFault) Has(reason string) bool {
 	var has, _ = a.Get(reason)
 	return has
-}
-
-func (a APIFault) getErrorMessages() string {
-	var s []string
-
-	if a.Errors == nil {
-		return ""
-	}
-
-	for _, value := range a.Errors {
-		s = append(s, fmt.Sprintf("\n\t%v: %v", value.Context.Message(), value.Reason))
-	}
-
-	return strings.Join(s, "")
 }
 
 // APIFaultErrors is the array of APIFaultError
