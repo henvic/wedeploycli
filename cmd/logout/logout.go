@@ -1,11 +1,13 @@
 package cmdlogout
 
 import (
+	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/fancy"
 )
 
 // LogoutCmd unsets the user credential
@@ -35,6 +37,16 @@ func preRun(cmd *cobra.Command, args []string) error {
 func logoutRun(cmd *cobra.Command, args []string) error {
 	var g = config.Global
 	var remote = g.Remotes[config.Context.Remote]
+
+	switch remote.Username {
+	case "":
+		fmt.Println(fancy.Info(`You need to have a logged in account on wedeploy.com for performing "we logout".
+Try "we login" first.`))
+	default:
+		fmt.Println(fancy.Success(fmt.Sprintf("You (%s) have been logged out of %s.",
+			remote.Username,
+			remote.Infrastructure)))
+	}
 
 	remote.Username = ""
 	remote.Password = ""
