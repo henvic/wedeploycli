@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/verbose"
 )
 
 // VersionCmd is used for reading the version of this tool
@@ -32,5 +33,5 @@ func versionRun(cmd *cobra.Command, args []string) {
 		fmt.Printf("Build time: %v\n", defaults.BuildTime)
 	}
 
-	fmt.Printf("Go version: %v\n", runtime.Version())
+	verbose.Debug("Go version: %v\n", runtime.Version())
 }
