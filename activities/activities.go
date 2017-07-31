@@ -46,9 +46,6 @@ const (
 	// BuildFailed state
 	BuildFailed = "BUILD_FAILED"
 
-	// BuildPending state
-	// BuildPending = "BUILD_PENDING"
-
 	// BuildStarted state
 	BuildStarted = "BUILD_STARTED"
 
@@ -126,9 +123,9 @@ const (
 )
 
 var activityTemplates = map[string]string{
-	BuildFailed: "{{.Metadata.serviceId}} build failed on project {{.ProjectID}}",
+	BuildFailed:                        "{{.Metadata.serviceId}} build failed on project {{.ProjectID}}",
 	BuildStarted:                       "{{.Metadata.serviceId}} build started on project {{.ProjectID}}",
-	BuildPushed:                        "{{.Metadata.serviceId}} build pushed ?????????????????? on project {{.ProjectID}}",
+	BuildPushed:                        "{{.Metadata.serviceId}} build pushed on project {{.ProjectID}}",
 	BuildSucceeded:                     "{{.Metadata.serviceId}} build successful on project {{.ProjectID}}",
 	CollaboratorDeleted:                "{{.ProjectID}} project collaborator deleted",
 	CollaboratorInvitationAccepted:     "{{.ProjectID}} project collaborator invitation accepted",
