@@ -57,7 +57,6 @@ func (l *List) printServices(projectID string, cs []services.Service) {
 }
 
 func (l *List) printService(projectID string, c services.Service) {
-	l.Printf(color.Format(getHealthForegroundColor(c.Health), "• "))
 	serviceDomain := l.getServiceDomain(projectID, c.ServiceID)
 	l.Printf("%v\t", serviceDomain)
 	l.printInstances(c.Scale)
