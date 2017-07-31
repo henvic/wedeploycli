@@ -1,4 +1,4 @@
-package cmdremove
+package cmddelete
 
 import (
 	"context"
@@ -22,15 +22,15 @@ var (
 	quiet bool
 )
 
-// RemoveCmd is the remove command to undeploy a project or service
-var RemoveCmd = &cobra.Command{
-	Use:     "remove",
+// DeleteCmd is the delete command to undeploy a project or service
+var DeleteCmd = &cobra.Command{
+	Use:     "delete",
 	Short:   "Delete project or services",
 	PreRunE: preRun,
 	RunE:    run,
-	Example: `  we remove --url data.chat.wedeploy.me
-  we remove --project chat
-  we remove --project chat --service data`,
+	Example: `  we delete --url data.chat.wedeploy.me
+  we delete --project chat
+  we delete --project chat --service data`,
 }
 
 type undeployer struct {
@@ -55,9 +55,9 @@ var setupHost = cmdflagsfromhost.SetupHost{
 }
 
 func init() {
-	RemoveCmd.Flags().BoolVarP(&quiet, "quiet", "q", false,
+	DeleteCmd.Flags().BoolVarP(&quiet, "quiet", "q", false,
 		"undeploy without watching status")
-	setupHost.Init(RemoveCmd)
+	setupHost.Init(DeleteCmd)
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
