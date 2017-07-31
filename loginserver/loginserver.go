@@ -204,6 +204,7 @@ func (s *Service) authenticateHandler(w http.ResponseWriter, r *http.Request) {
 
 	s.temporaryToken = r.Form.Get("access_token")
 	s.email, s.err = parseEmailFromToken(s.temporaryToken)
+	verbose.Debug("Access Token: " + verbose.SafeEscape(s.temporaryToken))
 
 	s.redirectToDashboard(w, r)
 	s.ctxCancel()
