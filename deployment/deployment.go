@@ -630,7 +630,30 @@ func getWeExecutable() (string, error) {
 	return exec, nil
 }
 
+func (d *Deploy) addEmptyCredentialHelper() (err error) {
+	// If credential.helper is configured to the empty string, this resets the helper list to empty
+	// (so you may override a helper set by a lower-priority config file by configuring the empty-string helper,
+	// followed by whatever set of helpers you would like).
+	// https://www.kernel.org/pub/software/scm/git/docs/gitcredentials.html
+	var params = []string{"config", "--add", "credential.helper", ""}
+	verbose.Debug("Resetting credential helpers")
+	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
+	var cmd = exec.CommandContext(d.Context, "git", params...)
+	cmd.Env = append(cmd.Env,
+		"GIT_DIR="+d.getGitPath(),
+		"GIT_WORK_TREE="+d.Path,
+	)
+	cmd.Dir = d.Path
+	cmd.Stderr = errStream
+	cmd.Stdout = outStream
+	return cmd.Run()
+}
+
 func (d *Deploy) addCredentialHelper() (err error) {
+	if err := d.addEmptyCredentialHelper(); err != nil {
+		return err
+	}
+
 	bin, err := getWeExecutable()
 
 	if err != nil {
