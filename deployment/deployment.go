@@ -138,14 +138,14 @@ func (d *Deploy) stageAllFiles() (err error) {
 		return err
 	}
 
-	if err = d.stageChangedServiceFile(); err != nil {
+	if err = d.stageServiceFile(); err != nil {
 		return errwrap.Wrapf("can't stage custom wedeploy.json to replace service ID: {{err}}", err)
 	}
 
 	return err
 }
 
-func (d *Deploy) stageChangedServiceFile() error {
+func (d *Deploy) stageServiceFile() error {
 	var sp, err = services.Read(d.Path)
 
 	switch err {
