@@ -18,7 +18,8 @@ import (
 	"github.com/wedeploy/cli/verbose"
 )
 
-type contextType struct {
+// ContextType structure
+type ContextType struct {
 	Remote               string
 	Infrastructure       string
 	InfrastructureDomain string
@@ -53,7 +54,7 @@ var (
 	Global *Config
 
 	// Context stores the environmental context
-	Context *contextType
+	Context *ContextType
 
 	parseRemoteSectionNameRegex = regexp.MustCompile(`remote \"(.*)\"`)
 )
@@ -163,7 +164,7 @@ func Setup(path string) (err error) {
 		return err
 	}
 
-	Context = &contextType{}
+	Context = &ContextType{}
 	return nil
 }
 

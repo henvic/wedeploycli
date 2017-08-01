@@ -24,6 +24,7 @@ import (
 	"github.com/wedeploy/cli/activities"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/fancy"
@@ -42,26 +43,22 @@ var (
 
 // Deploy project
 type Deploy struct {
-	Context              context.Context
-	AuthorEmail          string
-	ProjectID            string
-	ServiceID            string
-	ChangedServiceID     bool
-	Path                 string
-	Remote               string
-	InfrastructureDomain string
-	ServiceDomain        string
-	Token                string
-	GitRemoteAddress     string
-	Services             []string
-	Quiet                bool
-	groupUID             string
-	pushStartTime        time.Time
-	pushEndTime          time.Time
-	sActivities          servicesMap
-	wlm                  waitlivemsg.WaitLiveMsg
-	stepMessage          *waitlivemsg.Message
-	uploadMessage        *waitlivemsg.Message
+	Context          context.Context
+	ConfigContext    *config.ContextType
+	ProjectID        string
+	ServiceID        string
+	ChangedServiceID bool
+	Path             string
+	GitRemoteAddress string
+	Services         []string
+	Quiet            bool
+	groupUID         string
+	pushStartTime    time.Time
+	pushEndTime      time.Time
+	sActivities      servicesMap
+	wlm              waitlivemsg.WaitLiveMsg
+	stepMessage      *waitlivemsg.Message
+	uploadMessage    *waitlivemsg.Message
 }
 
 func (d *Deploy) getGitPath() string {
@@ -69,11 +66,11 @@ func (d *Deploy) getGitPath() string {
 }
 
 func (d *Deploy) getGitRemote() string {
-	var remote = d.Remote
+	var remote = d.ConfigContext.Remote
 
 	// always add a "wedeploy-" prefix to all deployment remote endpoints, but "wedeploy"
-	if d.Remote != "wedeploy" {
-		remote = "wedeploy" + "-" + d.Remote
+	if remote != "wedeploy" {
+		remote = "wedeploy" + "-" + remote
 	}
 
 	return remote
@@ -244,7 +241,7 @@ func (d *Deploy) Commit() (commit string, err error) {
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
-	cmd.Env = append(cmd.Env, fmt.Sprintf("GIT_AUTHOR_EMAIL=%v", d.AuthorEmail))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("GIT_AUTHOR_EMAIL=%v", d.ConfigContext.Username))
 	cmd.Dir = d.Path
 
 	if verbose.Enabled {
@@ -274,7 +271,7 @@ func (d *Deploy) verboseOnPush() {
 
 	verbose.Debug(color.Format(color.FgBlue, "Push Authorization") +
 		color.Format(color.FgRed, ": ") +
-		verbose.SafeEscape(d.Token))
+		verbose.SafeEscape(d.ConfigContext.Token))
 }
 
 func copyErrStreamAndVerbose(cmd *exec.Cmd) *bytes.Buffer {
@@ -306,7 +303,7 @@ func (d *Deploy) Push() (groupUID string, err error) {
 	cmd.Env = append(os.Environ(),
 		"GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path,
 		"GIT_TERMINAL_PROMPT=0",
-		GitCredentialEnvRemoteToken+"="+d.Token,
+		GitCredentialEnvRemoteToken+"="+d.ConfigContext.Token,
 	)
 	cmd.Dir = d.Path
 
@@ -504,7 +501,7 @@ func (d *Deploy) notifyDeploymentOnQuiet(err error) {
 
 	fmt.Printf("Deployment %v is in progress on remote %v\n",
 		color.Format(color.FgBlue, d.GetGroupUID()),
-		color.Format(color.FgBlue, d.InfrastructureDomain))
+		color.Format(color.FgBlue, d.ConfigContext.InfrastructureDomain))
 }
 
 // Do deployment
@@ -559,7 +556,7 @@ func (d *Deploy) notifyFailedUpload() {
 func (d *Deploy) getDeployingMessage() string {
 	return fmt.Sprintf("Deploying services on project %v in %v...",
 		color.Format(color.FgBlue, d.ProjectID),
-		color.Format(color.FgBlue, d.InfrastructureDomain),
+		color.Format(color.FgBlue, d.ConfigContext.InfrastructureDomain),
 	)
 }
 
@@ -598,7 +595,7 @@ func (d *Deploy) preparePackage() (err error) {
 	d.stepMessage.StopText(
 		fmt.Sprintf("Preparing deployment for project %v in %v...",
 			color.Format(color.FgBlue, d.ProjectID),
-			color.Format(d.Remote)),
+			color.Format(d.ConfigContext.Remote)),
 	)
 
 	if err = d.InitializeRepository(); err != nil {
@@ -901,7 +898,7 @@ func (d *Deploy) checkActivitiesLoop() {
 }
 
 func (d *Deploy) printServiceAddress(service string) string {
-	var address = d.ProjectID + "." + d.ServiceDomain
+	var address = d.ProjectID + "." + d.ConfigContext.ServiceDomain
 
 	if service != "" {
 		address = service + "-" + address
@@ -988,7 +985,7 @@ func (d *Deploy) maybeOpenLogs(failedBuilds, failedDeploys []string) {
 
 	var logsURL = fmt.Sprintf("https://%v%v/projects/%v/logs",
 		defaults.DashboardAddressPrefix,
-		d.InfrastructureDomain,
+		d.ConfigContext.InfrastructureDomain,
 		d.ProjectID)
 
 	switch {

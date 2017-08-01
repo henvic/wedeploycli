@@ -109,19 +109,15 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 		rd.ProjectID)
 
 	var deploy = &deployment.Deploy{
-		Context:              ctx,
-		AuthorEmail:          config.Context.Username,
-		ProjectID:            rd.ProjectID,
-		ServiceID:            rd.ServiceID,
-		ChangedServiceID:     rd.changedSID,
-		Path:                 rd.path,
-		Remote:               config.Context.Remote,
-		InfrastructureDomain: config.Context.InfrastructureDomain,
-		ServiceDomain:        config.Context.ServiceDomain,
-		Token:                config.Context.Token,
-		GitRemoteAddress:     gitServer,
-		Services:             rd.services.GetIDs(),
-		Quiet:                rd.Quiet,
+		Context:          ctx,
+		ProjectID:        rd.ProjectID,
+		ServiceID:        rd.ServiceID,
+		ChangedServiceID: rd.changedSID,
+		Path:             rd.path,
+		ConfigContext:    config.Context,
+		GitRemoteAddress: gitServer,
+		Services:         rd.services.GetIDs(),
+		Quiet:            rd.Quiet,
 	}
 
 	err = deploy.Do()
