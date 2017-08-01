@@ -23,10 +23,8 @@ func (w *Wheel) Get(id string) []color.Attribute {
 		w.hm = map[string][]color.Attribute{}
 	}
 
-	var _, ok = w.hm[id]
-
-	if ok {
-		return w.hm[id]
+	if c, ok := w.hm[id]; ok {
+		return c
 	}
 
 	w.hm[id] = w.palette[w.next]
