@@ -11,7 +11,6 @@ import (
 
 	"os"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/deployment"
@@ -27,35 +26,14 @@ const gitSchema = "https://"
 
 // RemoteDeployment of services
 type RemoteDeployment struct {
-	ProjectID    string
-	ServiceID    string
-	Remote       string
-	Quiet        bool
-	path         string
-	services     services.ServiceInfoList
-	createTmpPkg bool
-	changedSID   bool
-	ctx          context.Context
-}
-
-func (rd *RemoteDeployment) getPath() (path string, err error) {
-	wd, err := os.Getwd()
-
-	if err != nil {
-		return "", errwrap.Wrapf("can't get current working directory: {{err}}", err)
-	}
-
-	_, err = services.Read(wd)
-
-	switch {
-	case err == services.ErrServiceNotFound:
-		rd.createTmpPkg = true
-		return wd, nil
-	case err == nil:
-		return wd, nil
-	}
-
-	return "", err
+	ProjectID  string
+	ServiceID  string
+	Remote     string
+	Quiet      bool
+	path       string
+	services   services.ServiceInfoList
+	changedSID bool
+	ctx        context.Context
 }
 
 func createServicePackage(id, path string) error {
@@ -151,60 +129,62 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 }
 
 func (rd *RemoteDeployment) loadServicesList() (err error) {
-	rd.path, err = rd.getPath()
+	if rd.path, err = os.Getwd(); err != nil {
+		return err
+	}
+
+	if err = rd.loadServicesListFromPath(); err != nil {
+		return err
+	}
+
+	return rd.checkServiceParamter()
+}
+
+func (rd *RemoteDeployment) checkServiceParamter() error {
+	if len(rd.services) != 1 {
+		if rd.ServiceID != "" {
+			return errors.New("service id parameter is not allowed when deploying multiple services")
+		}
+
+		for _, s := range rd.services {
+			if s.ServiceID == "" {
+				return fmt.Errorf("service in %v must have id to allow multiple services deployment", s.Location)
+			}
+		}
+
+		return nil
+	}
+
+	if rd.ServiceID == "" && rd.services[0].ServiceID != "" {
+		return nil
+	}
+
+	if rd.ServiceID != "" {
+		rd.services[0].ServiceID = rd.ServiceID
+		rd.changedSID = true
+		return nil
+	}
+
+	if !terminal.IsTerminal(int(os.Stdin.Fd())) {
+		return errors.New("Service ID is missing (and a terminal was not found for typing one)")
+	}
+
+	fmt.Println(fancy.Question("Your service doesn't have an ID. Type one") + " " + fancy.Tip("default: random"))
+
+	var serviceID, err = fancy.Prompt()
 
 	if err != nil {
 		return err
 	}
 
-	err = rd.loadServicesListFromPath()
-
-	if err == services.ErrServiceNotFound {
-		err = nil
+	if serviceID == "" {
+		serviceID = namesgenerator.GetRandomAdjective()
+		// I should check until I find it available
 	}
 
-	if err == nil && len(rd.services) <= 1 {
-		err = rd.maybeFilterOrRenameService()
-	}
-
-	return err
-}
-
-func (rd *RemoteDeployment) maybeFilterOrRenameService() error {
-	if rd.ServiceID == "" && !rd.createTmpPkg {
-		return nil
-	}
-
-	if rd.ServiceID == "" && rd.createTmpPkg {
-		if !terminal.IsTerminal(int(os.Stdin.Fd())) {
-			return errors.New("Service ID is missing")
-		}
-
-		fmt.Println(fancy.Question("Your service doesn't have an ID. Type one") + " " + fancy.Tip("default: random"))
-
-		var serviceID, err = fancy.Prompt()
-
-		if err != nil {
-			return err
-		}
-
-		if serviceID == "" {
-			serviceID = namesgenerator.GetRandomAdjective()
-			// I should check until I find it available
-		}
-
-		rd.ServiceID = serviceID
-		rd.services[0].ServiceID = serviceID
-		rd.changedSID = true
-		return nil
-	}
-
-	// for service and global...
-	if rd.services[0].ServiceID != rd.ServiceID {
-		rd.services[0].ServiceID = rd.ServiceID
-		rd.changedSID = true
-	}
-
+	rd.ServiceID = serviceID
+	rd.services[0].ServiceID = serviceID
+	rd.changedSID = true
 	return nil
 }
 
