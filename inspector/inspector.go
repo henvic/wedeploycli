@@ -90,7 +90,7 @@ func getServicePackage(directory string) (path string, cp *services.ServicePacka
 	cp, err = services.Read(servicePath)
 
 	if err != nil {
-		return servicePath, nil, errwrap.Wrapf("Inspection failure on service: {{err}}", err)
+		return servicePath, nil, err
 	}
 
 	return servicePath, cp, nil
