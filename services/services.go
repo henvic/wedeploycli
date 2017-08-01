@@ -53,6 +53,7 @@ type ServicePackage struct {
 	Image         string            `json:"image,omitempty"`
 	CustomDomains []string          `json:"customDomains,omitempty"`
 	Env           map[string]string `json:"env,omitempty"`
+	dockerfile    string
 }
 
 // Service returns a Service type created taking wedeploy.json as base
@@ -189,22 +190,19 @@ func (l *listFromDirectoryGetter) walkFunc(path string, info os.FileInfo, err er
 }
 
 func (l *listFromDirectoryGetter) readFunc(dir string) error {
-	var wedeployFile = filepath.Join(dir, "wedeploy.json")
-	var service, errRead = Read(dir)
-
-	switch {
+	switch service, errRead := Read(dir); {
 	case errRead == nil:
 		return l.addFunc(service, dir)
 	case errRead == ErrServiceNotFound:
 		return nil
 	default:
-		return errwrap.Wrapf("Can not list services: error reading "+wedeployFile+": {{err}}", errRead)
+		return errwrap.Wrapf("can't list services: {{err}}", errRead)
 	}
 }
 
 func (l *listFromDirectoryGetter) addFunc(cp *ServicePackage, dir string) error {
-	if cpv, ok := l.idDirMap[cp.ID]; ok {
-		return fmt.Errorf(`Can not list services: ID "%v" was found duplicated on services %v and %v`,
+	if cpv, ok := l.idDirMap[cp.ID]; ok && cp.ID != "" {
+		return fmt.Errorf(`found services with duplicated ID "%v" on %v and %v`,
 			cp.ID,
 			cpv,
 			dir)
@@ -391,31 +389,42 @@ func GetRegistry(ctx context.Context) (registry []Register, err error) {
 	return registry, err
 }
 
-// Read a service directory properties (defined by a wedeploy.json on it)
+// Read a service directory properties (defined by a wedeploy.json and/or Dockerfile on it)
 func Read(path string) (*ServicePackage, error) {
-	var content, err = ioutil.ReadFile(filepath.Join(path, "wedeploy.json"))
-	var data ServicePackage
+	var (
+		data          = ServicePackage{}
+		hasDockerfile bool
+	)
 
-	if err != nil {
-		return nil, readValidate(data, err)
-	}
+	dockerfile, err := ioutil.ReadFile(filepath.Join(path, "Dockerfile"))
 
-	err = json.Unmarshal(content, &data)
-
-	return &data, readValidate(data, err)
-}
-
-func readValidate(service ServicePackage, err error) error {
 	switch {
-	case os.IsNotExist(err):
-		return ErrServiceNotFound
-	case err != nil:
-		return err
-	case service.ID == "":
-		return ErrInvalidServiceID
-	default:
-		return err
+	case err == nil:
+		hasDockerfile = true
+	case !os.IsNotExist(err):
+		return nil, errwrap.Wrapf("error reading Dockerfile: {{err}}", err)
 	}
+
+	wedeployJSON, err := ioutil.ReadFile(filepath.Join(path, "wedeploy.json"))
+
+	switch {
+	case err == nil:
+		if err = json.Unmarshal(wedeployJSON, &data); err != nil {
+			return nil, errwrap.Wrapf("error parsing wedeploy.json on "+path+": {{err}}", err)
+		}
+	case os.IsNotExist(err):
+		if !hasDockerfile {
+			return nil, ErrServiceNotFound
+		}
+	default:
+		return nil, errwrap.Wrapf("error reading wedeploy.json: {{err}}", err)
+	}
+
+	if hasDockerfile {
+		data.dockerfile = string(dockerfile)
+	}
+
+	return &data, nil
 }
 
 // SetEnvironmentVariable sets an environment variable
