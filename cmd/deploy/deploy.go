@@ -20,9 +20,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 	},
 }
 
-var (
-	quiet bool
-)
+var quiet bool
 
 // DeployCmd runs the WeDeploy local infrastructure
 // and / or a project or service
