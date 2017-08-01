@@ -26,6 +26,7 @@ import (
 type Logs struct {
 	ServiceID    string `json:"serviceId"`
 	ContainerUID string `json:"containerUid"`
+	Build        bool   `json:"build"`
 	DeployUID    string `json:"deployUid"`
 	ProjectID    string `json:"projectId"`
 	Level        int    `json:"level"`
@@ -208,7 +209,7 @@ func (w *Watcher) Stop() {
 
 func printList(list []Logs) {
 	for _, log := range list {
-		iw := instancesWheel.Get(log.ContainerUID)
+		iw := instancesWheel.Get(log.ProjectID + "-" + log.ContainerUID)
 
 		s := log.ServiceID
 
@@ -218,8 +219,11 @@ func printList(list []Logs) {
 
 		m := fmt.Sprintf("%s%s.%s", s, log.ProjectID, config.Context.ServiceDomain)
 
-		if log.ContainerUID != "" {
+		switch {
+		case log.ContainerUID != "":
 			m += "[" + trim(log.ContainerUID, 7) + "]"
+		case log.Build:
+			m += "[build]"
 		}
 
 		fd := color.Format(iw, m)
