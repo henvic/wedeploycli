@@ -119,6 +119,9 @@ func GetList(ctx context.Context, filter *Filter) ([]Logs, error) {
 		req.Param("start", filter.Since)
 	}
 
+	// it relies on wedeploy/data, which currently has a hard limit of 9999 results
+	req.Param("limit", "9999")
+
 	var err = apihelper.Validate(req, req.Get())
 
 	if err != nil {
