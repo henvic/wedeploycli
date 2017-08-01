@@ -444,7 +444,7 @@ func (d *Deploy) createServicesActivitiesMap() {
 	d.sActivities = servicesMap{}
 	for _, s := range d.Services {
 		var m = &waitlivemsg.Message{}
-		m.StopText(d.makeServiceStatusMessage(s, "⠦"))
+		m.StopText(d.makeServiceStatusMessage(s, "⠂"))
 
 		d.sActivities[s] = &serviceWatch{
 			msgWLM: m,
