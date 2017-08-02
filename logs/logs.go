@@ -17,13 +17,12 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/colorwheel"
-	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/verbose"
 )
 
-// Logs structure
-type Logs struct {
+// Log structure
+type Log struct {
 	ServiceID    string `json:"serviceId"`
 	ContainerUID string `json:"containerUid"`
 	Build        bool   `json:"build"`
@@ -93,8 +92,8 @@ func GetLevel(severityOrLevel string) (int, error) {
 }
 
 // GetList logs
-func GetList(ctx context.Context, filter *Filter) ([]Logs, error) {
-	var list []Logs
+func GetList(ctx context.Context, filter *Filter) ([]Log, error) {
+	var list []Log
 
 	var params = []string{
 		"/projects",
@@ -137,12 +136,12 @@ func GetList(ctx context.Context, filter *Filter) ([]Logs, error) {
 	return filterInstanceInLogs(list, filter.Instance), nil
 }
 
-func filterInstanceInLogs(list []Logs, instance string) []Logs {
+func filterInstanceInLogs(list []Log, instance string) []Log {
 	if instance == "" {
 		return list
 	}
 
-	var l = []Logs{}
+	var l = []Log{}
 
 	for _, il := range list {
 		if strings.HasPrefix(il.ContainerUID, instance) {
@@ -210,26 +209,22 @@ func (w *Watcher) Stop() {
 	w.endMutex.Unlock()
 }
 
-func printList(list []Logs) {
+func addHeader(log Log) (m string) {
+	m = log.ServiceID
+	switch {
+	case log.ContainerUID != "":
+		m += "[" + trim(log.ContainerUID, 7) + "]"
+	case log.Build:
+		m += "[build]"
+	}
+
+	return m
+}
+
+func printList(list []Log) {
 	for _, log := range list {
 		iw := instancesWheel.Get(log.ProjectID + "-" + log.ContainerUID)
-
-		s := log.ServiceID
-
-		if s != "" {
-			s += "-"
-		}
-
-		m := fmt.Sprintf("%s%s.%s", s, log.ProjectID, config.Context.ServiceDomain)
-
-		switch {
-		case log.ContainerUID != "":
-			m += "[" + trim(log.ContainerUID, 7) + "]"
-		case log.Build:
-			m += "[build]"
-		}
-
-		fd := color.Format(iw, m)
+		fd := color.Format(iw, addHeader(log))
 		outStreamMutex.Lock()
 		fmt.Fprintf(outStream, "%v %v\n", fd, log.Message)
 		outStreamMutex.Unlock()
@@ -261,7 +256,7 @@ func (w *Watcher) pool() {
 	w.incSinceArgument(list)
 }
 
-func (w *Watcher) incSinceArgument(list []Logs) {
+func (w *Watcher) incSinceArgument(list []Log) {
 	var last = list[len(list)-1]
 	var next = last.Timestamp + 1
 
