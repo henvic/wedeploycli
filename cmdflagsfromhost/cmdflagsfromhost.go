@@ -31,6 +31,7 @@ type SetupHost struct {
 	Pattern             Pattern
 	Requires            Requires
 	UseServiceDirectory bool
+	AllowMissingProject bool
 	url                 string
 	project             string
 	service             string
@@ -112,6 +113,19 @@ func (s *SetupHost) Init(cmd *cobra.Command) {
 	}
 }
 
+func (s *SetupHost) tryParseFlags() (*flagsfromhost.FlagsFromHost, error) {
+	flags, err := s.parseFlags()
+
+	switch err.(type) {
+	case flagsfromhost.ErrorServiceWithNoProject:
+		if s.Pattern&ServicePattern != 0 && s.AllowMissingProject && (s.url == "") {
+			return flags, nil
+		}
+	}
+
+	return flags, err
+}
+
 func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 	var remoteFlag = s.cmd.Flag("remote")
 	var remoteFlagValue = s.remote
@@ -144,7 +158,7 @@ func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 
 // Process flags
 func (s *SetupHost) Process() (err error) {
-	s.parsed, err = s.parseFlags()
+	s.parsed, err = s.tryParseFlags()
 
 	if err != nil {
 		return err
