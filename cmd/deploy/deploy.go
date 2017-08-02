@@ -18,6 +18,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 	Requires: cmdflagsfromhost.Requires{
 		Auth: true,
 	},
+	AllowMissingProject: true,
 }
 
 var quiet bool

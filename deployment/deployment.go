@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -47,10 +46,10 @@ type Deploy struct {
 	ConfigContext    *config.ContextType
 	ProjectID        string
 	ServiceID        string
-	ChangedServiceID bool
+	LocationRemap    []string
 	Path             string
 	GitRemoteAddress string
-	Services         []string
+	Services         services.ServiceInfoList
 	Quiet            bool
 	groupUID         string
 	pushStartTime    time.Time
@@ -123,8 +122,8 @@ func (d *Deploy) GetCurrentBranch() (branch string, err error) {
 	return branch, nil
 }
 
-func (d *Deploy) stageAllFiles() (err error) {
-	var params = []string{"add", "."}
+func (d *Deploy) stageEachService(path string) error {
+	var params = []string{"add", path}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
@@ -132,21 +131,41 @@ func (d *Deploy) stageAllFiles() (err error) {
 	cmd.Stderr = errStream
 	cmd.Stdout = outStream
 
-	err = cmd.Run()
+	return cmd.Run()
+}
 
-	if err != nil || !d.ChangedServiceID {
-		return err
+func (d *Deploy) stageAllFiles() (err error) {
+	for _, s := range d.Services {
+		if err := d.stageEachService(s.Location); err != nil {
+			return err
+		}
 	}
 
-	if err = d.stageServiceFile(); err != nil {
+	if err = d.maybeRenameServiceIDs(); err != nil {
 		return errwrap.Wrapf("can't stage custom wedeploy.json to replace service ID: {{err}}", err)
 	}
 
-	return err
+	return nil
 }
 
-func (d *Deploy) stageServiceFile() error {
-	var sp, err = services.Read(d.Path)
+func (d *Deploy) maybeRenameServiceIDs() error {
+	for _, remapLocation := range d.LocationRemap {
+		for _, service := range d.Services {
+			if service.Location != remapLocation {
+				continue
+			}
+
+			if err := d.renameServiceID(service); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (d *Deploy) renameServiceID(s services.ServiceInfo) error {
+	var sp, err = services.Read(s.Location)
 
 	switch err {
 	case nil:
@@ -158,44 +177,64 @@ func (d *Deploy) stageServiceFile() error {
 		return err
 	}
 
-	sp.ID = d.ServiceID
+	var rel, errRel = filepath.Rel(d.Path, s.Location)
 
-	var tmpDirPath = d.getGitPath()
+	if errRel != nil {
+		return err
+	}
+
+	sp.ID = s.ServiceID
 
 	bin, err := json.MarshalIndent(sp, "", "    ")
 	if err != nil {
 		return err
 	}
 
-	if err = ioutil.WriteFile(filepath.Join(tmpDirPath, "wedeploy.json"), bin, 0644); err != nil {
-		return err
-	}
-
-	defer func() {
-		if er := os.Remove(filepath.Join(tmpDirPath, "wedeploy.json")); er != nil {
-			verbose.Debug(er)
-		}
-	}()
-
-	var params = []string{"add", "wedeploy.json"}
-	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+tmpDirPath)
-	cmd.Dir = d.Path
-	cmd.Stderr = errStream
-	cmd.Stdout = outStream
-
-	return cmd.Run()
+	return d.gitRenameServiceID(bin, filepath.Join(rel, "wedeploy.json"))
 }
 
-func (d *Deploy) unstageProjectJSON() (err error) {
-	var params = []string{"reset", "--", "project.json"}
+func (d *Deploy) gitRenameServiceID(content []byte, path string) error {
+	switch hashObject, err := d.gitRenameServiceIDHashObject(content); {
+	case err != nil:
+		return err
+	default:
+		return d.gitRenameServiceIDUpdateIndex(hashObject, path)
+	}
+}
+
+func (d *Deploy) gitRenameServiceIDHashObject(content []byte) (hashObject string, err error) {
+	var params = []string{"hash-object", "-w", "--stdin"}
+	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
+	var cmd = exec.CommandContext(d.Context, "git", params...)
+	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
+	cmd.Dir = d.Path
+	var in = &bytes.Buffer{}
+	var out = &bytes.Buffer{}
+	cmd.Stdin = in
+	cmd.Stderr = errStream
+	cmd.Stdout = out
+
+	verbose.Debug(fmt.Sprintf("Using hash-object:\n%v", string(content)))
+
+	if _, err := in.Write(content); err != nil {
+		return "", err
+	}
+
+	if err = cmd.Run(); err != nil {
+		return "", err
+	}
+
+	return out.String(), nil
+}
+
+func (d *Deploy) gitRenameServiceIDUpdateIndex(hashObject, path string) error {
+	var params = []string{"update-index", "--add", "--cacheinfo", "100644", hashObject, path}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
-
+	cmd.Stdout = outStream
 	return cmd.Run()
 }
 
@@ -212,7 +251,7 @@ func (d *Deploy) getLastCommit() (commit string, err error) {
 	err = cmd.Run()
 
 	if err != nil {
-		return "", errwrap.Wrapf("Can not get last commit: {{err}}", err)
+		return "", errwrap.Wrapf("can't get last commit: {{err}}", err)
 	}
 
 	commit = strings.TrimSpace(buf.String())
@@ -222,11 +261,7 @@ func (d *Deploy) getLastCommit() (commit string, err error) {
 // Commit adds all files and commits
 func (d *Deploy) Commit() (commit string, err error) {
 	if err = d.stageAllFiles(); err != nil {
-		return "", errwrap.Wrapf("Trying to stage all files: {{err}}", err)
-	}
-
-	if err = d.unstageProjectJSON(); err != nil {
-		return "", errwrap.Wrapf("Trying to unstage project.json: {{err}}", err)
+		return "", err
 	}
 
 	var msg = fmt.Sprintf("Deployment at %v", time.Now().Format(time.RubyDate))
@@ -441,9 +476,9 @@ func (d *Deploy) createServicesActivitiesMap() {
 	d.sActivities = servicesMap{}
 	for _, s := range d.Services {
 		var m = &waitlivemsg.Message{}
-		m.StopText(d.makeServiceStatusMessage(s, "⠂"))
+		m.StopText(d.makeServiceStatusMessage(s.ServiceID, "⠂"))
 
-		d.sActivities[s] = &serviceWatch{
+		d.sActivities[s.ServiceID] = &serviceWatch{
 			msgWLM: m,
 		}
 		d.wlm.AddMessage(m)
@@ -455,9 +490,11 @@ func (d *Deploy) updateDeploymentEndStep(err error) {
 
 	switch err {
 	case nil:
-		d.stepMessage.StopText(fancy.Success(fmt.Sprintf("Deployment successful in %s", timeElapsed)))
+		d.stepMessage.StopText(d.getDeployingMessage() + "\n" +
+			fancy.Success(fmt.Sprintf("Deployment successful in %s", timeElapsed)))
 	default:
-		d.stepMessage.StopText(fancy.Error(fmt.Sprintf("Deployment failed in %s", timeElapsed)))
+		d.stepMessage.StopText(d.getDeployingMessage() + "\n" +
+			fancy.Error(fmt.Sprintf("Deployment failed in %s", timeElapsed)))
 	}
 }
 
@@ -472,7 +509,7 @@ func (d *Deploy) prepareQuiet() {
 	}
 
 	for _, s := range d.Services {
-		p.WriteString(d.coloredServiceAddress(s))
+		p.WriteString(d.coloredServiceAddress(s.ServiceID))
 		p.WriteString("\n")
 	}
 
@@ -881,14 +918,13 @@ func (d *Deploy) checkActivitiesLoop() {
 		var stepText = d.stepMessage.GetText()
 
 		if err != nil {
-			d.stepMessage.StopText(fancy.Error(updateMessageErrorStringCounter(stepText)))
+			d.stepMessage.StopText(updateMessageErrorStringCounter(stepText))
 			verbose.Debug(err)
 			continue
 		}
 
 		if strings.Contains(stepText, "retrying to get status #") {
-			// it is not cleaning always
-			d.stepMessage.StopText(fancy.Error(clearMessageErrorStringCounter(stepText)))
+			d.stepMessage.StopText(clearMessageErrorStringCounter(stepText))
 		}
 
 		if end {

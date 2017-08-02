@@ -3,7 +3,6 @@ package inspector
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"reflect"
 
 	"github.com/hashicorp/errwrap"
@@ -36,7 +35,7 @@ func (overview *ContextOverview) loadService(directory string) error {
 	switch {
 	case os.IsNotExist(cerr):
 	case cerr != nil:
-		return errwrap.Wrapf("Can not load service context on "+servicePath+": {{err}}", cerr)
+		return errwrap.Wrapf("can't load service context on "+servicePath+": {{err}}", cerr)
 	}
 
 	return nil
@@ -57,10 +56,6 @@ func (overview *ContextOverview) loadServicesList(directory string) error {
 
 	if err != nil {
 		return err
-	}
-
-	for i, l := range list {
-		list[i].Location = filepath.Join(directory, l.Location)
 	}
 
 	overview.Services = list

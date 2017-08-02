@@ -143,9 +143,8 @@ func GetListFromDirectory(root string) (ServiceInfoList, error) {
 }
 
 type listFromDirectoryGetter struct {
-	list     ServiceInfoList
-	idDirMap map[string]string
-	root     string
+	list ServiceInfoList
+	root string
 }
 
 func (l *listFromDirectoryGetter) Walk(root string) (ServiceInfoList, error) {
@@ -158,20 +157,34 @@ func (l *listFromDirectoryGetter) Walk(root string) (ServiceInfoList, error) {
 	}
 
 	l.list = ServiceInfoList{}
-	l.idDirMap = map[string]string{}
 
-	if err = filepath.Walk(l.root, l.walkFunc); err != nil {
+	info, err := os.Stat(l.root)
+
+	if err != nil {
 		return nil, err
+	}
+
+	if err := l.readDir(l.root, info); err != nil {
+		return nil, err
+	}
+
+	files, err := ioutil.ReadDir(l.root)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, info := range files {
+		path := filepath.Join(l.root, info.Name())
+		if err := l.readDir(path, info); err != nil {
+			return nil, err
+		}
 	}
 
 	return l.list, nil
 }
 
-func (l *listFromDirectoryGetter) walkFunc(path string, info os.FileInfo, err error) error {
-	if err != nil {
-		return err
-	}
-
+func (l *listFromDirectoryGetter) readDir(path string, info os.FileInfo) error {
 	if !info.IsDir() {
 		return nil
 	}
@@ -181,7 +194,7 @@ func (l *listFromDirectoryGetter) walkFunc(path string, info os.FileInfo, err er
 	switch {
 	case os.IsNotExist(noServiceErr):
 	case noServiceErr == nil:
-		return filepath.SkipDir
+		return nil
 	default:
 		return noServiceErr
 	}
@@ -200,21 +213,32 @@ func (l *listFromDirectoryGetter) readFunc(dir string) error {
 	}
 }
 
-func (l *listFromDirectoryGetter) addFunc(cp *ServicePackage, dir string) error {
-	if cpv, ok := l.idDirMap[cp.ID]; ok && cp.ID != "" {
-		return fmt.Errorf(`found services with duplicated ID "%v" on %v and %v`,
-			cp.ID,
-			cpv,
-			dir)
+func (l *listFromDirectoryGetter) checkExisting(sp *ServicePackage, dir string) error {
+	const errCheck = `found services with duplicated ID "%v" on %v and %v`
+	if sp.ID == "" {
+		return nil
 	}
 
-	l.idDirMap[cp.ID] = dir
+	for _, existing := range l.list {
+		if sp.ID == existing.ServiceID {
+			return fmt.Errorf(errCheck, sp.ID, existing.Location, dir)
+		}
+	}
+
+	return nil
+}
+
+func (l *listFromDirectoryGetter) addFunc(sp *ServicePackage, dir string) error {
+	if err := l.checkExisting(sp, dir); err != nil {
+		return err
+	}
+
 	l.list = append(l.list, ServiceInfo{
-		ServiceID: cp.ID,
-		Location:  strings.TrimPrefix(dir, l.root+string(os.PathSeparator)),
+		ServiceID: sp.ID,
+		Location:  dir,
 	})
 
-	return filepath.SkipDir
+	return nil
 }
 
 // List services of a given project

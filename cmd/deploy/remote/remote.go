@@ -6,10 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
-	"path/filepath"
-
 	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
 
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
@@ -19,6 +21,7 @@ import (
 	"github.com/wedeploy/cli/namesgenerator"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/services"
+	"github.com/wedeploy/cli/verbose"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -26,14 +29,14 @@ const gitSchema = "https://"
 
 // RemoteDeployment of services
 type RemoteDeployment struct {
-	ProjectID  string
-	ServiceID  string
-	Remote     string
-	Quiet      bool
-	path       string
-	services   services.ServiceInfoList
-	changedSID bool
-	ctx        context.Context
+	ProjectID string
+	ServiceID string
+	Remote    string
+	Quiet     bool
+	path      string
+	services  services.ServiceInfoList
+	remap     []string
+	ctx       context.Context
 }
 
 func createServicePackage(id, path string) error {
@@ -112,11 +115,11 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 		Context:          ctx,
 		ProjectID:        rd.ProjectID,
 		ServiceID:        rd.ServiceID,
-		ChangedServiceID: rd.changedSID,
+		LocationRemap:    rd.remap,
 		Path:             rd.path,
 		ConfigContext:    config.Context,
 		GitRemoteAddress: gitServer,
-		Services:         rd.services.GetIDs(),
+		Services:         rd.services,
 		Quiet:            rd.Quiet,
 	}
 
@@ -133,22 +136,41 @@ func (rd *RemoteDeployment) loadServicesList() (err error) {
 		return err
 	}
 
-	return rd.checkServiceParamter()
+	if err = rd.checkServiceParameter(); err != nil {
+		return err
+	}
+
+	return rd.remapServicesWithEmptyIDs()
 }
 
-func (rd *RemoteDeployment) checkServiceParamter() error {
-	if len(rd.services) != 1 {
-		if rd.ServiceID != "" {
-			return errors.New("service id parameter is not allowed when deploying multiple services")
+func (rd *RemoteDeployment) getServiceIDFromBaseDirOrRandom(s services.ServiceInfo) (newServiceID string) {
+	r := regexp.MustCompile("^[0-9a-z]*$")
+	serviceID := strings.ToLower(filepath.Base(s.Location))
+
+	if !r.MatchString(serviceID) {
+		serviceID = fmt.Sprintf("%s%d", namesgenerator.GetRandomAdjective(), rand.Intn(99))
+	}
+
+	verbose.Debug(fmt.Sprintf("service in %v assigned with id %v", s.Location, serviceID))
+	return serviceID
+}
+
+func (rd *RemoteDeployment) remapServicesWithEmptyIDs() error {
+	for k, s := range rd.services {
+		if s.ServiceID != "" {
+			continue
 		}
 
-		for _, s := range rd.services {
-			if s.ServiceID == "" {
-				return fmt.Errorf("service in %v must have id to allow multiple services deployment", s.Location)
-			}
-		}
+		rd.services[k].ServiceID = rd.getServiceIDFromBaseDirOrRandom(s)
+		rd.remap = append(rd.remap, s.Location)
+	}
 
-		return nil
+	return nil
+}
+
+func (rd *RemoteDeployment) checkServiceParameter() error {
+	if len(rd.services) != 1 && rd.ServiceID != "" {
+		return errors.New("service id parameter is not allowed when deploying multiple services")
 	}
 
 	if rd.ServiceID == "" && rd.services[0].ServiceID != "" {
@@ -157,7 +179,7 @@ func (rd *RemoteDeployment) checkServiceParamter() error {
 
 	if rd.ServiceID != "" {
 		rd.services[0].ServiceID = rd.ServiceID
-		rd.changedSID = true
+		rd.remap = append(rd.remap, rd.services[0].Location)
 		return nil
 	}
 
@@ -165,22 +187,21 @@ func (rd *RemoteDeployment) checkServiceParamter() error {
 		return errors.New("Service ID is missing (and a terminal was not found for typing one)")
 	}
 
-	fmt.Println(fancy.Question("Your service doesn't have an ID. Type one") + " " + fancy.Tip("default: random"))
+	var optionServiceID = rd.getServiceIDFromBaseDirOrRandom(rd.services[0])
+	fmt.Println(fancy.Question("Your service doesn't have an ID. Type one") + " " +
+		fancy.Tip("or use: "+optionServiceID))
 
-	var serviceID, err = fancy.Prompt()
-
-	if err != nil {
+	serviceID, err := fancy.Prompt()
+	switch {
+	case err != nil:
 		return err
-	}
-
-	if serviceID == "" {
-		serviceID = namesgenerator.GetRandomAdjective()
-		// I should check until I find it available
+	case serviceID == "":
+		serviceID = optionServiceID
 	}
 
 	rd.ServiceID = serviceID
 	rd.services[0].ServiceID = serviceID
-	rd.changedSID = true
+	rd.remap = append(rd.remap, rd.services[0].Location)
 	return nil
 }
 
