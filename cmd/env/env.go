@@ -15,8 +15,9 @@ import (
 
 // EnvCmd controls the envs for a given project
 var EnvCmd = &cobra.Command{
-	Use:   "env",
-	Short: "Show and configure environment variables for services",
+	Use:    "env",
+	Hidden: true,
+	Short:  "Show and configure environment variables for services",
 	Long: `Show and configure environment variables for services
 
 	Changing these values does not change wedeploy.json hard coded values.

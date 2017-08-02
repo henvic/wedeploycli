@@ -19,6 +19,7 @@ import (
 // RemoteCmd runs the WeDeploy structure for development locally
 var RemoteCmd = &cobra.Command{
 	Use:     "remote",
+	Hidden:  true,
 	Short:   "Configure WeDeploy remotes",
 	PreRunE: cmdargslen.ValidateCmd(0, 0),
 	RunE:    remoteRun,

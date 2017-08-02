@@ -14,6 +14,7 @@ import (
 // RestartCmd is used for getting restart
 var RestartCmd = &cobra.Command{
 	Use:     "restart",
+	Hidden:  true,
 	Short:   "Restart project or services",
 	PreRunE: preRun,
 	RunE:    restartRun,

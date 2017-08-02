@@ -13,8 +13,9 @@ import (
 
 // DomainCmd controls the domains for a given project
 var DomainCmd = &cobra.Command{
-	Use:   "domain",
-	Short: "Show and configure domain names for services",
+	Use:    "domain",
+	Hidden: true,
+	Short:  "Show and configure domain names for services",
 	Long: `Show and configure domain names for services
 
 Changing these values does not change wedeploy.json hard coded values.
