@@ -172,7 +172,7 @@ func (a *Authentication) maybeOpenBrowser(loginURL string) {
 func (a *Authentication) browserWorkflowAuth() error {
 	a.wlm = waitlivemsg.New(nil)
 	a.msg = waitlivemsg.NewMessage("Waiting for authentication via browser [1/2]\n" +
-		fancy.Tip("Esc or ^C to cancel"))
+		fancy.Tip("^C to cancel"))
 	a.wlm.AddMessage(a.msg)
 	go a.wlm.Wait()
 	defer a.wlm.Stop()
