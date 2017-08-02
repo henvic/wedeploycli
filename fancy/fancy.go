@@ -34,12 +34,12 @@ func Info(a interface{}) string {
 
 // Success formatter
 func Success(a interface{}) string {
-	return invertedBlockFormatter(color.FgHiGreen, color.BgGreen, "✔", a)
+	return invertedBlockFormatter(color.FgHiGreen, color.BgGreen, "!", a)
 }
 
 // Error formatter
 func Error(a interface{}) string {
-	return invertedBlockFormatter(color.FgHiRed, color.BgRed, "✘", formatError(a))
+	return invertedBlockFormatter(color.FgHiRed, color.BgRed, "!", formatError(a))
 }
 
 // Tip formatter
