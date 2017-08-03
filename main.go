@@ -197,7 +197,7 @@ func (m *mainProgram) reportCommand() {
 }
 
 func (m *mainProgram) maybeSubmitAnalyticsReport() {
-	if !isCommand("metrics") {
+	if !isCommand("metrics") && !isCommand("uninstall") {
 		if err := metrics.SubmitEventuallyOnBackground(); err != nil {
 			fmt.Fprintf(os.Stderr,
 				"Error trying to submit analytics on background: %v\n",
