@@ -79,6 +79,9 @@ const (
 	// DeployPending state
 	DeployPending = "DEPLOY_PENDING"
 
+	// DeployCreated state
+	DeployCreated = "DEPLOY_CREATED"
+
 	// DeployStarted state
 	DeployStarted = "DEPLOY_STARTED"
 
@@ -135,6 +138,7 @@ var activityTemplates = map[string]string{
 	CustomDomainUpdated:                "{{.Metadata.serviceId}} custom domain updated on project {{.ProjectID}}",
 	DeployFailed:                       "{{.Metadata.serviceId}} deployment failed on project {{.ProjectID}}",
 	DeployPending:                      "{{.Metadata.serviceId}} deployment pending on project {{.ProjectID}}",
+	DeployCreated:                      "{{.Metadata.serviceId}} deployment created on project {{.ProjectID}}",
 	DeployStarted:                      "{{.Metadata.serviceId}} deployment started on project {{.ProjectID}}",
 	DeploySucceeded:                    "{{.Metadata.serviceId}} deployment successful on project {{.ProjectID}}",
 	GithubProviderConnected:            "GitHub provider connected",

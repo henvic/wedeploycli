@@ -793,6 +793,7 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 		activities.BuildPushed:     "Build push",
 		activities.BuildSucceeded:  "Build successful",
 		activities.DeployFailed:    "Deploy failed",
+		activities.DeployCreated:   "Deploy created",
 		activities.DeployPending:   "Deploy pending",
 		activities.DeploySucceeded: "Deployed",
 		activities.DeployStarted:   "Deploying",
@@ -806,6 +807,7 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 	case activities.BuildStarted,
 		activities.BuildPushed,
 		activities.BuildSucceeded,
+		activities.DeployCreated,
 		activities.DeployPending,
 		activities.DeployStarted:
 		m.PlayText(d.makeServiceStatusMessage(serviceID, pre))
@@ -828,6 +830,7 @@ func isActitityTypeDeploymentRelated(activityType string) bool {
 		activities.BuildFailed,
 		activities.BuildPushed,
 		activities.BuildSucceeded,
+		activities.DeployCreated,
 		activities.DeployPending,
 		activities.DeployStarted,
 		activities.DeployFailed,
