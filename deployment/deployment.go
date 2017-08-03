@@ -12,6 +12,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -61,7 +62,15 @@ type Deploy struct {
 }
 
 func (d *Deploy) getGitPath() string {
-	return filepath.Join(userhome.GetHomeDir(), ".wedeploy", "tmp", "repos", d.Path)
+	var cachePath = d.Path
+
+	// on Windows, drive units start with ":", if we don't remove it we get the following error:
+	// 'GetFileAttributesEx U:\...U:\...: The filename, directory name, or volume label syntax is incorrect.
+	if runtime.GOOS == "windows" {
+		cachePath = strings.Replace(d.Path, ":", "", 1)
+	}
+
+	return filepath.Join(userhome.GetHomeDir(), ".wedeploy", "tmp", "repos", cachePath)
 }
 
 func (d *Deploy) getGitRemote() string {
@@ -98,7 +107,37 @@ func (d *Deploy) InitializeRepository() error {
 		return err
 	}
 
-	return nil
+	return d.setGitAuthor()
+}
+
+func (d *Deploy) setGitAuthor() error {
+	if err := d.setGitAuthorName(); err != nil {
+		return err
+	}
+
+	return d.setGitAuthorEmail()
+}
+
+func (d *Deploy) setGitAuthorName() error {
+	var params = []string{"config", "user.name", "WeDeploy user", "--local"}
+	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
+	var cmd = exec.CommandContext(d.Context, "git", params...)
+	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
+	cmd.Dir = d.Path
+	cmd.Stderr = errStream
+
+	return cmd.Run()
+}
+
+func (d *Deploy) setGitAuthorEmail() error {
+	var params = []string{"config", "user.email", "user@deployment", "--local"}
+	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
+	var cmd = exec.CommandContext(d.Context, "git", params...)
+	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
+	cmd.Dir = d.Path
+	cmd.Stderr = errStream
+
+	return cmd.Run()
 }
 
 // GetCurrentBranch gets the current branch
