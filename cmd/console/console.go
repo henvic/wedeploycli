@@ -38,29 +38,27 @@ func consolePreRun(cmd *cobra.Command, args []string) error {
 	return setupHost.Process()
 }
 
+func open(m *waitlivemsg.Message, ec chan error) {
+	err := browser.OpenURL(fmt.Sprintf("https://console.%v", setupHost.InfrastructureDomain()))
+
+	if err != nil {
+		m.StopText(fancy.Error("Failed to open console on your browser [1/2]"))
+		ec <- err
+		return
+	}
+
+	m.StopText(fancy.Success("Console opened on your browser [2/2]"))
+	ec <- err
+}
+
 func consoleRun(cmd *cobra.Command, args []string) error {
 	var m = waitlivemsg.NewMessage("Opening console on your browser [1/2]")
 	var wlm = waitlivemsg.New(nil)
 	go wlm.Wait()
-	// defer wlm.Stop()
-
 	wlm.AddMessage(m)
 	var ec = make(chan error, 1)
-
-	go func() {
-		if err := browser.OpenURL(fmt.Sprintf("https://console.%v", setupHost.InfrastructureDomain())); err != nil {
-			m.StopText(fancy.Error("Failed to open console on your browser [1/2]"))
-			ec <- err
-			return
-		}
-
-		m.StopText(fancy.Success("Console opened on your browser [2/2]"))
-		var err error
-		ec <- err
-	}()
-
-	var err error
-	err = <-ec
+	go open(m, ec)
+	var err = <-ec
 	wlm.Stop()
 	return err
 }
