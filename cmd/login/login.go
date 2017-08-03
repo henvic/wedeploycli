@@ -52,6 +52,7 @@ Logout first with "we logout"`, config.Context.Username, config.Context.Remote, 
 
 	a := login.Authentication{
 		NoLaunchBrowser: noLaunchBrowser,
+		TipCommands:     true,
 	}
 
 	return a.Run(context.Background())

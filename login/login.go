@@ -71,6 +71,7 @@ func validatePassword(password string) (bool, error) {
 type Authentication struct {
 	NoLaunchBrowser bool
 	Domains         status.Domains
+	TipCommands     bool
 	wlm             *waitlivemsg.WaitLiveMsg
 	msg             *waitlivemsg.Message
 }
@@ -225,6 +226,14 @@ func (a *Authentication) success(username string) {
 		color.Format(color.FgHiGreen, `" on "`)+
 		color.Format(color.Reset, color.Bold, remote.Infrastructure)+
 		color.Format(color.FgHiGreen, `".`))))
+
+	if a.TipCommands {
+		a.printTipCommands(buf)
+	}
+	a.msg.StopText(buf.String())
+}
+
+func (a *Authentication) printTipCommands(buf *bytes.Buffer) {
 	fmt.Fprintln(buf, fancy.Info("Check out some useful commands in case you wanna start learning the CLI:"))
 	tw := formatter.NewTabWriter(buf)
 	fmt.Fprintln(tw, color.Format(color.FgHiBlack, "  Command\t     Description"))
@@ -232,7 +241,6 @@ func (a *Authentication) success(username string) {
 	fmt.Fprintln(tw, "  we docs\tOpen docs on your browser")
 	_ = tw.Flush()
 	fmt.Fprint(buf, fancy.Info("Type a command and press Enter to execute it."))
-	a.msg.StopText(buf.String())
 }
 
 func (a *Authentication) saveUser(username, token string) (err error) {
