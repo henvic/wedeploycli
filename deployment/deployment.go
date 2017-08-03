@@ -733,7 +733,14 @@ func (d *Deploy) addCredentialHelper() (err error) {
 		return err
 	}
 
-	var params = []string{"config", "--add", "credential.helper", bin + " git-credential-helper"}
+	var credentialHelper = bin + " git-credential-helper"
+
+	// Windows... Really? Really? Really? Really.
+	if runtime.GOOS == "windows" {
+		credentialHelper = strings.Replace(credentialHelper, `\`, `\\`, -1)
+	}
+
+	var params = []string{"config", "--add", "credential.helper", credentialHelper}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Env = append(cmd.Env,
