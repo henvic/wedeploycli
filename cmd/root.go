@@ -24,6 +24,7 @@ import (
 	"github.com/wedeploy/cli/cmd/remote"
 	"github.com/wedeploy/cli/cmd/removed"
 	"github.com/wedeploy/cli/cmd/restart"
+	"github.com/wedeploy/cli/cmd/uninstall"
 	"github.com/wedeploy/cli/cmd/update"
 	"github.com/wedeploy/cli/cmd/version"
 	"github.com/wedeploy/cli/cmd/who"
@@ -68,6 +69,7 @@ var commands = []*cobra.Command{
 	cmdinspect.InspectCmd,
 	cmdwho.WhoCmd,
 	cmdgitcredentialhelper.GitCredentialHelperCmd,
+	cmduninstall.UninstallCmd,
 }
 
 // see note on usage of maybeEnableVerboseByEnv
