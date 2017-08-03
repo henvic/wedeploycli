@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -63,15 +64,21 @@ func Prompt() (string, error) {
 	reader := bufio.NewReader(inStream)
 	value, err := reader.ReadString('\n')
 
-	// on Windows the line break is \r\n
-	// let's trim an extra line (\n, not \r)
-	value = strings.TrimRight(value, "\n")
+	// two cases:
+	// on Unix: \n
+	// on Windows: \r\n
+	// remove line break
+	if runtime.GOOS == "windows" {
+		value = strings.TrimRight(value, "\r\n")
+	} else {
+		value = strings.TrimRight(value, "\n")
+	}
 
 	if err != nil {
 		return "", errwrap.Wrapf("can't read stdin : {{err}}", err)
 	}
 
-	return value[:len(value)-1], nil
+	return value, nil
 }
 
 // Hidden provides a prompt without echoing the value entered
