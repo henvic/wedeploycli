@@ -110,9 +110,11 @@ func (o oauthClaims) Valid() error {
 }
 
 func (s *Service) redirectToDashboard(w http.ResponseWriter, r *http.Request) {
-	var page = "static/cli/login-success/"
+	var page string
 
 	switch s.err {
+	case nil:
+		page = "static/cli/login-success/"
 	case ErrSignUpEmailConfirmation:
 		page = "static/cli/login-requires-email-confirmation/"
 	default:
