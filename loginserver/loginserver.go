@@ -111,7 +111,11 @@ func (o oauthClaims) Valid() error {
 
 func (s *Service) redirectToDashboard(w http.ResponseWriter, r *http.Request) {
 	var page = "static/cli/login-success/"
-	if s.err != nil {
+
+	switch s.err {
+	case ErrSignUpEmailConfirmation:
+		page = "static/cli/login-requires-email-confirmation/"
+	default:
 		page = "static/cli/login-failure/"
 	}
 
@@ -190,6 +194,11 @@ func (s *Service) homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, redirectPage)
 }
 
+// ErrSignUpEmailConfirmation tells that sign up was canceled because user is signing up
+var ErrSignUpEmailConfirmation = errors.New(`sign up on WeDeploy requested: try "we login" once you confirm your email`)
+
+const signupRequestPseudoToken = "signup_requested"
+
 func (s *Service) authenticateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost || r.Header.Get("Referer") != s.serverAddress+"/" {
 		s.err = errors.New("Authentication should have been POSTed and from a localhost origin")
@@ -208,8 +217,14 @@ func (s *Service) authenticateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.temporaryToken = r.Form.Get("access_token")
-	s.email, s.err = parseEmailFromToken(s.temporaryToken)
 	verbose.Debug("Access Token: " + verbose.SafeEscape(s.temporaryToken))
+
+	switch s.temporaryToken {
+	case signupRequestPseudoToken:
+		s.err = ErrSignUpEmailConfirmation
+	default:
+		s.email, s.err = parseEmailFromToken(s.temporaryToken)
+	}
 
 	s.redirectToDashboard(w, r)
 	s.ctxCancel()
