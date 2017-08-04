@@ -10,10 +10,10 @@ import (
 	"strings"
 	"sync"
 
-	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/usertoken"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -26,7 +26,7 @@ type Service struct {
 	httpServer     *http.Server
 	serverAddress  string
 	temporaryToken string
-	email          string
+	jwt            usertoken.JSONWebToken
 	err            error
 }
 
@@ -101,14 +101,6 @@ func (s *Service) Serve() error {
 	return s.err
 }
 
-type oauthClaims struct {
-	Email string `json:"email"`
-}
-
-func (o oauthClaims) Valid() error {
-	return nil
-}
-
 func (s *Service) redirectToDashboard(w http.ResponseWriter, r *http.Request) {
 	var page string
 
@@ -123,31 +115,6 @@ func (s *Service) redirectToDashboard(w http.ResponseWriter, r *http.Request) {
 
 	var redirect = fmt.Sprintf("https://%v%v/%v", defaults.DashboardAddressPrefix, s.Infrastructure, page)
 	http.Redirect(w, r, redirect, http.StatusSeeOther)
-}
-
-func getJWTErrors(err error) error {
-	if err == nil {
-		return nil
-	}
-
-	// if only the bitmask for the 'signature invalid' is detected, ignore
-	ev, ok := err.(*jwt.ValidationError)
-	if ok && ev.Errors == jwt.ValidationErrorSignatureInvalid {
-		return nil
-	}
-
-	return errwrap.Wrapf("Error parsing token: {{err}}", err)
-}
-
-func parseEmailFromToken(accessToken string) (email string, err error) {
-	var claims = &oauthClaims{}
-	_, err = jwt.ParseWithClaims(accessToken,
-		claims,
-		func(token *jwt.Token) (interface{}, error) {
-			return []byte{}, nil
-		})
-
-	return claims.Email, getJWTErrors(err)
 }
 
 func (s *Service) httpHandler(w http.ResponseWriter, r *http.Request) {
@@ -225,7 +192,7 @@ func (s *Service) authenticateHandler(w http.ResponseWriter, r *http.Request) {
 	case signupRequestPseudoToken:
 		s.err = ErrSignUpEmailConfirmation
 	default:
-		s.email, s.err = parseEmailFromToken(s.temporaryToken)
+		s.jwt, s.err = usertoken.ParseJSONWebToken(s.temporaryToken)
 	}
 
 	s.redirectToDashboard(w, r)
@@ -235,7 +202,7 @@ func (s *Service) authenticateHandler(w http.ResponseWriter, r *http.Request) {
 // Credentials for authenticated user or error, it blocks until the information is available
 func (s *Service) Credentials() (username string, token string, err error) {
 	<-s.ctx.Done()
-	return s.email, s.temporaryToken, s.err
+	return s.jwt.Email, s.temporaryToken, s.err
 }
 
 type handler struct {
