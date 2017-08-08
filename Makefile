@@ -2,7 +2,7 @@
 .PHONY: get-dependencies list-packages build fast-test test build-integration-tests build-functional-tests release promote
 main:
 	echo "WeDeploy CLI build tool commands:"
-	echo "get-dependencies, list-packages, build, fast-test, test, build-functional-tests, release, promote"
+	echo "get-dependencies, list-packages, build, fast-test, test, build-functional-tests, tag, release, promote"
 get-dependencies: check-go
 	if ! which dep &> /dev/null; \
 	then >&2 echo "Install dep to manage dependencies with go get -u github.com/golang/dep/cmd/dep"; \
@@ -14,13 +14,15 @@ list-packages:
 build:
 	go build
 fast-test:
-	./scripts/release.sh --pre-release --skip-integration-tests
+	./scripts/tag.sh --dry-run --skip-integration-tests
 test:
-	./scripts/release.sh --pre-release
+	./scripts/tag.sh --dry-run
 build-integration-tests:
 	./scripts/build-integration-tests.sh
 build-functional-tests:
 	./scripts/build-functional-tests.sh
+tag:
+	./scripts/tag.sh
 release: check-cli-release-config-path
 	./scripts/release.sh --config $$WEDEPLOY_CLI_RELEASE_CONFIG_PATH
 promote: check-cli-release-config-path
