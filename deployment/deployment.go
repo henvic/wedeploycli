@@ -88,16 +88,6 @@ func (d *Deploy) renameServiceID(s services.ServiceInfo) error {
 	return d.gitRenameServiceID(bin, filepath.Join(rel, "wedeploy.json"))
 }
 
-func (d *Deploy) verboseOnPush() {
-	if !verbose.Enabled {
-		return
-	}
-
-	verbose.Debug(color.Format(color.FgBlue, "Push Authorization") +
-		color.Format(color.FgRed, ": ") +
-		verbose.SafeEscape(d.ConfigContext.Token))
-}
-
 func copyErrStreamAndVerbose(cmd *exec.Cmd) *bytes.Buffer {
 	var bufErr bytes.Buffer
 	if verbose.Enabled {
