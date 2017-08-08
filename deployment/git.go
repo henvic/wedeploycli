@@ -26,12 +26,25 @@ func (d *Deploy) CreateGitDirectory() error {
 	return os.MkdirAll(d.getGitPath(), 0700)
 }
 
+func (d *Deploy) getConfigEnvs() []string {
+	var envs = os.Environ()
+
+	envs = append(envs,
+		"GIT_DIR="+d.getGitPath(),
+		"GIT_WORK_TREE="+d.Path,
+		"GIT_CONFIG_NOSYSTEM=true",
+		"XDG_CONFIG_HOME="+filepath.Join(userhome.GetHomeDir(), ".wedeploy"),
+	)
+
+	return envs
+}
+
 // InitializeRepository as a git repo
 func (d *Deploy) InitializeRepository() error {
 	var params = []string{"init"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
+	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
 
@@ -77,7 +90,7 @@ func (d *Deploy) setGitAuthorName() error {
 	var params = []string{"config", "user.name", "WeDeploy user", "--local"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
+	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
 
@@ -88,7 +101,7 @@ func (d *Deploy) setGitAuthorEmail() error {
 	var params = []string{"config", "user.email", "user@deployment", "--local"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
+	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
 
@@ -100,7 +113,7 @@ func (d *Deploy) GetCurrentBranch() (branch string, err error) {
 	var params = []string{"symbolic-ref", "HEAD"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
+	cmd.Env = d.getConfigEnvs()
 	var buf bytes.Buffer
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
@@ -120,7 +133,7 @@ func (d *Deploy) stageEachService(path string) error {
 	var params = []string{"add", path}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
+	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
 	cmd.Stdout = outStream
@@ -171,7 +184,7 @@ func (d *Deploy) gitRenameServiceIDHashObject(content []byte) (hashObject string
 	var params = []string{"hash-object", "-w", "--stdin"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
+	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	var in = &bytes.Buffer{}
 	var out = &bytes.Buffer{}
@@ -196,7 +209,7 @@ func (d *Deploy) gitRenameServiceIDUpdateIndex(hashObject, path string) error {
 	var params = []string{"update-index", "--add", "--cacheinfo", "100644", hashObject, path}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
+	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
 	cmd.Stdout = outStream
@@ -207,7 +220,7 @@ func (d *Deploy) getLastCommit() (commit string, err error) {
 	var params = []string{"rev-parse", "HEAD"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
+	cmd.Env = d.getConfigEnvs()
 	var buf bytes.Buffer
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
@@ -240,7 +253,7 @@ func (d *Deploy) Commit() (commit string, err error) {
 
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
+	cmd.Env = d.getConfigEnvs()
 	cmd.Env = append(cmd.Env, fmt.Sprintf("GIT_AUTHOR_EMAIL=%v", d.ConfigContext.Username))
 	cmd.Dir = d.Path
 
@@ -279,8 +292,7 @@ func (d *Deploy) Push() (groupUID string, err error) {
 
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = append(os.Environ(),
-		"GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path,
+	cmd.Env = append(d.getConfigEnvs(),
 		"GIT_TERMINAL_PROMPT=0",
 		GitCredentialEnvRemoteToken+"="+d.ConfigContext.Token,
 	)
@@ -311,7 +323,7 @@ func (d *Deploy) AddRemote() error {
 	var params = []string{"remote", "add", d.getGitRemote(), d.GitRemoteAddress}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = append(cmd.Env, "GIT_DIR="+d.getGitPath(), "GIT_WORK_TREE="+d.Path)
+	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
 	cmd.Stdout = outStream
@@ -327,10 +339,7 @@ func (d *Deploy) addEmptyCredentialHelper() (err error) {
 	verbose.Debug("Resetting credential helpers")
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = append(cmd.Env,
-		"GIT_DIR="+d.getGitPath(),
-		"GIT_WORK_TREE="+d.Path,
-	)
+	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
 	cmd.Stdout = outStream
@@ -358,10 +367,7 @@ func (d *Deploy) addCredentialHelper() (err error) {
 	var params = []string{"config", "--add", "credential.helper", credentialHelper}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = append(cmd.Env,
-		"GIT_DIR="+d.getGitPath(),
-		"GIT_WORK_TREE="+d.Path,
-	)
+	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
 	cmd.Stdout = outStream
