@@ -45,12 +45,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/henvic/pseudoterm"
-  packages = ["."]
-  revision = "1e7fa843ce8fcc56d8c355a450cd952538ba48c7"
-
-[[projects]]
-  branch = "master"
   name = "github.com/henvic/uilive"
   packages = ["."]
   revision = "dc7a6ced9df35e99c5bafbe99cb1bf59a5965224"
@@ -60,11 +54,6 @@
   name = "github.com/inconshreveable/mousetrap"
   packages = ["."]
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
-
-[[projects]]
-  name = "github.com/kr/pty"
-  packages = ["."]
-  revision = "ce7fa45920dc37a92de8377972e52bc55ffa8d57"
 
 [[projects]]
   branch = "master"
@@ -152,6 +141,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "44bcf3d7822cf78a18aead6bd25ffc8bdf686a8eb59d2d29900b5c070b9ecf9e"
+  inputs-digest = "34d258b09cdbbd938058e0d95d98599b3841204b1af9c5b377d7480374c27156"
   solver-name = "gps-cdcl"
   solver-version = 1
