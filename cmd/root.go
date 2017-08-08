@@ -22,7 +22,6 @@ import (
 	"github.com/wedeploy/cli/cmd/login"
 	"github.com/wedeploy/cli/cmd/logout"
 	"github.com/wedeploy/cli/cmd/remote"
-	"github.com/wedeploy/cli/cmd/removed"
 	"github.com/wedeploy/cli/cmd/restart"
 	"github.com/wedeploy/cli/cmd/uninstall"
 	"github.com/wedeploy/cli/cmd/update"
@@ -82,7 +81,6 @@ func maybeEnableVerboseByEnv() {
 func init() {
 	cobra.EnableCommandSorting = false
 	autocomplete.RootCmd = RootCmd
-	commands = append(commands, cmdremoved.List...)
 
 	RootCmd.PersistentFlags().BoolVarP(
 		&verbose.Enabled,
