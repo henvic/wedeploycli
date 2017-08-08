@@ -103,5 +103,5 @@ func init() {
 		&detailed,
 		"detailed", "d", false, "Show more services details")
 
-	ListCmd.Flags().BoolVarP(&watch, "watch", "w", false, "Watch for changes")
+	ListCmd.Flags().BoolVarP(&watch, "watch", "w", false, "Show and watch for changes")
 }
