@@ -185,6 +185,10 @@ func (l *listFromDirectoryGetter) Walk(root string) (ServiceInfoList, error) {
 }
 
 func (l *listFromDirectoryGetter) readDir(path string, info os.FileInfo) error {
+	if strings.HasPrefix(info.Name(), ".") {
+		return nil
+	}
+
 	if !info.IsDir() {
 		return nil
 	}
