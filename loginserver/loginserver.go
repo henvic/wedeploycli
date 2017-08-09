@@ -192,7 +192,7 @@ func (s *Service) authenticateHandler(w http.ResponseWriter, r *http.Request) {
 	case signupRequestPseudoToken:
 		s.err = ErrSignUpEmailConfirmation
 	default:
-		s.jwt, s.err = usertoken.ParseJSONWebToken(s.temporaryToken)
+		s.jwt, s.err = usertoken.ParseUnsignedJSONWebToken(s.temporaryToken)
 	}
 
 	s.redirectToDashboard(w, r)

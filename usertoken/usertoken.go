@@ -18,21 +18,19 @@ func (j jsonWebToken) Valid() error {
 	return nil
 }
 
-// ParseJSONWebToken to retrieve an user info
-func ParseJSONWebToken(accessToken string) (JSONWebToken, error) {
+// ParseUnsignedJSONWebToken to retrieve an user info without checking signature
+func ParseUnsignedJSONWebToken(accessToken string) (JSONWebToken, error) {
 	var claims = jsonWebToken{}
-	if _, err := jwt.ParseWithClaims(accessToken, &claims, keyFunc); err != nil {
-		return JSONWebToken{}, getErrors(err)
-	}
-
-	return JSONWebToken(claims), nil
+	_, err := jwt.ParseWithClaims(accessToken, &claims, keyFunc)
+	err = filterInvalidSignatureError(err)
+	return JSONWebToken(claims), err
 }
 
 func keyFunc(token *jwt.Token) (interface{}, error) {
 	return []byte{}, nil
 }
 
-func getErrors(err error) error {
+func filterInvalidSignatureError(err error) error {
 	// if only the bitmask for the 'signature invalid' is detected, ignore
 	ev, ok := err.(*jwt.ValidationError)
 	if ok && ev.Errors == jwt.ValidationErrorSignatureInvalid {
