@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -60,13 +61,13 @@ type Deploy struct {
 }
 
 func (d *Deploy) renameServiceID(s services.ServiceInfo) error {
-	var sp, err = services.Read(s.Location)
+	// ignore service package contents because it is strict (see note below)
+	var _, err = services.Read(s.Location)
 
 	switch err {
 	case nil:
 	case services.ErrServiceNotFound:
 		verbose.Debug("Service not found. Creating service package on git repo only.")
-		sp = &services.ServicePackage{}
 		err = nil
 	default:
 		return err
@@ -78,14 +79,38 @@ func (d *Deploy) renameServiceID(s services.ServiceInfo) error {
 		return err
 	}
 
-	sp.ID = s.ServiceID
-
-	bin, err := json.MarshalIndent(sp, "", "    ")
+	// It is necessary to use a map instead of relying on the structure we have
+	// to avoid compatibility issues due to lack of a synchronization channel
+	// between the CLI team and the other teams in maintaining wedeploy.json structure
+	// synced.
+	bin, err := replaceServicePackageToInterfaceOnRenaming(s.ServiceID, s.Location)
 	if err != nil {
 		return err
 	}
 
 	return d.gitRenameServiceID(bin, filepath.Join(rel, "wedeploy.json"))
+}
+
+func replaceServicePackageToInterfaceOnRenaming(serviceID string, path string) ([]byte, error) {
+	// this smells a little bad because wedeploy.json is the responsibility of the services package
+	// and I shouldn't be accessing it directly from here
+	var spMap = map[string]interface{}{}
+	wedeployJSON, err := ioutil.ReadFile(filepath.Join(path, "wedeploy.json"))
+	switch {
+	case err == nil:
+	case os.IsNotExist(err):
+		spMap = map[string]interface{}{}
+		err = nil
+	default:
+		return nil, err
+	}
+
+	if err = json.Unmarshal(wedeployJSON, &spMap); err != nil {
+		return nil, errwrap.Wrapf("error parsing wedeploy.json on "+path+": {{err}}", err)
+	}
+
+	spMap["id"] = serviceID
+	return json.MarshalIndent(&spMap, "", "    ")
 }
 
 func copyErrStreamAndVerbose(cmd *exec.Cmd) *bytes.Buffer {
