@@ -94,6 +94,12 @@ func init() {
 
 	RootCmd.PersistentFlags().BoolVar(
 		&verbose.Defered,
+		"defer-verbose",
+		false,
+		"Defer verbose output")
+
+	RootCmd.PersistentFlags().BoolVar(
+		&verbose.Defered,
 		"defer-verbose-output",
 		false,
 		"Defer verbose output")
@@ -115,6 +121,7 @@ func init() {
 		"version", false, "Print version information and quit")
 
 	cmdmanager.HideFlag("version", RootCmd)
+	cmdmanager.HidePersistentFlag("defer-verbose", RootCmd)
 	cmdmanager.HidePersistentFlag("defer-verbose-output", RootCmd)
 	cmdmanager.HidePersistentFlag("no-verbose-requests", RootCmd)
 	cmdmanager.HidePersistentFlag("no-color", RootCmd)

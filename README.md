@@ -101,6 +101,6 @@ And run it as a regular executable on each target system. Several options (inclu
 `WEDEPLOY_MACHINE_FRIENDLY` changes human-friendly multiple spaces to machine-friendly tabs.
 
 ## Hidden global flags
-* `--defer-verbose-output` to defer verbose output (experimental)
+* `--defer-verbose` to defer verbose output (experimental)
 * `--no-verbose-requests` to avoid printing requests when using `--verbose`
 * `--no-color` to print text without colors
