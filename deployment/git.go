@@ -28,20 +28,31 @@ func (d *Deploy) CreateGitDirectory() error {
 
 func (d *Deploy) getConfigEnvs() []string {
 	var home = filepath.Join(userhome.GetHomeDir(), ".wedeploy")
-	var envs = os.Environ()
+	var originals = os.Environ()
+	var envs = map[string]string{}
 
-	envs = append(envs,
-		"GIT_DIR="+d.getGitPath(),
-		"GIT_WORK_TREE="+d.Path,
-		"GIT_CONFIG_NOSYSTEM=true",
-		// for some reason setting HOME, XDG_CONFIG_HOME, and GIT_CONFIG is
-		// not being enough on, at least, macOS to avoid reading a ~/.gitconfig file
-		"HOME="+home,
-		"XDG_CONFIG_HOME="+home,
-		"GIT_CONFIG="+filepath.Join(d.getGitPath(), "config"),
-	)
+	for _, o := range originals {
+		if e := strings.SplitN(o, "=", 2); len(e) == 2 {
+			envs[e[0]] = e[1]
+		}
+	}
 
-	return envs
+	envs["GIT_DIR"] = d.getGitPath()
+	envs["GIT_WORK_TREE"] = d.Path
+	envs["GIT_CONFIG_NOSYSTEM"] = "true"
+	envs["HOME"] = home
+	envs["XDG_CONFIG_HOME"] = home
+	envs["GIT_CONFIG"] = filepath.Join(d.getGitPath(), "config")
+
+	var slice []string
+
+	for key, value := range envs {
+		if !strings.HasPrefix(key, fmt.Sprintf("%s=", key)) {
+			slice = append(slice, fmt.Sprintf("%s=%s", key, value))
+		}
+	}
+
+	return slice
 }
 
 // InitializeRepository as a git repo
@@ -254,7 +265,6 @@ func (d *Deploy) Commit() (commit string, err error) {
 		"--allow-empty",
 		"--message",
 		msg,
-		"--no-gpg-sign",
 	}
 
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
