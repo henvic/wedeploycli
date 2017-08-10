@@ -27,13 +27,18 @@ func (d *Deploy) CreateGitDirectory() error {
 }
 
 func (d *Deploy) getConfigEnvs() []string {
+	var home = filepath.Join(userhome.GetHomeDir(), ".wedeploy")
 	var envs = os.Environ()
 
 	envs = append(envs,
 		"GIT_DIR="+d.getGitPath(),
 		"GIT_WORK_TREE="+d.Path,
 		"GIT_CONFIG_NOSYSTEM=true",
-		"XDG_CONFIG_HOME="+filepath.Join(userhome.GetHomeDir(), ".wedeploy"),
+		// for some reason setting HOME, XDG_CONFIG_HOME, and GIT_CONFIG is
+		// not being enough on, at least, macOS to avoid reading a ~/.gitconfig file
+		"HOME="+home,
+		"XDG_CONFIG_HOME="+home,
+		"GIT_CONFIG="+filepath.Join(d.getGitPath(), "config"),
 	)
 
 	return envs
@@ -249,12 +254,12 @@ func (d *Deploy) Commit() (commit string, err error) {
 		"--allow-empty",
 		"--message",
 		msg,
+		"--no-gpg-sign",
 	}
 
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Env = d.getConfigEnvs()
-	cmd.Env = append(cmd.Env, fmt.Sprintf("GIT_AUTHOR_EMAIL=%v", d.ConfigContext.Username))
 	cmd.Dir = d.Path
 
 	if verbose.Enabled {
