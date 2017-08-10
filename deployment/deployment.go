@@ -98,15 +98,14 @@ func replaceServicePackageToInterfaceOnRenaming(serviceID string, path string) (
 	wedeployJSON, err := ioutil.ReadFile(filepath.Join(path, "wedeploy.json"))
 	switch {
 	case err == nil:
+		if err = json.Unmarshal(wedeployJSON, &spMap); err != nil {
+			return nil, errwrap.Wrapf("error parsing wedeploy.json on "+path+": {{err}}", err)
+		}
 	case os.IsNotExist(err):
 		spMap = map[string]interface{}{}
 		err = nil
 	default:
 		return nil, err
-	}
-
-	if err = json.Unmarshal(wedeployJSON, &spMap); err != nil {
-		return nil, errwrap.Wrapf("error parsing wedeploy.json on "+path+": {{err}}", err)
 	}
 
 	spMap["id"] = serviceID
