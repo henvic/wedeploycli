@@ -2,11 +2,19 @@ package verbose
 
 import (
 	"bytes"
+	"flag"
 	"os"
 	"testing"
 
 	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/tdata"
 )
+
+var update bool
+
+func init() {
+	flag.BoolVar(&update, "update", false, "update golden files")
+}
 
 var bufErrStream bytes.Buffer
 
@@ -20,6 +28,34 @@ func TestMain(m *testing.M) {
 	}()
 	ec := m.Run()
 	os.Exit(ec)
+}
+
+func TestDefer(t *testing.T) {
+	bufErrStream.Reset()
+	Enabled = true
+	Deferred = true
+	defer func() {
+		Deferred = false
+	}()
+
+	Debug("Hello...", "World!")
+
+	if l := bufErrStream.Len(); l != 0 {
+		t.Errorf("Expected err stream to be empty, got %v instead", bufErrStream.String())
+	}
+
+	PrintDeferred()
+	got := bufErrStream.String()
+
+	if update {
+		tdata.ToFile("./mocks/defer", got)
+	}
+
+	var want = tdata.FromFile("./mocks/defer")
+
+	if got != want {
+		t.Errorf("Wanted %s, got %s instead", want, got)
+	}
 }
 
 func TestDebugOn(t *testing.T) {

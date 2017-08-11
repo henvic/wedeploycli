@@ -350,6 +350,7 @@ func (dm *DockerMachine) start() (err error) {
 	}
 
 	if dm.Flags.DryRun {
+		verbose.PrintDeferred()
 		os.Exit(0)
 	}
 
@@ -479,6 +480,7 @@ func (dm *DockerMachine) checkImage() {
 
 	if err := docker.Run(); err != nil {
 		println("docker images error:", err.Error())
+		verbose.PrintDeferred()
 		os.Exit(1)
 	}
 

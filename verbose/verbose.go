@@ -14,15 +14,15 @@ var (
 	// Enabled flag
 	Enabled = false
 
-	// Defered flag to only print debugging on end of program execution
-	Defered = false
+	// Deferred flag to only print debugging on end of program execution
+	Deferred = false
 
 	// ErrStream is the stream for errors
 	ErrStream io.Writer = os.Stderr
 
-	unsafeVerbose          = false
-	bufDeferedVerbose      bytes.Buffer
-	bufDeferedVerboseMutex sync.Mutex
+	unsafeVerbose           = false
+	bufDeferredVerbose      bytes.Buffer
+	bufDeferredVerboseMutex sync.Mutex
 )
 
 func init() {
@@ -68,22 +68,26 @@ func Debug(a ...interface{}) {
 		return
 	}
 
-	if !Defered {
+	if !Deferred {
 		fmt.Fprintln(ErrStream, a...)
 		return
 	}
 
-	bufDeferedVerboseMutex.Lock()
-	bufDeferedVerbose.WriteString(fmt.Sprintln(a...))
-	bufDeferedVerboseMutex.Unlock()
+	bufDeferredVerboseMutex.Lock()
+	bufDeferredVerbose.WriteString(fmt.Sprintln(a...))
+	bufDeferredVerboseMutex.Unlock()
 }
 
-// PrintDefered debug messages
-func PrintDefered() {
-	bufDeferedVerboseMutex.Lock()
-	if bufDeferedVerbose.Len() != 0 {
-		fmt.Fprintf(ErrStream, "\n%v\n", color.Format(color.BgHiBlue, " Defered verbose messages below "))
-		_, _ = bufDeferedVerbose.WriteTo(ErrStream)
+// PrintDeferred debug messages
+func PrintDeferred() {
+	if !Deferred {
+		return
 	}
-	bufDeferedVerboseMutex.Unlock()
+
+	bufDeferredVerboseMutex.Lock()
+	if bufDeferredVerbose.Len() != 0 {
+		fmt.Fprintf(ErrStream, "\n%v\n", color.Format(color.BgHiBlue, " Deferred verbose messages below "))
+		_, _ = bufDeferredVerbose.WriteTo(ErrStream)
+	}
+	bufDeferredVerboseMutex.Unlock()
 }

@@ -63,7 +63,7 @@ func init() {
 
 func main() {
 	var panickingFlag = true
-	defer verbosePrinting()
+	defer verbose.PrintDeferred()
 	defer panickingListener(&panickingFlag)
 
 	setErrorHandlingCommandName()
@@ -146,6 +146,7 @@ func (m *mainProgram) executeCommand() {
 	if m.cmdErr != nil {
 		m.commandErrorConditionalUsage()
 		errorhandling.RunAfterError()
+		verbose.PrintDeferred()
 		os.Exit(1)
 	}
 }
@@ -214,6 +215,7 @@ func (cl *configLoader) loadConfig() {
 	var path = filepath.Join(userhome.GetHomeDir(), ".we")
 	if err := config.Setup(path); err != nil {
 		printError(errorhandling.Handle(err))
+		verbose.PrintDeferred()
 		os.Exit(1)
 	}
 
@@ -249,6 +251,7 @@ func (cl *configLoader) applyChanges() {
 
 	if err := config.Global.Save(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", errorhandling.Handle(err))
+		verbose.PrintDeferred()
 		os.Exit(1)
 	}
 
@@ -274,12 +277,6 @@ func isCommand(cmd string) bool {
 
 func setErrorHandlingCommandName() {
 	errorhandling.CommandName = strings.Join(os.Args[1:], " ")
-}
-
-func verbosePrinting() {
-	if verbose.Defered {
-		verbose.PrintDefered()
-	}
 }
 
 func panickingListener(panicking *bool) {

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -45,7 +44,8 @@ var RootCmd = &cobra.Command{
 }
 
 var (
-	version bool
+	deferred bool
+	version  bool
 )
 
 var commands = []*cobra.Command{
@@ -93,13 +93,13 @@ func init() {
 	maybeEnableVerboseByEnv()
 
 	RootCmd.PersistentFlags().BoolVar(
-		&verbose.Defered,
+		&deferred,
 		"defer-verbose",
 		false,
 		"Defer verbose output")
 
 	RootCmd.PersistentFlags().BoolVar(
-		&verbose.Defered,
+		&deferred,
 		"defer-verbose-output",
 		false,
 		"Defer verbose output")
@@ -132,8 +132,9 @@ func init() {
 }
 
 func persistentPreRun(cmd *cobra.Command, args []string) error {
-	if verbose.Defered {
-		fmt.Fprintf(os.Stderr, color.Format(color.FgBlue, "Defering verbose output (might lose messages on failures)\n"))
+	if deferred {
+		verbose.Enabled = true
+		verbose.Deferred = true
 	}
 
 	// load default cloud remote on config context
