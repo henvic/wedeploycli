@@ -8,6 +8,8 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/errorhandling"
+	"github.com/wedeploy/cli/fancy"
+	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/services"
 )
@@ -18,18 +20,24 @@ func (l *List) printProjects() {
 		return
 	}
 
-	for i, p := range l.Projects {
-		l.printProject(p)
-
-		if i != len(l.Projects)-1 {
-			l.Printf("\n")
-		}
+	var header = "Project\tService\tImage\tStatus"
+	if l.Detailed {
+		header += "\tInstances\tCPU\tMemory"
 	}
+
+	if formatter.Human {
+		header = strings.Replace(header, "\t", "\t     ", -1)
+	}
+
+	l.Printf("%s\n", color.Format(color.FgHiBlack, header))
+
+	for _, p := range l.Projects {
+		l.printProject(p)
+	}
+
 }
 
 func (l *List) printProject(p projects.Project) {
-	l.Printf("Project %v\n", color.Format(color.FgBlue, p.ProjectID))
-
 	var services, err = p.Services(context.Background())
 
 	if err != nil {
@@ -50,17 +58,38 @@ func (l *List) printServices(projectID string, cs []services.Service) {
 	}
 
 	if len(cs) == 0 {
-		l.Printf(fmt.Sprintln(color.Format(color.FgHiRed, "✖") + " no service found"))
+		l.Printf(fmt.Sprintln(fancy.Error("no service found")))
 		return
 	}
 }
 
+func getHealth(health string) string {
+	var h = map[string]string{
+		"":        "Waiting",
+		"up":      "Online",
+		"down":    "Offline",
+		"warn":    "Warning",
+		"unknown": "Unknown",
+	}
+
+	if friendly, ok := h[health]; ok {
+		return friendly
+	}
+
+	return health
+}
+
 func (l *List) printService(projectID string, c services.Service) {
-	serviceDomain := l.getServiceDomain(projectID, c.ServiceID)
-	l.Printf("%v\t", serviceDomain)
+	l.Printf("%v\t%v\t", projectID, l.getServiceDomain(projectID, c.ServiceID))
+	l.Printf("%v\t", c.ImageHint)
+	l.Printf("%v\t", getHealth(c.Health))
 	l.printInstances(c.Scale)
-	l.Printf(color.Format(color.FgHiBlack, "%v\t", c.ImageHint))
-	l.Printf("%v\n", c.Health)
+
+	if l.Detailed {
+		l.Printf("%v\t%v MB", c.CPU, c.Memory)
+	}
+
+	l.Printf("\n")
 }
 
 func (l *List) printInstances(instances int) {
@@ -68,15 +97,7 @@ func (l *List) printInstances(instances int) {
 		return
 	}
 
-	var s = fmt.Sprintf("%v instance", instances)
-
-	l.Printf(s)
-
-	if instances == 0 || instances > 1 {
-		l.Printf("s")
-	}
-
-	l.Printf("\t")
+	l.Printf("%d\t", instances)
 }
 
 func getHealthForegroundColor(s string) color.Attribute {
@@ -120,8 +141,7 @@ func pad(space int) string {
 }
 
 func (l *List) getServiceDomain(projectID, serviceID string) string {
-	return fmt.Sprintf("%v.%v", color.Format(
-		color.Bold, "%v-%v", serviceID, projectID), config.Context.ServiceDomain)
+	return fmt.Sprintf("%v-%v.%v", serviceID, projectID, config.Context.ServiceDomain)
 }
 
 func inArray(key string, haystack []string) bool {

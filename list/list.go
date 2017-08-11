@@ -12,6 +12,7 @@ import (
 	"github.com/henvic/uilive"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/errorhandling"
+	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/projects"
 )
@@ -109,6 +110,7 @@ func (l *List) finish() {
 }
 
 func (l *List) watch() {
+	fmt.Println(fancy.Info("--watch is in use. List of services will be updated when a change occurs."))
 p:
 	l.printList()
 	l.Flush()
