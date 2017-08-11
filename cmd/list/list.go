@@ -2,10 +2,12 @@ package cmdlist
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
+	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/services"
@@ -87,6 +89,10 @@ func listRun(cmd *cobra.Command, args []string) {
 	var l = list.New(filter)
 
 	l.Detailed = detailed
+
+	if watch {
+		fmt.Println(fancy.Info("--watch is in use. List of services will be updated when a change occurs."))
+	}
 
 	if !watch {
 		l.PoolingInterval = time.Minute
