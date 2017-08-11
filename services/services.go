@@ -43,6 +43,8 @@ type Service struct {
 	CustomDomains []string          `json:"customDomains,omitempty"`
 	Env           map[string]string `json:"env,omitempty"`
 	Scale         int               `json:"scale,omitempty"`
+	CPU           int               `json:"cpu,omitempty"`
+	Memory        int               `json:"memory,omitempty"`
 	HealthUID     string            `json:"healthUid,omitempty"`
 }
 
