@@ -92,9 +92,10 @@ func init() {
 	// this has to run after defining the --verbose flag above
 	maybeEnableVerboseByEnv()
 
-	RootCmd.PersistentFlags().BoolVar(
+	RootCmd.PersistentFlags().BoolVarP(
 		&deferred,
 		"defer-verbose",
+		"V",
 		false,
 		"Defer verbose output")
 
