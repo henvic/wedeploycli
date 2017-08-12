@@ -26,7 +26,11 @@ func (d *Deploy) CreateGitDirectory() error {
 	return os.MkdirAll(d.getGitPath(), 0700)
 }
 
-func (d *Deploy) getConfigEnvs() []string {
+func (d *Deploy) getConfigEnvs() (es []string) {
+	if len(d.gitEnvCache) != 0 {
+		return d.gitEnvCache
+	}
+
 	var home = filepath.Join(userhome.GetHomeDir(), ".wedeploy")
 	var originals = os.Environ()
 	var envs = map[string]string{}
@@ -44,15 +48,14 @@ func (d *Deploy) getConfigEnvs() []string {
 	envs["XDG_CONFIG_HOME"] = home
 	envs["GIT_CONFIG"] = filepath.Join(d.getGitPath(), "config")
 
-	var slice []string
-
 	for key, value := range envs {
 		if !strings.HasPrefix(key, fmt.Sprintf("%s=", key)) {
-			slice = append(slice, fmt.Sprintf("%s=%s", key, value))
+			es = append(es, fmt.Sprintf("%s=%s", key, value))
 		}
 	}
 
-	return slice
+	d.gitEnvCache = es
+	return es
 }
 
 // InitializeRepository as a git repo

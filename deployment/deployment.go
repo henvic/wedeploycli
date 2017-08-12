@@ -58,6 +58,7 @@ type Deploy struct {
 	wlm              waitlivemsg.WaitLiveMsg
 	stepMessage      *waitlivemsg.Message
 	uploadMessage    *waitlivemsg.Message
+	gitEnvCache      []string
 }
 
 func (d *Deploy) renameServiceID(s services.ServiceInfo) error {
