@@ -8,7 +8,6 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/errorhandling"
-	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/services"
@@ -58,7 +57,9 @@ func (l *List) printServices(projectID string, cs []services.Service) {
 	}
 
 	if len(cs) == 0 {
-		l.Printf(fmt.Sprintln(fancy.Error("no service found")))
+		l.Printf("%v    \t%v\t    \n",
+			projectID,
+			color.Format(color.FgYellow, "zero services deployed"))
 		return
 	}
 }
