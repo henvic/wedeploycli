@@ -43,7 +43,14 @@ func (d *Deploy) getConfigEnvs() (es []string) {
 
 	envs["GIT_DIR"] = d.getGitPath()
 	envs["GIT_WORK_TREE"] = d.Path
-	envs["GIT_CONFIG_NOSYSTEM"] = "true"
+
+	switch runtime.GOOS {
+	case "windows":
+		verbose.Debug("Microsoft Windows detected: using git system config")
+	default:
+		envs["GIT_CONFIG_NOSYSTEM"] = "true"
+	}
+
 	envs["HOME"] = home
 	envs["XDG_CONFIG_HOME"] = home
 	envs["GIT_CONFIG"] = filepath.Join(d.getGitPath(), "config")
