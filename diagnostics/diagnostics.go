@@ -133,8 +133,8 @@ func (r *Report) Len() int {
 	return l
 }
 
-// Stringify report
-func (r *Report) Stringify() map[string]string {
+// String created from the report
+func (r *Report) String() map[string]string {
 	var m = map[string]string{}
 
 	for k, rb := range *r {
@@ -220,7 +220,7 @@ func Submit(ctx context.Context, entry Entry) (err error) {
 	err = apihelper.SetBody(req, submitPost{
 		ID:       entry.ID,
 		Username: entry.Username,
-		Report:   entry.Report.Stringify(),
+		Report:   entry.Report.String(),
 	})
 
 	if err != nil {
