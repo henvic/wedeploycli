@@ -57,7 +57,8 @@ func getSelectOptionIndex(index, indexLength int, err error) (int, error) {
 // Prompt returns a prompt to receive the value of a parameter.
 // If the key is on a secret keys list it suppresses the feedback.
 func Prompt() (string, error) {
-	if !isTerminal {
+	// Checking if is terminal and not Windows because Windows is Windows...
+	if !isTerminal && runtime.GOOS != "windows" {
 		return "", errors.New("input device is not a terminal")
 	}
 
@@ -83,7 +84,9 @@ func Prompt() (string, error) {
 
 // Hidden provides a prompt without echoing the value entered
 func Hidden() (string, error) {
-	if !isTerminal {
+	// Checking if is terminal and not Windows because Windows is Windows...
+	// Actually terminal.ReadPassword is even broken on Linux Subsystem on Windows 10
+	if !isTerminal && runtime.GOOS != "windows" {
 		return "", errors.New("input device is not a terminal: can't read password")
 	}
 
