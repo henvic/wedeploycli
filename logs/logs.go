@@ -31,7 +31,7 @@ type Log struct {
 	Level        int    `json:"level"`
 	Message      string `json:"message"`
 	Severity     string `json:"severity"`
-	Timestamp    int64  `json:"timestamp"`
+	Timestamp    string `json:"timestamp"`
 }
 
 // Filter structure
@@ -253,17 +253,28 @@ func (w *Watcher) pool() {
 		return
 	}
 
-	w.incSinceArgument(list)
+	if err := w.incSinceArgument(list); err != nil {
+		fmt.Fprintf(errStream, "%v\n", errorhandling.Handle(err))
+		return
+	}
 }
 
-func (w *Watcher) incSinceArgument(list []Log) {
+func (w *Watcher) incSinceArgument(list []Log) error {
 	var last = list[len(list)-1]
-	var next = last.Timestamp + 1
+
+	var next, err = strconv.ParseUint(last.Timestamp, 10, 64)
+
+	if err != nil {
+		return errwrap.Wrapf("invalid timestamp value on log line: {{err}}", err)
+	}
+
+	next++
 
 	w.filterMutex.Lock()
 	w.Filter.Since = fmt.Sprintf("%v", next)
 	verbose.Debug("Next --since parameter value = " + w.Filter.Since)
 	w.filterMutex.Unlock()
+	return nil
 }
 
 // GetUnixTimestamp gets the Unix timestamp in seconds from a friendly string.
