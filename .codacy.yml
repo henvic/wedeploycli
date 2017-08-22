@@ -1,0 +1,2 @@
+exclude_paths:
+  - services/mocks/app-with-invalid-service/corrupted/wedeploy.json
