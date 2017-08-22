@@ -5,7 +5,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-cd `dirname $0`/..
+cd $(dirname $0)/..
 
 skipIntegrationTests=false
 config=""
@@ -62,7 +62,7 @@ function testHuman() {
 }
 
 function checkWeDeployImageTag() {
-  cat defaults/defaults.go | grep -q "WeDeployImageTag = \"latest\"" && ec=$? || ec=$?
+  < defaults/defaults.go | grep -q "WeDeployImageTag = \"latest\"" && ec=$? || ec=$?
 
   if [ $ec -eq 0 ] ; then
     >&2 echo -e "\x1B[101m\x1B[1mWarning: you MUST NOT use docker image tag \"latest\" for releases.\x1B[0m"
@@ -72,7 +72,7 @@ function checkWeDeployImageTag() {
 }
 
 function checkWorkingDir() {
-  if [ `git status --short | wc -l` -gt 0 ]; then
+  if [ $(git status --short | wc -l) -gt 0 ]; then
     echo "You have uncommited changes."
     git status --short
 
@@ -145,8 +145,8 @@ function release() {
   read -p "Release channel [unstable]: " RELEASE_CHANNEL < /dev/tty;
   RELEASE_CHANNEL=${RELEASE_CHANNEL:-"unstable"}
 
-  BUILD_COMMIT=`git rev-list -n 1 HEAD`
-  BUILD_TIME=`date -u`
+  BUILD_COMMIT=$(git rev-list -n 1 HEAD)
+  BUILD_TIME=$(date -u)
 
   echo "build commit $BUILD_COMMIT at $BUILD_TIME"
 
@@ -155,7 +155,7 @@ function release() {
 }
 
 function checkTag() {
-  CURRENT_TAG=`git describe --exact-match HEAD` || true
+  CURRENT_TAG=$(git describe --exact-match HEAD) || true
 
   if [[ $CURRENT_TAG == "" ]] ; then
     echo "Maybe you want to pull changes"
@@ -164,7 +164,7 @@ function checkTag() {
 
   read -p "Confirm release version (tag): " NEW_RELEASE_VERSION < /dev/tty;
   # normalize by removing leading v (i.e., v0.0.1)
-  NEW_RELEASE_VERSION=`echo $NEW_RELEASE_VERSION | sed 's/^v//'`
+  NEW_RELEASE_VERSION=$(echo $NEW_RELEASE_VERSION | sed 's/^v//')
 
   if [[ $CURRENT_TAG != "v$NEW_RELEASE_VERSION" ]] ; then
     echo "Current tag is $CURRENT_TAG, but you tried to release v$NEW_RELEASE_VERSION"

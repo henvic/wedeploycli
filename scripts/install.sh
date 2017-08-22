@@ -27,7 +27,7 @@ FILE=cli-$RELEASE_CHANNEL-$UNAME_ARCH
 PACKAGE_FORMAT=""
 
 # Hacking mktemp's incompatible parameters on BSD and Linux
-TEMPDEST=`mktemp 2>/dev/null || mktemp -t 'wedeploy-cli'`
+TEMPDEST=$(mktemp 2>/dev/null || mktemp -t 'wedeploy-cli')
 
 if [ ! -d "/usr/local/bin" ] && [[ $UNAME == "windows" ]] ; then
   if [[ $HOMEDRIVE$HOMEPATH != "" ]] ; then
@@ -52,7 +52,7 @@ function setupAlternateDir() {
   echo "No permission to install in $DESTDIR"
   echo "Cancel to run again as root / sudoer or install it somewhere else."
   read -p "Install in [current dir]: " DESTDIR < /dev/tty;
-  DESTDIR=${DESTDIR:-`pwd`}
+  DESTDIR=${DESTDIR:-$(pwd)}
   DESTDIR=${DESTDIR/"~"/$HOME}
 }
 
@@ -118,7 +118,7 @@ function run() {
 }
 
 function info() {
-  wepath=`which we 2>/dev/null`
+  wepath=$(which we 2>/dev/null)
   if [[ ! $wepath -ef "$DESTDIR/we" ]]; then
     echo "Installed, but not on your \$PATH"
     echo "Run with $DESTDIR/we"

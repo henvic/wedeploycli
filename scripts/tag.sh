@@ -5,7 +5,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-cd `dirname $0`/..
+cd $(dirname $0)/..
 
 skipIntegrationTests=false
 dryrun=false
@@ -69,7 +69,7 @@ function checkBranch() {
 }
 
 function checkWeDeployImageTag() {
-  cat defaults/defaults.go | grep -q "WeDeployImageTag = \"latest\"" && ec=$? || ec=$?
+  < defaults/defaults.go | grep -q "WeDeployImageTag = \"latest\"" && ec=$? || ec=$?
 
   if [ $ec -eq 0 ] ; then
     >&2 echo -e "\x1B[101m\x1B[1mWarning: you MUST NOT use docker image tag \"latest\" for releases.\x1B[0m"
@@ -82,7 +82,7 @@ function checkWeDeployImageTag() {
 }
 
 function checkWorkingDir() {
-  if [ `git status --short | wc -l` -gt 0 ]; then
+  if [ $(git status --short | wc -l) -gt 0 ]; then
     echo "You have uncommited changes."
     git status --short
 
@@ -98,7 +98,7 @@ function checkWorkingDir() {
 
 function checkPublishedTag() {
   echo "Verifying if tag v$NEW_TAG_VERSION is already published on origin remote."
-  check_published_tag=`git ls-remote origin refs/tags/v$NEW_TAG_VERSION | wc -l`
+  check_published_tag=$(git ls-remote origin refs/tags/v$NEW_TAG_VERSION | wc -l)
   if [ "$check_published_tag" -gt 0 ]; then
     >&2 echo "git tag v$NEW_TAG_VERSION already published. Not forcing update."
     exit 1
@@ -108,7 +108,7 @@ function checkPublishedTag() {
 
 function checkUnusedTag() {
   OVERWRITE_TAG=false
-  check_tags_free=`git tag --list "v$NEW_TAG_VERSION" | wc -l`
+  check_tags_free=$(git tag --list "v$NEW_TAG_VERSION" | wc -l)
   if [ "$check_tags_free" -gt 0 ]; then
     read -p "git tag exists locally. Overwrite? [yes]: " CONT < /dev/tty;
     CONT=${CONT:-"yes"}
@@ -156,7 +156,7 @@ function runTestsOnDrone() {
 
 function setEditor() {
   editor="${EDITOR:editor}"
-  editor=`git config core.editor`
+  editor=$(git config core.editor)
   editor="${editor:-vi}"
 }
 
@@ -217,7 +217,7 @@ function release() {
 
   read -p "New version: " NEW_TAG_VERSION < /dev/tty;
   # normalize by removing leading v (i.e., v0.0.1)
-  NEW_TAG_VERSION=`echo $NEW_TAG_VERSION | sed 's/^v//'`
+  NEW_TAG_VERSION=$(echo $NEW_TAG_VERSION | sed 's/^v//')
 
   runTestsOnDrone
   checkPublishedTag
@@ -226,7 +226,7 @@ function release() {
 }
 
 function run() {
-  CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
+  CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
   LAST_TAG="$(git describe HEAD --tags --abbrev=0 2> /dev/null)" || true
 
   if [ $dryrun == true ]; then

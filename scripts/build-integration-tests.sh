@@ -7,7 +7,7 @@ IFS=$'\n\t'
 
 PLATFORMS=(darwin linux windows)
 
-cd `dirname $0`/../integration
+cd $(dirname $0)/../integration
 INTEGRATION_TESTS_DIR=$PWD
 
 echo "Building integration test suites for multiple platforms:"
@@ -54,7 +54,7 @@ fi
 
 echo
 echo "Integration test suites and its related mocks are saved in:"
-echo `pwd`
+echo $(pwd)
 
 if [ $WEDEPLOY_CLI_INTEGRATION_TESTS_PATH -ef $INTEGRATION_TESTS_DIR ]; then
   echo
