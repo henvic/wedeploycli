@@ -27,12 +27,13 @@ var (
 	timeout = 15
 )
 
-// CheckCmd sets the user credential
-var CheckCmd = &cobra.Command{
-	Use:     "check",
+// DiagnosticsCmd sets the user credential
+var DiagnosticsCmd = &cobra.Command{
+	Use:     "diagnostics",
 	Short:   "Run system diagnostics and show report",
 	PreRunE: cmdargslen.ValidateCmd(0, 0),
 	RunE:    diagnosticsRun,
+	Aliases: []string{"check"},
 }
 
 func diagnosticsRun(cmd *cobra.Command, args []string) error {
@@ -114,30 +115,30 @@ func submit(report diagnostics.Report) error {
 }
 
 func init() {
-	CheckCmd.Flags().BoolVar(
+	DiagnosticsCmd.Flags().BoolVar(
 		&serial,
 		"serial",
 		false,
 		"Do not run diagnostics in parallel")
 
-	CheckCmd.Flags().BoolVar(
+	DiagnosticsCmd.Flags().BoolVar(
 		&print,
 		"print",
 		false,
 		"Print diagnostics")
 
-	CheckCmd.Flags().BoolVar(
+	DiagnosticsCmd.Flags().BoolVar(
 		&send,
 		"send",
 		false,
 		"send to WeDeploy")
 
-	CheckCmd.Flags().IntVar(
+	DiagnosticsCmd.Flags().IntVar(
 		&timeout,
 		"timeout",
 		15,
 		"Timeout for the diagnostics in seconds")
 
-	CheckCmd.Flag("serial").Hidden = true
-	CheckCmd.Flag("timeout").Hidden = true
+	DiagnosticsCmd.Flag("serial").Hidden = true
+	DiagnosticsCmd.Flag("timeout").Hidden = true
 }
