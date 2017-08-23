@@ -10,8 +10,6 @@ type Entry struct {
 	Service               string
 	Username              string
 	UsernameComment       string
-	Password              string
-	PasswordComment       string
 	Token                 string
 	TokenComment          string
 	Comment               string

@@ -247,7 +247,6 @@ func (a *Authentication) saveUser(username, token string) (err error) {
 	var g = config.Global
 	var remote = g.Remotes[config.Context.Remote]
 	remote.Username = username
-	remote.Password = ""
 	remote.Token = token
 	remote.Infrastructure = a.Domains.Infrastructure
 	remote.Service = a.Domains.Service

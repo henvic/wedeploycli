@@ -2,6 +2,7 @@ package createuser
 
 import (
 	"context"
+	"errors"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/user"
@@ -19,5 +20,10 @@ func Try(ctx context.Context) (err error) {
 		return errwrap.Wrapf("Failed to authenticate: {{err}}", err)
 	}
 
-	return err
+	return createDeterministicToken()
+}
+
+func createDeterministicToken() error {
+	// see https://github.com/wedeploy/cli/issues/307
+	return errors.New("deterministic token required for local development not implemented")
 }

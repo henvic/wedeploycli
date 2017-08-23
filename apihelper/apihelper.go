@@ -138,12 +138,7 @@ var (
 
 // Auth a WeDeploy request with the global authentication data
 func Auth(request *wedeploy.WeDeploy) {
-	switch {
-	case config.Context.Token == "":
-		request.Auth(config.Context.Username, config.Context.Password)
-	default:
-		request.Auth(config.Context.Token)
-	}
+	request.Auth(config.Context.Token)
 }
 
 // AuthGet creates an authenticated GET request for a JSON response end-point

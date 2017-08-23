@@ -13,7 +13,7 @@ enable_analytics                 = false
     ; Default cloud remote
     infrastructure = wedeploy.io
     username       = foo@example.com
-    password       = bar
+    token          = bar
 
 [remote "local"]
     ; Default local remote
@@ -24,4 +24,4 @@ enable_analytics                 = false
 [remote "xyz"]
     infrastructure = wedeploy.xyz
     username = foobar@example.net
-    password = 123
+    token = 123

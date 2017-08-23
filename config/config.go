@@ -25,7 +25,6 @@ type ContextType struct {
 	InfrastructureDomain string
 	ServiceDomain        string
 	Username             string
-	Password             string
 	Token                string
 }
 
@@ -105,7 +104,6 @@ func (c *Config) loadDefaultRemotes() {
 			InfrastructureComment: "Default local remote",
 			Service:               defaults.LocalServiceDomain,
 			Username:              "no-reply@wedeploy.com",
-			Password:              "cli-tool-password",
 		})
 	default:
 		println(color.Format(color.FgHiRed, "Warning: Custom local remote detected"))
@@ -188,7 +186,6 @@ func SetEndpointContext(remote string) error {
 	Context.InfrastructureDomain = getRemoteAddress(r.Infrastructure)
 	Context.ServiceDomain = r.Service
 	Context.Username = r.Username
-	Context.Password = r.Password
 	Context.Token = r.Token
 	return nil
 }
@@ -308,7 +305,6 @@ func (c *Config) readRemotes() {
 		infrastructure := remote.Key("infrastructure")
 		service := remote.Key("service")
 		username := remote.Key("username")
-		password := remote.Key("password")
 		token := remote.Key("token")
 		comment := remote.Comment
 
@@ -320,8 +316,6 @@ func (c *Config) readRemotes() {
 			ServiceComment:        strings.TrimSpace(service.Comment),
 			Username:              strings.TrimSpace(username.String()),
 			UsernameComment:       strings.TrimSpace(username.Comment),
-			Password:              strings.TrimSpace(password.String()),
-			PasswordComment:       strings.TrimSpace(password.Comment),
 			Token:                 strings.TrimSpace(token.String()),
 			TokenComment:          strings.TrimSpace(token.Comment),
 		}
@@ -394,10 +388,6 @@ func (c *Config) updateRemotes() {
 		keyUsername := remote.Key("username")
 		keyUsername.SetValue(v.Username)
 		keyUsername.Comment = v.UsernameComment
-
-		keyPassword := remote.Key("password")
-		keyPassword.SetValue(v.Password)
-		keyPassword.Comment = v.PasswordComment
 
 		keyToken := remote.Key("token")
 		keyToken.SetValue(v.Token)

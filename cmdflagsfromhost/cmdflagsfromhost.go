@@ -280,11 +280,7 @@ func (s *SetupHost) verifyCmdReqAuth() error {
 		return nil
 	}
 
-	var c = config.Context
-
-	var hasAuth = (c.Token != "") || (c.Username != "" && c.Password != "")
-
-	if hasAuth {
+	if hasAuth := (config.Context.Token != ""); hasAuth {
 		return nil
 	}
 

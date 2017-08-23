@@ -45,10 +45,9 @@ func TestSetupNonExistingConfigFileAndTeardown(t *testing.T) {
 	}
 
 	var (
-		wantUsername = ""
-		wantPassword = ""
-		wantToken    = ""
-		wantRemote   = "wedeploy"
+		wantUsername             = ""
+		wantToken                = ""
+		wantRemote               = "wedeploy"
 		wantInfrastructureDomain = "wedeploy.com"
 	)
 
@@ -58,10 +57,6 @@ func TestSetupNonExistingConfigFileAndTeardown(t *testing.T) {
 
 	if Context.Username != wantUsername {
 		t.Errorf("Wanted username to be %v, got %v instead", wantUsername, Context.Username)
-	}
-
-	if Context.Password != wantPassword {
-		t.Errorf("Wanted password to be %v, got %v instead", wantPassword, Context.Password)
 	}
 
 	if Context.Token != wantToken {
@@ -110,7 +105,6 @@ func TestSetupLocalAndTeardown(t *testing.T) {
 
 	var (
 		wantUsername       = "foo@example.com"
-		wantPassword       = ""
 		wantToken          = "mock_token"
 		wantRemote         = "local"
 		wantInfrastructure = "localhost"
@@ -122,10 +116,6 @@ func TestSetupLocalAndTeardown(t *testing.T) {
 
 	if Context.Username != wantUsername {
 		t.Errorf("Wanted username to be %v, got %v instead", wantUsername, Context.Username)
-	}
-
-	if Context.Password != wantPassword {
-		t.Errorf("Wanted password to be %v, got %v instead", wantPassword, Context.Password)
 	}
 
 	if Context.Token != wantToken {
@@ -174,7 +164,6 @@ func TestSetupRemoteAndTeardown(t *testing.T) {
 
 	var (
 		wantUsername       = "foo@example.com"
-		wantPassword       = "bar"
 		wantToken          = ""
 		wantRemote         = "wedeploy"
 		wantInfrastructure = "wedeploy.io"
@@ -186,10 +175,6 @@ func TestSetupRemoteAndTeardown(t *testing.T) {
 
 	if Context.Username != wantUsername {
 		t.Errorf("Wanted username to be %v, got %v instead", wantUsername, Context.Username)
-	}
-
-	if Context.Password != wantPassword {
-		t.Errorf("Wanted password to be %v, got %v instead", wantPassword, Context.Password)
 	}
 
 	if Context.Token != wantToken {
@@ -210,18 +195,6 @@ func TestSetupRemoteAndTeardown(t *testing.T) {
 
 	if Global.ReleaseChannel != "stable" {
 		t.Errorf("Wrong ReleaseChannel value")
-	}
-
-	if Context.Scope != "global" {
-		t.Errorf("Exected global scope")
-	}
-
-	if Context.ProjectRoot != "" {
-		t.Errorf("Expected Context.ProjectRoot to be empty")
-	}
-
-	if Context.ServiceRoot != "" {
-		t.Errorf("Expected Context.ServiceRoot to be empty")
 	}
 
 	Teardown()
@@ -246,18 +219,6 @@ func TestSetupAndTeardownProject(t *testing.T) {
 		panic(err)
 	}
 
-	if Context.Scope != "project" {
-		t.Errorf("Expected scope to be project, got %v instead", Context.Scope)
-	}
-
-	if Context.ProjectRoot != filepath.Join(workingDir, "mocks/project") {
-		t.Errorf("Context.ProjectRoot does not match with expected value")
-	}
-
-	if Context.ServiceRoot != "" {
-		t.Errorf("Expected Context.ServiceRoot to be empty")
-	}
-
 	if err := os.Chdir(workingDir); err != nil {
 		panic(err)
 	}
@@ -274,18 +235,6 @@ func TestSetupAndTeardownProjectAndService(t *testing.T) {
 
 	if err := Setup("../../../home/.we"); err != nil {
 		panic(err)
-	}
-
-	if Context.Scope != "service" {
-		t.Errorf("Expected scope to be service, got %v instead", Context.Scope)
-	}
-
-	if Context.ProjectRoot != filepath.Join(workingDir, "mocks/project") {
-		t.Errorf("Context.ProjectRoot does not match with expected value")
-	}
-
-	if Context.ServiceRoot != filepath.Join(workingDir, "mocks/project/service") {
-		t.Errorf("Expected Context.ServiceRoot to be empty")
 	}
 
 	if err := os.Chdir(workingDir); err != nil {
@@ -473,7 +422,6 @@ func TestRemotesListAndGet(t *testing.T) {
 			InfrastructureComment: "Default local remote",
 			Service:               "wedeploy.me",
 			Username:              "no-reply@wedeploy.com",
-			Password:              "cli-tool-password",
 		},
 		"alternative": remotes.Entry{
 			Infrastructure: "http://example.net/",

@@ -49,7 +49,6 @@ Try "we login" first.`))
 	}
 
 	remote.Username = ""
-	remote.Password = ""
 	remote.Token = ""
 	g.Remotes.Set(config.Context.Remote, remote)
 	return g.Save()
