@@ -19,8 +19,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/henvic/browser"
 	"github.com/henvic/uilive"
-	"github.com/pkg/browser"
 	"github.com/wedeploy/cli/activities"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"

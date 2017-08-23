@@ -3,7 +3,7 @@ package cmdconsole
 import (
 	"fmt"
 
-	"github.com/pkg/browser"
+	"github.com/henvic/browser"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"

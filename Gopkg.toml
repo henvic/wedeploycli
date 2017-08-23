@@ -50,8 +50,8 @@
   name = "github.com/henvic/uilive"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/pkg/browser"
+  branch = "fix-windows-subsystem"
+  name = "github.com/henvic/browser"
 
 [[constraint]]
   name = "github.com/satori/go.uuid"

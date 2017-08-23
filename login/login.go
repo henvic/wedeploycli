@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/browser"
+	"github.com/henvic/browser"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"

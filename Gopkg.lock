@@ -44,6 +44,12 @@
   revision = "deeb027c13a95d56c7585df3fe29207208c6706e"
 
 [[projects]]
+  branch = "fix-windows-subsystem"
+  name = "github.com/henvic/browser"
+  packages = ["."]
+  revision = "647cc3c01339b0b4654a9cadc6a2ff41abd837f6"
+
+[[projects]]
   branch = "master"
   name = "github.com/henvic/uilive"
   packages = ["."]
@@ -141,6 +147,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "34d258b09cdbbd938058e0d95d98599b3841204b1af9c5b377d7480374c27156"
+  inputs-digest = "b925351c37f639a2987aabb3b227cdec5dda526cfe96a598235fd2825a9c633d"
   solver-name = "gps-cdcl"
   solver-version = 1
