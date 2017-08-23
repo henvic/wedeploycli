@@ -67,32 +67,6 @@ func TestAuth(t *testing.T) {
 	}
 }
 
-func TestAuthPassword(t *testing.T) {
-	var (
-		defaultPassword = config.Context.Password
-		defaultToken    = config.Context.Token
-	)
-
-	config.Context.Password = "cli-tool-password"
-	config.Context.Token = ""
-
-	defer func() {
-		config.Context.Password = defaultPassword
-		config.Context.Token = defaultToken
-	}()
-
-	r := wedeploy.URL("http://localhost/")
-
-	Auth(r)
-
-	var want = "Basic Zm9vQGV4YW1wbGUuY29tOmNsaS10b29sLXBhc3N3b3Jk"
-	var got = r.Headers.Get("Authorization")
-
-	if want != got {
-		t.Errorf("Wrong auth header. Expected %s, got %s instead", want, got)
-	}
-}
-
 func TestAuthGet(t *testing.T) {
 	servertest.Setup()
 
@@ -183,7 +157,7 @@ func TestAPIError(t *testing.T) {
 		Message: "Resource Not Found",
 	}
 
-	if fmt.Sprintf("%v", e) != "WeDeploy API error: 404 Resource Not Found" {
+	if fmt.Sprintf("%v", e) != "404 Resource Not Found" {
 		t.Errorf("APIFault error, got %v", e)
 	}
 }
@@ -1036,8 +1010,7 @@ func TestValidateUnexpectedResponse(t *testing.T) {
 }`)
 	})
 
-	var want = "WeDeploy API error: 403 Forbidden (GET http://localhost/foo/bah)\n\t" +
-		"forbidden: The requested operation failed because you do not have access."
+	var want = "forbidden"
 
 	r := URL(context.Background(), "/foo/bah")
 	err := Validate(r, r.Get())
@@ -1049,7 +1022,7 @@ func TestValidateUnexpectedResponse(t *testing.T) {
 	}
 
 	if err.Error() != want {
-		t.Errorf("Wanted %v, got %v", err.Error(), want)
+		t.Errorf("Wanted %v, got %v", want, err.Error())
 	}
 }
 
@@ -1135,13 +1108,13 @@ func TestValidateUnexpectedResponseNonBody(t *testing.T) {
 		w.WriteHeader(403)
 	})
 
-	var want = `WeDeploy API error: 403 Forbidden (GET http://localhost/foo/bah)`
+	var want = `403 Forbidden (GET http://localhost/foo/bah): Response Body is not JSON`
 
 	r := URL(context.Background(), "/foo/bah")
 	err := Validate(r, r.Get())
 
 	if err == nil {
-		t.Errorf("Expected error, got %v instead", err)
+		t.Errorf("Expected error, got nil instead")
 	}
 
 	if err.Error() != want {

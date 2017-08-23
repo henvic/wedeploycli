@@ -55,12 +55,20 @@ func (a APIFault) Error() string {
 func (a APIFault) getErrorMessage() string {
 	var s = a.getErrorURL()
 
+	if len(s) != 0 {
+		s += " "
+	}
+
 	if a.Status != 0 {
-		s += fmt.Sprintf(" %v", a.Status)
+		s += fmt.Sprintf("%v", a.Status)
+	}
+
+	if len(s) != 0 {
+		s += " "
 	}
 
 	if a.Message != "" {
-		s += " " + a.Message
+		s += a.Message
 	}
 
 	return s
@@ -324,14 +332,15 @@ func reportHTTPErrorNotJSON(
 		Errors:  APIFaultErrors{},
 	}
 
-	if len(body) != 0 {
-		fault.Errors = append(fault.Errors, APIFaultError{
-			Reason: string(body),
-			Context: APIFaultErrorContext{
-				"message": "Response Body is not JSON",
-			},
-		})
-	}
+	fault.Errors = append(fault.Errors, APIFaultError{
+		Context: APIFaultErrorContext{
+			"message": fmt.Sprintf("%v %v (%v %v): Response Body is not JSON",
+				fault.Status,
+				http.StatusText(fault.Status),
+				fault.Method,
+				fault.URL),
+		},
+	})
 
 	return fault
 }
