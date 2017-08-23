@@ -163,10 +163,20 @@ func (a *Authentication) Run(ctx context.Context) error {
 }
 
 func (a *Authentication) maybeOpenBrowser(loginURL string) {
+	if verbose.Enabled {
+		a.wlm.AddMessage(waitlivemsg.NewMessage("Login URL: " + loginURL))
+	}
+
 	time.Sleep(710 * time.Millisecond)
 
 	if err := browser.OpenURL(loginURL); err != nil {
-		a.msg.StopText(a.msg.GetText() + ": " + err.Error() + ": please visit link " + loginURL)
+		errMsg := &waitlivemsg.Message{}
+		errMsg.StopText(fmt.Sprintf("%v", err))
+		a.wlm.AddMessage(errMsg)
+
+		if !verbose.Enabled {
+			a.wlm.AddMessage(waitlivemsg.NewMessage("Open URL: (can't open automatically) " + loginURL))
+		}
 	}
 }
 
@@ -192,10 +202,6 @@ func (a *Authentication) browserWorkflowAuth() error {
 		config.Context.InfrastructureDomain,
 		"/login?redirect_uri=",
 		url.QueryEscape(host))
-
-	if verbose.Enabled {
-		a.wlm.AddMessage(waitlivemsg.NewMessage("Login URL: " + loginURL))
-	}
 
 	a.maybeOpenBrowser(loginURL)
 
