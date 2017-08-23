@@ -71,7 +71,7 @@
   branch = "master"
   name = "github.com/pkg/browser"
   packages = ["."]
-  revision = "8189194c9f158043d6d45a0b939a47a924ea4b13"
+  revision = "c90ca0c84f15f81c982e32665bffd8d7aac8f097"
 
 [[projects]]
   name = "github.com/russross/blackfriday"
