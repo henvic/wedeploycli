@@ -2,6 +2,7 @@ package collector
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -10,11 +11,8 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"time"
-
-	"bytes"
-
 	"strings"
+	"time"
 
 	uuid "github.com/satori/go.uuid"
 	wedeploy "github.com/wedeploy/api-go"
