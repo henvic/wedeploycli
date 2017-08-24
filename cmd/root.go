@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"errors"
 	"os"
+	"runtime"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/autocomplete"
@@ -132,10 +134,32 @@ func init() {
 	}
 }
 
+func checkCompatibility() error {
+	// Heuristics to identify Windows Subsystem for Linux
+	// and block it from being used from inside a Linux space working directory
+	// due to the subsystem incompatibility
+	if runtime.GOOS != "windows" {
+		return nil
+	}
+
+	if dir, _ := os.Getwd(); dir != `C:\WINDOWS\system32` {
+		return nil
+	}
+
+	return errors.New(`cowardly refusing to use "we.exe" Windows binary on a Linux working directory.
+Windows Subsystem for Linux has no support for accessing Linux fs from a Windows application.
+Please install the Linux version of this application with:
+curl https://cdn.wedeploy.com/cli/latest/wedeploy.sh -sL | bash`)
+}
+
 func persistentPreRun(cmd *cobra.Command, args []string) error {
 	if deferred {
 		verbose.Enabled = true
 		verbose.Deferred = true
+	}
+
+	if err := checkCompatibility(); err != nil {
+		return err
 	}
 
 	// load default cloud remote on config context
