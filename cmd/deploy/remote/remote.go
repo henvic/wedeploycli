@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/cmd/canceled"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/deployment"
 	"github.com/wedeploy/cli/fancy"
@@ -136,7 +137,7 @@ func (rd *RemoteDeployment) loadServicesList() (err error) {
 		return err
 	}
 
-	if err = rd.checkServiceParameter(); err != nil {
+	if err = rd.checkServiceIDs(); err != nil {
 		return err
 	}
 
@@ -168,11 +169,58 @@ func (rd *RemoteDeployment) remapServicesWithEmptyIDs() error {
 	return nil
 }
 
-func (rd *RemoteDeployment) checkServiceParameter() error {
-	if len(rd.services) != 1 && rd.ServiceID != "" {
+func (rd *RemoteDeployment) checkServiceIDs() error {
+	if len(rd.services) == 1 {
+		return rd.checkServiceParameter()
+	}
+
+	if rd.ServiceID != "" {
 		return errors.New("service id parameter is not allowed when deploying multiple services")
 	}
 
+	return rd.checkEmptyIDOnMultipleDeployment()
+}
+
+func (rd *RemoteDeployment) checkEmptyIDOnMultipleDeployment() error {
+	var empty []services.ServiceInfo
+	for _, s := range rd.services {
+		if s.ServiceID == "" {
+			empty = append(empty, s)
+		}
+	}
+
+	if len(empty) == 0 {
+		return nil
+	}
+
+	fmt.Println(fancy.Info("Multiple services found without wedeploy.json IDs:"))
+
+	for _, e := range empty {
+		fmt.Printf("%v %v\n", e.Location, fancy.Tip("using "+filepath.Base(e.Location)))
+	}
+
+	fmt.Println("")
+
+	var options = fancy.Options{}
+
+	options.Add("A", "Yes")
+	options.Add("B", "Cancel")
+
+	var choice, askErr = options.Ask("Do you want to continue?")
+
+	if askErr != nil {
+		return askErr
+	}
+
+	if choice != "A" {
+		return canceled.CancelCommand("Deployment canceled.")
+	}
+
+	fmt.Println("")
+	return nil
+}
+
+func (rd *RemoteDeployment) checkServiceParameter() error {
 	if rd.ServiceID == "" && rd.services[0].ServiceID != "" {
 		return nil
 	}
