@@ -22,6 +22,7 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/autocomplete"
 	"github.com/wedeploy/cli/cmd"
+	"github.com/wedeploy/cli/cmd/canceled"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/color/template"
 	"github.com/wedeploy/cli/config"
@@ -30,7 +31,6 @@ import (
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/flagsfromhost"
 	"github.com/wedeploy/cli/formatter"
-	"github.com/wedeploy/cli/login"
 	"github.com/wedeploy/cli/metrics"
 	"github.com/wedeploy/cli/update"
 	"github.com/wedeploy/cli/userhome"
@@ -130,7 +130,7 @@ func (m *mainProgram) executeCommand() {
 	m.cmdFriendlyErr = errorhandling.Handle(m.cmdErr)
 
 	switch m.cmdErr.(type) {
-	case login.CanceledCommand:
+	case canceled.CanceledCommand:
 		fmt.Fprintln(os.Stderr, fancy.Success(m.cmdErr))
 		m.cmdErr = nil
 	}

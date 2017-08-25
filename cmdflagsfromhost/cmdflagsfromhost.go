@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmd/canceled"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/fancy"
@@ -307,7 +308,7 @@ func authenticateOrCancel(cmd *cobra.Command) error {
 	}
 
 	if choice == "B" {
-		return login.CancelCommand("Login canceled.")
+		return canceled.CancelCommand("Login canceled.")
 	}
 
 	a := login.Authentication{
