@@ -80,9 +80,19 @@ func getHealth(health string) string {
 	return health
 }
 
+func (l *List) printImage(s services.Service) {
+	var image = s.ImageHint
+
+	if image == "" {
+		image = s.Image
+	}
+
+	l.Printf("%v\t", image)
+}
+
 func (l *List) printService(projectID string, c services.Service) {
 	l.Printf("%v\t%v\t", projectID, l.getServiceDomain(projectID, c.ServiceID))
-	l.Printf("%v\t", c.ImageHint)
+	l.printImage(c)
 	l.Printf("%v\t", getHealth(c.Health))
 	l.printInstances(c.Scale)
 
