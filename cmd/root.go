@@ -14,6 +14,7 @@ import (
 	"github.com/wedeploy/cli/cmd/delete"
 	"github.com/wedeploy/cli/cmd/deploy"
 	"github.com/wedeploy/cli/cmd/diagnostics"
+	"github.com/wedeploy/cli/cmd/docs"
 	"github.com/wedeploy/cli/cmd/domain"
 	"github.com/wedeploy/cli/cmd/env"
 	"github.com/wedeploy/cli/cmd/gitcredentialhelper"
@@ -55,6 +56,7 @@ var commands = []*cobra.Command{
 	cmddeploy.DeployCmd,
 	cmdlist.ListCmd,
 	cmdconsole.ConsoleCmd,
+	cmddocs.DocsCmd,
 	cmdlog.LogCmd,
 	cmddomain.DomainCmd,
 	cmdenv.EnvCmd,
