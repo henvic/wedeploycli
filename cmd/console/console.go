@@ -18,7 +18,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 	},
 }
 
-// ConsoleCmd runs the WeDeploy structure for development locally
+// ConsoleCmd opens the browser console
 var ConsoleCmd = &cobra.Command{
 	Use:     "console",
 	Short:   "Open the console on your browser",
