@@ -130,15 +130,15 @@ func (a *Authentication) Run(ctx context.Context) error {
 	}
 
 	var options = fancy.Options{}
-	options.Add("A", "Open Browser")
-	options.Add("B", "Cancel")
+	options.Add("Y", "Open Browser")
+	options.Add("N", "Cancel")
 	choice, err := options.Ask("WeDeploy requires your browser for authenticating. Open your browser and authenticate?")
 
 	if err != nil {
 		return err
 	}
 
-	if choice == "B" {
+	if choice == "N" {
 		return canceled.CancelCommand("Login canceled.")
 	}
 

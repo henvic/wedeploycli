@@ -298,8 +298,8 @@ func (s *SetupHost) verifyCmdReqAuth() error {
 
 func authenticateOrCancel(cmd *cobra.Command) error {
 	var options = fancy.Options{}
-	options.Add("A", "Yes")
-	options.Add("B", "Cancel")
+	options.Add("Y", "Log In")
+	options.Add("N", "Cancel")
 
 	var choice, err = options.Ask(fmt.Sprintf(`You need to log in before performing "%s". Do you want to log in?`, cmd.UseLine()))
 
@@ -307,7 +307,7 @@ func authenticateOrCancel(cmd *cobra.Command) error {
 		return err
 	}
 
-	if choice == "B" {
+	if choice == "N" {
 		return canceled.CancelCommand("Login canceled.")
 	}
 

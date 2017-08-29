@@ -74,12 +74,6 @@
   version = "v0.0.2"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/pkg/browser"
-  packages = ["."]
-  revision = "c90ca0c84f15f81c982e32665bffd8d7aac8f097"
-
-[[projects]]
   name = "github.com/russross/blackfriday"
   packages = ["."]
   revision = "35eb537633d9950afc8ae7bdf0edb6134584e9fc"
@@ -147,6 +141,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b925351c37f639a2987aabb3b227cdec5dda526cfe96a598235fd2825a9c633d"
+  inputs-digest = "650c01afbcde8e9a3c2866f283a66336ce03e617f6714fb9898bdce6b122e1e7"
   solver-name = "gps-cdcl"
   solver-version = 1

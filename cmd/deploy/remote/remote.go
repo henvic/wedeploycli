@@ -203,8 +203,8 @@ func (rd *RemoteDeployment) checkEmptyIDOnMultipleDeployment() error {
 
 	var options = fancy.Options{}
 
-	options.Add("A", "Yes")
-	options.Add("B", "Cancel")
+	options.Add("Y", "Yes")
+	options.Add("N", "Cancel")
 
 	var choice, askErr = options.Ask("Do you want to continue?")
 
@@ -212,7 +212,7 @@ func (rd *RemoteDeployment) checkEmptyIDOnMultipleDeployment() error {
 		return askErr
 	}
 
-	if choice != "A" {
+	if choice != "Y" {
 		return canceled.CancelCommand("Deployment canceled.")
 	}
 
