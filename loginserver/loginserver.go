@@ -214,7 +214,7 @@ func (s *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type accessToken struct {
-	AccessToken string `json:"access_token"`
+	AccessToken string `json:"token"`
 }
 
 // OAuthTokenFromBasicAuth gets a token from a Basic Auth flow
