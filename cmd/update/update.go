@@ -2,6 +2,7 @@ package cmdupdate
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/update"
@@ -9,9 +10,10 @@ import (
 
 // UpdateCmd is used for updating this tool
 var UpdateCmd = &cobra.Command{
-	Use:   "update",
-	RunE:  updateRun,
-	Short: "Update CLI to the latest version",
+	Use:     "update",
+	PreRunE: cmdargslen.ValidateCmd(0, 0),
+	RunE:    updateRun,
+	Short:   "Update CLI to the latest version",
 }
 
 var (
