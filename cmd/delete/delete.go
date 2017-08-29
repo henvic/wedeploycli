@@ -10,9 +10,12 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/cmd/canceled"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/errorhandling"
+	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/services"
@@ -87,6 +90,10 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	if err := confirmation(); err != nil {
+		return err
+	}
+
 	go u.do()
 
 	if !quiet {
@@ -94,6 +101,37 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	return <-u.err
+}
+
+func confirmation() error {
+	var options = fancy.Options{}
+
+	options.Add("Y", "Yes")
+	options.Add("N", "No")
+
+	var question string
+
+	if setupHost.Service() != "" {
+		question = fmt.Sprintf(`Do you really want to delete the service "%v" on project "%v"?`,
+			color.Format(color.Bold, setupHost.Service()),
+			color.Format(color.Bold, setupHost.Project()))
+	} else {
+		question = fmt.Sprintf(`Do you really want to delete the project "%v"?`,
+			color.Format(color.Bold, setupHost.Project()))
+	}
+
+	var choice, askErr = options.Ask(question)
+
+	if askErr != nil {
+		return askErr
+	}
+
+	switch choice {
+	case "Y":
+		return nil
+	default:
+		return canceled.CancelCommand("delete canceled")
+	}
 }
 
 func (u *undeployer) do() {
