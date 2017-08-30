@@ -1,10 +1,12 @@
 package login
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
 	"strings"
@@ -20,6 +22,7 @@ import (
 	"github.com/wedeploy/cli/loginserver"
 	"github.com/wedeploy/cli/status"
 	"github.com/wedeploy/cli/timehelper"
+	"github.com/wedeploy/cli/usertoken"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/waitlivemsg"
 )
@@ -115,6 +118,33 @@ promptForPassword:
 	return a.saveUser(username, token)
 }
 
+func (a *Authentication) tryStdinToken() (bool, error) {
+	file := os.Stdin
+	if fi, err := file.Stat(); err != nil || fi.Size() == 0 {
+		return false, nil
+	}
+
+	reader := bufio.NewReader(file)
+	maybe, err := reader.ReadString('\n')
+
+	if err != nil && err != io.EOF {
+		return false, nil
+	}
+
+	token, err := usertoken.ParseUnsignedJSONWebToken(maybe)
+
+	if err != nil {
+		return true, err
+	}
+
+	a.wlm = waitlivemsg.New(nil)
+	a.msg = waitlivemsg.NewMessage("Authenticating [1/2]")
+	a.wlm.AddMessage(a.msg)
+	go a.wlm.Wait()
+	defer a.wlm.Stop()
+	return true, a.saveUser(token.Email, maybe)
+}
+
 // Run authentication process
 func (a *Authentication) Run(ctx context.Context) error {
 	s, err := status.UnsafeGet(ctx)
@@ -124,6 +154,10 @@ func (a *Authentication) Run(ctx context.Context) error {
 	}
 
 	a.Domains = s.Domains
+
+	if stdin, stdinErr := a.tryStdinToken(); stdin {
+		return stdinErr
+	}
 
 	if a.NoLaunchBrowser {
 		return a.basicAuthLogin()
