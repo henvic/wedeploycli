@@ -50,13 +50,24 @@ func Tip(a interface{}) string {
 // Prompt with fancy "> "
 func Prompt() (string, error) {
 	fmt.Print(color.Format(color.FgHiBlack, "> "))
-	return prompt.Prompt()
+	var res, err = prompt.Prompt()
+
+	if err != nil {
+		fmt.Println("")
+	}
+
+	return res, err
 }
 
 // HiddenPrompt with a >
 func HiddenPrompt() (string, error) {
 	fmt.Print(color.Format(color.FgHiBlack, "> "))
-	return prompt.Hidden()
+	var res, err = prompt.Hidden()
+
+	if err != nil {
+		fmt.Println("")
+	}
+	return res, err
 }
 
 // Options selector
