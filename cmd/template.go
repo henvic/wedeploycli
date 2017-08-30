@@ -202,6 +202,5 @@ func init() {
 	cobra.AddTemplateFunc("printCommandsAndFlags", printCommandsAndFlags)
 	RootCmd.SetUsageTemplate(`{{printCommandsAndFlags .UseLine .Example .Commands .Flags}}`)
 	RootCmd.SetHelpTemplate(`{{if not (eq .CommandPath "we")}}{{with or .Long .Short }}{{color FgYellow BgHiYellow "!"}} {{. | trim | color FgHiYellow}}
-{{end}}{{end}}{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}
-`)
+{{end}}{{end}}{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}`)
 }
