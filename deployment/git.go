@@ -162,7 +162,6 @@ func (d *Deploy) stageEachService(path string) error {
 	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
-	cmd.Stdout = outStream
 
 	return cmd.Run()
 }
