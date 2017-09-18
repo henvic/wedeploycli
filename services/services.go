@@ -454,6 +454,10 @@ func Read(path string) (*ServicePackage, error) {
 		data.dockerfile = string(dockerfile)
 	}
 
+	if strings.Contains(data.ID, "-") {
+		return &data, ErrInvalidServiceID
+	}
+
 	return &data, nil
 }
 

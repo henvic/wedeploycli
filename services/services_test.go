@@ -47,7 +47,11 @@ func TestGetListFromDirectory(t *testing.T) {
 		t.Errorf("Want %v, got %v instead", wantIDs, services)
 	}
 
-	var wantLocations = []string{"email", "landing", "speaker"}
+	var wantLocations = []string{
+		abs("mocks/app/email"),
+		abs("mocks/app/landing"),
+		abs("mocks/app/speaker"),
+	}
 
 	if !reflect.DeepEqual(services.GetLocations(), wantLocations) {
 		t.Errorf("Want %v, got %v instead", wantLocations, services)
@@ -56,15 +60,15 @@ func TestGetListFromDirectory(t *testing.T) {
 	var want = ServiceInfoList{
 		ServiceInfo{
 			"email",
-			"email",
+			abs("mocks/app/email"),
 		},
 		ServiceInfo{
 			"landing",
-			"landing",
+			abs("mocks/app/landing"),
 		},
 		ServiceInfo{
 			"speaker",
-			"speaker",
+			abs("mocks/app/speaker"),
 		},
 	}
 
@@ -78,8 +82,8 @@ func TestGetListFromDirectory(t *testing.T) {
 		t.Errorf("Wanted speakerErr to be nil, got %v instead", speakerErr)
 	}
 
-	if speakerCI.Location != "speaker" || speakerCI.ServiceID != "speaker" {
-		t.Errorf("speakerCI is not what was expected: %+v instead", speakerCI)
+	if speakerCI.Location != abs("mocks/app/speaker") || speakerCI.ServiceID != "speaker" {
+		t.Errorf("speaker is not what was expected: %+v instead", speakerCI)
 	}
 
 	_, notFoundErr := services.Get("notfound")
@@ -96,7 +100,7 @@ func TestGetListFromDirectoryOnProjectWithServicesInsideSubdirectories(t *testin
 		t.Errorf("Expected %v, got %v instead", nil, err)
 	}
 
-	var wantIDs = []string{"level-1", "level-2", "level-2-2", "level-3"}
+	var wantIDs = []string{"level1"}
 
 	if !reflect.DeepEqual(services.GetIDs(), wantIDs) {
 		t.Errorf("Want %v, got %v instead", wantIDs, services)
@@ -111,10 +115,7 @@ func TestGetListFromDirectoryOnProjectWithServicesInsideSubdirectories(t *testin
 	}
 
 	var wantLocations = []string{
-		"service-level-1",
-		"sub-dir/service-level-2",
-		"sub-dir-2/service-level-2-2",
-		"sub-dir-2/sub-dir/service-level-3",
+		abs("mocks/project-with-services-inside-subdirs/service-level-1"),
 	}
 
 	if !reflect.DeepEqual(services.GetLocations(), wantLocations) {
@@ -123,20 +124,8 @@ func TestGetListFromDirectoryOnProjectWithServicesInsideSubdirectories(t *testin
 
 	var want = ServiceInfoList{
 		ServiceInfo{
-			"level-1",
-			"service-level-1",
-		},
-		ServiceInfo{
-			"level-2",
-			"sub-dir/service-level-2",
-		},
-		ServiceInfo{
-			"level-2-2",
-			"sub-dir-2/service-level-2-2",
-		},
-		ServiceInfo{
-			"level-3",
-			"sub-dir-2/sub-dir/service-level-3",
+			"level1",
+			abs("mocks/project-with-services-inside-subdirs/service-level-1"),
 		},
 	}
 
@@ -148,7 +137,7 @@ func TestGetListFromDirectoryOnProjectWithServicesInsideSubdirectories(t *testin
 	// mocks/project-with-services-inside-subdirs/sub-dir-2/same-dir-skipped-unreachable-service
 	// also tries to fail if that happens
 	var noWhat = "service"
-	if _, err = os.Stat("mocks/project-with-services-inside-subdirs/sub-dir-2/skip/.no" + noWhat); err != nil {
+	if _, err = os.Stat("mocks/project-with-services-inside-subdirs/skip/.no" + noWhat); err != nil {
 		t.Fatalf(`.noservice not found: filepath.Walk might fail given that we are counting on its lexical order walk`)
 	}
 }
@@ -164,7 +153,7 @@ func TestGetListFromDirectoryDuplicateID(t *testing.T) {
 		t.Errorf("Expected error, got %v instead.", err)
 	}
 
-	var wantErr = fmt.Sprintf(`Can not list services: ID "email" was found duplicated on services %v and %v`,
+	var wantErr = fmt.Sprintf(`found services with duplicated ID "email" on %v and %v`,
 		abs("./mocks/project-with-duplicate-services-ids/one"),
 		abs("./mocks/project-with-duplicate-services-ids/two"))
 
@@ -379,7 +368,11 @@ func TestReadFileNotFound(t *testing.T) {
 }
 
 func TestReadInvalidServiceID(t *testing.T) {
-	var _, err = Read("mocks/app-for/missing-email-id")
+	var s, err = Read("mocks/app-for/invalid-email-id")
+
+	if s.Scale != 10 {
+		t.Errorf("Expected scale to be 10, got %v instead", s.Scale)
+	}
 
 	if err != ErrInvalidServiceID {
 		t.Errorf("Expected %v, got %v instead", ErrInvalidServiceID, err)
@@ -389,8 +382,11 @@ func TestReadInvalidServiceID(t *testing.T) {
 func TestReadCorrupted(t *testing.T) {
 	var _, err = Read("mocks/app-with-invalid-service/corrupted")
 
-	if _, ok := err.(*json.SyntaxError); !ok {
-		t.Errorf("Wanted err to be *json.SyntaxError, got %v instead", err)
+	var want = "error parsing wedeploy.json on mocks/app-with-invalid-service/corrupted:" +
+		" invalid character 'I' looking for beginning of value"
+
+	if err == nil || err.Error() != want {
+		t.Errorf("Wanted err to be %v, got %v instead", want, err)
 	}
 }
 
