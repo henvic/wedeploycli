@@ -2,14 +2,12 @@ package projects
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"reflect"
 	"testing"
 
-	"github.com/wedeploy/api-go/jsonlib"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
@@ -146,42 +144,6 @@ func TestList(t *testing.T) {
 	}
 
 	servertest.Teardown()
-}
-
-func TestRead(t *testing.T) {
-	var c, err = Read("mocks/little")
-
-	if err != nil {
-		t.Errorf("Expected no error, got %v instead", err)
-	}
-
-	jsonlib.AssertJSONMarshal(t, tdata.FromFile(
-		"mocks/little/project_ref.json"),
-		c)
-}
-
-func TestReadFileNotFound(t *testing.T) {
-	var _, err = Read("mocks/unknown")
-
-	if err != ErrProjectNotFound {
-		t.Errorf("Expected %v, got %v instead", ErrProjectNotFound, err)
-	}
-}
-
-func TestReadInvalidProjectID(t *testing.T) {
-	var _, err = Read("mocks/missing-id")
-
-	if err != ErrInvalidProjectID {
-		t.Errorf("Expected %v, got %v instead", ErrInvalidProjectID, err)
-	}
-}
-
-func TestReadCorrupted(t *testing.T) {
-	var _, err = Read("mocks/corrupted")
-
-	if _, ok := err.(*json.SyntaxError); !ok {
-		t.Errorf("Wanted err to be *json.SyntaxError, got %v instead", err)
-	}
 }
 
 func TestRestart(t *testing.T) {
