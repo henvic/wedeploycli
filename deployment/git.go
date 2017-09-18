@@ -237,7 +237,6 @@ func (d *Deploy) gitRenameServiceIDUpdateIndex(hashObject, path string) error {
 	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
-	cmd.Stdout = outStream
 	return cmd.Run()
 }
 
@@ -350,7 +349,6 @@ func (d *Deploy) AddRemote() error {
 	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
-	cmd.Stdout = outStream
 	return cmd.Run()
 }
 
