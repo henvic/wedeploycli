@@ -951,7 +951,7 @@ func TestValidate(t *testing.T) {
 		}
 	}()
 
-	var want = `WeDeploy platform error: could not connect to remote infrastructure`
+	var want = `WeDeploy platform error: could not connect to infrastructure`
 
 	r := wedeploy.URL("x://localhost/")
 
