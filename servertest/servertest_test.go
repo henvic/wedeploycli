@@ -10,11 +10,12 @@ import (
 func TestSetupAndTeardown(t *testing.T) {
 	var completed = false
 	var wantStatusCode = 201
-	var wedeployHTTPClient = wedeploy.Client
+	var client = wedeploy.Client()
+	var httpClient = client.HTTP()
 
 	Setup()
 
-	if wedeployHTTPClient == wedeploy.Client {
+	if httpClient == client.HTTP() {
 		t.Error("Expected different WeDeploy HTTP Client instance")
 	}
 
@@ -39,7 +40,7 @@ func TestSetupAndTeardown(t *testing.T) {
 
 	Teardown()
 
-	if wedeployHTTPClient != wedeploy.Client {
+	if httpClient != client.HTTP() {
 		t.Error("Expected same WeDeploy HTTP Client instance")
 	}
 

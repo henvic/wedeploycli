@@ -45,8 +45,9 @@ func Setup() {
 		panic(errwrap.Wrapf("Can not route to mock server: {{err}}", err))
 	}
 
-	defaultHTTPClient = wedeploy.Client
-	wedeploy.Client = &http.Client{Transport: &proxy{}}
+	client := wedeploy.Client()
+	defaultHTTPClient = client.HTTP()
+	client.SetHTTP(&http.Client{Transport: &proxy{}})
 }
 
 // SetupIntegration sets up the integration tests mock server
@@ -57,7 +58,7 @@ func SetupIntegration() {
 
 // Teardown the mock server and teardown WeDeploy client
 func Teardown() {
-	wedeploy.Client = defaultHTTPClient
+	wedeploy.Client().SetHTTP(defaultHTTPClient)
 	server.Close()
 	Mux = nil
 	server = nil

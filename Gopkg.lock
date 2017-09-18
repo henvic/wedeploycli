@@ -97,8 +97,8 @@
 [[projects]]
   name = "github.com/wedeploy/api-go"
   packages = [".","aggregation","filter","geo","jsonlib","qrange","query","urilib"]
-  revision = "e4258f3d87609e819bd8a9f998ca31c5d538f19e"
-  version = "v1.0.0-alpha.7.3"
+  revision = "30aad5b57a610ff3a9d0b4125f650ddd1748401d"
+  version = "v2.0.1"
 
 [[projects]]
   name = "golang.org/x/crypto"
