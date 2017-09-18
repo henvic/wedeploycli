@@ -1,18 +1,18 @@
-nodejs5143-foo.wedeploy.me[foo_nod] [2016-03-29 18:55:51,234] INFO  [main] com.liferay.wedeploy.server.AppServer#start:125 - Server started
-nodejs5143-foo.wedeploy.me[foo_nod] [2016-03-29 18:55:51,237] INFO  [main] com.liferay.wedeploy.WeDeploy#startServer:163 - Server is up and running
-nodejs5143-foo.wedeploy.me[foo_nod] [2016-03-29 18:55:51,240] INFO  [main] com.liferay.wedeploy.WeDeploy#start:69 - WeDeploy is ready
-nodejs5143-foo.wedeploy.me[foo_nod] 	Member [172.21.0.2]:5701
-nodejs5143-foo.wedeploy.me[foo_nod] Mar 29, 2016 7:43:30 PM com.hazelcast.core.LifecycleService
-nodejs5143-foo.wedeploy.me[foo_nod] Mar 29, 2016 7:43:30 PM com.hazelcast.client.connection.nio.ClientConnectionManagerImpl
-nodejs5143-foo.wedeploy.me[foo_nod] INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_CONNECTED
-nodejs5143-foo.wedeploy.me[foo_nod] INFO: 
-nodejs5143-foo.wedeploy.me[foo_nod] INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_DISCONNECTED
-nodejs5143-foo.wedeploy.me[foo_nod] WARNING: Connection [/192.168.99.100:5701] lost. Reason: Socket explicitly closed
-nodejs5143-foo.wedeploy.me[foo_nod] 
-nodejs5143-foo.wedeploy.me[foo_nod] Members [1] {
-nodejs5143-foo.wedeploy.me[foo_nod] 
-nodejs5143-foo.wedeploy.me[foo_nod] Mar 29, 2016 7:43:30 PM com.hazelcast.client.spi.impl.ClientMembershipListener
-nodejs5143-foo.wedeploy.me[foo_nod] }
-nodejs5143-foo.wedeploy.me[foo_nod] Mar 29, 2016 7:43:30 PM com.hazelcast.core.LifecycleService
-nodejs5143-foo.wedeploy.me[foo_nod] Mar 29, 2016 7:43:30 PM com.hazelcast.client.connection.nio.ClientConnection
-nodejs5143-foo.wedeploy.me[foo_nod] WARNING: Heartbeat failed to connection : ClientConnection{live=true, writeHandler=com.hazelcast.client.connection.nio.ClientWriteHandler@4934e36f, readHandler=com.hazelcast.client.connection.nio.ClientReadHandler@62aac949, connectionId=1, socketChannel=DefaultSocketChannelWrapper{socketChannel=java.nio.channels.SocketChannel[connected local=/172.17.0.7:41139 remote=/192.168.99.100:5701]}, remoteEndpoint=Address[172.21.0.2]:5701}
+nodejs5143[foo_nod] [2016-03-29 18:55:51,234] INFO  [main] com.liferay.wedeploy.server.AppServer#start:125 - Server started
+nodejs5143[foo_nod] [2016-03-29 18:55:51,237] INFO  [main] com.liferay.wedeploy.WeDeploy#startServer:163 - Server is up and running
+nodejs5143[foo_nod] [2016-03-29 18:55:51,240] INFO  [main] com.liferay.wedeploy.WeDeploy#start:69 - WeDeploy is ready
+nodejs5143[foo_nod] 	Member [172.21.0.2]:5701
+nodejs5143[foo_nod] Mar 29, 2016 7:43:30 PM com.hazelcast.core.LifecycleService
+nodejs5143[foo_nod] Mar 29, 2016 7:43:30 PM com.hazelcast.client.connection.nio.ClientConnectionManagerImpl
+nodejs5143[foo_nod] INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_CONNECTED
+nodejs5143[foo_nod] INFO: 
+nodejs5143[foo_nod] INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_DISCONNECTED
+nodejs5143[foo_nod] WARNING: Connection [/192.168.99.100:5701] lost. Reason: Socket explicitly closed
+nodejs5143[foo_nod] 
+nodejs5143[foo_nod] Members [1] {
+nodejs5143[foo_nod] 
+nodejs5143[foo_nod] Mar 29, 2016 7:43:30 PM com.hazelcast.client.spi.impl.ClientMembershipListener
+nodejs5143[foo_nod] }
+nodejs5143[foo_nod] Mar 29, 2016 7:43:30 PM com.hazelcast.core.LifecycleService
+nodejs5143[foo_nod] Mar 29, 2016 7:43:30 PM com.hazelcast.client.connection.nio.ClientConnection
+nodejs5143[foo_nod] WARNING: Heartbeat failed to connection : ClientConnection{live=true, writeHandler=com.hazelcast.client.connection.nio.ClientWriteHandler@4934e36f, readHandler=com.hazelcast.client.connection.nio.ClientReadHandler@62aac949, connectionId=1, socketChannel=DefaultSocketChannelWrapper{socketChannel=java.nio.channels.SocketChannel[connected local=/172.17.0.7:41139 remote=/192.168.99.100:5701]}, remoteEndpoint=Address[172.21.0.2]:5701}

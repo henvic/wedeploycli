@@ -76,10 +76,6 @@ func TestGetList(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/projects/foo/services/nodejs5143/logs",
 		func(w http.ResponseWriter, r *http.Request) {
-			// if r.URL.Query().Get("serviceUid") != "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj" {
-			// 	t.Errorf("Wrong value for serviceUid")
-			// }
-
 			if r.URL.Query().Get("level") != "4" {
 				t.Errorf("Wrong value for level")
 			}

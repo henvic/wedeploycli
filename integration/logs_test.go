@@ -121,35 +121,6 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContext(t *testing.T) {
 				t.Errorf("Wrong value for serviceId")
 			}
 
-			w.Header().Set("Content-type", "application/json; charset=UTF-8")
-			fmt.Fprintf(w, tdata.FromFile("mocks/logs/logs_response.json"))
-		})
-
-	var cmd = &Command{
-		Args: []string{
-			"log",
-			"--remote",
-			"local",
-			"--no-color"},
-		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
-		Dir: "mocks/home/bucket/foo",
-	}
-
-	var e = &Expect{
-		Stdout:   tdata.FromFile("mocks/logs/logs_response_print"),
-		ExitCode: 0,
-	}
-
-	cmd.Run()
-	e.Assert(t, cmd)
-}
-
-func TestLogsFromCurrentWorkingOnProjectDirectoryContextFilteringByService(t *testing.T) {
-	defer Teardown()
-	Setup()
-
-	servertest.IntegrationMux.HandleFunc("/projects/foo/services/nodejs5143/logs",
-		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			fmt.Fprintf(w, tdata.FromFile("mocks/logs/logs_response.json"))
 		})
@@ -159,39 +130,11 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContextFilteringByService(t *te
 			"log",
 			"--remote",
 			"local",
-			"--service=nodejs5143",
+			"-p",
+			"foo",
 			"--no-color"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/foo",
-	}
-
-	var e = &Expect{
-		Stdout:   tdata.FromFile("mocks/logs/logs_response_print"),
-		ExitCode: 0,
-	}
-
-	cmd.Run()
-	e.Assert(t, cmd)
-}
-
-func TestLogsFromCurrentWorkingOnServiceDirectoryContext(t *testing.T) {
-	defer Teardown()
-	Setup()
-
-	servertest.IntegrationMux.HandleFunc("/projects/foo/services/nodejs5143/logs",
-		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-type", "application/json; charset=UTF-8")
-			fmt.Fprintf(w, tdata.FromFile("mocks/logs/logs_response.json"))
-		})
-
-	var cmd = &Command{
-		Args: []string{
-			"log",
-			"--remote",
-			"local",
-			"--no-color"},
-		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
-		Dir: "mocks/home/bucket/foo/nodejs5143",
 	}
 
 	var e = &Expect{
