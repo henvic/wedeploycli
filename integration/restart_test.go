@@ -3,6 +3,7 @@ package integration
 import (
 	"fmt"
 	"net/http"
+	"sync"
 	"testing"
 
 	"github.com/wedeploy/cli/servertest"
@@ -83,43 +84,9 @@ func TestRestartProjectQuiet(t *testing.T) {
 		t.Errorf("Restart request not handled.")
 	}
 }
-
-func TestRestartProjectQuietFromCurrentWorkingDirectoryContext(t *testing.T) {
-	var handled bool
-	defer Teardown()
-	Setup()
-
-	servertest.IntegrationMux.HandleFunc("/projects/foo",
-		tdata.ServerJSONFileHandler("mocks/restart/foo/project_response.json"))
-
-	servertest.IntegrationMux.HandleFunc("/projects/foo/services",
-		tdata.ServerJSONFileHandler("mocks/restart/foo/services_response.json"))
-
-	servertest.IntegrationMux.HandleFunc("/projects/foo/restart",
-		func(w http.ResponseWriter, r *http.Request) {
-			handled = true
-		})
-
-	var cmd = &Command{
-		Args: []string{"restart", "--remote", "local", "--quiet"},
-		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
-		Dir:  "mocks/restart/foo",
-	}
-
-	var e = &Expect{
-		ExitCode: 0,
-	}
-
-	cmd.Run()
-	e.Assert(t, cmd)
-
-	if !handled {
-		t.Errorf("Restart request not handled.")
-	}
-}
-
 func TestRestartServiceQuiet(t *testing.T) {
 	var handled bool
+	var handledMutex sync.Mutex
 	defer Teardown()
 	Setup()
 
@@ -135,60 +102,28 @@ func TestRestartServiceQuiet(t *testing.T) {
 				t.Errorf("Expected method to be POST")
 			}
 
+			handledMutex.Lock()
 			handled = true
+			handledMutex.Unlock()
 		})
 
 	var cmd = &Command{
-		Args: []string{"restart", "-u", "bar-foo.wedeploy.me", "-q"},
-		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
-	}
-
-	var e = &Expect{
-		ExitCode: 0,
-	}
-
-	cmd.Run()
-	e.Assert(t, cmd)
-
-	if !handled {
-		t.Errorf("Restart request not handled.")
-	}
-}
-
-func TestRestartServiceQuietFromCurrentWorkingDirectoryContext(t *testing.T) {
-	var handled bool
-	defer Teardown()
-	Setup()
-
-	servertest.IntegrationMux.HandleFunc("/projects/foo",
-		tdata.ServerJSONFileHandler("mocks/restart/foo/bar/project_response.json"))
-
-	servertest.IntegrationMux.HandleFunc("/projects/foo/services/bar",
-		tdata.ServerJSONFileHandler("mocks/restart/foo/bar/service_response.json"))
-
-	servertest.IntegrationMux.HandleFunc("/projects/foo/services/bar/restart",
-		func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "POST" {
-				t.Errorf("Expected method to be POST")
-			}
-
-			handled = true
-		})
-
-	var cmd = &Command{
-		Args: []string{"restart", "--remote", "local", "-q"},
+		Args: []string{"restart", "--project", "foo", "--service", "bar", "--remote", "local", "-q"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/restart/foo/bar",
 	}
 
+	cmd.Run()
+
 	var e = &Expect{
 		ExitCode: 0,
 	}
 
-	cmd.Run()
 	e.Assert(t, cmd)
 
+	handledMutex.Lock()
 	if !handled {
 		t.Errorf("Restart request not handled.")
 	}
+	handledMutex.Unlock()
 }
