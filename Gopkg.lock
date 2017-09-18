@@ -38,12 +38,6 @@
   revision = "7554cd9344cec97297fa6649b055a8c98c2a1e55"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/hashicorp/go-version"
-  packages = ["."]
-  revision = "deeb027c13a95d56c7585df3fe29207208c6706e"
-
-[[projects]]
   branch = "fix-windows-subsystem"
   name = "github.com/henvic/browser"
   packages = ["."]
