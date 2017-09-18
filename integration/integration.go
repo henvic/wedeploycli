@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"syscall"
 	"testing"
 
@@ -158,7 +159,13 @@ func (cmd *Command) setChildChannels(child *exec.Cmd) {
 	child.Stdout = cmd.Stdout
 }
 
-func (cmd *Command) setEnv() {
+func (cmd *Command) maybeSetHomeEnv() {
+	for _, k := range cmd.Env {
+		if strings.HasPrefix(k, "WEDEPLOY_CUSTOM_HOME=") {
+			return
+		}
+	}
+
 	var ch, err = filepath.Abs("./mocks/home")
 
 	if err != nil {
@@ -166,6 +173,11 @@ func (cmd *Command) setEnv() {
 	}
 
 	cmd.Env = append(cmd.Env, "WEDEPLOY_CUSTOM_HOME="+ch)
+
+}
+
+func (cmd *Command) setEnv() {
+	cmd.maybeSetHomeEnv()
 	cmd.Env = append(cmd.Env, os.Environ()...)
 }
 
