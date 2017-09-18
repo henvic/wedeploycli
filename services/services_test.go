@@ -502,7 +502,7 @@ func TestValidateAlreadyExists(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/validators/services/id",
 		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)
 			fmt.Fprintf(w, tdata.FromFile("mocks/service_already_exists_response.json"))
 		})
@@ -519,7 +519,7 @@ func TestValidateInvalidID(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/validators/services/id",
 		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)
 			fmt.Fprintf(w, tdata.FromFile("mocks/service_invalid_id_response.json"))
 		})
@@ -536,7 +536,7 @@ func TestValidateError(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/validators/services/id",
 		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			w.WriteHeader(400)
 			fmt.Fprintf(w, tdata.FromFile("../apihelper/mocks/unknown_error_api_response.json"))
 		})
@@ -557,7 +557,7 @@ func TestValidateInvalidError(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/validators/services/id",
 		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)
 		})
 

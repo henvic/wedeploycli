@@ -117,7 +117,7 @@ func TestListServiceFromInsideProjectNotExists(t *testing.T) {
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc("/projects/app/services/service", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-type", "application/json; charset=UTF-8")
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(404)
 		fmt.Fprintf(w, `{
     "status": 404,

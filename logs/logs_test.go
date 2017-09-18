@@ -84,7 +84,7 @@ func TestGetList(t *testing.T) {
 				t.Errorf("Wrong value for level")
 			}
 
-			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			fmt.Fprintf(w, tdata.FromFile("mocks/logs_response.json"))
 		})
 
@@ -157,7 +157,7 @@ func TestWatch(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/projects/foo/services/bar/logs",
 		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			switch missing {
 			case true:
 				fmt.Fprintln(w, tdata.FromFile("mocks/logs_watch_response_syscall.json"))
@@ -221,7 +221,7 @@ func TestWatcherStart(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/projects/foo/services/nodejs5143/logs",
 		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			time.Sleep(2 * time.Millisecond)
 			if fileNum < 4 {
 				fileNum++

@@ -71,7 +71,7 @@ func TestAuthGet(t *testing.T) {
 	servertest.Setup()
 
 	servertest.Mux.HandleFunc("/posts/1", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-type", "application/json; charset=UTF-8")
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		fmt.Fprintf(w, `{
     "id": "1234",
     "title": "once upon a time",
@@ -242,7 +242,7 @@ func TestDecodeJSON(t *testing.T) {
 	defer servertest.Teardown()
 
 	servertest.Mux.HandleFunc("/posts/1", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-type", "application/json; charset=UTF-8")
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		fmt.Fprintf(w, `{
     "id": "1234",
     "title": "once upon a time",
@@ -338,7 +338,7 @@ func TestDecodeJSONFailure(t *testing.T) {
 	defer servertest.Teardown()
 
 	servertest.Mux.HandleFunc("/posts/1/comments", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-type", "application/json; charset=UTF-8")
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		fmt.Fprintf(w, `[1234, 2010]`)
 	})
 
@@ -994,7 +994,7 @@ func TestValidateUnexpectedResponse(t *testing.T) {
 	defer servertest.Teardown()
 
 	servertest.Mux.HandleFunc("/foo/bah", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-type", "application/json; charset=UTF-8")
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(403)
 		fmt.Fprintf(w, `{
     "status": 403,
@@ -1035,7 +1035,7 @@ func TestValidateUnexpectedNonJSONResponse(t *testing.T) {
 	servertest.Setup()
 
 	servertest.Mux.HandleFunc("/foo/bah", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-type", "application/json; charset=UTF-8")
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(403)
 		fmt.Fprintf(w, `x`)
 	})

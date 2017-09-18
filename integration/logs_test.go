@@ -88,7 +88,7 @@ func TestLogs(t *testing.T) {
 
 	servertest.IntegrationMux.HandleFunc("/projects/foo/services/nodejs5143/logs",
 		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			fmt.Fprintf(w, tdata.FromFile("mocks/logs/logs_response.json"))
 		})
 
@@ -150,7 +150,7 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContextFilteringByService(t *te
 
 	servertest.IntegrationMux.HandleFunc("/projects/foo/services/nodejs5143/logs",
 		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			fmt.Fprintf(w, tdata.FromFile("mocks/logs/logs_response.json"))
 		})
 
@@ -213,7 +213,7 @@ func TestLogsWithLocalhostAddress(t *testing.T) {
 				t.Errorf("Expected host to be localhost, got %v instead", r.Host)
 			}
 
-			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			fmt.Fprintf(w, tdata.FromFile("mocks/logs/logs_response.json"))
 		})
 
@@ -242,7 +242,7 @@ func TestWatch(t *testing.T) {
 
 	servertest.IntegrationMux.HandleFunc("/projects/foo/services/nodejs5143/logs",
 		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-type", "application/json; charset=UTF-8")
+			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			fmt.Fprintf(w, "[]")
 		})
 
