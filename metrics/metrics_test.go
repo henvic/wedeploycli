@@ -158,7 +158,6 @@ var testRecMock = []testRecStruct{
 				"new_version": "0.2",
 				"old_version": "0.1",
 			},
-			Scope:   "global",
 			Version: defaults.Version,
 			OS:      runtime.GOOS,
 			Arch:    runtime.GOARCH,
@@ -182,7 +181,6 @@ var testRecMock = []testRecStruct{
 			Extra: map[string]string{
 				"tag": "1.1",
 			},
-			Scope:   "global",
 			Version: defaults.Version,
 			OS:      runtime.GOOS,
 			Arch:    runtime.GOARCH,
@@ -200,7 +198,6 @@ var testRecMock = []testRecStruct{
 			Type:    "we_run_ping",
 			Text:    "Server is up for 2 days",
 			Tags:    []string{"detached_mode"},
-			Scope:   "global",
 			Version: defaults.Version,
 			OS:      runtime.GOOS,
 			Arch:    runtime.GOARCH,
