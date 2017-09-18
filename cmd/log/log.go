@@ -25,8 +25,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 		Auth:    true,
 		Project: true,
 	},
-	Pattern:             cmdflagsfromhost.FullHostPattern,
-	UseServiceDirectory: true,
+	Pattern: cmdflagsfromhost.FullHostPattern,
 }
 
 func init() {

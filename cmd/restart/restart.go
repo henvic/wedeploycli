@@ -27,10 +27,10 @@ var quiet bool
 
 var setupHost = cmdflagsfromhost.SetupHost{
 	Requires: cmdflagsfromhost.Requires{
-		Auth: true,
+		Auth:    true,
+		Project: true,
 	},
-	Pattern:             cmdflagsfromhost.FullHostPattern,
-	UseServiceDirectory: true,
+	Pattern: cmdflagsfromhost.FullHostPattern,
 }
 
 func init() {

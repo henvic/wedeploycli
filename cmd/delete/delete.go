@@ -50,8 +50,7 @@ type undeployer struct {
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern:             cmdflagsfromhost.FullHostPattern,
-	UseServiceDirectory: true,
+	Pattern: cmdflagsfromhost.FullHostPattern,
 	Requires: cmdflagsfromhost.Requires{
 		Project: true,
 		Auth:    true,
