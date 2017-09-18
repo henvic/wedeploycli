@@ -85,7 +85,7 @@ func Prompt() (string, error) {
 // Hidden provides a prompt without echoing the value entered
 func Hidden() (string, error) {
 	// Checking if is terminal and not Windows because Windows is Windows...
-	// Actually terminal.ReadPassword is even broken on Linux Subsystem on Windows 10
+	// Actually terminal.ReadPassword is even broken on Windows Subsystem for Linux (Windows 10 and 2016 Server)
 	if !isTerminal && runtime.GOOS != "windows" {
 		return "", errors.New("input device is not a terminal: can't read password")
 	}
