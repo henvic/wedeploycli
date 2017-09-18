@@ -9,6 +9,7 @@ import (
 
 // AssertSimilar strings by comparing its content after normalization
 func AssertSimilar(t *testing.T, want string, got string) {
+	t.Helper()
 	if !Similar(want, got) {
 		t.Errorf(
 			"Strings doesn't match after normalization:\n%s",
