@@ -31,8 +31,6 @@ type ContextType struct {
 // Config of the application
 type Config struct {
 	DefaultRemote   string       `ini:"default_remote"`
-	LocalHTTPPort   int          `ini:"local_http_port"`
-	LocalHTTPSPort  int          `ini:"local_https_port"`
 	NoAutocomplete  bool         `ini:"disable_autocomplete_autoinstall"`
 	NoColor         bool         `ini:"disable_colors"`
 	NotifyUpdates   bool         `ini:"notify_updates"`
@@ -45,7 +43,6 @@ type Config struct {
 	Path            string       `ini:"-"`
 	Remotes         remotes.List `ini:"-"`
 	file            *ini.File    `ini:"-"`
-	saveLocalRemote bool         // use custom local Remote
 }
 
 var (
@@ -95,19 +92,6 @@ func (c *Config) loadDefaultRemotes() {
 		})
 	default:
 		println(color.Format(color.FgHiRed, "Warning: Non-standard wedeploy remote cloud detected"))
-	}
-
-	switch c.Remotes[defaults.LocalRemote].Infrastructure {
-	case "":
-		c.Remotes.Set(defaults.LocalRemote, remotes.Entry{
-			Infrastructure:        c.getLocalEndpoint(),
-			InfrastructureComment: "Default local remote",
-			Service:               defaults.LocalServiceDomain,
-			Username:              "no-reply@wedeploy.com",
-		})
-	default:
-		println(color.Format(color.FgHiRed, "Warning: Custom local remote detected"))
-		c.saveLocalRemote = true
 	}
 }
 
@@ -175,13 +159,13 @@ func SetEndpointContext(remote string) error {
 	}
 
 	Context.Remote = remote
+	var address = r.Infrastructure
 
-	switch {
-	case strings.HasPrefix(r.Infrastructure, "http://localhost"):
-		Context.Infrastructure = Global.getLocalEndpoint()
-	default:
-		Context.Infrastructure = "https://api." + r.Infrastructure
+	if !isHTTPLocalhost(address) {
+		address = "https://api." + address
 	}
+
+	Context.Infrastructure = address
 
 	Context.InfrastructureDomain = getRemoteAddress(r.Infrastructure)
 	Context.ServiceDomain = r.Service
@@ -190,17 +174,20 @@ func SetEndpointContext(remote string) error {
 	return nil
 }
 
-func getRemoteAddress(address string) string {
-	var removePrefixes = []string{
-		"http://",
-		"https://",
+func isHTTPLocalhost(address string) bool {
+	address = strings.TrimPrefix(address, "http://")
+	var h, _, err = net.SplitHostPort(address)
+
+	if err != nil {
+		return false
 	}
 
-	for _, prefix := range removePrefixes {
-		if strings.HasPrefix(address, prefix) {
-			address = strings.TrimPrefix(address, prefix)
-			break
-		}
+	return h == "localhost"
+}
+
+func getRemoteAddress(address string) string {
+	if strings.HasPrefix(address, "https://api.") {
+		address = strings.TrimPrefix(address, "https://api.")
 	}
 
 	var h, _, err = net.SplitHostPort(address)
@@ -214,8 +201,6 @@ func getRemoteAddress(address string) string {
 
 func (c *Config) setDefaults() {
 	c.EnableAnalytics = true
-	c.LocalHTTPPort = defaults.LocalHTTPPort
-	c.LocalHTTPSPort = defaults.LocalHTTPSPort
 	c.NotifyUpdates = true
 	c.ReleaseChannel = defaults.StableReleaseChannel
 	c.DefaultRemote = defaults.CloudRemote
@@ -371,10 +356,6 @@ func (c *Config) updateRemotes() {
 	}
 
 	for k, v := range c.Remotes {
-		if !c.saveLocalRemote && k == defaults.LocalRemote {
-			continue
-		}
-
 		remote := c.getRemote(k)
 
 		keyInfrastructure := remote.Key("infrastructure")
@@ -402,16 +383,6 @@ func (c *Config) updateRemotes() {
 func (c *Config) banner() {
 	c.file.Section("DEFAULT").Comment = `; Configuration file for WeDeploy CLI
 ; https://wedeploy.com`
-}
-
-func (c *Config) getLocalEndpoint() string {
-	var endpoint = "http://localhost"
-
-	if c.LocalHTTPPort != 80 {
-		endpoint += fmt.Sprintf(":%d", c.LocalHTTPPort)
-	}
-
-	return endpoint
 }
 
 // Teardown resets the configuration environment

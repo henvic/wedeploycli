@@ -17,6 +17,7 @@ import (
 
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/remotes"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/stringlib"
 )
@@ -222,11 +223,18 @@ func setupLoginHome() {
 		panic(err)
 	}
 
-	mock.LocalHTTPPort = getIntegrationServerPort()
+	var port = getIntegrationServerPort()
 
 	var cr = mock.Remotes[defaults.CloudRemote]
 	cr.Username = "admin"
 	mock.Remotes[defaults.CloudRemote] = cr
+
+	mock.Remotes["local"] = remotes.Entry{
+		Infrastructure: fmt.Sprintf("http://localhost:%d", port),
+		Service:        "wedeploy.me",
+		Username:       "admin",
+		Token:          "token",
+	}
 
 	if err := mock.Save(); err != nil {
 		panic(err)

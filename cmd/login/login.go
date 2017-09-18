@@ -2,14 +2,12 @@ package cmdlogin
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/login"
 )
 
@@ -41,10 +39,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func loginRun(cmd *cobra.Command, args []string) error {
-	if config.Context.Remote == defaults.LocalRemote {
-		return errors.New("Local remote does not require logging in")
-	}
-
 	if config.Context.Username != "" {
 		return fmt.Errorf(`Already logged in as %v on %v (%v)
 Logout first with "we logout"`, config.Context.Username, config.Context.Remote, config.Context.InfrastructureDomain)

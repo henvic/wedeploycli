@@ -2,7 +2,6 @@ package cmddeploy
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/hashicorp/errwrap"
@@ -23,8 +22,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 
 var quiet bool
 
-// DeployCmd runs the WeDeploy local infrastructure
-// and / or a project or service
+// DeployCmd runs services
 var DeployCmd = &cobra.Command{
 	Use:     "deploy",
 	Short:   "Perform services deployment",
@@ -33,10 +31,6 @@ var DeployCmd = &cobra.Command{
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if stopLocalInfraTmp {
-		infra = false
-	}
-
 	if err := cmdargslen.Validate(args, 0, 0); err != nil {
 		return err
 	}
@@ -53,25 +47,15 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func checkNonRemoteSet(cmd *cobra.Command) error {
-	var u = cmd.Flag("url").Value.String()
-	if u == "wedeploy.me" ||
-		strings.Contains(u, ".wedeploy.me") ||
-		cmd.Flag("remote").Value.String() == defaults.LocalRemote {
-		return nil
-	}
-
 	var (
+		u             = cmd.Flag("url").Value.String()
 		remoteChanged = cmd.Flag("remote").Changed
 		urlChanged    = cmd.Flag("url").Changed && strings.Contains(u, ".")
 	)
 
-	if remoteChanged || urlChanged {
-		return checkNoLocalOnlyFlags(cmd)
-	}
-
-	if !remoteChanged && !urlChanged && hasActionLocalFlag() {
-		if err := cmd.Flag("remote").Value.Set(defaults.LocalRemote); err != nil {
-			return errwrap.Wrapf("error setting remote to local: {{err}}", err)
+	if !remoteChanged && !urlChanged {
+		if err := cmd.Flag("remote").Value.Set(defaults.CloudRemote); err != nil {
+			return errwrap.Wrapf("error setting default remote: {{err}}", err)
 		}
 		cmd.Flag("remote").Changed = true
 	}
@@ -79,39 +63,7 @@ func checkNonRemoteSet(cmd *cobra.Command) error {
 	return nil
 }
 
-func hasActionLocalFlag() bool {
-	return isCommand("--dry-run-local-infra") ||
-		isCommand("--start-local-infra") ||
-		isCommand("--stop-local-infra")
-}
-
-func checkNoLocalOnlyFlags(cmd *cobra.Command) error {
-	var localOnlyFlags = []string{
-		"debug",
-		"dry-run-local-infra",
-		"start-local-infra",
-		"stop-local-infra",
-		"skip-local-infra",
-		"experimental-image",
-	}
-
-	for _, k := range localOnlyFlags {
-		f := cmd.Flag(k)
-		if f.Changed {
-			return fmt.Errorf("Flag --%v can only be used with the local remote (using: %v)",
-				k,
-				setupHost.Remote())
-		}
-	}
-
-	return nil
-}
-
 func runRun(cmd *cobra.Command, args []string) error {
-	if setupHost.Remote() == defaults.LocalRemote {
-		return runLocal(cmd)
-	}
-
 	var rd = &cmddeployremote.RemoteDeployment{
 		ProjectID: setupHost.Project(),
 		ServiceID: setupHost.Service(),

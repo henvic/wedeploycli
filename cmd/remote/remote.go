@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"strings"
-
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/color"
@@ -72,10 +70,6 @@ func remoteRun(cmd *cobra.Command, args []string) error {
 	for _, k := range remotes.Keys() {
 		var key, _ = remotes[k]
 		var infrastructure = key.Infrastructure
-
-		if k == defaults.LocalRemote {
-			infrastructure = strings.TrimPrefix(infrastructure, "http://")
-		}
 
 		fmt.Fprintf(w, "%s\t%s", k, infrastructure)
 
@@ -143,11 +137,7 @@ func removeRun(cmd *cobra.Command, args []string) error {
 		fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Removed default cloud remote "wedeploy" will be recreated with its default value`))
 	}
 
-	if name == defaults.LocalRemote {
-		fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Removed default local remote "local" will be recreated with its default value`))
-	}
-
-	if name == global.DefaultRemote && name != defaults.CloudRemote && name != defaults.LocalRemote {
+	if name == global.DefaultRemote && name != defaults.CloudRemote {
 		global.DefaultRemote = defaults.CloudRemote
 		fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Default remote reset to "wedeploy"`))
 	}

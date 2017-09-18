@@ -87,10 +87,6 @@ func TestParseLocalRemoteAddress(t *testing.T) {
 	if r, err := ParseRemoteAddress(""); r != "" || err != nil {
 		t.Errorf("Expected parsed remote to be (empty, nil), got (%v, %v) instead", r, err)
 	}
-
-	if r, err := ParseRemoteAddress("wedeploy.me"); r != "" || err != nil {
-		t.Errorf("Expected parsed remote to be (empty, nil), got (%v, %v) instead", r, err)
-	}
 }
 
 func TestParseRemoteAddresses(t *testing.T) {
@@ -497,24 +493,26 @@ var parseMocks = []parseMock{
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:    "wedeploy.me",
+			Host:    "wedeploy.io",
 			Project: "",
 			Service: "",
 			Remote:  "",
 		},
 		Want: parsed{
 			IsRemoteFromHost: true,
+			Remote:           "wedeploy",
 		},
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:    "foo.wedeploy.me",
+			Host:    "foo.wedeploy.io",
 			Project: "",
 			Service: "",
 			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "foo",
+			Remote:           "wedeploy",
 			IsRemoteFromHost: true,
 		},
 	},
@@ -575,6 +573,18 @@ type parseMockWithDefaultCustomRemote struct {
 }
 
 var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
+	parseMockWithDefaultCustomRemote{
+		Flags: ParseFlagsWithDefaultCustomRemote{
+			Host:          "",
+			Project:       "",
+			Service:       "",
+			Remote:        "",
+			RemoteChanged: true,
+		},
+		Want: parsed{
+			Remote: "wedeploy",
+		},
+	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
 			Host:          "example.com",

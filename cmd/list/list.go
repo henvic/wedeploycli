@@ -19,7 +19,6 @@ import (
 var ListCmd = &cobra.Command{
 	Use: "list",
 	Example: `   we list --project chat --service data
-   we list --url data-chat.wedeploy.me
    we list --url data-chat.wedeploy.io`,
 	Short:   "Show list of projects and services",
 	PreRunE: preRun,

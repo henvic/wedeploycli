@@ -51,8 +51,8 @@ func TestSetupNonExistingConfigFileAndTeardown(t *testing.T) {
 		wantInfrastructureDomain = "wedeploy.com"
 	)
 
-	if len(Global.Remotes) != 2 {
-		t.Errorf("Expected to have 2 remotes, got %v", Global.Remotes)
+	if len(Global.Remotes) != 1 {
+		t.Errorf("Expected to have one remote, got %v", Global.Remotes)
 	}
 
 	if Context.Username != wantUsername {
@@ -82,7 +82,7 @@ func TestSetupNonExistingConfigFileAndTeardown(t *testing.T) {
 	}
 }
 
-func TestSetupLocalAndTeardown(t *testing.T) {
+func TestSetupDefaultAndTeardown(t *testing.T) {
 	if Global != nil {
 		t.Errorf("Expected Global to be null")
 	}
@@ -95,7 +95,7 @@ func TestSetupLocalAndTeardown(t *testing.T) {
 		panic(err)
 	}
 
-	if err := SetEndpointContext(defaults.LocalRemote); err != nil {
+	if err := SetEndpointContext(defaults.CloudRemote); err != nil {
 		panic(err)
 	}
 
@@ -106,12 +106,12 @@ func TestSetupLocalAndTeardown(t *testing.T) {
 	var (
 		wantUsername       = "foo@example.com"
 		wantToken          = "mock_token"
-		wantRemote         = "local"
-		wantInfrastructure = "localhost"
+		wantRemote         = "wedeploy"
+		wantInfrastructure = "wedeploy.com"
 	)
 
-	if len(Global.Remotes) != 3 {
-		t.Errorf("Expected to have 3 remotes, got %v", Global.Remotes)
+	if len(Global.Remotes) != 2 {
+		t.Errorf("Expected to have 2 remotes, got %v", Global.Remotes)
 	}
 
 	if Context.Username != wantUsername {
@@ -164,13 +164,13 @@ func TestSetupRemoteAndTeardown(t *testing.T) {
 
 	var (
 		wantUsername       = "foo@example.com"
-		wantToken          = ""
+		wantToken          = "mock_token"
 		wantRemote         = "wedeploy"
-		wantInfrastructure = "wedeploy.io"
+		wantInfrastructure = "wedeploy.com"
 	)
 
-	if len(Global.Remotes) != 3 {
-		t.Errorf("Expected to have 3 remotes, got %v", Global.Remotes)
+	if len(Global.Remotes) != 2 {
+		t.Errorf("Expected to have 2 remotes, got %v", Global.Remotes)
 	}
 
 	if Context.Username != wantUsername {
@@ -276,20 +276,14 @@ func TestSave(t *testing.T) {
 		`enable_analytics                 = false`,
 		`[remote "wedeploy"]
     ; Default cloud remote
-    infrastructure = wedeploy.io
-    username       = foo@example.com
-    password       = bar
-`,
-		`[remote "local"]
-    ; Default local remote
-    infrastructure = http://localhost
+    infrastructure = wedeploy.com
     username       = foo@example.com
     token          = mock_token
 `,
 		`[remote "xyz"]
     infrastructure = wedeploy.xyz
     username       = foobar@example.net
-    password       = 123`,
+    token          = 123`,
 	}
 
 	for _, w := range want {
@@ -417,12 +411,6 @@ func TestRemotesListAndGet(t *testing.T) {
 			Infrastructure:        "wedeploy.com",
 			InfrastructureComment: "Default cloud remote",
 		},
-		"local": remotes.Entry{
-			Infrastructure:        "http://localhost",
-			InfrastructureComment: "Default local remote",
-			Service:               "wedeploy.me",
-			Username:              "no-reply@wedeploy.com",
-		},
 		"alternative": remotes.Entry{
 			Infrastructure: "http://example.net/",
 		},
@@ -461,7 +449,6 @@ func TestRemotesListAndGet(t *testing.T) {
 		"beta",
 		"dontremain",
 		"dontremain2",
-		"local",
 		"remain",
 		"staging",
 		"wedeploy",

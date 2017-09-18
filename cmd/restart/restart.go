@@ -19,8 +19,8 @@ var RestartCmd = &cobra.Command{
 	RunE:    restartRun,
 	Example: `  we restart --project chat --service data
   we restart --service data
-  we restart --project chat --service data --remote local
-  we restart --url data-chat.wedeploy.me`,
+  we restart --project chat --service data --remote wedeploy
+  we restart --url data-chat.wedeploy.io`,
 }
 
 var quiet bool

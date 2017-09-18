@@ -21,7 +21,6 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 )
@@ -267,11 +266,8 @@ func handleURLError(ue *url.Error) error {
 	switch {
 	case verbose.Enabled:
 		s += "\n{{err}}"
-	case config.Context.Remote == defaults.LocalRemote:
-		s += " local infrastructure is not running\n"
-		s += `tip: try running "we deploy --start-local-infra" and then run this command again`
 	default:
-		s += " could not connect to remote infrastructure"
+		s += " could not connect to infrastructure"
 	}
 
 	return errwrap.Wrapf(s, ue)

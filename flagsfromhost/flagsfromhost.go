@@ -95,7 +95,6 @@ func (f *FlagsFromHost) IsRemoteFromHost() bool {
 }
 
 var remotesList *remotes.List
-var localRemoteAddress = "wedeploy.me"
 
 // InjectRemotes list into the flagsfromhost module
 func InjectRemotes(list *remotes.List) {
@@ -156,7 +155,7 @@ func ParseWithDefaultCustomRemote(pf ParseFlagsWithDefaultCustomRemote, customRe
 	if f != nil {
 		switch {
 		case f.remote == "" && (pf.RemoteChanged || f.IsRemoteFromHost()):
-			f.remote = defaults.LocalRemote
+			f.remote = defaults.CloudRemote
 		case !f.IsRemoteFromHost() && !pf.RemoteChanged:
 			f.remote = customRemote
 		}
@@ -290,9 +289,7 @@ func parseHostWithRemote(project, service, host, remoteHost string) (*FlagsFromH
 		remote:  remote,
 	}
 
-	if remote != "" ||
-		host == localRemoteAddress ||
-		strings.HasSuffix(host, "."+localRemoteAddress) {
+	if remote != "" || strings.HasSuffix(host, "."+defaults.CloudRemote) {
 		flagsFromHost.isRemoteFromHost = true
 	}
 
@@ -301,7 +298,7 @@ func parseHostWithRemote(project, service, host, remoteHost string) (*FlagsFromH
 
 // ParseRemoteAddress to get related remote
 func ParseRemoteAddress(remoteAddress string) (remote string, err error) {
-	if remoteAddress == "" || remoteAddress == localRemoteAddress {
+	if remoteAddress == "" {
 		return "", nil
 	}
 

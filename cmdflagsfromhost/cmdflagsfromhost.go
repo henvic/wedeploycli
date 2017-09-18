@@ -21,8 +21,6 @@ import (
 type Requires struct {
 	NoHost  bool
 	Auth    bool
-	Remote  bool
-	Local   bool
 	Project bool
 	Service bool
 }
@@ -136,16 +134,6 @@ func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 		remoteFlagChanged = true
 	}
 
-	if s.Requires.Local {
-		return flagsfromhost.Parse(
-			flagsfromhost.ParseFlags{
-				Host:    s.url,
-				Project: s.project,
-				Service: s.service,
-				Remote:  remoteFlagValue,
-			})
-	}
-
 	return flagsfromhost.ParseWithDefaultCustomRemote(
 		flagsfromhost.ParseFlagsWithDefaultCustomRemote{
 			Host:          s.url,
@@ -223,10 +211,10 @@ func (s *SetupHost) loadValues() (err error) {
 	var remote = s.parsed.Remote()
 
 	if remote == "" {
-		remote = defaults.LocalRemote
+		remote = defaults.CloudRemote
 	}
 
-	if s.Pattern&RemotePattern == 0 && remote != defaults.LocalRemote {
+	if s.Pattern&RemotePattern == 0 {
 		return errors.New("Remote is not allowed for this command")
 	}
 
@@ -257,14 +245,6 @@ func (s *SetupHost) loadValues() (err error) {
 		return errors.New("Project is required")
 	}
 
-	if s.Requires.Remote && remote == defaults.LocalRemote {
-		return errors.New(`Remote is required and can not be "local"`)
-	}
-
-	if s.Requires.Local && remote != defaults.LocalRemote {
-		return errors.New("Remote parameter is not allowed for this command")
-	}
-
 	s.service = service
 	s.project = project
 	s.remote = remote
@@ -274,10 +254,6 @@ func (s *SetupHost) loadValues() (err error) {
 
 func (s *SetupHost) verifyCmdReqAuth() error {
 	if !s.Requires.Auth {
-		return nil
-	}
-
-	if s.Remote() == defaults.LocalRemote {
 		return nil
 	}
 

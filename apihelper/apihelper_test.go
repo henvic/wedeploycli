@@ -43,7 +43,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	if err := config.SetEndpointContext(defaults.LocalRemote); err != nil {
+	if err := config.SetEndpointContext(defaults.CloudRemote); err != nil {
 		panic(err)
 	}
 
@@ -55,11 +55,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestAuth(t *testing.T) {
-	r := wedeploy.URL("http://localhost/")
+	r := wedeploy.URL("https://api.wedeploy.com/")
 
 	Auth(r)
 
-	var want = "Bearer mock_token"
+	var want = "Bearer bar"
 	var got = r.Headers.Get("Authorization")
 
 	if want != got {
@@ -137,7 +137,7 @@ func TestAuthGetError(t *testing.T) {
 }
 
 func TestAuthTokenBearer(t *testing.T) {
-	r := wedeploy.URL("http://localhost/")
+	r := wedeploy.URL("https://api.wedeploy.com/")
 
 	config.Context.Token = "mytoken"
 
@@ -520,7 +520,7 @@ func TestRequestVerboseFeedback(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> GET http://localhost/foo HTTP/1.1",
+		"> GET https://api.wedeploy.com/foo HTTP/1.1",
 		"Content-Type: text/plain; charset=utf-8",
 		"Accept: [application/json text/plain]",
 		"X-Test-Multiple: [a b]",
@@ -576,7 +576,7 @@ func TestRequestVerboseFeedbackUpload(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> GET http://localhost/foo HTTP/1.1",
+		"> GET https://api.wedeploy.com/foo HTTP/1.1",
 		"Sending file as request body:\nmocks/config.json",
 	}
 
@@ -623,7 +623,7 @@ func TestRequestVerboseFeedbackStringReader(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> GET http://localhost/foo HTTP/1.1",
+		"> GET https://api.wedeploy.com/foo HTTP/1.1",
 		"\ncustom body\n",
 	}
 
@@ -679,7 +679,7 @@ func TestRequestVerboseFeedbackBytesReader(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> GET http://localhost/foo HTTP/1.1",
+		"> GET https://api.wedeploy.com/foo HTTP/1.1",
 		"\ncustom body\n",
 	}
 
@@ -730,7 +730,7 @@ func TestRequestVerboseFeedbackOtherReader(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> GET http://localhost/foo HTTP/1.1",
+		"> GET https://api.wedeploy.com/foo HTTP/1.1",
 		"\n(request body: *io.teeReader)\n",
 	}
 
@@ -792,7 +792,7 @@ func TestRequestVerboseFeedbackJSONResponse(t *testing.T) {
 	var got = bufErrStream.String()
 
 	var find = []string{
-		"> POST http://localhost/foo HTTP/1.1",
+		"> POST https://api.wedeploy.com/foo HTTP/1.1",
 		`{"bar":"one"}`,
 		"{\n    \"Hello\": \"World\"\n}",
 	}
@@ -876,7 +876,7 @@ func TestRequestVerboseFeedbackNotComplete(t *testing.T) {
 	}
 
 	stringlib.AssertSimilar(t,
-		"> (wait) http://localhost/foo",
+		"> (wait) https://api.wedeploy.com/foo",
 		bufErrStream.String())
 
 	verbose.Enabled = defaultVerboseEnabled
@@ -933,7 +933,7 @@ func TestSetBody(t *testing.T) {
 
 func TestURL(t *testing.T) {
 	var request = URL(context.Background(), "x", "y", "z/k")
-	var want = "http://localhost/x/y/z/k"
+	var want = "https://api.wedeploy.com/x/y/z/k"
 
 	if request.URL != want {
 		t.Errorf("Wanted URL %v, got %v instead", want, request.URL)
@@ -1076,7 +1076,7 @@ func TestValidateUnexpectedResponseCustom(t *testing.T) {
 	}
 
 	defer func() {
-		if err := config.SetEndpointContext(defaults.LocalRemote); err != nil {
+		if err := config.SetEndpointContext(defaults.CloudRemote); err != nil {
 			panic(err)
 		}
 	}()
@@ -1108,7 +1108,7 @@ func TestValidateUnexpectedResponseNonBody(t *testing.T) {
 		w.WriteHeader(403)
 	})
 
-	var want = `403 Forbidden (GET http://localhost/foo/bah): Response Body is not JSON`
+	var want = `403 Forbidden (GET https://api.wedeploy.com/foo/bah): Response Body is not JSON`
 
 	r := URL(context.Background(), "/foo/bah")
 	err := Validate(r, r.Get())

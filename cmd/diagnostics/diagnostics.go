@@ -15,7 +15,6 @@ import (
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/diagnostics"
 	"github.com/wedeploy/cli/fancy"
-	"github.com/wedeploy/cli/run"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -45,7 +44,6 @@ func diagnosticsRun(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println("Running diagnostics tools...")
-	run.MaybeStartDocker()
 	d.Run(context.Background())
 
 	var report = d.Collect()

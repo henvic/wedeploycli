@@ -101,8 +101,7 @@ func TestHandleAPIFaultGenericErrorMessageNotFound(t *testing.T) {
 
 	var got = Handle(err)
 
-	var want = "WeDeploy API error: 404 Not Found (GET http://example.com/)\n" +
-		"\tDocument not found: documentNotFound"
+	var want = "Document not found"
 
 	if want != got.Error() {
 		t.Errorf("Wanted %v, got %v instead", want, got)
@@ -138,8 +137,7 @@ func TestHandleWrappedAPIFaultGenericErrorMessageNotFound(t *testing.T) {
 
 	var got = Handle(err)
 
-	var want = "WeDeploy API error: 404 Not Found (GET http://example.com/)\n" +
-		"\tDocument not found: documentNotFound"
+	var want = "Document not found"
 
 	if want != got.Error() {
 		t.Errorf("Wanted %v, got %v instead", want, got)

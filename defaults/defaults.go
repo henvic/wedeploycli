@@ -14,9 +14,6 @@ var (
 	// Infrastructure is the default remote address
 	Infrastructure = "wedeploy.com"
 
-	// LocalServiceDomain is the local service domain for the local infrastructure
-	LocalServiceDomain = "wedeploy.me"
-
 	// DashboardAddressPrefix for a given remote
 	DashboardAddressPrefix = "console."
 
@@ -35,23 +32,11 @@ var (
 	// WeDeployImageTag is the WeDeploy image tag for docker
 	WeDeployImageTag = "beta"
 
-	// RequiresDockerConstraint semver version constraint
-	RequiresDockerConstraint = ">= 1.12.0"
-
 	// AnalyticsEndpoint for posting analytics events in bulk
 	AnalyticsEndpoint = "https://cli-metrics.wedeploy.com/"
 
 	// CloudRemote is the name for the default cloud for WeDeploy
 	CloudRemote = "wedeploy"
-
-	// LocalRemote is the local infrastructure remote name
-	LocalRemote = "local"
-
-	// LocalHTTPPort is the default port used to expose WeDeploy locally
-	LocalHTTPPort = 80
-
-	// LocalHTTPSPort is the default port used to expose WeDeploy locally over HTTPS
-	LocalHTTPSPort = 443
 
 	// SupportEmail value
 	SupportEmail = "support@wedeploy.com"

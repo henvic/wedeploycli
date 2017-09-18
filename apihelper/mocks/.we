@@ -11,15 +11,9 @@ enable_analytics                 = false
 
 [remote "wedeploy"]
     ; Default cloud remote
-    infrastructure = wedeploy.io
+    infrastructure = wedeploy.com
     username       = foo@example.com
     token          = bar
-
-[remote "local"]
-    ; Default local remote
-    infrastructure = http://localhost
-    username       = foo@example.com
-    token          = mock_token
 
 [remote "xyz"]
     infrastructure = wedeploy.xyz

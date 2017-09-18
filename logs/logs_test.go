@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	if err := config.SetEndpointContext(defaults.LocalRemote); err != nil {
+	if err := config.SetEndpointContext(defaults.CloudRemote); err != nil {
 		panic(err)
 	}
 

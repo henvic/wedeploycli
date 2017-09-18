@@ -32,7 +32,7 @@ var DeleteCmd = &cobra.Command{
 	Short:   "Delete project or services",
 	PreRunE: preRun,
 	RunE:    run,
-	Example: `  we delete --url data.chat.wedeploy.me
+	Example: `  we delete --url data.chat.wedeploy.io
   we delete --project chat
   we delete --project chat --service data`,
 }
