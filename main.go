@@ -130,7 +130,7 @@ func (m *mainProgram) executeCommand() {
 	m.cmdFriendlyErr = errorhandling.Handle(m.cmdErr)
 
 	switch m.cmdErr.(type) {
-	case canceled.CanceledCommand:
+	case canceled.Command:
 		fmt.Fprintln(os.Stderr, fancy.Success(m.cmdErr))
 		m.cmdErr = nil
 	}

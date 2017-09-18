@@ -1,11 +1,11 @@
 package canceled
 
-// CanceledCommand skipped / canceled by the user
-type CanceledCommand struct {
+// Command skipped / canceled by the user
+type Command struct {
 	msg string
 }
 
-func (cc CanceledCommand) Error() string {
+func (cc Command) Error() string {
 	return cc.msg
 }
 
@@ -13,7 +13,7 @@ func (cc CanceledCommand) Error() string {
 // so the system can end the program with exit code 0
 // when a user cancels a command on the CLI prompt
 func CancelCommand(s string) error {
-	return CanceledCommand{
+	return Command{
 		msg: s,
 	}
 }
