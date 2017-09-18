@@ -26,12 +26,17 @@ func TestList(t *testing.T) {
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
+	cmd.Run()
+
+	if update {
+		tdata.ToFile("mocks/list/want", cmd.Stdout.String())
+	}
+
 	var e = &Expect{
 		Stdout:   tdata.FromFile("mocks/list/want"),
 		ExitCode: 0,
 	}
 
-	cmd.Run()
 	e.Assert(t, cmd)
 }
 
@@ -98,21 +103,25 @@ func TestListServiceFromInsideProject(t *testing.T) {
 		tdata.ServerJSONFileHandler("./mocks/home/bucket/project/service/service_list.json"))
 
 	var cmd = &Command{
-		Args: []string{"list", "--service", "service", "--remote", "local", "--no-color"},
+		Args: []string{"list", "--service", "service", "--project", "app", "--remote", "local", "--no-color"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/home/bucket/project",
 	}
 
+	cmd.Run()
+
+	if update {
+		tdata.ToFile("mocks/home/bucket/project/service/service_list_want", cmd.Stdout.String())
+	}
 	var e = &Expect{
 		Stdout:   tdata.FromFile("mocks/home/bucket/project/service/service_list_want"),
 		ExitCode: 0,
 	}
 
-	cmd.Run()
 	e.Assert(t, cmd)
 }
 
-func TestListServiceFromInsideProjectNotExists(t *testing.T) {
+func TestListServiceNotExists(t *testing.T) {
 	defer Teardown()
 	Setup()
 
@@ -132,7 +141,7 @@ func TestListServiceFromInsideProjectNotExists(t *testing.T) {
 	})
 
 	var cmd = &Command{
-		Args: []string{"list", "--service", "service", "--remote", "local", "--no-color"},
+		Args: []string{"list", "--project", "app", "--service", "service", "--remote", "local", "--no-color"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/home/bucket/project",
 	}

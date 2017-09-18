@@ -1,2 +1,2 @@
 ! Something went wrong with your "we list" operation.
-! Use flag --project or call this from inside a project directory.
+! Incompatible use: --service requires --project.
