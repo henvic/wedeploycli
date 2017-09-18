@@ -1,7 +1,10 @@
 ServiceID string
 Health string
 Image string
+ImageHint string
 CustomDomains []string
 Env map[string]string
 Scale int
+CPU int
+Memory int
 HealthUID string

@@ -76,27 +76,11 @@ func TestPrintServiceSpec(t *testing.T) {
 
 func TestPrintContextSpec(t *testing.T) {
 	var got = GetSpec(ContextOverview{})
-	var want = []string{`ServiceID string`,
-		`ProjectServices []services.ServiceInfo`}
+	var want = []string{`Services []services.ServiceInfo`}
 
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("Wanted spec %v, got %v instead", want, got)
 	}
-}
-
-func TestInspectProjectList(t *testing.T) {
-	var got, err = InspectProject("", "./mocks/my-project")
-
-	if err != nil {
-		t.Errorf("Expected error to be nil, got %v instead", err)
-	}
-
-	var m map[string]interface{}
-	if err = json.Unmarshal([]byte(got), &m); err != nil {
-		t.Errorf("Expected error to be nil, got %v instead", err)
-	}
-
-	jsonlib.AssertJSONMarshal(t, `{"id": "my-project"}`, m)
 }
 
 func TestInspectServiceCustomDomain(t *testing.T) {
@@ -110,50 +94,6 @@ func TestInspectServiceCustomDomain(t *testing.T) {
 
 	if want != got {
 		t.Errorf("Wanted custom domain to be %v, got %v instead", want, got)
-	}
-}
-
-func TestInspectProjectFormatError(t *testing.T) {
-	var got, err = InspectProject("{{.", "./mocks/my-project")
-	var wantErr = `Template parsing error: template: :1: illegal number syntax: "."`
-
-	if err == nil || err.Error() != wantErr {
-		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
-	}
-
-	var want = ""
-
-	if want != got {
-		t.Errorf("Wanted custom domain to be %v, got %v instead", want, got)
-	}
-}
-
-func TestInspectProjectNotFound(t *testing.T) {
-	var _, err = InspectProject("", "./mocks/foo")
-	var wantErr = `Inspection failure: can not find project`
-
-	if err == nil || err.Error() != wantErr {
-		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
-	}
-}
-
-func TestInspectProjectCorrupted(t *testing.T) {
-	var _, err = InspectProject("", "./mocks/corrupted-project")
-	var wantErr = `Inspection failure on project: invalid character 'c' looking for beginning of object key string`
-
-	if err == nil || err.Error() != wantErr {
-		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
-	}
-}
-
-func TestInspectProjectCorruptedOnContextOverview(t *testing.T) {
-	var _, err = InspectContext("", "./mocks/corrupted-project")
-	var wantErr = fmt.Sprintf(`Can not load project context on %v:`+
-		` Inspection failure on project: invalid character 'c' looking for beginning of object key string`,
-		abs("mocks/corrupted-project"))
-
-	if err == nil || err.Error() != wantErr {
-		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
 	}
 }
 
@@ -222,7 +162,8 @@ func TestInspectServiceNotFound(t *testing.T) {
 
 func TestInspectServiceCorrupted(t *testing.T) {
 	var _, err = InspectService("", "./mocks/project-with-corrupted-service/corrupted-service")
-	var wantErr = `Inspection failure on service: unexpected end of JSON input`
+	var wantErr = fmt.Sprintf(`error parsing wedeploy.json on %v: unexpected end of JSON input`,
+		abs("./mocks/project-with-corrupted-service/corrupted-service"))
 
 	if err == nil || err.Error() != wantErr {
 		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
@@ -231,136 +172,26 @@ func TestInspectServiceCorrupted(t *testing.T) {
 
 func TestInspectProjectWithCorruptedServiceOnContextOverview(t *testing.T) {
 	var _, err = InspectContext("", "./mocks/project-with-corrupted-service")
-	var wantErr = fmt.Sprintf(`Error while trying to read list of services on project: `+
-		`Can not list services: error reading %v: unexpected end of JSON input`,
-		abs("mocks/project-with-corrupted-service/corrupted-service/wedeploy.json"))
+	var wantErr = fmt.Sprintf(
+		`can't list services: error parsing wedeploy.json on %v: unexpected end of JSON input`,
+		abs("mocks/project-with-corrupted-service/corrupted-service"))
 
 	if err == nil || err.Error() != wantErr {
 		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
 	}
 }
 
-func TestInspectContextOverviewTypeGlobal(t *testing.T) {
-	var overview = ContextOverview{}
-	var err = overview.Load("./mocks/")
-
-	if err != nil {
-		t.Errorf("Expected error to be nil, got %v instead", err)
-	}
-
-	var want = ContextOverview{
-		Scope:       "global",
-		ProjectRoot: "",
-		ServiceRoot: "",
-		ProjectID:   "",
-		ServiceID:   "",
-	}
-
-	if !reflect.DeepEqual(want, overview) {
-		t.Errorf("Wanted ContextOverview %+v, got %+v instead", want, overview)
-	}
-}
-
-func TestInspectContextOverviewTypeProject(t *testing.T) {
-	var overview = ContextOverview{}
-	var err = overview.Load("./mocks/my-project/")
-
-	if err != nil {
-		t.Errorf("Expected error to be nil, got %v instead", err)
-	}
-
-	var want = ContextOverview{
-		Scope:       "project",
-		ProjectRoot: abs("./mocks/my-project"),
-		ServiceRoot: "",
-		ProjectID:   "my-project",
-		ServiceID:   "",
-		ProjectServices: services.ServiceInfoList{
-			services.ServiceInfo{
-				ServiceID: "email",
-				Location:  abs("./mocks/my-project/email"),
-			},
-			services.ServiceInfo{
-				ServiceID: "other",
-				Location:  abs("./mocks/my-project/other"),
-			},
-		},
-	}
-
-	if !reflect.DeepEqual(want, overview) {
-		t.Errorf("Wanted ContextOverview %+v, got %+v instead", want, overview)
-	}
-}
-
-func TestInspectContextOverviewTypeProjectWithDuplicatedServices(t *testing.T) {
+func TestInspectContextOverviewWithDuplicatedServices(t *testing.T) {
 	var overview = ContextOverview{}
 	var err = overview.Load("./mocks/my-project-with-duplicated-services/")
 
 	if err == nil || strings.Contains(err.Error(),
 		"Error while trying to read list of services on project:\n"+
-			`Can not list services: ID "other" was found duplicated on services`) {
+			`can't list services: ID "other" was found duplicated on services`) {
 		t.Errorf("Expected error to contain duplicated information, got %v instead", err)
 	}
 
-	var want = ContextOverview{
-		Scope:       "project",
-		ProjectRoot: abs("./mocks/my-project-with-duplicated-services"),
-		ServiceRoot: "",
-		ProjectID:   "my-project",
-		ServiceID:   "",
-	}
-
-	if !reflect.DeepEqual(want, overview) {
-		t.Errorf("Wanted ContextOverview %+v, got %+v instead", want, overview)
-	}
-}
-
-func TestInspectContextOverviewTypeService(t *testing.T) {
-	var overview = ContextOverview{}
-	var err = overview.Load("./mocks/my-project/email")
-
-	if err != nil {
-		t.Errorf("Expected error to be nil, got %v instead", err)
-	}
-
-	var want = ContextOverview{
-		Scope:       "service",
-		ProjectRoot: abs("./mocks/my-project"),
-		ServiceRoot: abs("./mocks/my-project/email"),
-		ProjectID:   "my-project",
-		ServiceID:   "email",
-		ProjectServices: services.ServiceInfoList{
-			services.ServiceInfo{
-				ServiceID: "email",
-				Location:  abs("./mocks/my-project/email"),
-			},
-			services.ServiceInfo{
-				ServiceID: "other",
-				Location:  abs("./mocks/my-project/other"),
-			},
-		},
-	}
-
-	if !reflect.DeepEqual(want, overview) {
-		t.Errorf("Wanted ContextOverview %+v, got %+v instead", want, overview)
-	}
-}
-
-func TestInspectContextOverviewTypeServiceOutsideProject(t *testing.T) {
-	var overview = ContextOverview{}
-	var err = overview.Load("./mocks/service-outside-project")
-
-	if err != nil {
-		t.Errorf("Expected error to be nil, got %v instead", err)
-	}
-
-	var want = ContextOverview{
-		Scope:           "global",
-		ServiceRoot:     abs("./mocks/service-outside-project"),
-		ProjectID:       "",
-		ServiceID:       "alone",
-		ProjectServices: nil,
-	}
+	var want = ContextOverview{}
 
 	if !reflect.DeepEqual(want, overview) {
 		t.Errorf("Wanted ContextOverview %+v, got %+v instead", want, overview)
@@ -369,8 +200,9 @@ func TestInspectContextOverviewTypeServiceOutsideProject(t *testing.T) {
 
 func TestInspectServiceCorruptedOnContextOverview(t *testing.T) {
 	var _, err = InspectContext("", "./mocks/corrupted-service-outside-project")
-	var wantErr = fmt.Sprintf(`Can not load service context on %v: `+
-		`Inspection failure on service: invalid character ':' after top-level value`,
+	var wantErr = fmt.Sprintf(`can't load service context on %v: error parsing wedeploy.json on %v:`+
+		` invalid character ':' after top-level value`,
+		abs("./mocks/corrupted-service-outside-project"),
 		abs("./mocks/corrupted-service-outside-project"))
 
 	if err == nil || err.Error() != wantErr {
@@ -378,7 +210,7 @@ func TestInspectServiceCorruptedOnContextOverview(t *testing.T) {
 	}
 }
 
-func TestInspectContextOverviewProject(t *testing.T) {
+func TestInspectContextOverview(t *testing.T) {
 	var got, err = InspectContext("", "./mocks/my-project")
 
 	if err != nil {
@@ -386,12 +218,7 @@ func TestInspectContextOverviewProject(t *testing.T) {
 	}
 
 	var want = fmt.Sprintf(`{
-    "Scope": "project",
-    "ProjectRoot": "%v",
-    "ServiceRoot": "",
-    "ProjectID": "my-project",
-    "ServiceID": "",
-    "ProjectServices": [
+    "Services": [
         {
             "ServiceID": "email",
             "Location": "%v"
@@ -402,7 +229,6 @@ func TestInspectContextOverviewProject(t *testing.T) {
         }
     ]
 }`,
-		abs("mocks/my-project"),
 		abs("mocks/my-project/email"),
 		abs("mocks/my-project/other"))
 
@@ -419,26 +245,14 @@ func TestInspectContextOverviewService(t *testing.T) {
 	}
 
 	var want = fmt.Sprintf(`{
-    "Scope": "service",
-    "ProjectRoot": "%v",
-    "ServiceRoot": "%v",
-    "ProjectID": "my-project",
-    "ServiceID": "email",
-    "ProjectServices": [
+    "Services": [
         {
             "ServiceID": "email",
-            "Location": "%v"
-        },
-        {
-            "ServiceID": "other",
             "Location": "%v"
         }
     ]
 }`,
-		abs("mocks/my-project"),
-		abs("mocks/my-project/email"),
-		abs("mocks/my-project/email"),
-		abs("mocks/my-project/other"))
+		abs("mocks/my-project/email"))
 
 	if got != want {
 		t.Errorf("Wanted %v, got %v instead", want, got)
