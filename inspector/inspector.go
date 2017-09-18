@@ -18,6 +18,11 @@ func GetSpec(t interface{}) []string {
 	val := reflect.ValueOf(t)
 	for i := 0; i < val.NumField(); i++ {
 		field := val.Type().Field(i)
+
+		if c := field.Name[0]; c >= 'a' && c <= 'z' {
+			continue
+		}
+
 		fields = append(fields, fmt.Sprintf("%v %v", field.Name, field.Type))
 	}
 
