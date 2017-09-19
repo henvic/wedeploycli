@@ -57,16 +57,13 @@ func diagnosticsRun(cmd *cobra.Command, args []string) error {
 		color.Format(color.Bold, humanize.Bytes(uint64(report.Len()))))
 
 	if !send && !cmd.Flag("send").Changed {
-		var options = fancy.Options{}
-		options.Add("Y", "Send report")
-		options.Add("N", "Cancel")
-		var choice, askErr = options.Ask("Send this report to WeDeploy?")
+		var report, askErr = fancy.Boolean("Send this report to WeDeploy?")
 
 		if askErr != nil {
 			return askErr
 		}
 
-		if choice == "Y" {
+		if report {
 			send = true
 		}
 	}

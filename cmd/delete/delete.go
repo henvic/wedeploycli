@@ -103,11 +103,6 @@ func run(cmd *cobra.Command, args []string) error {
 }
 
 func confirmation() error {
-	var options = fancy.Options{}
-
-	options.Add("Y", "Yes")
-	options.Add("N", "No")
-
 	var question string
 
 	if setupHost.Service() != "" {
@@ -119,18 +114,17 @@ func confirmation() error {
 			color.Format(color.Bold, setupHost.Project()))
 	}
 
-	var choice, askErr = options.Ask(question)
+	var confirm, askErr = fancy.Boolean(question)
 
 	if askErr != nil {
 		return askErr
 	}
 
-	switch choice {
-	case "Y":
+	if confirm {
 		return nil
-	default:
-		return canceled.CancelCommand("delete canceled")
 	}
+
+	return canceled.CancelCommand("delete canceled")
 }
 
 func (u *undeployer) do() {

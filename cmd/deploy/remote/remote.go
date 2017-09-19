@@ -201,23 +201,15 @@ func (rd *RemoteDeployment) checkEmptyIDOnMultipleDeployment() error {
 
 	fmt.Println("")
 
-	var options = fancy.Options{}
-
-	options.Add("Y", "Yes")
-	options.Add("N", "Cancel")
-
-	var choice, askErr = options.Ask("Do you want to continue?")
-
-	if askErr != nil {
+	switch ok, askErr := fancy.Boolean("Do you want to continue?"); {
+	case askErr != nil:
 		return askErr
+	case ok:
+		fmt.Println("")
+		return nil
 	}
 
-	if choice != "Y" {
-		return canceled.CancelCommand("Deployment canceled.")
-	}
-
-	fmt.Println("")
-	return nil
+	return canceled.CancelCommand("Deployment canceled.")
 }
 
 func (rd *RemoteDeployment) checkServiceParameter() error {
