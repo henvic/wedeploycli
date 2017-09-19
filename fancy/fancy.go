@@ -70,6 +70,22 @@ func HiddenPrompt() (string, error) {
 	return res, err
 }
 
+// Boolean question
+func Boolean(question string) (yes bool, err error) {
+	var o = Options{}
+
+	o.Add("y", "Yes")
+	o.Add("n", "No")
+
+	res, err := o.Ask(question)
+
+	if res == "y" {
+		return true, err
+	}
+
+	return false, err
+}
+
 // Options selector
 type Options struct {
 	list []option
