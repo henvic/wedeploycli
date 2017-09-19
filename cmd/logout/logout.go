@@ -40,8 +40,8 @@ func logoutRun(cmd *cobra.Command, args []string) error {
 
 	switch remote.Username {
 	case "":
-		fmt.Println(fancy.Info(`You need to have a logged in account on wedeploy.com for performing "we logout".
-Try "we login" first.`))
+		fmt.Println(fancy.Info(fmt.Sprintf(`You are not logged in on %s.`,
+			remote.Infrastructure)))
 	default:
 		fmt.Println(fancy.Success(fmt.Sprintf("You (%s) have been logged out of %s.",
 			remote.Username,
