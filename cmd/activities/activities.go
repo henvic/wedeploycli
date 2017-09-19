@@ -29,11 +29,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if err := setupHost.Process(); err != nil {
-		return err
-	}
-
-	return nil
+	return setupHost.Process()
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{

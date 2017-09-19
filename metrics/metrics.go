@@ -182,11 +182,7 @@ func (e *eventRecorder) rec(ie event) (err error) {
 		return err
 	}
 
-	if err = e.appendEvent(); err != nil {
-		return err
-	}
-
-	return nil
+	return e.appendEvent()
 }
 
 // TrySubmit events file if enabled

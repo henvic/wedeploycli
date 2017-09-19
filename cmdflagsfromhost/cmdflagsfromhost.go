@@ -157,11 +157,7 @@ func (s *SetupHost) Process() (err error) {
 		return err
 	}
 
-	if err := s.verifyCmdReqAuth(); err != nil {
-		return err
-	}
-
-	return nil
+	return s.verifyCmdReqAuth()
 }
 
 func (s *SetupHost) addURLFlag(cmd *cobra.Command) {
