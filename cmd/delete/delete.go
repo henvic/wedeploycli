@@ -59,7 +59,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 
 func init() {
 	DeleteCmd.Flags().BoolVarP(&quiet, "quiet", "q", false,
-		"undeploy without watching status")
+		"Undeploy services without watching status")
 	setupHost.Init(DeleteCmd)
 }
 
