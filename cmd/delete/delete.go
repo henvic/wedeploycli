@@ -23,6 +23,7 @@ import (
 
 var (
 	quiet bool
+	force bool
 )
 
 // DeleteCmd is the delete command to undeploy a project or service
@@ -60,6 +61,8 @@ var setupHost = cmdflagsfromhost.SetupHost{
 func init() {
 	DeleteCmd.Flags().BoolVarP(&quiet, "quiet", "q", false,
 		"Undeploy services without watching status")
+	DeleteCmd.Flags().BoolVar(&force, "force", false,
+		"Force deleting services without confirmation")
 	setupHost.Init(DeleteCmd)
 }
 
@@ -103,6 +106,10 @@ func run(cmd *cobra.Command, args []string) error {
 }
 
 func confirmation() error {
+	if force {
+		return nil
+	}
+
 	var question string
 
 	if setupHost.Service() != "" {
