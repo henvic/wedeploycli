@@ -143,7 +143,7 @@ function info() {
     echo "Run with $DESTDIR/we"
     return
   fi
-  
+
   UNPRIVILEGED_USER=${SUDO_USER:-""}
 
   if [ -z "$UNPRIVILEGED_USER" ]; then
