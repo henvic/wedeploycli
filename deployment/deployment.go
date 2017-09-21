@@ -385,6 +385,10 @@ func (d *Deploy) preparePackage() (err error) {
 			color.Format(d.ConfigContext.Remote)),
 	)
 
+	if hasGit := existsDependency("git"); !hasGit {
+		return errors.New("git was not found on your system: please visit https://git-scm.com/")
+	}
+
 	if err = d.InitializeRepository(); err != nil {
 		return err
 	}
@@ -398,6 +402,11 @@ func (d *Deploy) preparePackage() (err error) {
 	}
 
 	return d.addCredentialHelper()
+}
+
+func existsDependency(cmd string) bool {
+	_, err := exec.LookPath(cmd)
+	return err == nil
 }
 
 // GitCredentialEnvRemoteToken is the environment variable used for git credential-helper

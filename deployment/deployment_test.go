@@ -1,6 +1,8 @@
 package deployment
 
 import (
+	"fmt"
+	"math/rand"
 	"testing"
 )
 
@@ -24,6 +26,26 @@ func TestUpdateMessageErrorStringCounter(t *testing.T) {
 	for k, v := range msgs {
 		if got := updateMessageErrorStringCounter(k); got != v {
 			t.Errorf("Expected message to be %v, got %v instead", v, got)
+		}
+	}
+}
+
+type ExistsDependencyProvider struct {
+	cmd  string
+	find bool
+}
+
+var ExistsDependencyCases = []ExistsDependencyProvider{
+	{"git", true},
+	{fmt.Sprintf("not-found-%d", rand.Int()), false},
+}
+
+func TestExistsDependency(t *testing.T) {
+	for _, c := range ExistsDependencyCases {
+		exists := existsDependency(c.cmd)
+
+		if exists != c.find {
+			t.Errorf("existsDependency(%v) should return %v", c.cmd, c.find)
 		}
 	}
 }
