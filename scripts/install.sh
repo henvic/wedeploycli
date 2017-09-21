@@ -29,13 +29,23 @@ PACKAGE_FORMAT=""
 # Hacking mktemp's incompatible parameters on BSD and Linux
 TEMPDEST=$(mktemp 2>/dev/null || mktemp -t 'wedeploy-cli')
 
-if [ ! -d "/usr/local/bin" ] && [[ $UNAME == "windows" ]] ; then
-  if [[ $HOMEDRIVE$HOMEPATH != "" ]] ; then
-    DESTDIR="$HOMEDRIVE$HOMEPATH"
+ec=$(which we 2>/dev/null || true)
+
+if [ ! -z $ec ] ; then
+  DESTDIR=$(dirname $(which we))
+elif [ $UNAME == "windows" ] ; then
+  IS_MINGWIN=${MSYSTEM:-""}
+  if [ $HOME != "" ] && [[ ! -z IS_MINGWIN ]] ; then
+    DESTDIR="$HOME/AppData/Local/Programs/we/bin"
+  elif [[ $HOMEDRIVE$HOMEPATH != "" ]] ; then
+    DESTDIR="$HOMEDRIVE$HOMEPATH\AppData\Local\Programs\we\bin"
   else
-    DESTDIR="$USERPROFILE"
+    DESTDIR="$USERPROFILE\AppData\Local\Programs\we\bin"
   fi
-  DESTDIR="$DESTDIR\AppData\Local\Programs\we\bin"
+elif [[ :$PATH: == *:"$HOME/.local/bin":* ]] ; then
+  DESTDIR="$HOME/.local/bin"
+elif [[ :$PATH: == *:"$HOME/bin":* ]] ; then
+  DESTDIR="$HOME/bin"
 else
   DESTDIR="/usr/local/bin"
 fi
@@ -44,7 +54,10 @@ DESTDIR=${2:-$DESTDIR}
 
 function setupAlternateDir() {
   if [ ! -t 1 ] ; then
-    echo "Can't install in $DESTDIR (default)."
+    echo "Can't install in $DESTDIR (default).\n"
+    echo "Your \$PATH locations:"
+    echo "${PATH//:/\n}"
+    echo "See https://en.wikipedia.org/wiki/PATH_(variable) for more info on \$PATH.\n"
     echo "Run this script from terminal to install it somewhere else."
     exit 1
   fi
@@ -56,7 +69,13 @@ function setupAlternateDir() {
   DESTDIR=${DESTDIR/"~"/$HOME}
 }
 
+if [ ! -w $DESTDIR ] ; then
+  mkdir -p $DESTDIR
+fi
+
 if [ ! -w $DESTDIR ] ; then setupAlternateDir ; fi
+
+echo "Trying to install in $DESTDIR"
 
 function setPackageFormat() {
   (which tar >> /dev/null) && ec=$? || ec=$?
@@ -124,8 +143,15 @@ function info() {
     echo "Run with $DESTDIR/we"
     return
   fi
+  
+  UNPRIVILEGED_USER=${SUDO_USER:-""}
 
-  we 2>&1 >/dev/null
+  if [ -z "$UNPRIVILEGED_USER" ]; then
+    we 2>&1 >/dev/null
+  else
+    sudo --user $UNPRIVILEGED_USER we 2>&1 >/dev/null
+  fi
+
   echo "Installed, type 'we help' to start."
 }
 
