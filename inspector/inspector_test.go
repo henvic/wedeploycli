@@ -200,7 +200,7 @@ func TestInspectContextOverviewWithDuplicatedServices(t *testing.T) {
 
 func TestInspectServiceCorruptedOnContextOverview(t *testing.T) {
 	var _, err = InspectContext("", "./mocks/corrupted-service-outside-project")
-	var wantErr = fmt.Sprintf(`can't load service context on %v: error parsing wedeploy.json on %v:`+
+	var wantErr = fmt.Sprintf(`can't load service on %v: error parsing wedeploy.json on %v:`+
 		` invalid character ':' after top-level value`,
 		abs("./mocks/corrupted-service-outside-project"),
 		abs("./mocks/corrupted-service-outside-project"))

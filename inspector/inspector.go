@@ -40,7 +40,7 @@ func (overview *ContextOverview) loadService(directory string) error {
 	switch {
 	case os.IsNotExist(cerr):
 	case cerr != nil:
-		return errwrap.Wrapf("can't load service context on "+servicePath+": {{err}}", cerr)
+		return errwrap.Wrapf("can't load service on "+servicePath+": {{err}}", cerr)
 	}
 
 	return nil
