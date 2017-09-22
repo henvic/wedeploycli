@@ -409,9 +409,6 @@ func existsDependency(cmd string) bool {
 	return err == nil
 }
 
-// GitCredentialEnvRemoteToken is the environment variable used for git credential-helper
-const GitCredentialEnvRemoteToken = "WEDEPLOY_REMOTE_TOKEN"
-
 func getWeExecutable() (string, error) {
 	var exec, err = os.Executable()
 

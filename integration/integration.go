@@ -18,6 +18,7 @@ import (
 
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/envs"
 	"github.com/wedeploy/cli/remotes"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/stringlib"
@@ -161,7 +162,7 @@ func (cmd *Command) setChildChannels(child *exec.Cmd) {
 
 func (cmd *Command) maybeSetHomeEnv() {
 	for _, k := range cmd.Env {
-		if strings.HasPrefix(k, "WEDEPLOY_CUSTOM_HOME=") {
+		if strings.HasPrefix(k, fmt.Sprintf("%s=", envs.CustomHome)) {
 			return
 		}
 	}
@@ -172,7 +173,8 @@ func (cmd *Command) maybeSetHomeEnv() {
 		panic(err)
 	}
 
-	cmd.Env = append(cmd.Env, "WEDEPLOY_CUSTOM_HOME="+ch)
+	chEnv := fmt.Sprintf("%s=%s", envs.CustomHome, ch)
+	cmd.Env = append(cmd.Env, chEnv)
 
 }
 

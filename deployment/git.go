@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/wedeploy/cli/envs"
 	"github.com/wedeploy/cli/userhome"
 	"github.com/wedeploy/cli/verbose"
 )
@@ -332,7 +333,7 @@ func (d *Deploy) Push() (groupUID string, err error) {
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Env = append(d.getConfigEnvs(),
 		"GIT_TERMINAL_PROMPT=0",
-		GitCredentialEnvRemoteToken+"="+d.ConfigContext.Token,
+		envs.GitCredentialRemoteToken+"="+d.ConfigContext.Token,
 	)
 	cmd.Dir = d.Path
 

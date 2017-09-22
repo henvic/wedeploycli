@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/deployment"
+	"github.com/wedeploy/cli/envs"
 )
 
 // GitCredentialHelperCmd is used for reading the version of this tool
@@ -28,7 +28,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	var token = os.Getenv(deployment.GitCredentialEnvRemoteToken)
+	var token = os.Getenv(envs.GitCredentialRemoteToken)
 
 	if token == "" {
 		return errors.New("internal command: missing credentials")

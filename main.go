@@ -27,6 +27,7 @@ import (
 	"github.com/wedeploy/cli/color/template"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/envs"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/flagsfromhost"
@@ -53,7 +54,7 @@ func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
 	cobra.AddTemplateFuncs(colortemplate.Functions())
 
-	_, machineFriendly := os.LookupEnv("WEDEPLOY_MACHINE_FRIENDLY")
+	_, machineFriendly := os.LookupEnv(envs.MachineFriendly)
 	formatter.Human = !machineFriendly
 
 	if isCommand("--no-color") || turnColorsOffOnWindows() {

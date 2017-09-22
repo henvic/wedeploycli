@@ -32,6 +32,7 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/envs"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 )
@@ -77,7 +78,7 @@ var commands = []*cobra.Command{
 
 // see note on usage of maybeEnableVerboseByEnv
 func maybeEnableVerboseByEnv() {
-	if unsafe, _ := os.LookupEnv("WEDEPLOY_UNSAFE_VERBOSE"); unsafe == "true" {
+	if unsafe, _ := os.LookupEnv(envs.UnsafeVerbose); unsafe == "true" {
 		verbose.Enabled = true
 	}
 }

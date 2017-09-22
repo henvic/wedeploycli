@@ -1,11 +1,15 @@
 package userhome
 
-import "os"
+import (
+	"os"
+
+	"github.com/wedeploy/cli/envs"
+)
 
 // GetHomeDir returns the user's ~ (home)
 func GetHomeDir() string {
-	if os.Getenv("WEDEPLOY_CUSTOM_HOME") != "" {
-		return os.Getenv("WEDEPLOY_CUSTOM_HOME")
+	if os.Getenv(envs.CustomHome) != "" {
+		return os.Getenv(envs.CustomHome)
 	}
 
 	return getHomeDir()

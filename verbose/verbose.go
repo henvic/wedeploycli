@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/envs"
 )
 
 var (
@@ -31,7 +32,7 @@ func init() {
 
 // IsUnsafeMode checks if the unsafe verbose mode is on
 func IsUnsafeMode() bool {
-	if unsafe, _ := os.LookupEnv("WEDEPLOY_UNSAFE_VERBOSE"); unsafe == "true" {
+	if unsafe, _ := os.LookupEnv(envs.UnsafeVerbose); unsafe == "true" {
 		return true
 	}
 
