@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/wedeploy/cli/isterm"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -18,7 +19,7 @@ var (
 	inStream  io.Reader = os.Stdin
 	outStream io.Writer = os.Stdout
 
-	isTerminal = terminal.IsTerminal(int(os.Stdin.Fd()))
+	isTerminal = isterm.Check()
 )
 
 // SelectOption prompts for an option from a list
