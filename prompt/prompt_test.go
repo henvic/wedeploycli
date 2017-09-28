@@ -4,28 +4,25 @@ import (
 	"bytes"
 	"os"
 	"testing"
+
+	"github.com/wedeploy/cli/envs"
 )
 
-var (
-	bufInStream       bytes.Buffer
-	defaultIsTerminal = isTerminal
-)
+var bufInStream bytes.Buffer
 
 func TestMain(m *testing.M) {
 	var defaultInStream = inStream
 	inStream = &bufInStream
 	ec := m.Run()
-	isTerminal = defaultIsTerminal
 	inStream = defaultInStream
 	os.Exit(ec)
 }
 
 func TestSelectOption(t *testing.T) {
-	defer func() {
-		isTerminal = defaultIsTerminal
-	}()
+	defer unsetSkipTerminal(t)
 	bufInStream.Reset()
-	isTerminal = true
+	skipTerminal(t)
+
 	var _, err = bufInStream.WriteString("2\n")
 
 	if err != nil {
@@ -44,11 +41,10 @@ func TestSelectOption(t *testing.T) {
 }
 
 func TestSelectOptionEquivalentChoosen(t *testing.T) {
-	defer func() {
-		isTerminal = defaultIsTerminal
-	}()
+	defer unsetSkipTerminal(t)
 	bufInStream.Reset()
-	isTerminal = true
+	skipTerminal(t)
+
 	var _, err = bufInStream.WriteString("pass2\n")
 
 	if err != nil {
@@ -72,11 +68,10 @@ func TestSelectOptionEquivalentChoosen(t *testing.T) {
 }
 
 func TestSelectOptionEquivalentNotChoosen(t *testing.T) {
-	defer func() {
-		isTerminal = defaultIsTerminal
-	}()
+	defer unsetSkipTerminal(t)
 	bufInStream.Reset()
-	isTerminal = true
+	skipTerminal(t)
+
 	var _, err = bufInStream.WriteString("2\n")
 
 	if err != nil {
@@ -100,11 +95,9 @@ func TestSelectOptionEquivalentNotChoosen(t *testing.T) {
 }
 
 func TestSelectOptionIsNotTerminal(t *testing.T) {
-	defer func() {
-		isTerminal = defaultIsTerminal
-	}()
+	defer unsetSkipTerminal(t)
 	bufInStream.Reset()
-	isTerminal = false
+
 	var _, err = bufInStream.WriteString("value\n")
 
 	if err != nil {
@@ -125,11 +118,10 @@ func TestSelectOptionIsNotTerminal(t *testing.T) {
 }
 
 func TestSelectOptionNoneAvailable(t *testing.T) {
-	defer func() {
-		isTerminal = defaultIsTerminal
-	}()
+	defer unsetSkipTerminal(t)
 	bufInStream.Reset()
-	isTerminal = true
+	skipTerminal(t)
+
 	var _, err = bufInStream.WriteString("value\n")
 
 	if err != nil {
@@ -150,11 +142,10 @@ func TestSelectOptionNoneAvailable(t *testing.T) {
 }
 
 func TestSelectOptionNoneAvailableEquivalent(t *testing.T) {
-	defer func() {
-		isTerminal = defaultIsTerminal
-	}()
+	defer unsetSkipTerminal(t)
 	bufInStream.Reset()
-	isTerminal = true
+	skipTerminal(t)
+
 	var _, err = bufInStream.WriteString("value\n")
 
 	if err != nil {
@@ -177,11 +168,10 @@ func TestSelectOptionNoneAvailableEquivalent(t *testing.T) {
 }
 
 func TestSelectOptionInvalidOption(t *testing.T) {
-	defer func() {
-		isTerminal = defaultIsTerminal
-	}()
+	defer unsetSkipTerminal(t)
 	bufInStream.Reset()
-	isTerminal = true
+	skipTerminal(t)
+
 	var _, err = bufInStream.WriteString("value\n")
 
 	if err != nil {
@@ -202,11 +192,10 @@ func TestSelectOptionInvalidOption(t *testing.T) {
 }
 
 func TestSelectOptionInvalidOptionOffByOne(t *testing.T) {
-	defer func() {
-		isTerminal = defaultIsTerminal
-	}()
+	defer unsetSkipTerminal(t)
 	bufInStream.Reset()
-	isTerminal = true
+	skipTerminal(t)
+
 	var _, err = bufInStream.WriteString("5\n")
 
 	if err != nil {
@@ -227,11 +216,10 @@ func TestSelectOptionInvalidOptionOffByOne(t *testing.T) {
 }
 
 func TestSelectOptionInvalidOptionEquivalent(t *testing.T) {
-	defer func() {
-		isTerminal = defaultIsTerminal
-	}()
+	defer unsetSkipTerminal(t)
 	bufInStream.Reset()
-	isTerminal = true
+	skipTerminal(t)
+
 	var _, err = bufInStream.WriteString("value\n")
 
 	if err != nil {
@@ -255,12 +243,11 @@ func TestSelectOptionInvalidOptionEquivalent(t *testing.T) {
 }
 
 func TestPrompt(t *testing.T) {
-	defer func() {
-		isTerminal = defaultIsTerminal
-	}()
+	defer unsetSkipTerminal(t)
 	var want = "value"
 	bufInStream.Reset()
-	isTerminal = true
+	skipTerminal(t)
+
 	var _, err = bufInStream.WriteString("value\n")
 
 	if err != nil {
@@ -279,12 +266,11 @@ func TestPrompt(t *testing.T) {
 }
 
 func TestPromptEmpty(t *testing.T) {
-	defer func() {
-		isTerminal = defaultIsTerminal
-	}()
+	defer unsetSkipTerminal(t)
 	var want = ""
 	bufInStream.Reset()
-	isTerminal = true
+	skipTerminal(t)
+
 	var _, err = bufInStream.WriteString("\n")
 
 	if err != nil {
@@ -303,12 +289,11 @@ func TestPromptEmpty(t *testing.T) {
 }
 
 func TestPromptWithSpace(t *testing.T) {
-	defer func() {
-		isTerminal = defaultIsTerminal
-	}()
+	defer unsetSkipTerminal(t)
 	var want = "my value"
 	bufInStream.Reset()
-	isTerminal = true
+	skipTerminal(t)
+
 	_, _ = bufInStream.WriteString("my value\n")
 
 	var u, errt = Prompt()
@@ -323,11 +308,9 @@ func TestPromptWithSpace(t *testing.T) {
 }
 
 func TestPromptIsNotterminal(t *testing.T) {
-	defer func() {
-		isTerminal = defaultIsTerminal
-	}()
+	defer unsetSkipTerminal(t)
 	bufInStream.Reset()
-	isTerminal = false
+
 	var _, err = bufInStream.WriteString("value\n")
 
 	if err != nil {
@@ -352,11 +335,9 @@ func TestPromptIsNotterminal(t *testing.T) {
 }
 
 func TestHiddenIsNotterminal(t *testing.T) {
-	defer func() {
-		isTerminal = defaultIsTerminal
-	}()
+	defer unsetSkipTerminal(t)
 	bufInStream.Reset()
-	isTerminal = false
+
 	var _, err = bufInStream.WriteString("value\n")
 
 	if err != nil {
@@ -377,5 +358,21 @@ func TestHiddenIsNotterminal(t *testing.T) {
 
 	if u != "" {
 		t.Errorf("Expected prompt value empty, got %v instead", u)
+	}
+}
+
+func skipTerminal(t *testing.T) {
+	t.Helper()
+
+	if err := os.Setenv(envs.SkipTerminalVerification, "true"); err != nil {
+		t.Errorf("Error setting skip terminal environment var for mock: %v", err)
+	}
+}
+
+func unsetSkipTerminal(t *testing.T) {
+	t.Helper()
+
+	if err := os.Unsetenv(envs.SkipTerminalVerification); err != nil {
+		t.Errorf("Error unsetting skip terminal environment var for mock: %v", err)
 	}
 }

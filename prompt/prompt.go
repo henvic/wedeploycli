@@ -18,8 +18,6 @@ import (
 var (
 	inStream  io.Reader = os.Stdin
 	outStream io.Writer = os.Stdout
-
-	isTerminal = isterm.Check()
 )
 
 // SelectOption prompts for an option from a list
@@ -59,7 +57,7 @@ func getSelectOptionIndex(index, indexLength int, err error) (int, error) {
 // If the key is on a secret keys list it suppresses the feedback.
 func Prompt() (string, error) {
 	// Checking if is terminal and not Windows because Windows is Windows...
-	if !isTerminal && runtime.GOOS != "windows" {
+	if !isterm.Check() && runtime.GOOS != "windows" {
 		return "", errors.New("input device is not a terminal")
 	}
 
@@ -87,7 +85,7 @@ func Prompt() (string, error) {
 func Hidden() (string, error) {
 	// Checking if is terminal and not Windows because Windows is Windows...
 	// Actually terminal.ReadPassword is even broken on Windows Subsystem for Linux (Windows 10 and 2016 Server)
-	if !isTerminal && runtime.GOOS != "windows" {
+	if !isterm.Check() && runtime.GOOS != "windows" {
 		return "", errors.New("input device is not a terminal: can't read password")
 	}
 
