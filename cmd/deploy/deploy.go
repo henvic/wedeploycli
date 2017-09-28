@@ -2,14 +2,11 @@ package cmddeploy
 
 import (
 	"context"
-	"strings"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/deploy/remote"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/defaults"
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{
@@ -35,28 +32,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if err := checkNonRemoteSet(cmd); err != nil {
-		return err
-	}
-
 	return setupHost.Process()
-}
-
-func checkNonRemoteSet(cmd *cobra.Command) error {
-	var (
-		u             = cmd.Flag("url").Value.String()
-		remoteChanged = cmd.Flag("remote").Changed
-		urlChanged    = cmd.Flag("url").Changed && strings.Contains(u, ".")
-	)
-
-	if !remoteChanged && !urlChanged {
-		if err := cmd.Flag("remote").Value.Set(defaults.CloudRemote); err != nil {
-			return errwrap.Wrapf("error setting default remote: {{err}}", err)
-		}
-		cmd.Flag("remote").Changed = true
-	}
-
-	return nil
 }
 
 func runRun(cmd *cobra.Command, args []string) error {
