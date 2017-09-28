@@ -1,0 +1,8 @@
+language: go
+go:
+  - 1.7.1
+before_install:
+  - go get golang.org/x/tools/cmd/cover
+  - go get github.com/mattn/goveralls
+after_script:
+  - sh `pwd`/scripts/coverage --coveralls
