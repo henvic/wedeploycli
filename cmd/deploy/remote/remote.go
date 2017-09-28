@@ -19,11 +19,11 @@ import (
 	"github.com/wedeploy/cli/deployment"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/inspector"
+	"github.com/wedeploy/cli/isterm"
 	"github.com/wedeploy/cli/namesgenerator"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/verbose"
-	"golang.org/x/crypto/ssh/terminal"
 )
 
 const gitSchema = "https://"
@@ -56,7 +56,7 @@ func createServicePackage(id, path string) error {
 
 func (rd *RemoteDeployment) getProjectID() (err error) {
 	if rd.ProjectID == "" {
-		if !terminal.IsTerminal(int(os.Stdin.Fd())) {
+		if !isterm.Check() {
 			return errors.New("Project ID is missing")
 		}
 
@@ -223,7 +223,7 @@ func (rd *RemoteDeployment) checkServiceParameter() error {
 		return nil
 	}
 
-	if !terminal.IsTerminal(int(os.Stdin.Fd())) {
+	if !isterm.Check() {
 		return errors.New("Service ID is missing (and a terminal was not found for typing one)")
 	}
 
