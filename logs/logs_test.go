@@ -139,6 +139,41 @@ func TestList(t *testing.T) {
 	servertest.Teardown()
 }
 
+func TestListProject(t *testing.T) {
+	var defaultOutStream = outStream
+	outStream = &bufOutStream
+	bufOutStream.Reset()
+
+	var defaultNoColor = color.NoColor
+	color.NoColor = true
+
+	servertest.Setup()
+
+	servertest.Mux.HandleFunc("/projects/foo/logs",
+		tdata.ServerJSONFileHandler("mocks/logs_response_project.json"))
+
+	var filter = &Filter{
+		Level:   4,
+		Project: "foo",
+	}
+
+	var err = List(context.Background(), filter)
+
+	if err != nil {
+		t.Errorf("Unexpected error %v", err)
+	}
+
+	var want = tdata.FromFile("mocks/logs_response_project_print")
+	var got = bufOutStream.String()
+
+	stringlib.AssertSimilar(t, want, got)
+
+	color.NoColor = defaultNoColor
+	outStream = defaultOutStream
+
+	servertest.Teardown()
+}
+
 func TestWatch(t *testing.T) {
 	var defaultOutStream = outStream
 	outStream = &bufOutStream

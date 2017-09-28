@@ -212,6 +212,8 @@ func (w *Watcher) Stop() {
 func addHeader(log Log) (m string) {
 	m = log.ServiceID
 	switch {
+	case log.ServiceID == "":
+		m += "[" + log.ProjectID + "]"
 	case log.ContainerUID != "":
 		m += "[" + trim(log.ContainerUID, 7) + "]"
 	case log.Build:
