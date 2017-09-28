@@ -2,6 +2,4 @@ build:
   image: golang:1.9
   commands:
     - go version
-    - go get -u github.com/golang/dep/cmd/dep
-    - dep ensure
     - go test -v $(go list ./... | grep -v /vendor/)

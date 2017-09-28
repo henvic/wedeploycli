@@ -30,8 +30,6 @@ The following commands are available and requires no arguments:
 * **make release**: tag, build, and publish new version of the app
 * **make promote**: publish version already released to a given distribution channel
 
-**Important:** always install dependencies by running `make get-dependencies` to make sure the current dependency versioning constraints apply.
-
 In lieu of a formal style guide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Integration tests should be written as well.
 
 ## Committing and pushing changes
