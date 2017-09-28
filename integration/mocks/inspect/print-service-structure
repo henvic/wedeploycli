@@ -5,6 +5,6 @@ ImageHint string
 CustomDomains []string
 Env map[string]string
 Scale int
-CPU int
-Memory int
+CPU json.Number
+Memory json.Number
 HealthUID string

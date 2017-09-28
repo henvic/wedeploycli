@@ -194,6 +194,8 @@ func TestGet(t *testing.T) {
 		Health:    "on",
 		Image:     "wedeploy/data",
 		Scale:     7,
+		CPU:       json.Number("0.5"),
+		Memory:    json.Number("50.5"),
 	}
 
 	servertest.Mux.HandleFunc("/projects/images/services/search7606",
