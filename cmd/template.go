@@ -82,7 +82,7 @@ func (up usagePrinter) printCommands() {
 
 func (up usagePrinter) printFlags() {
 	up.f.VisitAll(func(flag *pflag.Flag) {
-		if flag.Value.Type() != "bool" {
+		if !flag.Hidden && flag.Value.Type() != "bool" {
 			up.showFlagsParamField = true
 		}
 	})
