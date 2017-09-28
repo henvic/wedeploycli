@@ -98,7 +98,7 @@ And run it as a regular executable on each target system. Several options (inclu
 
 
 ## Environment variables
-`WEDEPLOY_MACHINE_FRIENDLY` changes human-friendly multiple spaces to machine-friendly tabs.
+See [envs/envs.go](envs/envs.go) for an up-to-date list of used environment variables.
 
 ## Hidden global flags
 * `--defer-verbose` (`-V`) to defer verbose output until program termination
