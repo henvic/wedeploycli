@@ -79,7 +79,7 @@ func (a *autocomplete) walkCommand(name string, root *cobra.Command) *cobra.Comm
 
 func (a *autocomplete) getVisibleFlags(flags *pflag.FlagSet) (flagsMatches []string) {
 	flags.VisitAll(func(f *pflag.Flag) {
-		if !f.Hidden {
+		if !f.Hidden || f.Name == "help" {
 			flagsMatches = append(flagsMatches, "--"+f.Name)
 		}
 	})
