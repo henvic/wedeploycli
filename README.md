@@ -26,7 +26,6 @@ The following commands are available and requires no arguments:
 * **make fast-test**: run all unit tests
 * **make test**: run all unit and integration tests
 * **make build-integration-tests**: generate integration tests suites
-* **make build-functional-tests**: generate functional tests suites
 * **make release**: tag, build, and publish new version of the app
 * **make promote**: publish version already released to a given distribution channel
 
@@ -54,7 +53,7 @@ Always run `make test` before submitting changes.
 
 You can generate a test suite to run integration tests outside of your development environment (say, on a virtual machine).
 
-Set the `$WEDEPLOY_CLI_INTEGRATION_TESTS_PATH` environment variable to save the functional test suites on a shared network volume you can access from each test machine to speed up development and debugging.
+Set the `$WEDEPLOY_CLI_INTEGRATION_TESTS_PATH` environment variable to save the integration test suites on a shared network volume you can access from each test machine to speed up development and debugging.
 
 Build and distribute test suites for the supported systems:
 
@@ -73,27 +72,7 @@ Integration test suites and its related mocks are saved in:
 And run it as a regular executable on each target system.
 
 ## Functional testing
-Test if the WeDeploy CLI tool and local infra-structure are running together correctly on different platforms and no breaking change has occurred.
-
-It is recommended you use virtual machines to run the functional tests, as they do have side-effects (including, but not limited to, data destruction).
-
-Set the `$WEDEPLOY_CLI_FUNCTIONAL_TESTS_PATH` environment variable to save the functional test suites on a shared network volume you can access from each test machine to speed up development and debugging.
-
-Build and distribute test suites for the supported systems:
-
-```
-$ make build-functional-tests
-Building functional test suites for multiple platforms:
-darwin...	wedeploy-cli-functional-darwin.test
-linux...	wedeploy-cli-functional-linux.test
-windows...	wedeploy-cli-functional-windows.test.exe
-
-Functional test suites are saved in:
-/vm-shared-network-volume/wedeploy-cli-functional-tests
-```
-
-And run it as a regular executable on each target system. Several options (including some required) are available both for automated and for manual testing.
-
+See the [cli-functional-tests](http://github.com/wedeploy/cli-functional-tests) repository with tests written using [cucumber aruba](https://github.com/cucumber/aruba). Be aware functional tests might have drastic side-effects given they destroy data, so be sure you know what you are doing before you run them.
 
 ## Environment variables
 See [envs/envs.go](envs/envs.go) for an up-to-date list of used environment variables.
