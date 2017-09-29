@@ -14,9 +14,9 @@ list-packages:
 build:
 	go build
 fast-test:
-	./scripts/tag.sh --dry-run --skip-integration-tests
+	./scripts/test.sh --skip-integration-tests
 test:
-	./scripts/tag.sh --dry-run
+	./scripts/test.sh
 build-integration-tests:
 	./scripts/build-integration-tests.sh
 tag:
