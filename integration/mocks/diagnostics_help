@@ -2,5 +2,5 @@
 ! Usage: we diagnostics [flag]
   Flag                  Description
       --print      Print diagnostics
-      --send       send to WeDeploy
+      --send       Send to WeDeploy
   -v, --verbose    Show more information about an operation

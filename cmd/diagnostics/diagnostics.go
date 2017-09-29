@@ -117,7 +117,7 @@ func init() {
 		&send,
 		"send",
 		false,
-		"send to WeDeploy")
+		"Send to WeDeploy")
 
 	DiagnosticsCmd.Flags().IntVar(
 		&timeout,
