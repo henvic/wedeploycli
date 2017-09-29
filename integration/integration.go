@@ -183,16 +183,6 @@ func (cmd *Command) setEnv() {
 	cmd.Env = append(cmd.Env, os.Environ()...)
 }
 
-func abs(path string) string {
-	var abs, err = filepath.Abs(path)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return abs
-}
-
 func chdir(dir string) {
 	if ech := os.Chdir(dir); ech != nil {
 		panic(ech)
@@ -275,10 +265,4 @@ func getIntegrationServerPort() int {
 	}
 
 	return num
-}
-
-func removeAll(path string) {
-	if err := os.RemoveAll(path); err != nil {
-		panic(err)
-	}
 }

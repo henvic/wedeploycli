@@ -146,7 +146,7 @@ func TestInspectServiceList(t *testing.T) {
 	cmd.Run()
 
 	var m map[string]interface{}
-	if err := json.Unmarshal([]byte(cmd.Stdout.String()), &m); err != nil {
+	if err := json.Unmarshal(cmd.Stdout.Bytes(), &m); err != nil {
 		t.Errorf("Expected error to be nil, got %v instead", err)
 	}
 

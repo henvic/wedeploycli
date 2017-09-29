@@ -6,10 +6,8 @@ import (
 	"net/url"
 	"sort"
 
-	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/services"
-	"github.com/wedeploy/cli/verbosereq"
 )
 
 // Project structure
@@ -136,15 +134,4 @@ func CreateOrUpdate(ctx context.Context, project Project) (pRec Project, created
 	}
 
 	return pRec, created, err
-}
-
-func doValidate(projectID string, req *wedeploy.WeDeploy) error {
-	apihelper.Auth(req)
-
-	req.Param("value", projectID)
-
-	var err = req.Get()
-
-	verbosereq.Feedback(req)
-	return err
 }

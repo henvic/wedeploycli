@@ -107,7 +107,7 @@ func (s *SetupHost) Init(cmd *cobra.Command) {
 		none = false
 	}
 
-	if none {
+	if none || s.Pattern == missing {
 		panic("Missing or unsupported host pattern")
 	}
 }

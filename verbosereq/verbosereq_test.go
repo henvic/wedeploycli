@@ -20,7 +20,6 @@ import (
 
 var (
 	bufErrStream bytes.Buffer
-	errStream    io.Writer = os.Stderr
 )
 
 func TestMain(m *testing.M) {

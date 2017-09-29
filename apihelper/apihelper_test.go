@@ -87,7 +87,7 @@ func TestAuthGet(t *testing.T) {
 	var wantBody = "to be written"
 	var wantComments = 30
 
-	var err = AuthGet(nil, "/posts/1", &post)
+	var err = AuthGet(context.Background(), "/posts/1", &post)
 
 	if err != nil {
 		t.Errorf("Wanted error to be nil, got %v instead", err)

@@ -55,7 +55,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if envs == nil || len(envs) == 0 {
+	if len(envs) == 0 {
 		verbose.Debug("No environment variable found.")
 		return nil
 	}

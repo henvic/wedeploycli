@@ -55,11 +55,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 func checkProjectOrServiceExists() (err error) {
 	if setupHost.Service() != "" {
-		if _, err = services.Get(context.Background(), setupHost.Project(), setupHost.Service()); err != nil {
-			return err
-		}
-
-		return nil
+		// if service exists, project also exists
+		_, err = services.Get(context.Background(), setupHost.Project(), setupHost.Service())
+		return err
 	}
 
 	if setupHost.Project() != "" {

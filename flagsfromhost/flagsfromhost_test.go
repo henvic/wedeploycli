@@ -153,7 +153,7 @@ func TestParseByFlagsOnly(t *testing.T) {
 			t.Errorf("Expected values doesn't match on parsed object: %+v", parsed)
 		}
 
-		if parsed.IsRemoteFromHost() != false {
+		if parsed.IsRemoteFromHost() {
 			t.Errorf("Expected remote to not be parsed from host")
 		}
 	}

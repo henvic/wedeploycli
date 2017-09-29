@@ -46,7 +46,6 @@ func init() {
 type restart struct {
 	project   string
 	service   string
-	list      *list.List
 	rwl       list.RestartWatchList
 	err       error
 	end       bool

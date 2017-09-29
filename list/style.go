@@ -111,46 +111,6 @@ func (l *List) printInstances(instances int) {
 	l.Printf("%d\t", instances)
 }
 
-func getHealthForegroundColor(s string) color.Attribute {
-	var foregroundMap = map[string]color.Attribute{
-		"empty":   color.FgGreen,
-		"up":      color.FgHiGreen,
-		"warn":    color.FgHiYellow,
-		"down":    color.FgHiRed,
-		"unknown": color.FgWhite,
-	}
-
-	var bg, bgok = foregroundMap[s]
-
-	if !bgok {
-		bg = color.FgBlue
-	}
-
-	return bg
-}
-
-func getHealthBackgroundColor(s string) color.Attribute {
-	var backgroundMap = map[string]color.Attribute{
-		"empty":   color.BgGreen,
-		"up":      color.BgHiGreen,
-		"warn":    color.BgHiYellow,
-		"down":    color.BgHiRed,
-		"unknown": color.BgWhite,
-	}
-
-	var bg, bgok = backgroundMap[s]
-
-	if !bgok {
-		bg = color.BgHiBlue
-	}
-
-	return bg
-}
-
-func pad(space int) string {
-	return strings.Join(make([]string, space), " ")
-}
-
 func (l *List) getServiceDomain(projectID, serviceID string) string {
 	return fmt.Sprintf("%v-%v.%v", serviceID, projectID, config.Context.ServiceDomain)
 }

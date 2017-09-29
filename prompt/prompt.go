@@ -15,10 +15,7 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-var (
-	inStream  io.Reader = os.Stdin
-	outStream io.Writer = os.Stdout
-)
+var inStream io.Reader = os.Stdin
 
 // SelectOption prompts for an option from a list
 func SelectOption(indexLength int, equivalents map[string]int) (index int, err error) {

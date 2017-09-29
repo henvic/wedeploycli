@@ -89,6 +89,8 @@ function runTests() {
   test -z "$(golint ./... | grep -v "^vendor" | tee /dev/stderr)"
   echo "Examining source code against code defect."
   go vet $(go list ./... | grep -v /vendor/)
+  echo "Checking if code can be simplified or can be improved."
+  megacheck ./...
   echo "Running tests (may take a while)."
 
   # skip integration testing with -race because pseudoterm has some data race condition at this time

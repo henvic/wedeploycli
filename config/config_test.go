@@ -481,13 +481,3 @@ func TestRemotesListAndGet(t *testing.T) {
 		t.Errorf("Expected Global to be null")
 	}
 }
-
-func abs(path string) string {
-	var abs, err = filepath.Abs(path)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return abs
-}

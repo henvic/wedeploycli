@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/coreos/go-semver/semver"
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/userhome"
@@ -44,28 +43,6 @@ var autocompleteTransition = Transition{
 
 var transitions = []Transition{
 	autocompleteTransition,
-}
-
-func isVersionLessOrEqualThan(refVersion, sinceVersion string) bool {
-	var old, errOld = semver.NewVersion(sinceVersion)
-
-	if errOld != nil {
-		verbose.Debug(`Error parsing "since" version: ` + errOld.Error())
-		return false
-	}
-
-	var ref, errNew = semver.NewVersion(refVersion)
-
-	if errNew != nil {
-		verbose.Debug(`Error parsing "reference" version: ` + errNew.Error())
-		return false
-	}
-
-	if ref.Compare(*old) > 0 {
-		return false
-	}
-
-	return true
 }
 
 // ApplyTransitions applies transition / fixes functions for updating this tool after updates

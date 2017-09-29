@@ -1,6 +1,9 @@
 package color
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestFormat(t *testing.T) {
 	var defaultNoColor = NoColor
@@ -107,9 +110,12 @@ func TestFormatStartingWithNumber(t *testing.T) {
 	NoColor = false
 
 	want := "\x1b[102;95m100 forks\x1b[0m"
-	// Because type Attribute is int we want make sure it doesn't break
-	var number int
-	number = 100
+	number := 100
+
+	if reflect.TypeOf(number).String() != "int" {
+		t.Errorf("Must be integer; not a similar like Attribute")
+	}
+
 	got := Format(BgHiGreen, FgHiMagenta, "%v forks", number)
 
 	if got != want {

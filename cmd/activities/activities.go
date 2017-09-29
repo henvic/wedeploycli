@@ -21,7 +21,6 @@ var ActivitiesCmd = &cobra.Command{
 var (
 	commit   string
 	groupUID string
-	services string
 )
 
 func preRun(cmd *cobra.Command, args []string) error {

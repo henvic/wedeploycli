@@ -185,7 +185,7 @@ func (w *WaitLiveMsg) waitLoop() {
 	for {
 		w.tickerdMutex.RLock()
 		select {
-		case _ = <-ticker.C:
+		case <-ticker.C:
 			w.print()
 		case <-w.tickerd:
 			ticker.Stop()
@@ -224,7 +224,7 @@ func (w *WaitLiveMsg) ResetDuration() {
 // Duration in seconds
 func (w *WaitLiveMsg) Duration() time.Duration {
 	w.tickerdMutex.RLock()
-	var duration = time.Now().Sub(w.start)
+	var duration = time.Since(w.start)
 	w.tickerdMutex.RUnlock()
 	return duration
 }

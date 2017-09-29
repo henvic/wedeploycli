@@ -19,7 +19,6 @@ import (
 )
 
 var (
-	dryRun  bool
 	serial  bool
 	print   bool
 	send    bool
@@ -73,14 +72,6 @@ func diagnosticsRun(cmd *cobra.Command, args []string) error {
 	}
 
 	return submit(report)
-}
-
-func printUsername() string {
-	if config.Global == nil || config.Context.Username == "" {
-		return "not logged in"
-	}
-
-	return config.Context.Username
 }
 
 func submit(report diagnostics.Report) error {

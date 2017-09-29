@@ -2,10 +2,8 @@ package cmddeployremote
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
@@ -38,20 +36,6 @@ type RemoteDeployment struct {
 	services  services.ServiceInfoList
 	remap     []string
 	ctx       context.Context
-}
-
-func createServicePackage(id, path string) error {
-	var c = &services.ServicePackage{
-		ID:    filepath.Base(path),
-		Image: "wedeploy/hosting",
-	}
-
-	bin, err := json.MarshalIndent(c, "", "    ")
-	if err != nil {
-		return err
-	}
-
-	return ioutil.WriteFile(filepath.Join(path, "wedeploy.json"), bin, 0644)
 }
 
 func (rd *RemoteDeployment) getProjectID() (err error) {
@@ -261,14 +245,4 @@ func (rd *RemoteDeployment) loadServicesListFromPath() (err error) {
 	}
 
 	return nil
-}
-
-func (rd *RemoteDeployment) printAddress(service string) string {
-	var address = rd.ProjectID + "." + config.Global.Remotes[rd.Remote].Service
-
-	if service != "" {
-		address = service + "-" + address
-	}
-
-	return address
 }

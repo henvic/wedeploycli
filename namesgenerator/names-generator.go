@@ -610,13 +610,13 @@ begin:
 
 // GetRandomAdjective from the adjectives list
 func GetRandomAdjective() string {
-	return fmt.Sprintf("%s", left[rand.Intn(len(left))])
+	return left[rand.Intn(len(left))]
 }
 
 // GetRandomSurname from the surnames list
 func GetRandomSurname() string {
 begin:
-	name := fmt.Sprintf("%s", right[rand.Intn(len(right))])
+	name := right[rand.Intn(len(right))]
 	if name == "boring_wozniak" /* Steve Wozniak is not boring */ {
 		goto begin
 	}
