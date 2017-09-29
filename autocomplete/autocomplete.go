@@ -2,7 +2,6 @@ package autocomplete
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -26,90 +25,8 @@ func Run(args []string) {
 
 type autocomplete struct{}
 
-func hasCommands(matches []string) bool {
-	for _, c := range matches {
-		// not a flag or shorthand to flag
-		if !strings.HasPrefix(c, "-") {
-			return true
-		}
-	}
-
-	return false
-}
-
-func getNextCommand(matches []string) (string, bool) {
-	for _, c := range matches {
-		// not a flag or shorthand to flag
-		if !strings.HasPrefix(c, "-") {
-			return c, true
-		}
-	}
-
-	return "", false
-}
-
-func filterLastCommand(recArgs []string) (args []string) {
-	var last = -1
-	for index, arg := range recArgs {
-		if !strings.HasPrefix(arg, "-") {
-			last = index
-		}
-	}
-
-	for index, arg := range recArgs {
-		if index != last {
-			recArgs = append(recArgs, arg)
-		}
-	}
-
-	return
-}
-
-func getPossibleCommands(args []string) (possibleCommands []string) {
-	for _, c := range args {
-		// not a flag or shorthand to flag
-		if !strings.HasPrefix(c, "-") {
-			possibleCommands = append(possibleCommands, c)
-		}
-	}
-
-	return possibleCommands
-}
-
-func (a *autocomplete) tryGetMatches(args []string) (cmdMatches []string, flagsMatches []string) {
-	cmdMatches, flagsMatches = a.getMatches(args)
-
-	if len(args) == 0 || hasCommands(cmdMatches) {
-		return
-	}
-
-	if len(getPossibleCommands(args)) != 1 {
-		return
-	}
-
-	next, ok := getNextCommand(args)
-
-	if !ok {
-		return
-	}
-
-	// get list for parent and filter all commands, except if it starts with 'next'
-	cmdMatches, flagsMatches = a.getMatches(filterLastCommand(args))
-
-	var filteredCmds = []string{}
-
-	for _, c := range cmdMatches {
-		if strings.HasPrefix(c, next) && c != next {
-			filteredCmds = append(filteredCmds, c)
-		}
-	}
-
-	cmdMatches = filteredCmds
-	return
-}
-
 func (a *autocomplete) run(args []string) {
-	var cmdMatches, flagsMatches = a.tryGetMatches(args)
+	var cmdMatches, flagsMatches = a.getMatches(args)
 	var already = map[string]bool{}
 
 	for _, a := range args {
