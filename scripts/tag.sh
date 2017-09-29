@@ -68,19 +68,6 @@ function checkBranch() {
   fi
 }
 
-function checkWeDeployImageTag() {
-  < defaults/defaults.go | grep -q "WeDeployImageTag = \"latest\"" && ec=$? || ec=$?
-
-  if [ $ec -eq 0 ] ; then
-    >&2 echo -e "\x1B[101m\x1B[1mWarning: you MUST NOT use docker image tag \"latest\" for releases.\x1B[0m"
-
-    if [ ! $dryrun ]; then
-      read -p "Continue? [no]: " CONT < /dev/tty;
-      checkCONT
-    fi
-  fi
-}
-
 function checkWorkingDir() {
   if [ $(git status --short | wc -l) -gt 0 ]; then
     echo "You have uncommited changes."
@@ -131,7 +118,7 @@ function runTests() {
   # skip integration testing with -race because pseudoterm has some data race condition at this time
   go test $(go list ./... | grep -v /vendor/ | grep -v /integration$) -race
   if [[ $skipIntegrationTests != true ]] ; then
-    go test $(go list ./... | grep -v /vendor/)
+    go test github.com/wedeploy/cli/integration
   fi
 }
 
@@ -199,7 +186,6 @@ function publishTag() {
 
 function pretag() {
   testHuman
-  checkWeDeployImageTag
 
   if [ ! $dryrun ]; then
     checkBranch

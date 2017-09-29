@@ -29,9 +29,6 @@ var (
 	// Hub for the system
 	Hub = "http://api.wedeploy.io"
 
-	// WeDeployImageTag is the WeDeploy image tag for docker
-	WeDeployImageTag = "beta"
-
 	// AnalyticsEndpoint for posting analytics events in bulk
 	AnalyticsEndpoint = "https://cli-metrics.wedeploy.com/"
 
