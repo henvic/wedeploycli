@@ -24,7 +24,7 @@ func compile() {
 	build()
 
 	var err error
-	binary, err = filepath.Abs("cli")
+	binary, err = filepath.Abs(binaryName)
 
 	if err != nil {
 		panic(err)
@@ -32,7 +32,7 @@ func compile() {
 }
 
 func build() {
-	var cmd = exec.Command("go", "build", "-race")
+	var cmd = exec.Command("go", "build", "-race", "-o", binaryName)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 

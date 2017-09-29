@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -46,8 +47,9 @@ var (
 	// ErrExitCodeNotAvailable is used for exit code retrieval failure
 	ErrExitCodeNotAvailable = errors.New("Exit code not available")
 
-	binary    string
-	errStream io.Writer = os.Stderr
+	binary     string
+	binaryName           = fmt.Sprintf("cli_%s_%s", runtime.GOOS, runtime.GOARCH)
+	errStream  io.Writer = os.Stderr
 
 	update bool
 )
