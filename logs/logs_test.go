@@ -103,9 +103,11 @@ func TestGetList(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
+	outStreamMutex.Lock()
 	var defaultOutStream = outStream
 	outStream = &bufOutStream
 	bufOutStream.Reset()
+	outStreamMutex.Unlock()
 
 	var defaultNoColor = color.NoColor
 	color.NoColor = true
@@ -129,20 +131,26 @@ func TestList(t *testing.T) {
 	}
 
 	var want = tdata.FromFile("mocks/logs_response_print")
+	outStreamMutex.Lock()
 	var got = bufOutStream.String()
+	outStreamMutex.Unlock()
 
 	stringlib.AssertSimilar(t, want, got)
 
 	color.NoColor = defaultNoColor
+	outStreamMutex.Lock()
 	outStream = defaultOutStream
+	outStreamMutex.Unlock()
 
 	servertest.Teardown()
 }
 
 func TestListProject(t *testing.T) {
+	outStreamMutex.Lock()
 	var defaultOutStream = outStream
 	outStream = &bufOutStream
 	bufOutStream.Reset()
+	outStreamMutex.Unlock()
 
 	var defaultNoColor = color.NoColor
 	color.NoColor = true
@@ -164,20 +172,26 @@ func TestListProject(t *testing.T) {
 	}
 
 	var want = tdata.FromFile("mocks/logs_response_project_print")
+	outStreamMutex.Lock()
 	var got = bufOutStream.String()
+	outStreamMutex.Unlock()
 
 	stringlib.AssertSimilar(t, want, got)
 
 	color.NoColor = defaultNoColor
+	outStreamMutex.Lock()
 	outStream = defaultOutStream
+	outStreamMutex.Unlock()
 
 	servertest.Teardown()
 }
 
 func TestWatch(t *testing.T) {
+	outStreamMutex.Lock()
 	var defaultOutStream = outStream
 	outStream = &bufOutStream
 	bufOutStream.Reset()
+	outStreamMutex.Unlock()
 
 	var defaultNoColor = color.NoColor
 	color.NoColor = true
@@ -227,21 +241,27 @@ func TestWatch(t *testing.T) {
 	wg.Wait()
 
 	var want = tdata.FromFile("mocks/logs_watch_syscall")
+	outStreamMutex.Lock()
 	var got = bufOutStream.String()
+	outStreamMutex.Unlock()
 
 	stringlib.AssertSimilar(t, want, got)
 
 	// some time before cleaning up services on other goroutines...
 	time.Sleep(10 * time.Millisecond)
 	color.NoColor = defaultNoColor
+	outStreamMutex.Lock()
 	outStream = defaultOutStream
+	outStreamMutex.Unlock()
 	servertest.Teardown()
 }
 
 func TestWatcherStart(t *testing.T) {
+	outStreamMutex.Lock()
 	var defaultOutStream = outStream
 	outStream = &bufOutStream
 	bufOutStream.Reset()
+	outStreamMutex.Unlock()
 
 	var defaultNoColor = color.NoColor
 	color.NoColor = true
@@ -286,7 +306,9 @@ func TestWatcherStart(t *testing.T) {
 	<-done
 
 	var want = tdata.FromFile("mocks/logs_watch")
+	outStreamMutex.Lock()
 	var got = bufOutStream.String()
+	outStreamMutex.Unlock()
 
 	stringlib.AssertSimilar(t, want, got)
 
@@ -295,7 +317,9 @@ func TestWatcherStart(t *testing.T) {
 
 	color.NoColor = defaultNoColor
 
+	outStreamMutex.Lock()
 	outStream = defaultOutStream
+	outStreamMutex.Unlock()
 	servertest.Teardown()
 }
 

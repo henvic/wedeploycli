@@ -67,6 +67,8 @@ var PoolingInterval = time.Second
 var instancesWheel = colorwheel.New(color.TextPalette)
 
 var errStream io.Writer = os.Stderr
+var errStreamMutex sync.Mutex
+
 var outStream io.Writer = os.Stdout
 var outStreamMutex sync.Mutex
 
@@ -240,7 +242,9 @@ func (w *Watcher) pool() {
 	cancel()
 
 	if err != nil {
+		errStreamMutex.Lock()
 		fmt.Fprintf(errStream, "%v\n", errorhandling.Handle(err))
+		errStreamMutex.Unlock()
 		return
 	}
 
@@ -256,7 +260,9 @@ func (w *Watcher) pool() {
 	}
 
 	if err := w.incSinceArgument(list); err != nil {
+		errStreamMutex.Lock()
 		fmt.Fprintf(errStream, "%v\n", errorhandling.Handle(err))
+		errStreamMutex.Unlock()
 		return
 	}
 }
