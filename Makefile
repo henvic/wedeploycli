@@ -8,7 +8,7 @@ get-dependencies: check-go
 	then >&2 echo "Install dep to manage dependencies with go get -u github.com/golang/dep/cmd/dep"; \
 	fi;
 
-	dep ensure
+	./scripts/deps.sh
 list-packages:
 	go list ./... | grep -v /vendor/
 build:
