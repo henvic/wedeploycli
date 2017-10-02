@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/autocomplete"
+	"github.com/wedeploy/cli/cmd/about"
 	"github.com/wedeploy/cli/cmd/activities"
 	"github.com/wedeploy/cli/cmd/autocomplete"
 	"github.com/wedeploy/cli/cmd/cmdmanager"
@@ -74,6 +75,7 @@ var commands = []*cobra.Command{
 	cmdwho.WhoCmd,
 	cmdgitcredentialhelper.GitCredentialHelperCmd,
 	cmduninstall.UninstallCmd,
+	cmdabout.AboutCmd,
 }
 
 // see note on usage of maybeEnableVerboseByEnv
