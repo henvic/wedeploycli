@@ -23,7 +23,7 @@
   branch = "master"
   name = "github.com/equinox-io/equinox"
   packages = [".","internal/go-update","internal/go-update/internal/binarydist","internal/go-update/internal/osext","internal/osext","proto"]
-  revision = "6f97d0d3970881d3e53dd6f547a41109eb055e54"
+  revision = "f24972fa72facf59d05c91c848b65eac38815915"
 
 [[projects]]
   branch = "master"
