@@ -2,12 +2,6 @@
 
 
 [[projects]]
-  name = "github.com/coreos/go-semver"
-  packages = ["semver"]
-  revision = "8ab6407b697782a06568d4b7f1db25550ec2e4c6"
-  version = "v0.2.0"
-
-[[projects]]
   name = "github.com/cpuguy83/go-md2man"
   packages = ["md2man"]
   revision = "a65d4d2de4d5f7c74868dfa9b202a3c8be315aaa"
@@ -135,6 +129,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "87dfbecc2d68f59673176226f3ef029dcfb5318dc09ba66f17de88d46b4ab3ab"
+  inputs-digest = "60b6069c8df894d46e25eadcc231b9f0a2d28e067511b41dcb565184fd051b3e"
   solver-name = "gps-cdcl"
   solver-version = 1
