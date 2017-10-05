@@ -1,10 +1,11 @@
-package templates
+// Licensed under Apache license 2.0
+// Copyright 2013-2016 Docker, Inc.
 
-// NOTICE: Based on Docker's docker/utils/templates/templates.go here
-// as of da0ccf8e61e4d5d4005e19fcf0115372f09840bf
-// For reference, see:
-// https://github.com/docker/docker/blob/master/utils/templates/templates_test.go
-// https://github.com/docker/docker/blob/master/LICENSE
+// NOTICE: export from moby/utils/templates/templates_test.go (modified)
+// https://github.com/moby/moby/blob/da0ccf8e61e4d5d4005e19fcf0115372f09840bf/utils/templates/templates_test.go
+// https://github.com/moby/moby/blob/da0ccf8e61e4d5d4005e19fcf0115372f09840bf/LICENSE
+
+package templates
 
 import (
 	"testing"

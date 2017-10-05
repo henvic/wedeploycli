@@ -1,5 +1,9 @@
-// based on namegenerator from docker's moby project
-// https://github.com/moby/moby/pkg/namesgenerator/names-generator.go
+// Licensed under Apache license 2.0
+// Copyright 2013-2016 Docker, Inc.
+
+// NOTICE: export from moby/pkg/namesgenerator/names-generator.go (modified)
+// https://github.com/moby/moby/blob/66cfe61f71252f528ddb458d554cd241e996d9f1/pkg/namesgenerator/names-generator.go
+// License: https://github.com/moby/moby/blob/66cfe61f71252f528ddb458d554cd241e996d9f1/LICENSE
 
 package namesgenerator
 
