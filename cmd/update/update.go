@@ -25,7 +25,7 @@ func updateRun(cmd *cobra.Command, args []string) error {
 		channel = config.Global.ReleaseChannel
 	}
 
-	return update.Update(channel)
+	return update.Update(config.Global, channel)
 }
 
 func init() {

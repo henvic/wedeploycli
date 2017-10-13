@@ -31,8 +31,8 @@ GENiOKpfivw5FIiTN14MZeMTagiKJUOq
 `)
 
 // GetReleaseChannel gets the channel user has used last time (or stable)
-func GetReleaseChannel() string {
-	var channel = config.Global.ReleaseChannel
+func GetReleaseChannel(c *config.Config) string {
+	var channel = c.ReleaseChannel
 
 	if channel == "" {
 		channel = defaults.StableReleaseChannel
@@ -41,8 +41,8 @@ func GetReleaseChannel() string {
 	return channel
 }
 
-func canVerify() bool {
-	var next = config.Global.NextVersion
+func canVerify(c *config.Config) bool {
+	var next = c.NextVersion
 
 	// is there an update being rolled at this exec time?
 	if next != "" && next != defaults.Version {
@@ -50,11 +50,11 @@ func canVerify() bool {
 	}
 
 	// how long since last non availability result?
-	return canVerifyAgain()
+	return canVerifyAgain(c)
 }
 
-func canVerifyAgain() bool {
-	var luc, luce = time.Parse(time.RubyDate, config.Global.LastUpdateCheck)
+func canVerifyAgain(c *config.Config) bool {
+	var luc, luce = time.Parse(time.RubyDate, c.LastUpdateCheck)
 
 	if luce == nil && time.Since(luc).Hours() < float64(cacheNonAvailabilityHours) {
 		return false
@@ -64,12 +64,12 @@ func canVerifyAgain() bool {
 }
 
 // NotifierCheck enquires equinox if a new version is available
-func NotifierCheck() error {
-	if !isNotifyOn() || !canVerify() {
+func NotifierCheck(c *config.Config) error {
+	if !isNotifyOn(c) || !canVerify(c) {
 		return nil
 	}
 
-	err := notifierCheck()
+	err := notifierCheck(c)
 
 	switch err.(type) {
 	case *url.Error:
@@ -82,26 +82,25 @@ func NotifierCheck() error {
 	return err
 }
 
-func notifierCheck() error {
+func notifierCheck(c *config.Config) error {
 	// save, just to be safe (e.g., if the check below breaks)
-	var g = config.Global
-	g.LastUpdateCheck = getCurrentTime()
+	c.LastUpdateCheck = getCurrentTime()
 
-	if err := g.Save(); err != nil {
+	if err := c.Save(); err != nil {
 		return err
 	}
 
-	var resp, err = check(GetReleaseChannel())
+	var resp, err = check(GetReleaseChannel(c))
 
 	switch err {
 	case nil:
-		g.NextVersion = resp.ReleaseVersion
-		if err := g.Save(); err != nil {
+		c.NextVersion = resp.ReleaseVersion
+		if err := c.Save(); err != nil {
 			return err
 		}
 	case equinox.NotAvailableErr:
-		g.NextVersion = ""
-		if err := g.Save(); err != nil {
+		c.NextVersion = ""
+		if err := c.Save(); err != nil {
 			return err
 		}
 		return nil
@@ -111,29 +110,29 @@ func notifierCheck() error {
 }
 
 // Notify is called every time this tool executes to verify if it is outdated
-func Notify() {
-	if !isNotifyOn() {
+func Notify(c *config.Config) {
+	if !isNotifyOn(c) {
 		return
 	}
 
-	var next = config.Global.NextVersion
+	var next = c.NextVersion
 	if next != "" && next != defaults.Version {
-		notify()
+		notify(c)
 	}
 }
 
 // Update this tool
-func Update(channel string) error {
+func Update(c *config.Config, channel string) error {
 	fmt.Println(fancy.Success(fmt.Sprintf(`Channel "%s" is now selected.`, channel)))
 	fmt.Println(fancy.Success("Current installed version is " + defaults.Version))
 
 	var resp, err = check(channel)
 
 	if err != nil {
-		return handleUpdateCheckError(channel, err)
+		return handleUpdateCheckError(c, channel, err)
 	}
 
-	err = updateApply(channel, resp)
+	err = updateApply(c, channel, resp)
 
 	if err != nil {
 		return err
@@ -160,14 +159,13 @@ func getCurrentTime() string {
 	return time.Now().Format(time.RubyDate)
 }
 
-func handleUpdateCheckError(channel string, err error) error {
+func handleUpdateCheckError(c *config.Config, channel string, err error) error {
 	switch {
 	case err == equinox.NotAvailableErr:
-		var g = config.Global
-		g.NextVersion = ""
-		g.ReleaseChannel = channel
-		g.LastUpdateCheck = getCurrentTime()
-		if err := g.Save(); err != nil {
+		c.NextVersion = ""
+		c.ReleaseChannel = channel
+		c.LastUpdateCheck = getCurrentTime()
+		if err := c.Save(); err != nil {
 			return err
 		}
 		fmt.Println(fancy.Info("No updates available."))
@@ -179,23 +177,23 @@ func handleUpdateCheckError(channel string, err error) error {
 	}
 }
 
-func isNotifyOn() bool {
+func isNotifyOn(c *config.Config) bool {
 	if len(os.Args) == 2 && os.Args[1] == "update" {
 		return false
 	}
 
-	if defaults.Version == "master" || !config.Global.NotifyUpdates {
+	if defaults.Version == "master" || !c.NotifyUpdates {
 		return false
 	}
 
 	return true
 }
 
-func notify() {
-	var channel = config.Global.ReleaseChannel
+func notify(c *config.Config) {
+	var channel = c.ReleaseChannel
 	var cmd = "we update"
 
-	if channel != config.Global.ReleaseChannel {
+	if channel != c.ReleaseChannel {
 		cmd += " --channel " + channel
 	}
 
@@ -204,20 +202,18 @@ func notify() {
 		cmd))
 }
 
-func updateApply(channel string, resp *equinox.Response) error {
+func updateApply(c *config.Config, channel string, resp *equinox.Response) error {
 	if err := resp.Apply(); err != nil {
 		return err
 	}
 
-	return updateConfig(channel)
+	return updateConfig(c, channel)
 }
 
-func updateConfig(channel string) error {
-	var g = config.Global
-
-	g.ReleaseChannel = channel
-	g.PastVersion = defaults.Version
-	g.NextVersion = ""
-	g.LastUpdateCheck = getCurrentTime()
-	return g.Save()
+func updateConfig(c *config.Config, channel string) error {
+	c.ReleaseChannel = channel
+	c.PastVersion = defaults.Version
+	c.NextVersion = ""
+	c.LastUpdateCheck = getCurrentTime()
+	return c.Save()
 }

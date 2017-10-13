@@ -84,11 +84,11 @@ func (m *mainProgram) run() {
 	var uc update.Checker
 
 	if !isCommand("autocomplete") && !isCommand("metrics") && !isCommand("build") {
-		uc.Check()
+		uc.Check(config.Global)
 	}
 
 	m.executeCommand()
-	uc.Feedback()
+	uc.Feedback(config.Global)
 
 	autocomplete.AutoInstall()
 	m.maybeSubmitAnalyticsReport()
