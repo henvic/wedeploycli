@@ -12,6 +12,11 @@ package extra
 // are copied somewhere else.
 var Licenses = []License{
 	License{
+		Name:        "Go",
+		Package:     "github.com/golang/go",
+		LicensePath: "extra/licenses/GOLANG_LICENSE",
+	},
+	License{
 		Name:        "moby",
 		Package:     "github.com/moby/moby",
 		Notes:       "modified",
@@ -19,5 +24,13 @@ var Licenses = []License{
 		// Files:
 		// github.com/wedeploy/cli/namesgenerator
 		// github.com/wedeploy/cli/templates
+	},
+	License{
+		Name:        "color",
+		Package:     "github.com/fatih/color",
+		Notes:       "heavily modified",
+		LicensePath: "extra/licenses/COLOR_LICENSE", // MIT
+		// Files:
+		// github.com/wedeploy/cli/color
 	},
 }
