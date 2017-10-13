@@ -20,6 +20,8 @@ package legal
 var Licenses = %s
 `
 
+const thirdPartyFormat = "Third party licenses\n\n%s"
+
 func readExtraLicenses(buf *bytes.Buffer) error {
 	for n, l := range extra.Licenses {
 		var content, err = l.Get()
@@ -59,7 +61,11 @@ func main() {
 	var text = buf.String()
 
 	if err := saveCode(text); err != nil {
+		fmt.Fprintf(os.Stderr, "%+v", err)
+		os.Exit(1)
+	}
 
+	if err := saveThirdPartyFile(text); err != nil {
 		fmt.Fprintf(os.Stderr, "%+v", err)
 		os.Exit(1)
 	}
@@ -68,4 +74,9 @@ func main() {
 func saveCode(text string) error {
 	var code = fmt.Sprintf(codeFormat, legal.FormatLicense(text))
 	return ioutil.WriteFile("licenses.go", []byte(code), 0644)
+}
+
+func saveThirdPartyFile(text string) error {
+	var licenses = fmt.Sprintf(thirdPartyFormat, text)
+	return ioutil.WriteFile("../LICENSE-THIRD-PARTY", []byte(licenses), 0644)
 }
