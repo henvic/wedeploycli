@@ -13,9 +13,6 @@ import (
 
 var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern: cmdflagsfromhost.FullHostPattern,
-	Requires: cmdflagsfromhost.Requires{
-		Auth: true,
-	},
 }
 
 // ConsoleCmd opens the browser console
