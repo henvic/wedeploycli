@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -52,7 +53,7 @@ func (rwl *RestartWatchList) watchRoutine() {
 
 	rwl.list = New(filter)
 	rwl.list.StopCondition = rwl.isDone
-	rwl.list.Start()
+	rwl.list.Start(rwl.list.wectx)
 }
 
 func (rwl *RestartWatchList) isDone() bool {
@@ -75,7 +76,9 @@ func (rwl *RestartWatchList) isDone() bool {
 		return false
 	}
 
-	var cs, ec = p.Services(context.Background())
+	servicesClient := services.New(rwl.list.wectx)
+
+	var cs, ec = p.Services(context.Background(), servicesClient)
 
 	if ec != nil {
 		fmt.Fprintf(rwl.list.outStream, "Can't check if services are finished: %v\n", ec)

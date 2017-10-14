@@ -58,6 +58,7 @@ type Authentication struct {
 	NoLaunchBrowser bool
 	Domains         status.Domains
 	TipCommands     bool
+	wectx           config.Context
 	wlm             *waitlivemsg.WaitLiveMsg
 	msg             *waitlivemsg.Message
 }
@@ -69,7 +70,7 @@ func (a *Authentication) basicAuthLogin() error {
 		token    string
 		err      error
 
-		remoteAddress = config.Context.InfrastructureDomain
+		remoteAddress = a.wectx.InfrastructureDomain()
 	)
 
 	fmt.Println(fancy.Info("Alert     You need a WeDeploy password for authenticating without opening your browser." +
@@ -107,7 +108,7 @@ promptForPassword:
 	go a.wlm.Wait()
 	defer a.wlm.Stop()
 
-	token, err = loginserver.OAuthTokenFromBasicAuth(remoteAddress, username, password)
+	token, err = loginserver.OAuthTokenFromBasicAuth(a.wectx, remoteAddress, username, password)
 	a.maybePrintReceivedToken(token)
 
 	if err != nil {
@@ -146,8 +147,11 @@ func (a *Authentication) tryStdinToken() (bool, error) {
 }
 
 // Run authentication process
-func (a *Authentication) Run(ctx context.Context) error {
-	s, err := status.UnsafeGet(ctx)
+func (a *Authentication) Run(ctx context.Context, c config.Context) error {
+	a.wectx = c
+	statusClient := status.New(c)
+
+	s, err := statusClient.UnsafeGet(ctx)
 
 	if err != nil {
 		return err
@@ -214,7 +218,7 @@ func (a *Authentication) browserWorkflowAuth() error {
 
 	var loginURL = fmt.Sprintf("%s%s%s%s",
 		defaults.DashboardURLPrefix,
-		config.Context.InfrastructureDomain,
+		a.wectx.InfrastructureDomain(),
 		"/login?redirect_uri=",
 		url.QueryEscape(host))
 
@@ -238,7 +242,8 @@ func (a *Authentication) browserWorkflowAuth() error {
 
 func (a *Authentication) success(username string) {
 	var duration = a.wlm.Duration()
-	var remote = config.Global.Remotes[config.Context.Remote]
+	var conf = a.wectx.Config()
+	var remote = conf.Remotes[a.wectx.Remote()]
 
 	var buf = &bytes.Buffer{}
 	fmt.Fprintln(buf, fancy.Success(fmt.Sprintf("Authentication completed in %s [2/2]", timehelper.RoundDuration(duration, time.Second))))
@@ -265,21 +270,21 @@ func (a *Authentication) printTipCommands(buf *bytes.Buffer) {
 }
 
 func (a *Authentication) saveUser(username, token string) (err error) {
-	var g = config.Global
-	var remote = g.Remotes[config.Context.Remote]
+	var conf = a.wectx.Config()
+	var remote = conf.Remotes[a.wectx.Remote()]
 	remote.Username = username
 	remote.Token = token
 	remote.Infrastructure = a.Domains.Infrastructure
 	remote.Service = a.Domains.Service
 
-	g.Remotes[config.Context.Remote] = remote
+	conf.Remotes[a.wectx.Remote()] = remote
 
-	if err = config.SetEndpointContext(config.Context.Remote); err != nil {
+	if err = a.wectx.SetEndpoint(a.wectx.Remote()); err != nil {
 		a.msg.StopText(fancy.Error("Authentication failed [1/2]"))
 		return err
 	}
 
-	if err = g.Save(); err != nil {
+	if err = conf.Save(); err != nil {
 		a.msg.StopText(fancy.Error("Authentication failed [1/2]"))
 		return err
 	}

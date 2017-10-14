@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/cmd/canceled"
+	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/color"
@@ -75,7 +76,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return setupHost.Process()
+	return setupHost.Process(we.Context())
 }
 
 func run(cmd *cobra.Command, args []string) error {
@@ -137,9 +138,11 @@ func confirmation() error {
 func (u *undeployer) do() {
 	switch u.service {
 	case "":
-		u.err <- projects.Unlink(u.context, u.project)
+		projectsClient := projects.New(we.Context())
+		u.err <- projectsClient.Unlink(u.context, u.project)
 	default:
-		u.err <- services.Unlink(u.context, u.project, u.service)
+		servicesClient := services.New(we.Context())
+		u.err <- servicesClient.Unlink(u.context, u.project, u.service)
 	}
 
 	u.endMutex.Lock()
@@ -171,7 +174,7 @@ func (u *undeployer) isDone() bool {
 	}
 
 	var p = u.list.Projects[0]
-	var c, e = p.Services(u.context)
+	var c, e = p.Services(u.context, services.New(we.Context()))
 
 	if e != nil {
 		var eaf, ok = e.(*apihelper.APIFault)
@@ -214,14 +217,16 @@ func (u *undeployer) watchRoutine() {
 	u.list = list.New(filter)
 	u.list.HandleRequestError = u.handleWatchRequestError
 	u.list.StopCondition = u.isDone
-	u.list.Start()
+	u.list.Start(we.Context())
 }
 
 func (u *undeployer) checkProjectOrServiceExists() (err error) {
 	if u.service == "" {
-		_, err = projects.Get(u.context, u.project)
+		projectsClient := projects.New(we.Context())
+		_, err = projectsClient.Get(u.context, u.project)
 	} else {
-		_, err = services.Get(u.context, u.project, u.service)
+		servicesClient := services.New(we.Context())
+		_, err = servicesClient.Get(u.context, u.project, u.service)
 	}
 
 	return err

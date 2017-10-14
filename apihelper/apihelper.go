@@ -25,6 +25,18 @@ import (
 	"github.com/wedeploy/cli/verbosereq"
 )
 
+// Client for the API
+type Client struct {
+	Context config.Context // the configuration is really the user context here
+}
+
+// New client
+func New(wectx config.Context) *Client {
+	return &Client{
+		Context: wectx,
+	}
+}
+
 // APIFault is sent by the server when errors happen
 // Method and URL MUST NOT have JSON tags
 type APIFault struct {
@@ -136,14 +148,14 @@ var (
 )
 
 // Auth a WeDeploy request with the global authentication data
-func Auth(request *wedeploy.WeDeploy) {
-	request.Auth(config.Context.Token)
+func (c *Client) Auth(request *wedeploy.WeDeploy) {
+	request.Auth(c.Context.Token())
 }
 
 // AuthGet creates an authenticated GET request for a JSON response end-point
-func AuthGet(ctx context.Context, path string, data interface{}) error {
-	var request = URL(ctx, path)
-	Auth(request)
+func (c *Client) AuthGet(ctx context.Context, path string, data interface{}) error {
+	var request = c.URL(ctx, path)
+	c.Auth(request)
 
 	if err := Validate(request, request.Get()); err != nil {
 		return err
@@ -227,8 +239,8 @@ func SetBody(request *wedeploy.WeDeploy, data interface{}) error {
 }
 
 // URL creates a WeDeploy URL instance
-func URL(ctx context.Context, paths ...string) *wedeploy.WeDeploy {
-	u := wedeploy.URL(config.Context.Infrastructure, paths...)
+func (c *Client) URL(ctx context.Context, paths ...string) *wedeploy.WeDeploy {
+	u := wedeploy.URL(c.Context.Infrastructure(), paths...)
 	u.SetContext(ctx)
 	return u
 }

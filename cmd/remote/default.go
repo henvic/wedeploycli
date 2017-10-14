@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdargslen"
-	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/prompt"
 )
 
@@ -20,8 +20,9 @@ we remote wedeploy`,
 }
 
 func getRemoteFromList() (string, error) {
-	var global = config.Global
-	var keys = global.Remotes.Keys()
+	var wectx = we.Context()
+	var conf = wectx.Config()
+	var keys = conf.Remotes.Keys()
 	var m = map[string]int{}
 
 	fmt.Println(`Select a remote to use for the next "we" commands:`)
@@ -56,14 +57,15 @@ func setDefaultRun(cmd *cobra.Command, args []string) (err error) {
 }
 
 func saveDefaultRemote(remote string) error {
-	var remotes = config.Global.Remotes
+	var wectx = we.Context()
+	var conf = wectx.Config()
+	var remotes = conf.Remotes
 	var keys = remotes.Keys()
 
 	for _, k := range keys {
 		if remote == k {
-			var g = config.Global
-			g.DefaultRemote = remote
-			return g.Save()
+			conf.DefaultRemote = remote
+			return conf.Save()
 		}
 	}
 

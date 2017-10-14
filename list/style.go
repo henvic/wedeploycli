@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/projects"
@@ -37,7 +36,9 @@ func (l *List) printProjects() {
 }
 
 func (l *List) printProject(p projects.Project) {
-	var services, err = p.Services(context.Background())
+	servicesClient := services.New(l.wectx)
+
+	var services, err = p.Services(context.Background(), servicesClient)
 
 	if err != nil {
 		l.Printf("%v\n", errorhandling.Handle(err))
@@ -112,7 +113,7 @@ func (l *List) printInstances(instances int) {
 }
 
 func (l *List) getServiceDomain(projectID, serviceID string) string {
-	return fmt.Sprintf("%v-%v.%v", serviceID, projectID, config.Context.ServiceDomain)
+	return fmt.Sprintf("%v-%v.%v", serviceID, projectID, l.wectx.ServiceDomain())
 }
 
 func inArray(key string, haystack []string) bool {

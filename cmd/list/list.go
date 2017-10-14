@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/fancy"
@@ -42,7 +43,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if err := setupHost.Process(); err != nil {
+	if err := setupHost.Process(we.Context()); err != nil {
 		return err
 	}
 
@@ -55,13 +56,15 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 func checkProjectOrServiceExists() (err error) {
 	if setupHost.Service() != "" {
+		servicesClient := services.New(we.Context())
 		// if service exists, project also exists
-		_, err = services.Get(context.Background(), setupHost.Project(), setupHost.Service())
+		_, err = servicesClient.Get(context.Background(), setupHost.Project(), setupHost.Service())
 		return err
 	}
 
 	if setupHost.Project() != "" {
-		_, err = projects.Get(context.Background(), setupHost.Project())
+		projectsClient := projects.New(we.Context())
+		_, err = projectsClient.Get(context.Background(), setupHost.Project())
 		return err
 	}
 
@@ -96,7 +99,7 @@ func listRun(cmd *cobra.Command, args []string) {
 		l.StopCondition = alwaysStop
 	}
 
-	l.Start()
+	l.Start(we.Context())
 }
 
 func init() {

@@ -2,8 +2,8 @@ package cmdupdate
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdargslen"
-	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/update"
 )
@@ -21,11 +21,12 @@ var (
 )
 
 func updateRun(cmd *cobra.Command, args []string) error {
+	var wectx = we.Context()
 	if !cmd.Flag("channel").Changed {
-		channel = config.Global.ReleaseChannel
+		channel = wectx.Config().ReleaseChannel
 	}
 
-	return update.Update(config.Global, channel)
+	return update.Update(wectx.Config(), channel)
 }
 
 func init() {

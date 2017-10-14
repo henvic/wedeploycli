@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
@@ -59,9 +60,11 @@ func (r *restart) do() {
 
 	switch r.service {
 	case "":
-		err = projects.Restart(r.ctx, r.project)
+		projectsClient := projects.New(we.Context())
+		err = projectsClient.Restart(r.ctx, r.project)
 	default:
-		err = services.Restart(r.ctx, r.project, r.service)
+		servicesClient := services.New(we.Context())
+		err = servicesClient.Restart(r.ctx, r.project, r.service)
 	}
 
 	r.endMutex.Lock()
@@ -72,7 +75,8 @@ func (r *restart) do() {
 }
 
 func (r *restart) checkProjectOrServiceExists() error {
-	var p, err = projects.Get(context.Background(), r.project)
+	projectsClient := projects.New(we.Context())
+	var p, err = projectsClient.Get(context.Background(), r.project)
 	r.rwl.SetInitialProjectHealthUID(p.HealthUID)
 
 	switch {
@@ -86,7 +90,8 @@ func (r *restart) checkProjectOrServiceExists() error {
 }
 
 func (r *restart) getServiceListForProjectRestart(p projects.Project) error {
-	var services, err = p.Services(context.Background())
+	servicesClient := services.New(we.Context())
+	var services, err = p.Services(context.Background(), servicesClient)
 
 	if err != nil {
 		return err
@@ -104,7 +109,8 @@ func (r *restart) getServiceListForProjectRestart(p projects.Project) error {
 }
 
 func (r *restart) checkServiceExists() error {
-	var c, err = services.Get(context.Background(), r.project, r.service)
+	servicesClient := services.New(we.Context())
+	var c, err = servicesClient.Get(context.Background(), r.project, r.service)
 	r.rwl.SetInitialServicesHealthUID(map[string]string{
 		r.service: c.HealthUID,
 	})
@@ -129,7 +135,7 @@ func (r *restart) hasRestartFinished() bool {
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	return setupHost.Process()
+	return setupHost.Process(we.Context())
 }
 
 func restartRun(cmd *cobra.Command, args []string) error {

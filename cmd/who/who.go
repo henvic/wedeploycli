@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdargslen"
-	"github.com/wedeploy/cli/config"
 )
 
 // WhoCmd get the current user
@@ -18,11 +18,12 @@ var WhoCmd = &cobra.Command{
 }
 
 func whoRun(cmd *cobra.Command, args []string) error {
-	if config.Context.Username != "" {
+	var wectx = we.Context()
+	if wectx.Username() != "" {
 		fmt.Printf("%s in %s (%s)\n",
-			config.Context.Username,
-			config.Context.Remote,
-			config.Context.InfrastructureDomain)
+			wectx.Username(),
+			wectx.Remote(),
+			wectx.InfrastructureDomain())
 		return nil
 	}
 

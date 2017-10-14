@@ -15,12 +15,27 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 )
 
-// Services list
+// Client for the services
+type Client struct {
+	*apihelper.Client
+}
+
+// New Client
+func New(wectx config.Context) *Client {
+	return &Client{
+		&apihelper.Client{
+			Context: wectx,
+		},
+	}
+}
+
+// Services of services for helper functions
 type Services []Service
 
 // Get a service from the service list
@@ -248,10 +263,10 @@ func (l *listFromDirectoryGetter) addFunc(sp *ServicePackage, dir string) error 
 }
 
 // List services of a given project
-func List(ctx context.Context, projectID string) (Services, error) {
+func (c *Client) List(ctx context.Context, projectID string) (Services, error) {
 	var cs Services
 
-	var err = apihelper.AuthGet(ctx, "/projects/"+url.QueryEscape(projectID)+"/services", &cs)
+	var err = c.Client.AuthGet(ctx, "/projects/"+url.QueryEscape(projectID)+"/services", &cs)
 	sort.Slice(cs, func(i, j int) bool {
 		return cs[i].ServiceID < cs[j].ServiceID
 	})
@@ -259,33 +274,33 @@ func List(ctx context.Context, projectID string) (Services, error) {
 }
 
 // Get service
-func Get(ctx context.Context, projectID, serviceID string) (c Service, err error) {
+func (c *Client) Get(ctx context.Context, projectID, serviceID string) (s Service, err error) {
 	switch {
 	case projectID == "" && serviceID == "":
-		return c, ErrEmptyProjectAndServiceID
+		return s, ErrEmptyProjectAndServiceID
 	case projectID == "":
-		return c, ErrEmptyProjectID
+		return s, ErrEmptyProjectID
 	case serviceID == "":
-		return c, ErrEmptyServiceID
+		return s, ErrEmptyServiceID
 	}
 
-	err = apihelper.AuthGet(ctx, "/projects/"+
+	err = c.Client.AuthGet(ctx, "/projects/"+
 		url.QueryEscape(projectID)+
 		"/services/"+
-		url.QueryEscape(serviceID), &c)
-	return c, err
+		url.QueryEscape(serviceID), &s)
+	return s, err
 }
 
 // AddDomain in project
-func AddDomain(ctx context.Context, projectID, serviceID string, domain string) (err error) {
-	var service, perr = Get(context.Background(), projectID, serviceID)
+func (c *Client) AddDomain(ctx context.Context, projectID, serviceID string, domain string) (err error) {
+	var service, perr = c.Get(context.Background(), projectID, serviceID)
 
 	if perr != nil {
 		return errwrap.Wrapf("Can not get current domains: {{err}}", perr)
 	}
 
 	var customDomains = maybeAppendDomain(service.CustomDomains, domain)
-	return updateDomains(ctx, projectID, serviceID, customDomains)
+	return c.updateDomains(ctx, projectID, serviceID, customDomains)
 }
 
 func maybeAppendDomain(customDomains []string, domain string) []string {
@@ -300,8 +315,8 @@ func maybeAppendDomain(customDomains []string, domain string) []string {
 }
 
 // RemoveDomain in project
-func RemoveDomain(ctx context.Context, projectID string, serviceID, domain string) (err error) {
-	var service, perr = Get(context.Background(), projectID, serviceID)
+func (c *Client) RemoveDomain(ctx context.Context, projectID string, serviceID, domain string) (err error) {
+	var service, perr = c.Get(context.Background(), projectID, serviceID)
 
 	if perr != nil {
 		return errwrap.Wrapf("Can not get current domains: {{err}}", perr)
@@ -315,21 +330,21 @@ func RemoveDomain(ctx context.Context, projectID string, serviceID, domain strin
 		}
 	}
 
-	return updateDomains(ctx, projectID, serviceID, customDomains)
+	return c.updateDomains(ctx, projectID, serviceID, customDomains)
 }
 
 type updateDomainsReq struct {
 	Value []string `json:"value"`
 }
 
-func updateDomains(ctx context.Context, projectID, serviceID string, domains []string) (err error) {
-	var req = apihelper.URL(ctx, "/projects",
+func (c *Client) updateDomains(ctx context.Context, projectID, serviceID string, domains []string) (err error) {
+	var req = c.Client.URL(ctx, "/projects",
 		url.QueryEscape(projectID),
 		"/services",
 		url.QueryEscape(serviceID),
 		"/custom-domains")
 
-	apihelper.Auth(req)
+	c.Client.Auth(req)
 
 	if err := apihelper.SetBody(req, updateDomainsReq{domains}); err != nil {
 		return errwrap.Wrapf("Can not set body for domain: {{err}}", err)
@@ -344,8 +359,8 @@ type EnvironmentVariable struct {
 }
 
 // GetEnvironmentVariables of a service
-func GetEnvironmentVariables(ctx context.Context, projectID, serviceID string) (envs []EnvironmentVariable, err error) {
-	err = apihelper.AuthGet(ctx, "/projects/"+
+func (c *Client) GetEnvironmentVariables(ctx context.Context, projectID, serviceID string) (envs []EnvironmentVariable, err error) {
+	err = c.Client.AuthGet(ctx, "/projects/"+
 		url.QueryEscape(projectID)+
 		"/services/"+
 		url.QueryEscape(serviceID)+
@@ -364,7 +379,7 @@ type linkRequestBody struct {
 }
 
 // Link service to project
-func Link(ctx context.Context, projectID string, service Service, source string) (err error) {
+func (c *Client) Link(ctx context.Context, projectID string, service Service, source string) (err error) {
 	var reqBody = linkRequestBody{
 		ServiceID: service.ServiceID,
 		Image:     service.Image,
@@ -379,8 +394,8 @@ func Link(ctx context.Context, projectID string, service Service, source string)
 
 	verbose.Debug("Linking service " + service.ServiceID + " to project " + projectID)
 
-	var req = apihelper.URL(ctx, "/projects", url.QueryEscape(projectID), "/services")
-	apihelper.Auth(req)
+	var req = c.Client.URL(ctx, "/projects", url.QueryEscape(projectID), "/services")
+	c.Client.Auth(req)
 
 	err = apihelper.SetBody(req, reqBody)
 
@@ -392,13 +407,13 @@ func Link(ctx context.Context, projectID string, service Service, source string)
 }
 
 // Unlink service
-func Unlink(ctx context.Context, projectID, serviceID string) error {
-	var req = apihelper.URL(ctx,
+func (c *Client) Unlink(ctx context.Context, projectID, serviceID string) error {
+	var req = c.Client.URL(ctx,
 		"/projects",
 		url.QueryEscape(projectID),
 		"/services",
 		url.QueryEscape(serviceID))
-	apihelper.Auth(req)
+	c.Client.Auth(req)
 
 	return apihelper.Validate(req, req.Delete())
 }
@@ -462,8 +477,8 @@ func Read(path string) (*ServicePackage, error) {
 }
 
 // SetEnvironmentVariable sets an environment variable
-func SetEnvironmentVariable(ctx context.Context, projectID, serviceID, key, value string) error {
-	var req = apihelper.URL(ctx,
+func (c *Client) SetEnvironmentVariable(ctx context.Context, projectID, serviceID, key, value string) error {
+	var req = c.Client.URL(ctx,
 		"/projects",
 		url.QueryEscape(projectID),
 		"/services",
@@ -471,7 +486,7 @@ func SetEnvironmentVariable(ctx context.Context, projectID, serviceID, key, valu
 		"/environment-variables/"+
 			url.QueryEscape(key))
 
-	apihelper.Auth(req)
+	c.Client.Auth(req)
 
 	b := map[string]string{
 		"value": value,
@@ -485,8 +500,8 @@ func SetEnvironmentVariable(ctx context.Context, projectID, serviceID, key, valu
 }
 
 // UnsetEnvironmentVariable removes an environment variable
-func UnsetEnvironmentVariable(ctx context.Context, projectID, serviceID, key string) error {
-	var req = apihelper.URL(ctx,
+func (c *Client) UnsetEnvironmentVariable(ctx context.Context, projectID, serviceID, key string) error {
+	var req = c.Client.URL(ctx,
 		"/projects",
 		url.QueryEscape(projectID),
 		"/services",
@@ -494,27 +509,27 @@ func UnsetEnvironmentVariable(ctx context.Context, projectID, serviceID, key str
 		"/environment-variables/"+
 			url.QueryEscape(key))
 
-	apihelper.Auth(req)
+	c.Client.Auth(req)
 
 	return apihelper.Validate(req, req.Delete())
 }
 
 // Restart restarts a service inside a project
-func Restart(ctx context.Context, projectID, serviceID string) error {
-	var req = apihelper.URL(ctx, "/projects/"+
+func (c *Client) Restart(ctx context.Context, projectID, serviceID string) error {
+	var req = c.Client.URL(ctx, "/projects/"+
 		url.QueryEscape(projectID)+
 		"/services/"+
 		url.QueryEscape(serviceID)+
 		"/restart")
 
-	apihelper.Auth(req)
+	c.Client.Auth(req)
 	return apihelper.Validate(req, req.Post())
 }
 
 // Validate service
-func Validate(ctx context.Context, projectID, serviceID string) (err error) {
-	var req = apihelper.URL(ctx, "/validators/services/id")
-	err = doValidate(projectID, serviceID, req)
+func (c *Client) Validate(ctx context.Context, projectID, serviceID string) (err error) {
+	var req = c.Client.URL(ctx, "/validators/services/id")
+	err = c.doValidate(projectID, serviceID, req)
 
 	if err == nil || err != wedeploy.ErrUnexpectedResponse {
 		return err
@@ -531,8 +546,8 @@ func Validate(ctx context.Context, projectID, serviceID string) (err error) {
 	return getValidateAPIFaultError(errDoc)
 }
 
-func doValidate(projectID, serviceID string, req *wedeploy.WeDeploy) error {
-	apihelper.Auth(req)
+func (c *Client) doValidate(projectID, serviceID string, req *wedeploy.WeDeploy) error {
+	c.Client.Auth(req)
 
 	req.Param("projectId", projectID)
 	req.Param("value", serviceID)

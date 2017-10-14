@@ -22,15 +22,24 @@ import (
 	"github.com/wedeploy/cli/tdata"
 )
 
+var (
+	wectx  config.Context
+	client *Client
+)
+
 func TestMain(m *testing.M) {
-	if err := config.Setup("mocks/.we"); err != nil {
+	var err error
+	wectx, err = config.Setup("mocks/.we")
+
+	if err != nil {
 		panic(err)
 	}
 
-	if err := config.SetEndpointContext(defaults.CloudRemote); err != nil {
+	if err := wectx.SetEndpoint(defaults.CloudRemote); err != nil {
 		panic(err)
 	}
 
+	client = New(wectx)
 	os.Exit(m.Run())
 }
 
@@ -201,7 +210,7 @@ func TestGet(t *testing.T) {
 	servertest.Mux.HandleFunc("/projects/images/services/search7606",
 		tdata.ServerJSONFileHandler("mocks/service_response.json"))
 
-	var got, err = Get(context.Background(), "images", "search7606")
+	var got, err = client.Get(context.Background(), "images", "search7606")
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v instead", err)
@@ -216,7 +225,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestGetEmptyServiceID(t *testing.T) {
-	var _, err = Get(context.Background(), "images", "")
+	var _, err = client.Get(context.Background(), "images", "")
 
 	if err != ErrEmptyServiceID {
 		t.Errorf("Wanted error to be %v, got %v instead", ErrEmptyServiceID, err)
@@ -224,7 +233,7 @@ func TestGetEmptyServiceID(t *testing.T) {
 }
 
 func TestGetEmptyProjectID(t *testing.T) {
-	var _, err = Get(context.Background(), "", "foo")
+	var _, err = client.Get(context.Background(), "", "foo")
 
 	if err != ErrEmptyProjectID {
 		t.Errorf("Wanted error to be %v, got %v instead", ErrEmptyProjectID, err)
@@ -232,7 +241,7 @@ func TestGetEmptyProjectID(t *testing.T) {
 }
 
 func TestGetEmptyProjectAndServiceID(t *testing.T) {
-	var _, err = Get(context.Background(), "", "")
+	var _, err = client.Get(context.Background(), "", "")
 
 	if err != ErrEmptyProjectAndServiceID {
 		t.Errorf("Wanted error to be %v, got %v instead", ErrEmptyProjectAndServiceID, err)
@@ -258,7 +267,7 @@ func TestList(t *testing.T) {
 	servertest.Mux.HandleFunc("/projects/images/services",
 		tdata.ServerJSONFileHandler("mocks/services_response.json"))
 
-	var got, err = List(context.Background(), "images")
+	var got, err = client.List(context.Background(), "images")
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v instead", err)
@@ -320,7 +329,7 @@ func TestLink(t *testing.T) {
 				data)
 		})
 
-	var err = Link(context.Background(), "sound", Service{ServiceID: "speaker"}, "mocks/app/speaker")
+	var err = client.Link(context.Background(), "sound", Service{ServiceID: "speaker"}, "mocks/app/speaker")
 
 	if err != nil {
 		t.Errorf("Unexpected error on Install: %v", err)
@@ -415,7 +424,7 @@ func TestSetEnvironmentVariable(t *testing.T) {
 			}
 		})
 
-	if err := SetEnvironmentVariable(context.Background(), "foo", "bar", "xyz", "abc"); err != nil {
+	if err := client.SetEnvironmentVariable(context.Background(), "foo", "bar", "xyz", "abc"); err != nil {
 		t.Errorf("Expected no error when adding domains, got %v instead", err)
 	}
 
@@ -433,7 +442,7 @@ func TestUnsetEnvironmentVariable(t *testing.T) {
 			}
 		})
 
-	if err := UnsetEnvironmentVariable(context.Background(), "foo", "bar", "xyz"); err != nil {
+	if err := client.UnsetEnvironmentVariable(context.Background(), "foo", "bar", "xyz"); err != nil {
 		t.Errorf("Expected no error when adding domains, got %v instead", err)
 	}
 
@@ -448,7 +457,7 @@ func TestRestart(t *testing.T) {
 			fmt.Fprintf(w, `"on"`)
 		})
 
-	if err := Restart(context.Background(), "foo", "bar"); err != nil {
+	if err := client.Restart(context.Background(), "foo", "bar"); err != nil {
 		t.Errorf("Unexpected error on service restart: %v", err)
 	}
 
@@ -465,7 +474,7 @@ func TestUnlink(t *testing.T) {
 		}
 	})
 
-	var err = Unlink(context.Background(), "foo", "bar")
+	var err = client.Unlink(context.Background(), "foo", "bar")
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v instead", err)
@@ -488,7 +497,7 @@ func TestValidate(t *testing.T) {
 			}
 		})
 
-	if err := Validate(context.Background(), "foo", "bar"); err != nil {
+	if err := client.Validate(context.Background(), "foo", "bar"); err != nil {
 		t.Errorf("Wanted null error, got %v instead", err)
 	}
 
@@ -505,7 +514,7 @@ func TestValidateAlreadyExists(t *testing.T) {
 			fmt.Fprintf(w, tdata.FromFile("mocks/service_already_exists_response.json"))
 		})
 
-	if err := Validate(context.Background(), "foo", "bar"); err != ErrServiceAlreadyExists {
+	if err := client.Validate(context.Background(), "foo", "bar"); err != ErrServiceAlreadyExists {
 		t.Errorf("Wanted %v error, got %v instead", ErrServiceAlreadyExists, err)
 	}
 
@@ -522,7 +531,7 @@ func TestValidateInvalidID(t *testing.T) {
 			fmt.Fprintf(w, tdata.FromFile("mocks/service_invalid_id_response.json"))
 		})
 
-	if err := Validate(context.Background(), "foo", "bar"); err != ErrInvalidServiceID {
+	if err := client.Validate(context.Background(), "foo", "bar"); err != ErrInvalidServiceID {
 		t.Errorf("Wanted %v error, got %v instead", ErrInvalidServiceID, err)
 	}
 
@@ -539,7 +548,7 @@ func TestValidateError(t *testing.T) {
 			fmt.Fprintf(w, tdata.FromFile("../apihelper/mocks/unknown_error_api_response.json"))
 		})
 
-	var err = Validate(context.Background(), "foo", "bar")
+	var err = client.Validate(context.Background(), "foo", "bar")
 
 	switch err.(type) {
 	case apihelper.APIFault:
@@ -559,7 +568,7 @@ func TestValidateInvalidError(t *testing.T) {
 			w.WriteHeader(404)
 		})
 
-	var err = Validate(context.Background(), "foo", "bar")
+	var err = client.Validate(context.Background(), "foo", "bar")
 
 	if err == nil || errwrap.Get(err, "unexpected end of JSON input") == nil {
 		t.Errorf("Expected error didn't happen, got %v instead", err)

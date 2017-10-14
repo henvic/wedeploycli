@@ -6,9 +6,9 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/remotes"
@@ -64,7 +64,9 @@ var setURLCmd = &cobra.Command{
 }
 
 func remoteRun(cmd *cobra.Command, args []string) error {
-	var remotes = config.Global.Remotes
+	var wectx = we.Context()
+	var conf = wectx.Config()
+	var remotes = conf.Remotes
 	var w = formatter.NewTabWriter(os.Stdout)
 
 	for _, k := range remotes.Keys() {
@@ -73,7 +75,7 @@ func remoteRun(cmd *cobra.Command, args []string) error {
 
 		fmt.Fprintf(w, "%s\t%s", k, infrastructure)
 
-		if k == config.Global.DefaultRemote {
+		if k == conf.DefaultRemote {
 			fmt.Fprintf(w, " (default)")
 		}
 
@@ -86,8 +88,9 @@ func remoteRun(cmd *cobra.Command, args []string) error {
 }
 
 func setRun(cmd *cobra.Command, args []string) error {
-	var global = config.Global
-	var r = global.Remotes
+	var wectx = we.Context()
+	var conf = wectx.Config()
+	var r = conf.Remotes
 	var name = args[0]
 
 	if _, ok := r[name]; ok {
@@ -98,12 +101,13 @@ func setRun(cmd *cobra.Command, args []string) error {
 		Infrastructure: args[1],
 	})
 
-	return global.Save()
+	return conf.Save()
 }
 
 func renameRun(cmd *cobra.Command, args []string) error {
-	var global = config.Global
-	var r = global.Remotes
+	var wectx = we.Context()
+	var conf = wectx.Config()
+	var r = conf.Remotes
 	var old = args[0]
 	var name = args[1]
 
@@ -119,12 +123,13 @@ func renameRun(cmd *cobra.Command, args []string) error {
 
 	r.Del(old)
 	r.Set(name, oldRemote)
-	return global.Save()
+	return conf.Save()
 }
 
 func removeRun(cmd *cobra.Command, args []string) error {
-	var global = config.Global
-	var remotes = global.Remotes
+	var wectx = we.Context()
+	var conf = wectx.Config()
+	var remotes = conf.Remotes
 	var name = args[0]
 
 	if _, ok := remotes[name]; !ok {
@@ -137,16 +142,18 @@ func removeRun(cmd *cobra.Command, args []string) error {
 		fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Removed default cloud remote "wedeploy" will be recreated with its default value`))
 	}
 
-	if name == global.DefaultRemote && name != defaults.CloudRemote {
-		global.DefaultRemote = defaults.CloudRemote
+	if name == conf.DefaultRemote && name != defaults.CloudRemote {
+		conf.DefaultRemote = defaults.CloudRemote
 		fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Default remote reset to "wedeploy"`))
 	}
 
-	return global.Save()
+	return conf.Save()
 }
 
 func getURLRun(cmd *cobra.Command, args []string) error {
-	var remotes = config.Global.Remotes
+	var wectx = we.Context()
+	var conf = wectx.Config()
+	var remotes = conf.Remotes
 	var name = args[0]
 	var remote, ok = remotes[name]
 
@@ -159,8 +166,9 @@ func getURLRun(cmd *cobra.Command, args []string) error {
 }
 
 func setURLRun(cmd *cobra.Command, args []string) error {
-	var global = config.Global
-	var r = global.Remotes
+	var wectx = we.Context()
+	var conf = wectx.Config()
+	var r = conf.Remotes
 	var name = args[0]
 	var uri = args[1]
 
@@ -171,7 +179,7 @@ func setURLRun(cmd *cobra.Command, args []string) error {
 	r.Set(name, remotes.Entry{
 		Infrastructure: uri,
 	})
-	return global.Save()
+	return conf.Save()
 }
 
 func init() {

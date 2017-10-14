@@ -12,6 +12,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/usertoken"
 	"github.com/wedeploy/cli/verbose"
@@ -218,8 +219,10 @@ type accessToken struct {
 }
 
 // OAuthTokenFromBasicAuth gets a token from a Basic Auth flow
-func OAuthTokenFromBasicAuth(remoteAddress, username, password string) (token string, err error) {
-	var request = apihelper.URL(context.Background(), "/login")
+func OAuthTokenFromBasicAuth(c config.Context, remoteAddress, username, password string) (token string, err error) {
+	var apiClient = apihelper.New(c)
+
+	var request = apiClient.URL(context.Background(), "/login")
 
 	request.Form("email", username)
 	request.Form("password", password)

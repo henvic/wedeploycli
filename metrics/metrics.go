@@ -79,15 +79,15 @@ type event struct {
 }
 
 // Rec event if analytics is enabled
-func Rec(e Event) {
-	if _, err := RecOrFail(e); err != nil {
+func Rec(conf *config.Config, e Event) {
+	if _, err := RecOrFail(conf, e); err != nil {
 		fmt.Fprintf(errStream, "%v\n", err)
 	}
 }
 
 // RecOrFail records event if analytics is enabled and returns an error on failure
-func RecOrFail(e Event) (saved bool, err error) {
-	if config.Global == nil || !config.Global.EnableAnalytics {
+func RecOrFail(conf *config.Config, e Event) (saved bool, err error) {
+	if conf == nil || !conf.EnableAnalytics {
 		return false, nil
 	}
 
@@ -98,7 +98,7 @@ func RecOrFail(e Event) (saved bool, err error) {
 		Tags:    e.Tags,
 		Extra:   e.Extra,
 		PID:     pid,
-		SID:     config.Global.AnalyticsID,
+		SID:     conf.AnalyticsID,
 		Time:    time.Now().Format(time.RubyDate),
 		Version: defaults.Version,
 		OS:      runtime.GOOS,
@@ -113,27 +113,27 @@ func RecOrFail(e Event) (saved bool, err error) {
 }
 
 // Enable metrics
-func Enable() error {
-	config.Global.EnableAnalytics = true
+func Enable(conf *config.Config) error {
+	conf.EnableAnalytics = true
 
-	if config.Global.AnalyticsID == "" {
-		config.Global.AnalyticsID = newAnalyticsID()
+	if conf.AnalyticsID == "" {
+		conf.AnalyticsID = newAnalyticsID()
 	}
 
-	return config.Global.Save()
+	return conf.Save()
 }
 
 // Disable metrics
-func Disable() error {
-	config.Global.EnableAnalytics = false
-	return config.Global.Save()
+func Disable(conf *config.Config) error {
+	conf.EnableAnalytics = false
+	return conf.Save()
 }
 
 // Reset metrics by regenerating metrics ID and purge existing metrics
-func Reset() error {
-	config.Global.AnalyticsID = newAnalyticsID()
+func Reset(conf *config.Config) error {
+	conf.AnalyticsID = newAnalyticsID()
 
-	if err := config.Global.Save(); err != nil {
+	if err := conf.Save(); err != nil {
 		return err
 	}
 
@@ -186,8 +186,8 @@ func (e *eventRecorder) rec(ie event) (err error) {
 }
 
 // TrySubmit events file if enabled
-func (s *Sender) TrySubmit() (int, error) {
-	if !config.Global.EnableAnalytics {
+func (s *Sender) TrySubmit(conf *config.Config) (int, error) {
+	if !conf.EnableAnalytics {
 		return 0, errors.New(
 			"Aborting submission of analytics (analytics report status = disabled)")
 	}
@@ -232,8 +232,8 @@ func (s *Sender) trySend() (events int, err error) {
 
 // SubmitEventuallyOnBackground eventually forks a child process that submits analytics to WeDeploy
 // if the analytics reporting is enabled
-func SubmitEventuallyOnBackground() (err error) {
-	if !config.Global.EnableAnalytics {
+func SubmitEventuallyOnBackground(conf *config.Config) (err error) {
+	if !conf.EnableAnalytics {
 		return nil
 	}
 

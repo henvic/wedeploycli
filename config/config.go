@@ -18,14 +18,87 @@ import (
 	"github.com/wedeploy/cli/verbose"
 )
 
-// ContextType structure
-type ContextType struct {
+// Context structure
+type Context struct {
+	config  *Config
+	context *ContextParams
+}
+
+// NewContext with received params and uninitialized configuration
+func NewContext(params ContextParams) Context {
+	return Context{
+		context: &ContextParams{},
+		config:  &Config{},
+	}
+}
+
+// ContextParams is the set of environment configurations
+type ContextParams struct {
 	Remote               string
 	Infrastructure       string
 	InfrastructureDomain string
 	ServiceDomain        string
 	Username             string
 	Token                string
+}
+
+// Remote used on the context
+func (c *Context) Remote() string {
+	return c.context.Remote
+}
+
+// Infrastructure used on the context
+func (c *Context) Infrastructure() string {
+	return c.context.Infrastructure
+}
+
+// InfrastructureDomain used on the context
+func (c *Context) InfrastructureDomain() string {
+	return c.context.InfrastructureDomain
+}
+
+// ServiceDomain used on the context
+func (c *Context) ServiceDomain() string {
+	return c.context.ServiceDomain
+}
+
+// Username used on the context
+func (c *Context) Username() string {
+	return c.context.Username
+}
+
+// Token used on the context
+func (c *Context) Token() string {
+	return c.context.Token
+}
+
+// Config gets the configuration
+func (c *Context) Config() *Config {
+	return c.config
+}
+
+// SetEndpoint for the context
+func (c *Context) SetEndpoint(remote string) error {
+	var r, ok = c.Config().Remotes[remote]
+
+	if !ok {
+		return fmt.Errorf(`Error loading selected remote "%v"`, remote)
+	}
+
+	c.context.Remote = remote
+	var address = r.Infrastructure
+
+	if !isHTTPLocalhost(address) {
+		address = "https://api." + address
+	}
+
+	c.context.Infrastructure = address
+
+	c.context.InfrastructureDomain = getRemoteAddress(r.Infrastructure)
+	c.context.ServiceDomain = r.Service
+	c.context.Username = r.Username
+	c.context.Token = r.Token
+	return nil
 }
 
 // Config of the application
@@ -45,15 +118,7 @@ type Config struct {
 	file            *ini.File    `ini:"-"`
 }
 
-var (
-	// Global configuration
-	Global *Config
-
-	// Context stores the environmental context
-	Context *ContextType
-
-	parseRemoteSectionNameRegex = regexp.MustCompile(`remote \"(.*)\"`)
-)
+var parseRemoteSectionNameRegex = regexp.MustCompile(`remote \"(.*)\"`)
 
 // Load the configuration
 func (c *Config) Load() error {
@@ -130,48 +195,24 @@ func (c *Config) Save() error {
 }
 
 // Setup the environment
-func Setup(path string) (err error) {
+func Setup(path string) (wectx Context, err error) {
+	wectx = NewContext(ContextParams{})
 	path, err = filepath.Abs(path)
 
 	if err != nil {
-		return err
+		return wectx, err
 	}
 
-	Global = &Config{
+	var c = &Config{
 		Path: path,
 	}
 
-	if err = Global.Load(); err != nil {
-		verbose.Debug("Error setting up global config")
-		return err
+	if err = c.Load(); err != nil {
+		return wectx, err
 	}
 
-	Context = &ContextType{}
-	return nil
-}
-
-// SetEndpointContext for a given remote
-func SetEndpointContext(remote string) error {
-	var r, ok = Global.Remotes[remote]
-
-	if !ok {
-		return fmt.Errorf(`Error loading selected remote "%v"`, remote)
-	}
-
-	Context.Remote = remote
-	var address = r.Infrastructure
-
-	if !isHTTPLocalhost(address) {
-		address = "https://api." + address
-	}
-
-	Context.Infrastructure = address
-
-	Context.InfrastructureDomain = getRemoteAddress(r.Infrastructure)
-	Context.ServiceDomain = r.Service
-	Context.Username = r.Username
-	Context.Token = r.Token
-	return nil
+	wectx.config = c
+	return wectx, nil
 }
 
 func isHTTPLocalhost(address string) bool {
@@ -383,10 +424,4 @@ func (c *Config) updateRemotes() {
 func (c *Config) banner() {
 	c.file.Section("DEFAULT").Comment = `; Configuration file for WeDeploy CLI
 ; https://wedeploy.com`
-}
-
-// Teardown resets the configuration environment
-func Teardown() {
-	Global = nil
-	Context = nil
 }

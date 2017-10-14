@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	cmdenvset "github.com/wedeploy/cli/cmd/env/set"
 	cmdenvunset "github.com/wedeploy/cli/cmd/env/unset"
+	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/verbose"
@@ -43,11 +44,13 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return setupHost.Process()
+	return setupHost.Process(we.Context())
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	var envs, err = services.GetEnvironmentVariables(context.Background(),
+	servicesClient := services.New(we.Context())
+
+	var envs, err = servicesClient.GetEnvironmentVariables(context.Background(),
 		setupHost.Project(),
 		setupHost.Service())
 

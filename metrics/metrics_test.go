@@ -23,19 +23,27 @@ import (
 	"github.com/wedeploy/cli/tdata"
 )
 
+var (
+	wectx config.Context
+	conf  *config.Config
+)
+
 func TestMain(m *testing.M) {
 	removeMetricsFile()
 
-	if err := config.Setup("mocks/.we"); err != nil {
+	var err error
+	wectx, err = config.Setup("mocks/.we")
+	conf = wectx.Config()
+
+	if err != nil {
 		panic(err)
 	}
 
-	config.Global.EnableAnalytics = true
+	wectx.Config().EnableAnalytics = true
 	resetMetricsSetup()
 	ec := m.Run()
 	SetPID(0)
 	SetPath("")
-	config.Teardown()
 	os.Exit(ec)
 }
 
@@ -48,19 +56,19 @@ func removeMetricsFile() {
 func resetMetricsSetup() {
 	SetPID(os.Getpid())
 	SetPath(abs("mocks/.we_metrics"))
-	if err := Enable(); err != nil {
+	if err := Enable(conf); err != nil {
 		panic(err)
 	}
 }
 
 func TestConfigIsNil(t *testing.T) {
-	var cached = config.Global
+	var cached = conf
 	defer func() {
-		config.Global = cached
+		conf = cached
 	}()
 
-	config.Global = nil
-	var saved, err = RecOrFail(Event{
+	conf = nil
+	var saved, err = RecOrFail(conf, Event{
 		Type: "update",
 		Text: "Starting update to version 0.2 from 0.1.",
 		Tags: []string{
@@ -106,16 +114,16 @@ func TestSetPID(t *testing.T) {
 }
 
 func TestRecIsNotEnabled(t *testing.T) {
-	config.Global.EnableAnalytics = false
+	conf.EnableAnalytics = false
 	defer func() {
-		config.Global.EnableAnalytics = true
+		conf.EnableAnalytics = true
 	}()
 
-	if config.Global.EnableAnalytics {
+	if conf.EnableAnalytics {
 		t.Errorf("Analytics should not be enabled for this test")
 	}
 
-	saved, err := RecOrFail(Event{})
+	saved, err := RecOrFail(conf, Event{})
 
 	if saved {
 		t.Errorf("Event should not be saved: analytics should be disabled")
@@ -218,7 +226,7 @@ func testRec(t *testing.T) {
 	}
 
 	for _, e := range testRecMock {
-		created, err := RecOrFail(e.event)
+		created, err := RecOrFail(conf, e.event)
 
 		if !created {
 			t.Errorf("Should create event entry")
@@ -250,7 +258,7 @@ func testTrySubmitError(t *testing.T) {
 	var s = Sender{}
 	server = "http://localhost:-1/"
 
-	lines, err := s.TrySubmit()
+	lines, err := s.TrySubmit(conf)
 
 	if err == nil || !strings.HasPrefix(err.Error(), "Can not submit analytics:") {
 		t.Errorf("Expected error for TrySubmit() on invalid port not found, got %v instead", err)
@@ -301,7 +309,7 @@ func testTrySubmit(t *testing.T) {
 
 func testTrySubmitWithoutPurging(t *testing.T) {
 	var s = Sender{}
-	lines, err := s.TrySubmit()
+	lines, err := s.TrySubmit(conf)
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v instead", err)
@@ -321,7 +329,7 @@ func testTrySubmitAndPurge(t *testing.T) {
 		Purge: true,
 	}
 
-	lines, err := s.TrySubmit()
+	lines, err := s.TrySubmit(conf)
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v instead", err)
@@ -347,7 +355,7 @@ func testTrySubmitNothingToSend(t *testing.T) {
 		Purge: true,
 	}
 
-	lines, err := s.TrySubmit()
+	lines, err := s.TrySubmit(conf)
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v instead", err)
@@ -374,7 +382,7 @@ func testRecCheckMetrics(t *testing.T, line string, expected event) {
 		t.Errorf("Expected ID to have at least 38 characters, got event.ID = %v instead", e.PID)
 	}
 
-	if len(e.SID) != 36 || e.SID != config.Global.AnalyticsID {
+	if len(e.SID) != 36 || e.SID != conf.AnalyticsID {
 		t.Errorf("Expected SID to have 36 characters and be registered, got event.SID = %v) instead", e.SID)
 	}
 
@@ -406,13 +414,13 @@ type testStatusMetricsStory struct {
 }
 
 func (te *testStatusMetricsStory) testDisable(t *testing.T) {
-	te.initialSID = config.Global.AnalyticsID
+	te.initialSID = conf.AnalyticsID
 
-	if err := Disable(); err != nil {
+	if err := Disable(conf); err != nil {
 		t.Errorf("Expected no error while disabling analytics, got %v instead", err)
 	}
 
-	trySubmitCounter, trySubmitErr := (&Sender{}).TrySubmit()
+	trySubmitCounter, trySubmitErr := (&Sender{}).TrySubmit(conf)
 	wantTrySubmitErr := "Aborting submission of analytics (analytics report status = disabled)"
 
 	if trySubmitCounter != 0 ||
@@ -421,7 +429,7 @@ func (te *testStatusMetricsStory) testDisable(t *testing.T) {
 		t.Errorf("Wanted TrySubmit error to be %v, got %v instead", wantTrySubmitErr, trySubmitErr)
 	}
 
-	if config.Global.EnableAnalytics {
+	if conf.EnableAnalytics {
 		t.Errorf("Analytics should be disabled")
 	}
 
@@ -432,7 +440,7 @@ func (te *testStatusMetricsStory) testDisable(t *testing.T) {
 }
 
 func (te *testStatusMetricsStory) testEnableAndRecording(t *testing.T) {
-	if err := Enable(); err != nil {
+	if err := Enable(conf); err != nil {
 		t.Errorf("Expected no error while re-enabling analytics, got %v instead", err)
 	}
 
@@ -441,18 +449,19 @@ func (te *testStatusMetricsStory) testEnableAndRecording(t *testing.T) {
 		t.Errorf(".we should have enable_analytics = true")
 	}
 
-	if config.Global.AnalyticsID != te.initialSID {
-		t.Errorf("Initial SID should persist: wanted %v, got %v instead", te.initialSID, config.Global.AnalyticsID)
+	if conf.AnalyticsID != te.initialSID {
+		t.Errorf("Initial SID should persist: wanted %v, got %v instead", te.initialSID, conf.AnalyticsID)
 	}
 
 	var bufErrStream bytes.Buffer
 	var defaultErrStream = errStream
 	errStream = &bufErrStream
 
-	Rec(Event{
-		Type: "test",
-		Text: "Foo bar",
-	})
+	Rec(conf,
+		Event{
+			Type: "test",
+			Text: "Foo bar",
+		})
 
 	if len(tdata.FromFile("mocks/.we_metrics")) == 0 {
 		t.Errorf(".we_metrics has no content")
@@ -466,12 +475,12 @@ func (te *testStatusMetricsStory) testEnableAndRecording(t *testing.T) {
 }
 
 func (te *testStatusMetricsStory) testResetting(t *testing.T) {
-	if err := Reset(); err != nil {
+	if err := Reset(conf); err != nil {
 		t.Errorf("Expected no error while re-enabling analytics, got %v instead", err)
 	}
 
-	if config.Global.AnalyticsID == te.initialSID {
-		t.Errorf("Initial SID should be revoked: got same: %v", config.Global.AnalyticsID)
+	if conf.AnalyticsID == te.initialSID {
+		t.Errorf("Initial SID should be revoked: got same: %v", conf.AnalyticsID)
 	}
 
 	var weWithoutSpace = strings.Replace(tdata.FromFile("mocks/.we"), " ", "", -1)
@@ -480,7 +489,7 @@ func (te *testStatusMetricsStory) testResetting(t *testing.T) {
 		t.Errorf(".we should not have analytics_id = <initial SID>")
 	}
 
-	if !strings.Contains(weWithoutSpace, "analytics_id="+config.Global.AnalyticsID) {
+	if !strings.Contains(weWithoutSpace, "analytics_id="+conf.AnalyticsID) {
 		t.Errorf(".we should have analytics_id = <new SID>")
 	}
 
@@ -510,7 +519,7 @@ func TestSubmitMetricFileNotFound(t *testing.T) {
 
 	metricsPath = abs("mocks/not-exists")
 
-	var lines, err = (&Sender{}).TrySubmit()
+	var lines, err = (&Sender{}).TrySubmit(conf)
 
 	if err != nil {
 		t.Errorf("TrySubmit error should be nil, got %v instead", err)

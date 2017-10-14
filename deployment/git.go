@@ -110,7 +110,7 @@ func (d *Deploy) getGitPath() string {
 }
 
 func (d *Deploy) getGitRemote() string {
-	var remote = d.ConfigContext.Remote
+	var remote = d.ConfigContext.Remote()
 
 	// always add a "wedeploy-" prefix to all deployment remote endpoints, but "wedeploy"
 	if remote != "wedeploy" {
@@ -333,7 +333,7 @@ func (d *Deploy) Push() (groupUID string, err error) {
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Env = append(d.getConfigEnvs(),
 		"GIT_TERMINAL_PROMPT=0",
-		envs.GitCredentialRemoteToken+"="+d.ConfigContext.Token,
+		envs.GitCredentialRemoteToken+"="+d.ConfigContext.Token(),
 	)
 	cmd.Dir = d.Path
 

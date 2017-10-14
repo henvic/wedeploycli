@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/activities"
+	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 )
@@ -28,7 +29,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return setupHost.Process()
+	return setupHost.Process(we.Context())
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
@@ -46,13 +47,15 @@ func init() {
 }
 
 func activitiesRun(cmd *cobra.Command, args []string) (err error) {
+	activitiesClient := activities.New(we.Context())
+
 	var as []activities.Activity
 	var f = activities.Filter{
 		Commit:   commit,
 		GroupUID: groupUID,
 	}
 
-	as, err = activities.List(context.Background(), setupHost.Project(), f)
+	as, err = activitiesClient.List(context.Background(), setupHost.Project(), f)
 
 	if err != nil {
 		return err

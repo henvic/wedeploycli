@@ -69,8 +69,6 @@ func (overview *ContextOverview) loadServicesList(directory string) error {
 
 // InspectContext on a given directory, filtering by format
 func InspectContext(format, directory string) (string, error) {
-	// Can not rely on values on config.Context given that
-	// they are global and we accept the directory parameter
 	var overview = ContextOverview{}
 
 	if err := overview.Load(directory); err != nil {

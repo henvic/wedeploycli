@@ -9,9 +9,9 @@ import (
 	humanize "github.com/dustin/go-humanize"
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/diagnostics"
 	"github.com/wedeploy/cli/fancy"
@@ -76,8 +76,9 @@ func diagnosticsRun(cmd *cobra.Command, args []string) error {
 
 func submit(report diagnostics.Report) error {
 	var username string
+	var wectx = we.Context()
 
-	cloudRemote, ok := config.Global.Remotes[defaults.CloudRemote]
+	cloudRemote, ok := wectx.Config().Remotes[defaults.CloudRemote]
 
 	if ok {
 		username = cloudRemote.Username

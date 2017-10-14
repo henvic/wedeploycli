@@ -15,15 +15,24 @@ import (
 	"github.com/wedeploy/cli/tdata"
 )
 
+var (
+	wectx  config.Context
+	client *Client
+)
+
 func TestMain(m *testing.M) {
-	if err := config.Setup("mocks/.we"); err != nil {
+	var err error
+	wectx, err = config.Setup("mocks/.we")
+
+	if err != nil {
 		panic(err)
 	}
 
-	if err := config.SetEndpointContext(defaults.CloudRemote); err != nil {
+	if err := wectx.SetEndpoint(defaults.CloudRemote); err != nil {
 		panic(err)
 	}
 
+	client = New(wectx)
 	os.Exit(m.Run())
 }
 
@@ -33,7 +42,7 @@ func TestCreate(t *testing.T) {
 	servertest.Mux.HandleFunc("/projects",
 		tdata.ServerJSONFileHandler("mocks/new_response.json"))
 
-	var project, err = Create(context.Background(), Project{})
+	var project, err = client.Create(context.Background(), Project{})
 
 	if project.ProjectID != "tesla36" {
 		t.Errorf("Wanted project ID to be tesla36, got %v instead", project.ProjectID)
@@ -56,7 +65,7 @@ func TestCreateNamed(t *testing.T) {
 	servertest.Mux.HandleFunc("/projects",
 		tdata.ServerJSONFileHandler("mocks/new_named_response.json"))
 
-	var project, err = Create(context.Background(),
+	var project, err = client.Create(context.Background(),
 		Project{
 			ProjectID: "banach30",
 		})
@@ -75,7 +84,7 @@ func TestCreateNamed(t *testing.T) {
 func TestCreateError(t *testing.T) {
 	servertest.Setup()
 
-	var _, err = Create(context.Background(), Project{})
+	var _, err = client.Create(context.Background(), Project{})
 
 	switch err.(type) {
 	case *apihelper.APIFault:
@@ -93,7 +102,7 @@ func TestGet(t *testing.T) {
 		"/projects/images",
 		tdata.ServerJSONFileHandler("mocks/project_get_response.json"))
 
-	var list, err = Get(context.Background(), "images")
+	var list, err = client.Get(context.Background(), "images")
 
 	var want = Project{
 		ProjectID: "images",
@@ -112,7 +121,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestGetEmpty(t *testing.T) {
-	var _, err = Get(context.Background(), "")
+	var _, err = client.Get(context.Background(), "")
 
 	if err != ErrEmptyProjectID {
 		t.Errorf("Wanted error to be %v, got %v instead", ErrEmptyProjectID, err)
@@ -126,7 +135,7 @@ func TestList(t *testing.T) {
 		"/projects",
 		tdata.ServerJSONFileHandler("mocks/projects_response.json"))
 
-	var list, err = List(context.Background())
+	var list, err = client.List(context.Background())
 
 	var want = []Project{
 		Project{
@@ -154,7 +163,7 @@ func TestRestart(t *testing.T) {
 		fmt.Fprintf(w, `"on"`)
 	})
 
-	if err := Restart(context.Background(), "foo"); err != nil {
+	if err := client.Restart(context.Background(), "foo"); err != nil {
 		t.Errorf("Unexpected error on project restart: %v", err)
 	}
 }
@@ -169,7 +178,7 @@ func TestUnlink(t *testing.T) {
 		}
 	})
 
-	var err = Unlink(context.Background(), "foo")
+	var err = client.Unlink(context.Background(), "foo")
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v instead", err)

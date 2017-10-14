@@ -36,6 +36,7 @@ type SetupHost struct {
 	service             string
 	remote              string
 	cmd                 *cobra.Command
+	wectx               config.Context
 	parsed              *flagsfromhost.FlagsFromHost
 }
 
@@ -75,12 +76,12 @@ func (s *SetupHost) Remote() string {
 
 // InfrastructureDomain of the parsed flags or host
 func (s *SetupHost) InfrastructureDomain() string {
-	return config.Global.Remotes[s.remote].Infrastructure
+	return s.wectx.Config().Remotes[s.remote].Infrastructure
 }
 
 // ServiceDomain of the parsed flags or host
 func (s *SetupHost) ServiceDomain() string {
-	return config.Global.Remotes[s.remote].Service
+	return s.wectx.Config().Remotes[s.remote].Service
 }
 
 // Init flags on a given command
@@ -134,7 +135,10 @@ func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 		remoteFlagChanged = true
 	}
 
-	return flagsfromhost.ParseWithDefaultCustomRemote(
+	var conf = s.wectx.Config()
+	var cffh = flagsfromhost.New(&conf.Remotes)
+
+	return cffh.ParseWithDefaultCustomRemote(
 		flagsfromhost.ParseFlagsWithDefaultCustomRemote{
 			Host:          s.url,
 			Project:       s.project,
@@ -142,11 +146,12 @@ func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 			Remote:        remoteFlagValue,
 			RemoteChanged: remoteFlagChanged,
 		},
-		config.Global.DefaultRemote)
+		s.wectx.Config().DefaultRemote)
 }
 
 // Process flags
-func (s *SetupHost) Process() (err error) {
+func (s *SetupHost) Process(wectx config.Context) (err error) {
+	s.wectx = wectx
 	s.parsed, err = s.tryParseFlags()
 
 	if err != nil {
@@ -245,7 +250,7 @@ func (s *SetupHost) loadValues() (err error) {
 	s.project = project
 	s.remote = remote
 
-	return config.SetEndpointContext(s.Remote())
+	return s.wectx.SetEndpoint(s.Remote())
 }
 
 func (s *SetupHost) verifyCmdReqAuth() error {
@@ -253,11 +258,11 @@ func (s *SetupHost) verifyCmdReqAuth() error {
 		return nil
 	}
 
-	if hasAuth := (config.Context.Token != ""); hasAuth {
+	if hasAuth := (s.wectx.Token() != ""); hasAuth {
 		return nil
 	}
 
-	metrics.Rec(metrics.Event{
+	metrics.Rec(s.wectx.Config(), metrics.Event{
 		Type: "required_auth_cmd_precondition_failure",
 		Text: fmt.Sprintf(`Command "%v" requires authentication, but one is not set.`, s.cmd.CommandPath()),
 		Extra: map[string]string{
@@ -265,11 +270,12 @@ func (s *SetupHost) verifyCmdReqAuth() error {
 		},
 	})
 
-	return authenticateOrCancel(s.cmd)
+	return s.authenticateOrCancel()
 }
 
-func authenticateOrCancel(cmd *cobra.Command) error {
-	var logIn, err = fancy.Boolean(fmt.Sprintf(`You need to log in before using "%s". Do you want to log in?`, cmd.UseLine()))
+func (s *SetupHost) authenticateOrCancel() error {
+	var logIn, err = fancy.Boolean(fmt.Sprintf(`You need to log in before using "%s". Do you want to log in?`,
+		s.cmd.UseLine()))
 
 	if err != nil {
 		return err
@@ -283,5 +289,5 @@ func authenticateOrCancel(cmd *cobra.Command) error {
 		NoLaunchBrowser: false,
 	}
 
-	return a.Run(context.Background())
+	return a.Run(context.Background(), s.wectx)
 }

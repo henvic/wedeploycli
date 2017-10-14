@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	cmddomainadd "github.com/wedeploy/cli/cmd/domain/add"
 	cmddomainremove "github.com/wedeploy/cli/cmd/domain/remove"
+	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/services"
 )
@@ -44,11 +45,13 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return setupHost.Process()
+	return setupHost.Process(we.Context())
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	var service, err = services.Get(context.Background(),
+	servicesClient := services.New(we.Context())
+
+	var service, err = servicesClient.Get(context.Background(),
 		setupHost.Project(),
 		setupHost.Service())
 

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/services"
@@ -42,7 +43,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return setupHost.Process()
+	return setupHost.Process(we.Context())
 }
 
 func getEnvPair(args []string) (key, value string, err error) {
@@ -76,7 +77,9 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return services.SetEnvironmentVariable(
+	servicesClient := services.New(we.Context())
+
+	return servicesClient.SetEnvironmentVariable(
 		context.Background(),
 		setupHost.Project(),
 		setupHost.Service(),

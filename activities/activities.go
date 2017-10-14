@@ -7,9 +7,24 @@ import (
 	"os"
 
 	"github.com/wedeploy/cli/apihelper"
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/templates"
 )
+
+// Client for the services
+type Client struct {
+	*apihelper.Client
+}
+
+// New Client
+func New(wectx config.Context) *Client {
+	return &Client{
+		&apihelper.Client{
+			Context: wectx,
+		},
+	}
+}
 
 // Activity record
 type Activity struct {
@@ -155,15 +170,15 @@ var activityTemplates = map[string]string{
 }
 
 // List activities of a given project
-func List(ctx context.Context, projectID string, f Filter) (activities Activities, err error) {
+func (c *Client) List(ctx context.Context, projectID string, f Filter) (activities Activities, err error) {
 	if projectID == "" {
 		return activities, projects.ErrEmptyProjectID
 	}
 
-	var request = apihelper.URL(ctx, "/projects/"+url.QueryEscape(projectID)+"/activities")
+	var request = c.Client.URL(ctx, "/projects/"+url.QueryEscape(projectID)+"/activities")
 	apihelper.ParamsFromJSON(request, f)
 
-	apihelper.Auth(request)
+	c.Client.Auth(request)
 
 	if err = apihelper.Validate(request, request.Get()); err != nil {
 		return nil, err

@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/login"
 )
 
@@ -35,13 +35,18 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return setupHost.Process()
+	return setupHost.Process(we.Context())
 }
 
 func loginRun(cmd *cobra.Command, args []string) error {
-	if config.Context.Username != "" {
+	var wectx = we.Context()
+
+	if wectx.Username() != "" {
 		return fmt.Errorf(`Already logged in as %v on %v (%v)
-Logout first with "we logout"`, config.Context.Username, config.Context.Remote, config.Context.InfrastructureDomain)
+Logout first with "we logout"`,
+			wectx.Username(),
+			wectx.Remote(),
+			wectx.InfrastructureDomain())
 	}
 
 	a := login.Authentication{
@@ -49,5 +54,5 @@ Logout first with "we logout"`, config.Context.Username, config.Context.Remote, 
 		TipCommands:     true,
 	}
 
-	return a.Run(context.Background())
+	return a.Run(context.Background(), wectx)
 }

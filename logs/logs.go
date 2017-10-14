@@ -17,9 +17,24 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/colorwheel"
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/verbose"
 )
+
+// Client for the services
+type Client struct {
+	*apihelper.Client
+}
+
+// New Client
+func New(wectx config.Context) *Client {
+	return &Client{
+		&apihelper.Client{
+			Context: wectx,
+		},
+	}
+}
 
 // Log structure
 type Log struct {
@@ -45,6 +60,7 @@ type Filter struct {
 
 // Watcher structure
 type Watcher struct {
+	Client          *Client
 	Filter          *Filter
 	PoolingInterval time.Duration
 	filterMutex     sync.Mutex
@@ -94,7 +110,7 @@ func GetLevel(severityOrLevel string) (int, error) {
 }
 
 // GetList logs
-func GetList(ctx context.Context, filter *Filter) ([]Log, error) {
+func (c *Client) GetList(ctx context.Context, filter *Filter) ([]Log, error) {
 	var list []Log
 
 	var params = []string{
@@ -108,9 +124,9 @@ func GetList(ctx context.Context, filter *Filter) ([]Log, error) {
 
 	params = append(params, "/logs")
 
-	var req = apihelper.URL(ctx, params...)
+	var req = c.Client.URL(ctx, params...)
 
-	apihelper.Auth(req)
+	c.Client.Auth(req)
 
 	if filter.Level != 0 {
 		req.Param("level", fmt.Sprintf("%d", filter.Level))
@@ -155,8 +171,8 @@ func filterInstanceInLogs(list []Log, instance string) []Log {
 }
 
 // List logs
-func List(ctx context.Context, filter *Filter) error {
-	var list, err = GetList(ctx, filter)
+func (c *Client) List(ctx context.Context, filter *Filter) error {
+	var list, err = c.GetList(ctx, filter)
 
 	if err == nil {
 		printList(list)
@@ -166,13 +182,13 @@ func List(ctx context.Context, filter *Filter) error {
 }
 
 // Watch logs
-func Watch(watcher *Watcher) {
+func Watch(wectx config.Context, watcher *Watcher) {
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	watcher.Start()
+	watcher.Start(wectx)
 
 	go func() {
 		<-sigs
@@ -187,7 +203,9 @@ func Watch(watcher *Watcher) {
 }
 
 // Start for Watcher
-func (w *Watcher) Start() {
+func (w *Watcher) Start(wectx config.Context) {
+	w.Client = New(wectx)
+
 	go func() {
 		for {
 			w.endMutex.Lock()
@@ -197,7 +215,6 @@ func (w *Watcher) Start() {
 			if e {
 				return
 			}
-
 			w.pool()
 			time.Sleep(w.PoolingInterval)
 		}
@@ -237,7 +254,7 @@ func printList(list []Log) {
 
 func (w *Watcher) pool() {
 	var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
-	var list, err = GetList(ctx, w.Filter)
+	var list, err = w.Client.GetList(ctx, w.Filter)
 
 	cancel()
 

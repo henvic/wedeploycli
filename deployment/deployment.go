@@ -43,7 +43,7 @@ var (
 // Deploy project
 type Deploy struct {
 	Context          context.Context
-	ConfigContext    *config.ContextType
+	ConfigContext    config.Context
 	ProjectID        string
 	ServiceID        string
 	LocationRemap    []string
@@ -569,7 +569,10 @@ func (d *Deploy) checkActivities() (end bool, err error) {
 	var as activities.Activities
 	var ctx, cancel = context.WithTimeout(d.Context, 5*time.Second)
 	defer cancel()
-	as, err = activities.List(ctx, d.ProjectID, activities.Filter{
+
+	activitiesClient := activities.New(d.ConfigContext)
+
+	as, err = activitiesClient.List(ctx, d.ProjectID, activities.Filter{
 		GroupUID: d.groupUID,
 	})
 	cancel()
@@ -650,7 +653,7 @@ func (d *Deploy) checkActivitiesLoop() {
 }
 
 func (d *Deploy) printServiceAddress(service string) string {
-	var address = d.ProjectID + "." + d.ConfigContext.ServiceDomain
+	var address = d.ProjectID + "." + d.ConfigContext.ServiceDomain()
 
 	if service != "" {
 		address = service + "-" + address
@@ -737,7 +740,7 @@ func (d *Deploy) maybeOpenLogs(failedBuilds, failedDeploys []string) {
 
 	var logsURL = fmt.Sprintf("https://%v%v/projects/%v/logs",
 		defaults.DashboardAddressPrefix,
-		d.ConfigContext.InfrastructureDomain,
+		d.ConfigContext.InfrastructureDomain(),
 		d.ProjectID)
 
 	switch {

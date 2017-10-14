@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/fancy"
 )
 
@@ -31,12 +31,13 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return setupHost.Process()
+	return setupHost.Process(we.Context())
 }
 
 func logoutRun(cmd *cobra.Command, args []string) error {
-	var g = config.Global
-	var remote = g.Remotes[config.Context.Remote]
+	var wectx = we.Context()
+	var conf = wectx.Config()
+	var remote = conf.Remotes[wectx.Remote()]
 
 	switch remote.Username {
 	case "":
@@ -50,6 +51,6 @@ func logoutRun(cmd *cobra.Command, args []string) error {
 
 	remote.Username = ""
 	remote.Token = ""
-	g.Remotes.Set(config.Context.Remote, remote)
-	return g.Save()
+	conf.Remotes.Set(wectx.Remote(), remote)
+	return conf.Save()
 }

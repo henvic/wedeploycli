@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/logs"
@@ -50,7 +51,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return setupHost.Process()
+	return setupHost.Process(we.Context())
 }
 
 func logRun(cmd *cobra.Command, args []string) error {
@@ -83,12 +84,15 @@ func logRun(cmd *cobra.Command, args []string) error {
 
 	switch watchArg {
 	case true:
-		logs.Watch(&logs.Watcher{
-			Filter:          filter,
-			PoolingInterval: time.Second,
-		})
+		logs.Watch(we.Context(),
+			&logs.Watcher{
+				Filter:          filter,
+				PoolingInterval: time.Second,
+			})
 	default:
-		if err = logs.List(context.Background(), filter); err != nil {
+		logsClient := logs.New(we.Context())
+
+		if err = logsClient.List(context.Background(), filter); err != nil {
 			return err
 		}
 	}

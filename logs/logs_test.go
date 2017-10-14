@@ -20,12 +20,17 @@ import (
 	"github.com/wedeploy/cli/tdata"
 )
 
+var wectx config.Context
+
 func TestMain(m *testing.M) {
-	if err := config.Setup("mocks/.we"); err != nil {
+	var err error
+	wectx, err = config.Setup("mocks/.we")
+
+	if err != nil {
 		panic(err)
 	}
 
-	if err := config.SetEndpointContext(defaults.CloudRemote); err != nil {
+	if err := wectx.SetEndpoint(defaults.CloudRemote); err != nil {
 		panic(err)
 	}
 
@@ -91,7 +96,7 @@ func TestGetList(t *testing.T) {
 		Level:    4,
 	}
 
-	var list, err = GetList(context.Background(), filter)
+	var list, err = New(wectx).GetList(context.Background(), filter)
 
 	if err != nil {
 		t.Errorf("Unexpected error %v on GetList", err)
@@ -124,7 +129,7 @@ func TestList(t *testing.T) {
 		Instance: "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
 	}
 
-	var err = List(context.Background(), filter)
+	var err = New(wectx).List(context.Background(), filter)
 
 	if err != nil {
 		t.Errorf("Unexpected error %v", err)
@@ -165,7 +170,7 @@ func TestListProject(t *testing.T) {
 		Project: "foo",
 	}
 
-	var err = List(context.Background(), filter)
+	var err = New(wectx).List(context.Background(), filter)
 
 	if err != nil {
 		t.Errorf("Unexpected error %v", err)
@@ -236,7 +241,7 @@ func TestWatch(t *testing.T) {
 		wg.Done()
 	}()
 
-	Watch(watcher)
+	Watch(wectx, watcher)
 
 	wg.Wait()
 
@@ -296,7 +301,7 @@ func TestWatcherStart(t *testing.T) {
 	done := make(chan bool, 1)
 
 	go func() {
-		watcher.Start()
+		watcher.Start(wectx)
 		// this sleep has to be slightly greater than pooling * requests
 		time.Sleep(60 * time.Millisecond)
 		watcher.Stop()

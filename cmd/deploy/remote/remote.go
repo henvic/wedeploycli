@@ -13,7 +13,7 @@ import (
 
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/cmd/canceled"
-	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/deployment"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/inspector"
@@ -39,6 +39,8 @@ type RemoteDeployment struct {
 }
 
 func (rd *RemoteDeployment) getProjectID() (err error) {
+	projectsClient := projects.New(we.Context())
+
 	if rd.ProjectID == "" {
 		if !isterm.Check() {
 			return errors.New("Project ID is missing")
@@ -53,7 +55,7 @@ func (rd *RemoteDeployment) getProjectID() (err error) {
 	}
 
 	if rd.ProjectID != "" {
-		_, err := projects.Get(context.Background(), rd.ProjectID)
+		_, err := projectsClient.Get(context.Background(), rd.ProjectID)
 
 		if err == nil {
 			return nil
@@ -64,7 +66,7 @@ func (rd *RemoteDeployment) getProjectID() (err error) {
 		}
 	}
 
-	var p, ep = projects.Create(context.Background(), projects.Project{
+	var p, ep = projectsClient.Create(context.Background(), projects.Project{
 		ProjectID: rd.ProjectID,
 	})
 
@@ -79,6 +81,8 @@ func (rd *RemoteDeployment) getProjectID() (err error) {
 // Run does the remote deployment procedures
 func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error) {
 	rd.ctx = ctx
+	wectx := we.Context()
+
 	if err = rd.getProjectID(); err != nil {
 		return "", err
 	}
@@ -93,7 +97,7 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 
 	var gitServer = fmt.Sprintf("%vgit.%v/%v.git",
 		gitSchema,
-		config.Context.InfrastructureDomain,
+		wectx.InfrastructureDomain(),
 		rd.ProjectID)
 
 	var deploy = &deployment.Deploy{
@@ -102,7 +106,7 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 		ServiceID:        rd.ServiceID,
 		LocationRemap:    rd.remap,
 		Path:             rd.path,
-		ConfigContext:    config.Context,
+		ConfigContext:    wectx,
 		GitRemoteAddress: gitServer,
 		Services:         rd.services,
 		Quiet:            rd.Quiet,

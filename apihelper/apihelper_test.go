@@ -34,16 +34,19 @@ type postMock struct {
 }
 
 var bufErrStream bytes.Buffer
+var conf config.Context
 
 func TestMain(m *testing.M) {
 	var defaultErrStream = errStream
 	errStream = &bufErrStream
+	var err error
+	conf, err = config.Setup("mocks/.we")
 
-	if err := config.Setup("mocks/.we"); err != nil {
+	if err != nil {
 		panic(err)
 	}
 
-	if err := config.SetEndpointContext(defaults.CloudRemote); err != nil {
+	if err := conf.SetEndpoint(defaults.CloudRemote); err != nil {
 		panic(err)
 	}
 
@@ -57,7 +60,7 @@ func TestMain(m *testing.M) {
 func TestAuth(t *testing.T) {
 	r := wedeploy.URL("https://api.wedeploy.com/")
 
-	Auth(r)
+	(&Client{conf}).Auth(r)
 
 	var want = "Bearer bar"
 	var got = r.Headers.Get("Authorization")
@@ -87,7 +90,7 @@ func TestAuthGet(t *testing.T) {
 	var wantBody = "to be written"
 	var wantComments = 30
 
-	var err = AuthGet(context.Background(), "/posts/1", &post)
+	var err = (&Client{conf}).AuthGet(context.Background(), "/posts/1", &post)
 
 	if err != nil {
 		t.Errorf("Wanted error to be nil, got %v instead", err)
@@ -119,7 +122,7 @@ func TestAuthGetError(t *testing.T) {
 		w.WriteHeader(403)
 	})
 
-	var err = AuthGet(context.Background(), "/foo", nil)
+	var err = (&Client{conf}).AuthGet(context.Background(), "/foo", nil)
 
 	switch err.(type) {
 	case *APIFault:
@@ -139,11 +142,9 @@ func TestAuthGetError(t *testing.T) {
 func TestAuthTokenBearer(t *testing.T) {
 	r := wedeploy.URL("https://api.wedeploy.com/")
 
-	config.Context.Token = "mytoken"
+	(&Client{conf}).Auth(r)
 
-	Auth(r)
-
-	var want = "Bearer mytoken"
+	var want = "Bearer bar"
 	var got = r.Headers.Get("Authorization")
 
 	if want != got {
@@ -260,7 +261,7 @@ func TestDecodeJSON(t *testing.T) {
 
 	bufErrStream.Reset()
 
-	r := URL(context.Background(), "/posts/1")
+	r := (&Client{conf}).URL(context.Background(), "/posts/1")
 
 	if err := Validate(r, r.Get()); err != nil {
 		panic(err)
@@ -308,7 +309,7 @@ func TestDecodeJSONInvalidContentType(t *testing.T) {
 
 	var post postMock
 
-	r := URL(context.Background(), "/posts/1")
+	r := (&Client{conf}).URL(context.Background(), "/posts/1")
 
 	if err := Validate(r, r.Get()); err != nil {
 		panic(err)
@@ -324,7 +325,7 @@ func TestDecodeJSONInvalidContentType(t *testing.T) {
 func TestDecodeJSONWithoutRequestResponse(t *testing.T) {
 	var post postMock
 
-	r := URL(context.Background(), "/posts/1/comments")
+	r := (&Client{conf}).URL(context.Background(), "/posts/1/comments")
 
 	var err = DecodeJSON(r, &post)
 
@@ -344,7 +345,7 @@ func TestDecodeJSONFailure(t *testing.T) {
 
 	var post postMock
 
-	r := URL(context.Background(), "/posts/1/comments")
+	r := (&Client{conf}).URL(context.Background(), "/posts/1/comments")
 
 	if err := Validate(r, r.Get()); err != nil {
 		panic(err)
@@ -508,7 +509,7 @@ func TestRequestVerboseFeedback(t *testing.T) {
 		fmt.Fprintf(w, "Hello")
 	})
 
-	var request = URL(context.Background(), "/foo")
+	var request = (&Client{conf}).URL(context.Background(), "/foo")
 
 	request.Headers.Add("Accept", "application/json")
 	request.Headers.Add("Accept", "text/plain")
@@ -559,7 +560,7 @@ func TestRequestVerboseFeedbackUpload(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/foo", tdata.ServerHandler(""))
 
-	var request = URL(context.Background(), "/foo")
+	var request = (&Client{conf}).URL(context.Background(), "/foo")
 
 	var file, err = os.Open("mocks/config.json")
 
@@ -612,7 +613,7 @@ func TestRequestVerboseFeedbackStringReader(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/foo", tdata.ServerHandler(""))
 
-	var request = URL(context.Background(), "/foo")
+	var request = (&Client{conf}).URL(context.Background(), "/foo")
 
 	request.Body(strings.NewReader("custom body"))
 
@@ -659,7 +660,7 @@ func TestRequestVerboseFeedbackBytesReader(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/foo", tdata.ServerHandler(""))
 
-	var request = URL(context.Background(), "/foo")
+	var request = (&Client{conf}).URL(context.Background(), "/foo")
 
 	var sr = strings.NewReader("custom body")
 
@@ -715,7 +716,7 @@ func TestRequestVerboseFeedbackOtherReader(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/foo", tdata.ServerHandler(""))
 
-	var request = URL(context.Background(), "/foo")
+	var request = (&Client{conf}).URL(context.Background(), "/foo")
 
 	var body = strings.NewReader("custom body")
 
@@ -769,7 +770,7 @@ func TestRequestVerboseFeedbackJSONResponse(t *testing.T) {
 		fmt.Fprintf(w, `{"Hello": "World"}`)
 	})
 
-	var request = URL(context.Background(), "/foo")
+	var request = (&Client{conf}).URL(context.Background(), "/foo")
 
 	type Foo struct {
 		Bar string `json:"bar"`
@@ -824,7 +825,7 @@ func TestRequestVerboseFeedbackNullResponse(t *testing.T) {
 	verbose.ErrStream = &bufErrStream
 	bufErrStream.Reset()
 
-	var request = URL(context.Background(), "/foo")
+	var request = (&Client{conf}).URL(context.Background(), "/foo")
 
 	request.URL = "x://"
 
@@ -870,7 +871,7 @@ func TestRequestVerboseFeedbackNotComplete(t *testing.T) {
 	verbose.ErrStream = &bufErrStream
 	bufErrStream.Reset()
 
-	var request = URL(context.Background(), "/foo")
+	var request = (&Client{conf}).URL(context.Background(), "/foo")
 	if err := Validate(request, nil); err != nil {
 		panic(err)
 	}
@@ -898,7 +899,7 @@ func TestSetBody(t *testing.T) {
 		got = string(body)
 	})
 
-	var request = URL(context.Background(), "/foo")
+	var request = (&Client{conf}).URL(context.Background(), "/foo")
 
 	type simple struct {
 		Foo string `json:"foo"`
@@ -932,7 +933,7 @@ func TestSetBody(t *testing.T) {
 }
 
 func TestURL(t *testing.T) {
-	var request = URL(context.Background(), "x", "y", "z/k")
+	var request = (&Client{conf}).URL(context.Background(), "x", "y", "z/k")
 	var want = "https://api.wedeploy.com/x/y/z/k"
 
 	if request.URL != want {
@@ -941,16 +942,6 @@ func TestURL(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	if err := config.SetEndpointContext(defaults.CloudRemote); err != nil {
-		panic(err)
-	}
-
-	defer func() {
-		if err := config.SetEndpointContext(defaults.CloudRemote); err != nil {
-			panic(err)
-		}
-	}()
-
 	var want = `WeDeploy platform error: could not connect to infrastructure`
 
 	r := wedeploy.URL("x://localhost/")
@@ -963,13 +954,6 @@ func TestValidate(t *testing.T) {
 }
 
 func TestValidateOnNoContext(t *testing.T) {
-	var originalCtx = config.Context
-	config.Context = nil
-
-	defer func() {
-		config.Context = originalCtx
-	}()
-
 	var want = `Get x://localhost: unsupported protocol scheme "x"`
 
 	r := wedeploy.URL("x://localhost/")
@@ -1012,7 +996,7 @@ func TestValidateUnexpectedResponse(t *testing.T) {
 
 	var want = "forbidden"
 
-	r := URL(context.Background(), "/foo/bah")
+	r := (&Client{conf}).URL(context.Background(), "/foo/bah")
 	err := Validate(r, r.Get())
 
 	switch err.(type) {
@@ -1042,7 +1026,7 @@ func TestValidateUnexpectedNonJSONResponse(t *testing.T) {
 
 	bufErrStream.Reset()
 
-	var r = URL(context.Background(), "/foo/bah")
+	var r = (&Client{conf}).URL(context.Background(), "/foo/bah")
 	var err = Validate(r, r.Get())
 
 	if err == nil {
@@ -1071,16 +1055,6 @@ func TestValidateUnexpectedResponseCustom(t *testing.T) {
 	servertest.Setup()
 	defer servertest.Teardown()
 
-	if err := config.SetEndpointContext(defaults.CloudRemote); err != nil {
-		panic(err)
-	}
-
-	defer func() {
-		if err := config.SetEndpointContext(defaults.CloudRemote); err != nil {
-			panic(err)
-		}
-	}()
-
 	servertest.Mux.HandleFunc("/foo/bah", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(403)
 		fmt.Fprintf(w, `Error message.`)
@@ -1088,7 +1062,7 @@ func TestValidateUnexpectedResponseCustom(t *testing.T) {
 
 	var want = tdata.FromFile("mocks/unexpected_response_error")
 
-	r := URL(context.Background(), "/foo/bah")
+	r := (&Client{conf}).URL(context.Background(), "/foo/bah")
 	err := Validate(r, r.Get())
 
 	if err == nil {
@@ -1110,7 +1084,7 @@ func TestValidateUnexpectedResponseNonBody(t *testing.T) {
 
 	var want = `403 Forbidden (GET https://api.wedeploy.com/foo/bah): Response Body is not JSON`
 
-	r := URL(context.Background(), "/foo/bah")
+	r := (&Client{conf}).URL(context.Background(), "/foo/bah")
 	err := Validate(r, r.Get())
 
 	if err == nil {

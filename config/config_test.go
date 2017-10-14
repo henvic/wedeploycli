@@ -13,35 +13,21 @@ import (
 	"github.com/wedeploy/cli/tdata"
 )
 
-func TestUnset(t *testing.T) {
-	if Global != nil {
-		t.Errorf("Expected Global to be null")
-	}
-
-	if Context != nil {
-		t.Errorf("Expected Context to be null")
-	}
-}
-
 func TestSetupNonExistingConfigFileAndTeardown(t *testing.T) {
-	if Global != nil {
-		t.Errorf("Expected Global to be null")
-	}
+	wectx, err := Setup("./mocks/invalid/.we")
 
-	if Context != nil {
-		t.Errorf("Expected Context to be null")
-	}
-
-	if err := Setup("./mocks/invalid/.we"); err != nil {
+	if err != nil {
 		panic(err)
 	}
 
-	if err := SetEndpointContext(defaults.CloudRemote); err != nil {
+	conf := wectx.Config()
+
+	if err := wectx.SetEndpoint(defaults.CloudRemote); err != nil {
 		panic(err)
 	}
 
-	if Global == nil {
-		t.Error("Expected global config to be mocked")
+	if conf == nil {
+		t.Error("Expected config to be mocked")
 	}
 
 	var (
@@ -51,56 +37,42 @@ func TestSetupNonExistingConfigFileAndTeardown(t *testing.T) {
 		wantInfrastructureDomain = "wedeploy.com"
 	)
 
-	if len(Global.Remotes) != 1 {
-		t.Errorf("Expected to have one remote, got %v", Global.Remotes)
+	if len(conf.Remotes) != 1 {
+		t.Errorf("Expected to have one remote, got %v", conf.Remotes)
 	}
 
-	if Context.Username != wantUsername {
-		t.Errorf("Wanted username to be %v, got %v instead", wantUsername, Context.Username)
+	if wectx.Username() != wantUsername {
+		t.Errorf("Wanted username to be %v, got %v instead", wantUsername, wectx.Username())
 	}
 
-	if Context.Token != wantToken {
-		t.Errorf("Wanted token to be %v, got %v instead", wantToken, Context.Token)
+	if wectx.Token() != wantToken {
+		t.Errorf("Wanted token to be %v, got %v instead", wantToken, wectx.Token())
 	}
 
-	if Context.Remote != wantRemote {
-		t.Errorf("Wanted remote to be %v, got %v instead", wantRemote, Context.Remote)
+	if wectx.Remote() != wantRemote {
+		t.Errorf("Wanted remote to be %v, got %v instead", wantRemote, wectx.Remote())
 	}
 
-	if Context.InfrastructureDomain != wantInfrastructureDomain {
-		t.Errorf("Wanted InfrastructureDomain to be %v, got %v instead", wantInfrastructureDomain, Context.InfrastructureDomain)
-	}
-
-	Teardown()
-
-	if Global != nil {
-		t.Errorf("Expected Global to be null")
-	}
-
-	if Context != nil {
-		t.Errorf("Expected Context to be null")
+	if wectx.InfrastructureDomain() != wantInfrastructureDomain {
+		t.Errorf("Wanted InfrastructureDomain to be %v, got %v instead", wantInfrastructureDomain, wectx.InfrastructureDomain())
 	}
 }
 
 func TestSetupDefaultAndTeardown(t *testing.T) {
-	if Global != nil {
-		t.Errorf("Expected Global to be null")
-	}
+	wectx, err := Setup("./mocks/home/.we")
 
-	if Context != nil {
-		t.Errorf("Expected Context to be null")
-	}
-
-	if err := Setup("./mocks/home/.we"); err != nil {
+	if err != nil {
 		panic(err)
 	}
 
-	if err := SetEndpointContext(defaults.CloudRemote); err != nil {
+	conf := wectx.Config()
+
+	if err := wectx.SetEndpoint(defaults.CloudRemote); err != nil {
 		panic(err)
 	}
 
-	if Global == nil {
-		t.Error("Expected global config to be mocked")
+	if conf == nil {
+		t.Error("Expected config to be mocked")
 	}
 
 	var (
@@ -110,56 +82,42 @@ func TestSetupDefaultAndTeardown(t *testing.T) {
 		wantInfrastructure = "wedeploy.com"
 	)
 
-	if len(Global.Remotes) != 2 {
-		t.Errorf("Expected to have 2 remotes, got %v", Global.Remotes)
+	if len(conf.Remotes) != 2 {
+		t.Errorf("Expected to have 2 remotes, got %v", conf.Remotes)
 	}
 
-	if Context.Username != wantUsername {
-		t.Errorf("Wanted username to be %v, got %v instead", wantUsername, Context.Username)
+	if wectx.Username() != wantUsername {
+		t.Errorf("Wanted username to be %v, got %v instead", wantUsername, wectx.Username())
 	}
 
-	if Context.Token != wantToken {
-		t.Errorf("Wanted token to be %v, got %v instead", wantToken, Context.Token)
+	if wectx.Token() != wantToken {
+		t.Errorf("Wanted token to be %v, got %v instead", wantToken, wectx.Token())
 	}
 
-	if Context.Remote != wantRemote {
-		t.Errorf("Wanted remote to be %v, got %v instead", wantRemote, Context.Remote)
+	if wectx.Remote() != wantRemote {
+		t.Errorf("Wanted remote to be %v, got %v instead", wantRemote, wectx.Remote())
 	}
 
-	if Context.InfrastructureDomain != wantInfrastructure {
-		t.Errorf("Wanted remoteAddress to be %v, got %v instead", wantInfrastructure, Context.InfrastructureDomain)
-	}
-
-	Teardown()
-
-	if Global != nil {
-		t.Errorf("Expected Global to be null")
-	}
-
-	if Context != nil {
-		t.Errorf("Expected Context to be null")
+	if wectx.InfrastructureDomain() != wantInfrastructure {
+		t.Errorf("Wanted remoteAddress to be %v, got %v instead", wantInfrastructure, wectx.InfrastructureDomain())
 	}
 }
 
 func TestSetupRemoteAndTeardown(t *testing.T) {
-	if Global != nil {
-		t.Errorf("Expected Global to be null")
-	}
+	wectx, err := Setup("./mocks/home/.we")
 
-	if Context != nil {
-		t.Errorf("Expected config.Context to be null")
-	}
-
-	if err := Setup("./mocks/home/.we"); err != nil {
+	if err != nil {
 		panic(err)
 	}
 
-	if err := SetEndpointContext(defaults.CloudRemote); err != nil {
+	conf := wectx.Config()
+
+	if err := wectx.SetEndpoint(defaults.CloudRemote); err != nil {
 		panic(err)
 	}
 
-	if Global == nil {
-		t.Error("Expected global config to be mocked")
+	if conf == nil {
+		t.Error("Expected config to be mocked")
 	}
 
 	var (
@@ -169,42 +127,32 @@ func TestSetupRemoteAndTeardown(t *testing.T) {
 		wantInfrastructure = "wedeploy.com"
 	)
 
-	if len(Global.Remotes) != 2 {
-		t.Errorf("Expected to have 2 remotes, got %v", Global.Remotes)
+	if len(conf.Remotes) != 2 {
+		t.Errorf("Expected to have 2 remotes, got %v", conf.Remotes)
 	}
 
-	if Context.Username != wantUsername {
-		t.Errorf("Wanted username to be %v, got %v instead", wantUsername, Context.Username)
+	if wectx.Username() != wantUsername {
+		t.Errorf("Wanted username to be %v, got %v instead", wantUsername, wectx.Username())
 	}
 
-	if Context.Token != wantToken {
-		t.Errorf("Wanted token to be %v, got %v instead", wantToken, Context.Token)
+	if wectx.Token() != wantToken {
+		t.Errorf("Wanted token to be %v, got %v instead", wantToken, wectx.Token())
 	}
 
-	if Context.Remote != wantRemote {
-		t.Errorf("Wanted remote to be %v, got %v instead", wantRemote, Context.Remote)
+	if wectx.Remote() != wantRemote {
+		t.Errorf("Wanted remote to be %v, got %v instead", wantRemote, wectx.Remote())
 	}
 
-	if Context.InfrastructureDomain != wantInfrastructure {
-		t.Errorf("Wanted remoteAddress to be %v, got %v instead", wantInfrastructure, Context.InfrastructureDomain)
+	if wectx.InfrastructureDomain() != wantInfrastructure {
+		t.Errorf("Wanted remoteAddress to be %v, got %v instead", wantInfrastructure, wectx.InfrastructureDomain())
 	}
 
-	if Global.NotifyUpdates {
+	if conf.NotifyUpdates {
 		t.Errorf("Wrong NotifyUpdate value")
 	}
 
-	if Global.ReleaseChannel != "stable" {
+	if conf.ReleaseChannel != "stable" {
 		t.Errorf("Wrong ReleaseChannel value")
-	}
-
-	Teardown()
-
-	if Global != nil {
-		t.Errorf("Expected Global to be null")
-	}
-
-	if Context != nil {
-		t.Errorf("Expected config.Context to be null")
 	}
 }
 
@@ -215,15 +163,13 @@ func TestSetupAndTeardownProject(t *testing.T) {
 		t.Error(err)
 	}
 
-	if err := Setup("../../home/.we"); err != nil {
+	if _, err := Setup("../../home/.we"); err != nil {
 		panic(err)
 	}
 
 	if err := os.Chdir(workingDir); err != nil {
 		panic(err)
 	}
-
-	Teardown()
 }
 
 func TestSetupAndTeardownProjectAndService(t *testing.T) {
@@ -233,36 +179,40 @@ func TestSetupAndTeardownProjectAndService(t *testing.T) {
 		t.Error(err)
 	}
 
-	if err := Setup("../../../home/.we"); err != nil {
+	_, err := Setup("../../../home/.we")
+
+	if err != nil {
 		panic(err)
 	}
 
 	if err := os.Chdir(workingDir); err != nil {
 		panic(err)
 	}
-
-	Teardown()
 }
 
 func TestSave(t *testing.T) {
-	if err := Setup("mocks/home/.we"); err != nil {
+	wectx, err := Setup("mocks/home/.we")
+
+	if err != nil {
 		panic(err)
 	}
 
-	var tmp, err = ioutil.TempFile(os.TempDir(), "we")
+	conf := wectx.Config()
+
+	tmp, err := ioutil.TempFile(os.TempDir(), "we")
 
 	if err != nil {
 		panic(err)
 	}
 
 	// save in a different location
-	Global.Path = tmp.Name()
+	conf.Path = tmp.Name()
 
-	if err := Global.Save(); err != nil {
+	if err := conf.Save(); err != nil {
 		panic(err)
 	}
 
-	var got = tdata.FromFile(Global.Path)
+	var got = tdata.FromFile(conf.Path)
 	var want = []string{
 		`; Configuration file for WeDeploy CLI
 ; https://wedeploy.com`,
@@ -299,56 +249,54 @@ func TestSave(t *testing.T) {
 	if err = os.Remove(tmp.Name()); err != nil {
 		panic(err)
 	}
-
-	Teardown()
 }
 
 func TestRemotes(t *testing.T) {
-	if Global != nil {
-		t.Errorf("Expected Global to be null")
-	}
-
-	if err := Setup("./mocks/remotes/.we"); err != nil {
-		panic(err)
-	}
-
-	var tmp, err = ioutil.TempFile(os.TempDir(), "we")
+	wectx, err := Setup("./mocks/remotes/.we")
 
 	if err != nil {
 		panic(err)
 	}
 
-	Global.Remotes.Set("staging", remotes.Entry{
+	conf := wectx.Config()
+
+	tmp, err := ioutil.TempFile(os.TempDir(), "we")
+
+	if err != nil {
+		panic(err)
+	}
+
+	conf.Remotes.Set("staging", remotes.Entry{
 		Infrastructure: "https://staging.example.net/",
 	})
 
-	Global.Remotes.Set("beta", remotes.Entry{
+	conf.Remotes.Set("beta", remotes.Entry{
 		Infrastructure: "https://beta.example.com/",
 		Comment:        "remote for beta testing",
 	})
 
-	Global.Remotes.Set("new", remotes.Entry{
+	conf.Remotes.Set("new", remotes.Entry{
 		Infrastructure: "http://foo/",
 	})
 
-	Global.Remotes.Del("temporary")
+	conf.Remotes.Del("temporary")
 
-	Global.Remotes.Set("remain", remotes.Entry{
+	conf.Remotes.Set("remain", remotes.Entry{
 		Comment: "commented vars remains even when empty",
 	})
 
-	Global.Remotes.Set("dontremain", remotes.Entry{})
+	conf.Remotes.Set("dontremain", remotes.Entry{})
 
-	Global.Remotes.Del("dontremain2")
+	conf.Remotes.Del("dontremain2")
 
 	// save in a different location
-	Global.Path = tmp.Name()
+	conf.Path = tmp.Name()
 
-	if err := Global.Save(); err != nil {
+	if err := conf.Save(); err != nil {
 		panic(err)
 	}
 
-	var got = tdata.FromFile(Global.Path)
+	var got = tdata.FromFile(conf.Path)
 	var want = []string{`
 [remote "alternative"]
     infrastructure = http://example.net/
@@ -389,22 +337,16 @@ func TestRemotes(t *testing.T) {
 	if err = os.Remove(tmp.Name()); err != nil {
 		panic(err)
 	}
-
-	Teardown()
-
-	if Global != nil {
-		t.Errorf("Expected Global to be null")
-	}
 }
 
 func TestRemotesListAndGet(t *testing.T) {
-	if Global != nil {
-		t.Errorf("Expected Global to be null")
-	}
+	wectx, err := Setup("./mocks/remotes/.we")
 
-	if err := Setup("./mocks/remotes/.we"); err != nil {
+	if err != nil {
 		panic(err)
 	}
+
+	conf := wectx.Config()
 
 	var wantOriginalRemotes = remotes.List{
 		"wedeploy": remotes.Entry{
@@ -434,13 +376,13 @@ func TestRemotesListAndGet(t *testing.T) {
 		},
 	}
 
-	if len(wantOriginalRemotes) != len(Global.Remotes) {
-		t.Errorf("Number of remotes doesn't match: wanted %v, got %v instead", len(wantOriginalRemotes), len(Global.Remotes))
+	if len(wantOriginalRemotes) != len(conf.Remotes) {
+		t.Errorf("Number of remotes doesn't match: wanted %v, got %v instead", len(wantOriginalRemotes), len(conf.Remotes))
 	}
 
 	for k := range wantOriginalRemotes {
-		if wantOriginalRemotes[k] != Global.Remotes[k] {
-			t.Errorf("Expected remote doesn't match for %v: %+v instead of %+v", k, Global.Remotes[k], wantOriginalRemotes[k])
+		if wantOriginalRemotes[k] != conf.Remotes[k] {
+			t.Errorf("Expected remote doesn't match for %v: %+v instead of %+v", k, conf.Remotes[k], wantOriginalRemotes[k])
 		}
 	}
 
@@ -454,7 +396,7 @@ func TestRemotesListAndGet(t *testing.T) {
 		"wedeploy",
 	}
 
-	var names = Global.Remotes.Keys()
+	var names = conf.Remotes.Keys()
 
 	if !reflect.DeepEqual(names, wantList) {
 		t.Errorf("Wanted %v, got %v instead", wantList, names)
@@ -465,7 +407,7 @@ func TestRemotesListAndGet(t *testing.T) {
 		Comment:        "; commented vars remains even when empty",
 	}
 
-	var gotRemain, gotRemainOK = Global.Remotes["remain"]
+	var gotRemain, gotRemainOK = conf.Remotes["remain"]
 
 	if gotRemain != wantRemain {
 		t.Errorf("Wanted %v, got %v instead", wantRemain, gotRemain)
@@ -473,11 +415,5 @@ func TestRemotesListAndGet(t *testing.T) {
 
 	if !gotRemainOK {
 		t.Errorf("Wanted gotRemainOK to be true")
-	}
-
-	Teardown()
-
-	if Global != nil {
-		t.Errorf("Expected Global to be null")
 	}
 }

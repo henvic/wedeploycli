@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/deploy/remote"
+	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 )
@@ -32,11 +33,11 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return setupHost.Process()
+	return setupHost.Process(we.Context())
 }
 
 func runRun(cmd *cobra.Command, args []string) error {
-	var rd = &cmddeployremote.RemoteDeployment{
+	var rd = &deployremote.RemoteDeployment{
 		ProjectID: setupHost.Project(),
 		ServiceID: setupHost.Service(),
 		Remote:    setupHost.Remote(),

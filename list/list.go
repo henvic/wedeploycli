@@ -11,6 +11,7 @@ import (
 
 	"github.com/henvic/uilive"
 	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/projects"
@@ -38,6 +39,7 @@ type List struct {
 	retry              int
 	killed             bool
 	killLock           sync.Mutex
+	wectx              config.Context
 }
 
 // New creates a list using the values of a passed Filter
@@ -77,7 +79,8 @@ func (l *List) handleRequestError(err error) string {
 }
 
 // Start for the list
-func (l *List) Start() {
+func (l *List) Start(wectx config.Context) {
+	l.wectx = wectx
 	sigs := make(chan os.Signal, 1)
 	l.end = make(chan bool, 1)
 
