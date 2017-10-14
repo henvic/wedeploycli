@@ -11,7 +11,7 @@ import (
 // RestartWatchList is a temporary watch
 type RestartWatchList struct {
 	Project           string
-	Services        []string
+	Services          []string
 	IsStillRunning    func() bool
 	list              *List
 	projectHealthUID  string
@@ -46,7 +46,7 @@ func (rwl *RestartWatchList) SetInitialServicesHealthUID(healthUIDs map[string]s
 
 func (rwl *RestartWatchList) watchRoutine() {
 	var filter = Filter{
-		Project:    rwl.Project,
+		Project:  rwl.Project,
 		Services: rwl.Services,
 	}
 
