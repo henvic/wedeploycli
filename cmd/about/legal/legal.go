@@ -1,4 +1,4 @@
-package cmdlegal
+package legal
 
 import (
 	"fmt"

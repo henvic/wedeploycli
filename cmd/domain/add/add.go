@@ -1,4 +1,4 @@
-package cmddomainadd
+package add
 
 import (
 	"context"

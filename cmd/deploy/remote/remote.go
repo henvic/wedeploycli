@@ -1,4 +1,4 @@
-package cmddeployremote
+package deployremote
 
 import (
 	"context"

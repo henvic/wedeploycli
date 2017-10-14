@@ -1,4 +1,4 @@
-package cmddelete
+package delete
 
 import (
 	"context"

@@ -1,4 +1,4 @@
-package cmdcheck
+package diagnostics
 
 import (
 	"context"

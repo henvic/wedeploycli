@@ -1,4 +1,4 @@
-package cmdrestart
+package restart
 
 import (
 	"context"

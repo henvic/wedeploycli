@@ -1,4 +1,4 @@
-package cmddomainremove
+package remove
 
 import (
 	"context"

@@ -1,4 +1,4 @@
-package cmdgitcredentialhelper
+package gitcredentialhelper
 
 import (
 	"errors"

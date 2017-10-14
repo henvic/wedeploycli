@@ -1,4 +1,4 @@
-package cmdconsole
+package console
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package cmdactivities
+package activities
 
 import (
 	"context"

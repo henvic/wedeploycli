@@ -1,4 +1,4 @@
-package cmdinspect
+package inspect
 
 import (
 	"errors"

@@ -1,4 +1,4 @@
-package cmdlogin
+package login
 
 import (
 	"context"

@@ -1,4 +1,4 @@
-package cmdlist
+package list
 
 import (
 	"context"

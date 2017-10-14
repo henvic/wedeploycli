@@ -1,4 +1,4 @@
-package cmduninstall
+package uninstall
 
 import (
 	"errors"

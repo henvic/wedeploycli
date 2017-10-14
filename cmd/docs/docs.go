@@ -1,4 +1,4 @@
-package cmddocs
+package docs
 
 import (
 	"github.com/henvic/browser"

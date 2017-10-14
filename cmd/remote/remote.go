@@ -1,4 +1,4 @@
-package cmdremote
+package remote
 
 import (
 	"errors"

@@ -1,4 +1,4 @@
-package cmdabout
+package about
 
 import (
 	"github.com/spf13/cobra"
@@ -12,5 +12,5 @@ var AboutCmd = &cobra.Command{
 }
 
 func init() {
-	AboutCmd.AddCommand(cmdlegal.LegalCmd)
+	AboutCmd.AddCommand(legal.LegalCmd)
 }

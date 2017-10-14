@@ -1,4 +1,4 @@
-package cmdupdate
+package update
 
 import (
 	"github.com/spf13/cobra"

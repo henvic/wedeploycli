@@ -1,4 +1,4 @@
-package cmddeploy
+package deploy
 
 import (
 	"context"

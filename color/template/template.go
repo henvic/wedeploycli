@@ -1,4 +1,4 @@
-package colortemplate
+package template
 
 import (
 	"text/template"

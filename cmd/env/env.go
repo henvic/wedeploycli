@@ -1,4 +1,4 @@
-package cmdenv
+package env
 
 import (
 	"context"

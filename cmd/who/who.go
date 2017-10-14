@@ -1,4 +1,4 @@
-package cmdwho
+package who
 
 import (
 	"errors"

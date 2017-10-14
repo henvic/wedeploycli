@@ -1,4 +1,4 @@
-package cmdenvunset
+package unset
 
 import (
 	"context"

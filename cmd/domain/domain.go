@@ -1,4 +1,4 @@
-package cmddomain
+package domain
 
 import (
 	"context"

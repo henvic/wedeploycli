@@ -1,4 +1,4 @@
-package cmd
+package template
 
 import (
 	"bytes"
@@ -9,6 +9,14 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/formatter"
 )
+
+// Configure template for cobra commands
+func Configure(rootCmd *cobra.Command) {
+	cobra.AddTemplateFunc("printCommandsAndFlags", printCommandsAndFlags)
+	rootCmd.SetUsageTemplate(`{{printCommandsAndFlags .UseLine .Example .Commands .Flags}}`)
+	rootCmd.SetHelpTemplate(`{{if not (eq .CommandPath "` + rootCmd.Name() + `")}}{{with or .Long .Short }}{{color FgYellow BgHiYellow "!"}} {{. | trim | color FgHiYellow}}
+{{end}}{{end}}{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}`)
+}
 
 type usagePrinter struct {
 	useLine             string
@@ -196,11 +204,4 @@ func isDefaultFlagValueZero(f *pflag.Flag) bool {
 	}
 
 	return false
-}
-
-func init() {
-	cobra.AddTemplateFunc("printCommandsAndFlags", printCommandsAndFlags)
-	RootCmd.SetUsageTemplate(`{{printCommandsAndFlags .UseLine .Example .Commands .Flags}}`)
-	RootCmd.SetHelpTemplate(`{{if not (eq .CommandPath "we")}}{{with or .Long .Short }}{{color FgYellow BgHiYellow "!"}} {{. | trim | color FgHiYellow}}
-{{end}}{{end}}{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}`)
 }

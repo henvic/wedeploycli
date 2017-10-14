@@ -1,4 +1,4 @@
-package cmdenvset
+package set
 
 import (
 	"context"

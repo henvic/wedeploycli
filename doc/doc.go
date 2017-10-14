@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/spf13/cobra/doc"
-	"github.com/wedeploy/cli/cmd"
+	"github.com/wedeploy/cli/cmd/root"
 )
 
 func main() {
@@ -11,11 +11,11 @@ func main() {
 		Source: "Docs created automatically from the source files",
 	}
 
-	if err := doc.GenManTree(cmd.RootCmd, header, "."); err != nil {
+	if err := doc.GenManTree(root.Cmd, header, "."); err != nil {
 		panic(err)
 	}
 
-	if err := doc.GenMarkdownTree(cmd.RootCmd, "."); err != nil {
+	if err := doc.GenMarkdownTree(root.Cmd, "."); err != nil {
 		panic(err)
 	}
 }

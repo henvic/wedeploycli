@@ -1,4 +1,4 @@
-package cmd
+package root
 
 import (
 	"errors"
@@ -7,39 +7,19 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/autocomplete"
-	"github.com/wedeploy/cli/cmd/about"
-	"github.com/wedeploy/cli/cmd/activities"
-	"github.com/wedeploy/cli/cmd/autocomplete"
 	"github.com/wedeploy/cli/cmd/cmdmanager"
-	"github.com/wedeploy/cli/cmd/console"
-	"github.com/wedeploy/cli/cmd/delete"
-	"github.com/wedeploy/cli/cmd/deploy"
-	"github.com/wedeploy/cli/cmd/diagnostics"
-	"github.com/wedeploy/cli/cmd/docs"
-	"github.com/wedeploy/cli/cmd/domain"
-	"github.com/wedeploy/cli/cmd/env"
-	"github.com/wedeploy/cli/cmd/gitcredentialhelper"
-	"github.com/wedeploy/cli/cmd/inspect"
-	"github.com/wedeploy/cli/cmd/list"
-	"github.com/wedeploy/cli/cmd/log"
-	"github.com/wedeploy/cli/cmd/login"
-	"github.com/wedeploy/cli/cmd/logout"
-	"github.com/wedeploy/cli/cmd/remote"
-	"github.com/wedeploy/cli/cmd/restart"
-	"github.com/wedeploy/cli/cmd/uninstall"
-	"github.com/wedeploy/cli/cmd/update"
-	"github.com/wedeploy/cli/cmd/version"
-	"github.com/wedeploy/cli/cmd/who"
+	"github.com/wedeploy/cli/cmd/internal/template"
+	"github.com/wedeploy/cli/cmd/internal/we"
+	cmdversion "github.com/wedeploy/cli/cmd/version"
 	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/envs"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 )
 
-// RootCmd is the main command for the CLI
-var RootCmd = &cobra.Command{
+// Cmd is the main command for the CLI
+var Cmd = &cobra.Command{
 	Use:               "we",
 	Short:             "WeDeploy CLI Tool",
 	PersistentPreRunE: persistentPreRun,
@@ -53,31 +33,6 @@ var (
 	version  bool
 )
 
-var commands = []*cobra.Command{
-	cmdactivities.ActivitiesCmd,
-	cmddeploy.DeployCmd,
-	cmdlist.ListCmd,
-	cmdconsole.ConsoleCmd,
-	cmddocs.DocsCmd,
-	cmdlog.LogCmd,
-	cmddomain.DomainCmd,
-	cmdenv.EnvCmd,
-	cmdrestart.RestartCmd,
-	cmddelete.DeleteCmd,
-	cmdlogin.LoginCmd,
-	cmdlogout.LogoutCmd,
-	cmdautocomplete.AutocompleteCmd,
-	cmdremote.RemoteCmd,
-	cmdcheck.DiagnosticsCmd,
-	cmdversion.VersionCmd,
-	cmdupdate.UpdateCmd,
-	cmdinspect.InspectCmd,
-	cmdwho.WhoCmd,
-	cmdgitcredentialhelper.GitCredentialHelperCmd,
-	cmduninstall.UninstallCmd,
-	cmdabout.AboutCmd,
-}
-
 // see note on usage of maybeEnableVerboseByEnv
 func maybeEnableVerboseByEnv() {
 	if unsafe, _ := os.LookupEnv(envs.UnsafeVerbose); unsafe == "true" {
@@ -86,10 +41,11 @@ func maybeEnableVerboseByEnv() {
 }
 
 func init() {
+	template.Configure(Cmd)
 	cobra.EnableCommandSorting = false
-	autocomplete.RootCmd = RootCmd
+	autocomplete.RootCmd = Cmd
 
-	RootCmd.PersistentFlags().BoolVarP(
+	Cmd.PersistentFlags().BoolVarP(
 		&verbose.Enabled,
 		"verbose",
 		"v",
@@ -99,44 +55,52 @@ func init() {
 	// this has to run after defining the --verbose flag above
 	maybeEnableVerboseByEnv()
 
-	RootCmd.PersistentFlags().BoolVarP(
+	Cmd.PersistentFlags().BoolVarP(
 		&deferred,
 		"defer-verbose",
 		"V",
 		false,
 		"Defer verbose output")
 
-	RootCmd.PersistentFlags().BoolVar(
+	Cmd.PersistentFlags().BoolVar(
 		&deferred,
 		"defer-verbose-output",
 		false,
 		"Defer verbose output")
 
-	RootCmd.PersistentFlags().BoolVar(
+	Cmd.PersistentFlags().BoolVar(
 		&verbosereq.Disabled,
 		"no-verbose-requests",
 		false,
 		"Hide verbose output for requests")
 
-	RootCmd.PersistentFlags().BoolVar(
+	Cmd.PersistentFlags().BoolVar(
 		&color.NoColorFlag,
 		"no-color",
 		false,
 		"Disable color output")
 
-	RootCmd.Flags().BoolVar(
+	Cmd.Flags().BoolVar(
 		&version,
 		"version", false, "Print version information and quit")
 
-	cmdmanager.HideFlag("version", RootCmd)
-	cmdmanager.HidePersistentFlag("defer-verbose", RootCmd)
-	cmdmanager.HidePersistentFlag("defer-verbose-output", RootCmd)
-	cmdmanager.HidePersistentFlag("no-verbose-requests", RootCmd)
-	cmdmanager.HidePersistentFlag("no-color", RootCmd)
+	cmdmanager.HideFlag("version", Cmd)
+	hideHelpFlag()
+	cmdmanager.HidePersistentFlag("defer-verbose", Cmd)
+	cmdmanager.HidePersistentFlag("defer-verbose-output", Cmd)
+	cmdmanager.HidePersistentFlag("no-verbose-requests", Cmd)
+	cmdmanager.HidePersistentFlag("no-color", Cmd)
 
 	for _, c := range commands {
-		RootCmd.AddCommand(c)
+		Cmd.AddCommand(c)
 	}
+}
+
+func hideHelpFlag() {
+	// hide the --help flag on all commands, but top-level
+	Cmd.PersistentFlags().BoolP("help", "h", false, "Show help message")
+	_ = Cmd.PersistentFlags().MarkHidden("help")
+	Cmd.Flags().BoolP("help", "h", false, "Show help message")
 }
 
 func checkCompatibility() error {
@@ -168,7 +132,8 @@ func persistentPreRun(cmd *cobra.Command, args []string) error {
 	}
 
 	// load default cloud remote on config context
-	return config.SetEndpointContext(defaults.CloudRemote)
+	var wectx = we.Context()
+	return wectx.SetEndpoint(defaults.CloudRemote)
 }
 
 func run(cmd *cobra.Command, args []string) {

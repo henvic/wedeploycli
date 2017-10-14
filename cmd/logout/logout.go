@@ -1,4 +1,4 @@
-package cmdlogout
+package logout
 
 import (
 	"fmt"
