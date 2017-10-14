@@ -107,6 +107,8 @@ func Teardown() {
 
 // Assert tests if command executed exactly as described by Expect
 func (e *Expect) Assert(t *testing.T, cmd *Command) {
+	t.Helper()
+
 	if cmd.ExitCode != e.ExitCode {
 		t.Errorf("Wanted exit code %v, got %v instead", e.ExitCode, cmd.ExitCode)
 	}
