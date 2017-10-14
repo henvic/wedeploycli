@@ -29,7 +29,7 @@ func (ErrorServiceWithNoProject) Error() string {
 	return "Incompatible use: --service requires --project"
 }
 
-// ErrorLoadingRemoteList happens when the remote list is needed, but not injected into the module
+// ErrorLoadingRemoteList happens when the remote list is needed, but not found
 type ErrorLoadingRemoteList struct{}
 
 func (ErrorLoadingRemoteList) Error() string {
@@ -94,11 +94,16 @@ func (f *FlagsFromHost) IsRemoteFromHost() bool {
 	return f.isRemoteFromHost
 }
 
-var remotesList *remotes.List
+// CommandFlagFromHost extractor
+type CommandFlagFromHost struct {
+	RemotesList *remotes.List
+}
 
-// InjectRemotes list into the flagsfromhost module
-func InjectRemotes(list *remotes.List) {
-	remotesList = list
+// New CommandFlagFromHost
+func New(remotesList *remotes.List) CommandFlagFromHost {
+	return CommandFlagFromHost{
+		remotesList,
+	}
 }
 
 // ParseFlags for the flags received by the CLI
@@ -110,13 +115,13 @@ type ParseFlags struct {
 }
 
 // Parse host and flags
-func Parse(pf ParseFlags) (*FlagsFromHost, error) {
+func (c CommandFlagFromHost) Parse(pf ParseFlags) (*FlagsFromHost, error) {
 	pf.Host = strings.ToLower(pf.Host)
 	pf.Project = strings.ToLower(pf.Project)
 	pf.Service = strings.ToLower(pf.Service)
 	pf.Remote = strings.ToLower(pf.Remote)
 
-	var flagsFromHost, err = parse(pf.Host, pf.Project, pf.Service, pf.Remote)
+	var flagsFromHost, err = c.parse(pf.Host, pf.Project, pf.Service, pf.Remote)
 
 	if err != nil {
 		return nil, err
@@ -140,12 +145,12 @@ type ParseFlagsWithDefaultCustomRemote struct {
 }
 
 // ParseWithDefaultCustomRemote parses the flags using a custom default remote value
-func ParseWithDefaultCustomRemote(pf ParseFlagsWithDefaultCustomRemote, customRemote string) (*FlagsFromHost, error) {
+func (c CommandFlagFromHost) ParseWithDefaultCustomRemote(pf ParseFlagsWithDefaultCustomRemote, customRemote string) (*FlagsFromHost, error) {
 	if !pf.RemoteChanged {
 		pf.Remote = ""
 	}
 
-	var f, err = Parse(ParseFlags{
+	var f, err = c.Parse(ParseFlags{
 		Project: pf.Project,
 		Service: pf.Service,
 		Remote:  pf.Remote,
@@ -164,17 +169,17 @@ func ParseWithDefaultCustomRemote(pf ParseFlagsWithDefaultCustomRemote, customRe
 	return f, err
 }
 
-func parse(host, project, service, remote string) (*FlagsFromHost, error) {
+func (c CommandFlagFromHost) parse(host, project, service, remote string) (*FlagsFromHost, error) {
 	if host != "" {
 		if project != "" || service != "" {
 			return nil, ErrorMultiMode{}
 		}
 
-		return parseWithHost(host, remote)
+		return c.parseWithHost(host, remote)
 	}
 
 	if remote != "" {
-		if _, ok := (*remotesList)[remote]; !ok {
+		if _, ok := (*c.RemotesList)[remote]; !ok {
 			return nil, ErrorNotFound{remote}
 		}
 	}
@@ -186,8 +191,8 @@ func parse(host, project, service, remote string) (*FlagsFromHost, error) {
 	}, nil
 }
 
-func parseWithHost(host, remoteFromFlag string) (*FlagsFromHost, error) {
-	if remote, err := ParseRemoteAddress(host); err == nil {
+func (c CommandFlagFromHost) parseWithHost(host, remoteFromFlag string) (*FlagsFromHost, error) {
+	if remote, err := c.ParseRemoteAddress(host); err == nil {
 		if remote != "" && remoteFromFlag != "" {
 			return nil, ErrorRemoteFlagAndHost{}
 		}
@@ -198,7 +203,7 @@ func parseWithHost(host, remoteFromFlag string) (*FlagsFromHost, error) {
 		}, nil
 	}
 
-	flagsFromHost, err := parseHost(host)
+	flagsFromHost, err := c.parseHost(host)
 
 	if err != nil {
 		return nil, err
@@ -209,7 +214,7 @@ func parseWithHost(host, remoteFromFlag string) (*FlagsFromHost, error) {
 	}
 
 	if remoteFromFlag != "" {
-		if _, ok := (*remotesList)[remoteFromFlag]; !ok {
+		if _, ok := (*c.RemotesList)[remoteFromFlag]; !ok {
 			return nil, ErrorNotFound{remoteFromFlag}
 		}
 
@@ -232,7 +237,7 @@ func splitHyphenedHostPart(s string) []string {
 	}
 }
 
-func parseHost(host string) (*FlagsFromHost, error) {
+func (c CommandFlagFromHost) parseHost(host string) (*FlagsFromHost, error) {
 	var (
 		parseDot    = strings.SplitN(host, ".", 2)
 		parseHyphen = splitHyphenedHostPart(parseDot[0])
@@ -261,11 +266,11 @@ func parseHost(host string) (*FlagsFromHost, error) {
 		project = parseHyphen[1]
 	}
 
-	return parseHostWithRemote(project, service, host, parseDot[1])
+	return c.parseHostWithRemote(project, service, host, parseDot[1])
 }
 
-func parseHostWithRemote(project, service, host, remoteHost string) (*FlagsFromHost, error) {
-	var remote, err = ParseRemoteAddress(remoteHost)
+func (c CommandFlagFromHost) parseHostWithRemote(project, service, host, remoteHost string) (*FlagsFromHost, error) {
+	var remote, err = c.ParseRemoteAddress(remoteHost)
 	// notice that the logic above implies we MUST NOT
 	// have a immediate foo.bar if bar is already a remote address
 	// or it is going to have an ambiguity and always choose the longest host
@@ -297,16 +302,16 @@ func parseHostWithRemote(project, service, host, remoteHost string) (*FlagsFromH
 }
 
 // ParseRemoteAddress to get related remote
-func ParseRemoteAddress(remoteAddress string) (remote string, err error) {
+func (c CommandFlagFromHost) ParseRemoteAddress(remoteAddress string) (remote string, err error) {
 	if remoteAddress == "" {
 		return "", nil
 	}
 
-	if remotesList == nil {
+	if c.RemotesList == nil {
 		return "", ErrorLoadingRemoteList{}
 	}
 
-	switch found := parseRemoteAddress(remoteAddress); len(found) {
+	switch found := c.parseRemoteAddress(remoteAddress); len(found) {
 	case 0:
 		return "", ErrorFoundNoRemote{remoteAddress}
 	case 1:
@@ -316,9 +321,9 @@ func ParseRemoteAddress(remoteAddress string) (remote string, err error) {
 	}
 }
 
-func parseRemoteAddress(remoteAddress string) (found []string) {
-	for _, k := range remotesList.Keys() {
-		var v = (*remotesList)[k]
+func (c CommandFlagFromHost) parseRemoteAddress(remoteAddress string) (found []string) {
+	for _, k := range c.RemotesList.Keys() {
+		var v = (*c.RemotesList)[k]
 
 		var sameHTTP = matchStringWithPrefix("http://", remoteAddress, v.Service)
 		var sameHTTPS = matchStringWithPrefix("https://", remoteAddress, v.Service)
