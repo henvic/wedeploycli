@@ -942,7 +942,7 @@ func TestURL(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	var want = `WeDeploy platform error: could not connect to infrastructure`
+	var want = `Get x://localhost: unsupported protocol scheme "x"`
 
 	r := wedeploy.URL("x://localhost/")
 

@@ -14,14 +14,12 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 )
 
@@ -249,14 +247,6 @@ func (c *Client) URL(ctx context.Context, paths ...string) *wedeploy.WeDeploy {
 func Validate(request *wedeploy.WeDeploy, err error) error {
 	verbosereq.Feedback(request)
 
-	if err == nil {
-		return nil
-	}
-
-	if ue, ok := err.(*url.Error); ok {
-		return handleURLError(ue)
-	}
-
 	if err == wedeploy.ErrUnexpectedResponse {
 		if af := reportHTTPError(request); af != nil {
 			return af
@@ -264,25 +254,6 @@ func Validate(request *wedeploy.WeDeploy, err error) error {
 	}
 
 	return err
-}
-
-func handleURLError(ue *url.Error) error {
-	if config.Context == nil || config.Global == nil {
-		return ue
-	}
-
-	// only show this error if
-	// the active infrastructure domain is related to...
-	var s = "WeDeploy platform error:"
-
-	switch {
-	case verbose.Enabled:
-		s += "\n{{err}}"
-	default:
-		s += " could not connect to infrastructure"
-	}
-
-	return errwrap.Wrapf(s, ue)
 }
 
 func reportHTTPError(request *wedeploy.WeDeploy) error {
