@@ -2,12 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
@@ -55,7 +53,6 @@ func turnColorsOffOnWindows() bool {
 }
 
 func init() {
-	rand.Seed(time.Now().UTC().UnixNano())
 	cobra.AddTemplateFuncs(colortemplate.Functions())
 
 	_, machineFriendly := os.LookupEnv(envs.MachineFriendly)

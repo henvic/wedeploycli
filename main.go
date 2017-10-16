@@ -7,8 +7,14 @@ api.cmd
 
 package main
 
-import "github.com/wedeploy/cli/cmd"
+import (
+	"math/rand"
+	"time"
+
+	"github.com/wedeploy/cli/cmd"
+)
 
 func main() {
+	rand.Seed(time.Now().UTC().UnixNano())
 	cmd.Execute()
 }
