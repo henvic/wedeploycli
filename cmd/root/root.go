@@ -23,7 +23,7 @@ var Cmd = &cobra.Command{
 	Use:               "we",
 	Short:             "WeDeploy CLI Tool",
 	PersistentPreRunE: persistentPreRun,
-	Run:               run,
+	RunE:              runE,
 	SilenceErrors:     true,
 	SilenceUsage:      true,
 }
@@ -136,13 +136,10 @@ func persistentPreRun(cmd *cobra.Command, args []string) error {
 	return wectx.SetEndpoint(defaults.CloudRemote)
 }
 
-func run(cmd *cobra.Command, args []string) {
+func runE(cmd *cobra.Command, args []string) error {
 	if version {
-		cmdversion.VersionCmd.Run(cmd, args)
-		return
+		return cmdversion.VersionCmd.RunE(cmd, args)
 	}
 
-	if err := cmd.Help(); err != nil {
-		panic(err)
-	}
+	return cmd.Help()
 }
