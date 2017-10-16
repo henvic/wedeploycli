@@ -288,7 +288,7 @@ func (d *Deploy) notifyDeploymentOnQuiet(err error) {
 
 	fmt.Printf("Deployment %v is in progress on remote %v\n",
 		color.Format(color.FgBlue, d.GetGroupUID()),
-		color.Format(color.FgBlue, d.ConfigContext.InfrastructureDomain))
+		color.Format(color.FgBlue, d.ConfigContext.InfrastructureDomain()))
 }
 
 // Do deployment
@@ -343,7 +343,7 @@ func (d *Deploy) notifyFailedUpload() {
 func (d *Deploy) getDeployingMessage() string {
 	return fmt.Sprintf("Deploying services on project %v in %v...",
 		color.Format(color.FgBlue, d.ProjectID),
-		color.Format(color.FgBlue, d.ConfigContext.InfrastructureDomain),
+		color.Format(color.FgBlue, d.ConfigContext.InfrastructureDomain()),
 	)
 }
 
