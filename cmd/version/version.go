@@ -5,15 +5,17 @@ import (
 	"runtime"
 
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/verbose"
 )
 
 // VersionCmd is used for reading the version of this tool
 var VersionCmd = &cobra.Command{
-	Use:   "version",
-	Run:   versionRun,
-	Short: "Show CLI version",
+	Use:     "version",
+	PreRunE: cmdargslen.ValidateCmd(0, 0),
+	Run:     versionRun,
+	Short:   "Show CLI version",
 }
 
 func versionRun(cmd *cobra.Command, args []string) {
