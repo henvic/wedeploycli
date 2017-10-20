@@ -46,7 +46,7 @@ func (d *Deploy) Push() (groupUID string, err error) {
 		// I need to see if there are any "error:" strings as well
 		case strings.Contains(bs, "fatal: Authentication failed for"),
 			strings.Contains(bs, "could not read Username"):
-			metrics.Rec(d.ConfigContext.Config(), metrics.Event{
+			metrics.Rec(s.wectx.Config(), metrics.Event{
 				Type: "push_on_windows_invalid_credentials_failure",
 				Text: "Invalid credentials failure on Windows, trying again.",
 			})
@@ -106,5 +106,5 @@ func (d *Deploy) pushAfterInvalidCredentialsFailure() (groupUID string, err erro
 		return "", errors.New("Invalid credentials (second try)")
 	}
 
-	return tryGetPushGroupUID(bufErr)
+	return tryGetPushGroupUID(*bufErr)
 }
