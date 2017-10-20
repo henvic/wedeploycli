@@ -346,7 +346,7 @@ func (d *Deploy) Push() (groupUID string, err error) {
 		// I need to see if there are any "error:" strings as well
 		case strings.Contains(bs, "fatal: Authentication failed for"),
 			strings.Contains(bs, "could not read Username"):
-			return "", errors.New("Invalid credentials")
+			return "", errors.New("invalid credentials: please update git and try again http://git-scm.com")
 		case strings.Contains(bs, "error: "):
 			return "", getGitErrors(bs)
 		default:
