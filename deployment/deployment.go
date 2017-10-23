@@ -151,6 +151,11 @@ func tryGetPushGroupUID(buff bytes.Buffer) (groupUID string, err error) {
 		line, err := buff.ReadBytes('\n')
 
 		if bytes.HasPrefix(line, gitRemoteDeployPrefix) {
+			// \x1b[K is showing up at the end of "remote: wedeploy=" on at least git 1.9
+			if filterX1bk := []byte("\x1b[K\n"); bytes.HasSuffix(line, filterX1bk) {
+				line = append(line[:len(line)-len(filterX1bk)], byte('\n'))
+			}
+
 			return extractGroupUIDFromBuild(bytes.TrimPrefix(line, gitRemoteDeployPrefix))
 		}
 
