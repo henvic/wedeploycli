@@ -42,23 +42,22 @@ var (
 
 // Deploy project
 type Deploy struct {
-	Context          context.Context
-	ConfigContext    config.Context
-	ProjectID        string
-	ServiceID        string
-	LocationRemap    []string
-	Path             string
-	GitRemoteAddress string
-	Services         services.ServiceInfoList
-	Quiet            bool
-	groupUID         string
-	pushStartTime    time.Time
-	pushEndTime      time.Time
-	sActivities      servicesMap
-	wlm              waitlivemsg.WaitLiveMsg
-	stepMessage      *waitlivemsg.Message
-	uploadMessage    *waitlivemsg.Message
-	gitEnvCache      []string
+	Context       context.Context
+	ConfigContext config.Context
+	ProjectID     string
+	ServiceID     string
+	LocationRemap []string
+	Path          string
+	Services      services.ServiceInfoList
+	Quiet         bool
+	groupUID      string
+	pushStartTime time.Time
+	pushEndTime   time.Time
+	sActivities   servicesMap
+	wlm           waitlivemsg.WaitLiveMsg
+	stepMessage   *waitlivemsg.Message
+	uploadMessage *waitlivemsg.Message
+	gitEnvCache   []string
 }
 
 func (d *Deploy) renameServiceID(s services.ServiceInfo) error {

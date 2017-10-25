@@ -24,8 +24,6 @@ import (
 	"github.com/wedeploy/cli/verbose"
 )
 
-const gitSchema = "https://"
-
 // RemoteDeployment of services
 type RemoteDeployment struct {
 	ProjectID string
@@ -95,21 +93,15 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 		return "", errors.New("no service available for deployment was found")
 	}
 
-	var gitServer = fmt.Sprintf("%vgit.%v/%v.git",
-		gitSchema,
-		wectx.InfrastructureDomain(),
-		rd.ProjectID)
-
 	var deploy = &deployment.Deploy{
-		Context:          ctx,
-		ProjectID:        rd.ProjectID,
-		ServiceID:        rd.ServiceID,
-		LocationRemap:    rd.remap,
-		Path:             rd.path,
-		ConfigContext:    wectx,
-		GitRemoteAddress: gitServer,
-		Services:         rd.services,
-		Quiet:            rd.Quiet,
+		Context:       ctx,
+		ProjectID:     rd.ProjectID,
+		ServiceID:     rd.ServiceID,
+		LocationRemap: rd.remap,
+		Path:          rd.path,
+		ConfigContext: wectx,
+		Services:      rd.services,
+		Quiet:         rd.Quiet,
 	}
 
 	err = deploy.Do()

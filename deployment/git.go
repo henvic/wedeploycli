@@ -359,7 +359,11 @@ func (d *Deploy) Push() (groupUID string, err error) {
 
 // AddRemote on project
 func (d *Deploy) AddRemote() error {
-	var params = []string{"remote", "add", d.getGitRemote(), d.GitRemoteAddress}
+	var gitServer = fmt.Sprintf("https://git.%v/%v.git",
+		d.ConfigContext.InfrastructureDomain(),
+		d.ProjectID)
+
+	var params = []string{"remote", "add", d.getGitRemote(), gitServer}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Env = d.getConfigEnvs()
