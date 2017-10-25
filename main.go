@@ -1,5 +1,5 @@
 /*
-api.cmd
+cli.cmd
 
 	https://github.com/wedeploy/cli
 
