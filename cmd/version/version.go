@@ -18,7 +18,8 @@ var VersionCmd = &cobra.Command{
 	Short:   "Show CLI version",
 }
 
-func versionRun(cmd *cobra.Command, args []string) {
+// Print the current version
+func Print() {
 	var os = runtime.GOOS
 	var arch = runtime.GOARCH
 	fmt.Printf(
@@ -36,4 +37,8 @@ func versionRun(cmd *cobra.Command, args []string) {
 	}
 
 	verbose.Debug("Go version: %v\n", runtime.Version())
+}
+
+func versionRun(cmd *cobra.Command, args []string) {
+	Print()
 }

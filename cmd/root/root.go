@@ -138,7 +138,8 @@ func persistentPreRun(cmd *cobra.Command, args []string) error {
 
 func runE(cmd *cobra.Command, args []string) error {
 	if version {
-		return cmdversion.VersionCmd.RunE(cmd, args)
+		cmdversion.Print()
+		return nil
 	}
 
 	return cmd.Help()
