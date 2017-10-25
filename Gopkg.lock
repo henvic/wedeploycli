@@ -32,6 +32,12 @@
   revision = "7554cd9344cec97297fa6649b055a8c98c2a1e55"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/go-version"
+  packages = ["."]
+  revision = "fc61389e27c71d120f87031ca8c88a3428f372dd"
+
+[[projects]]
   branch = "fix-windows-subsystem"
   name = "github.com/henvic/browser"
   packages = ["."]
@@ -129,6 +135,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "60b6069c8df894d46e25eadcc231b9f0a2d28e067511b41dcb565184fd051b3e"
+  inputs-digest = "6f374150895465eb78a0e63322d6439c50da87f7c9ff559e10efb59146448637"
   solver-name = "gps-cdcl"
   solver-version = 1
