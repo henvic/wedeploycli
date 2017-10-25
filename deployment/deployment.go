@@ -728,16 +728,11 @@ func (d *Deploy) checkDeployment() (failedBuilds []string, failedDeploys []strin
 }
 
 func (d *Deploy) maybeOpenLogs(failedBuilds, failedDeploys []string) {
-	var options = fancy.Options{}
-	options.Add("Y", "Open Browser")
-	options.Add("N", "Cancel")
-	choice, err := options.Ask("Do you want to check the logs?")
-
-	if err != nil {
+	switch yes, err := fancy.Boolean("Open browser to check the logs?"); {
+	case err != nil:
 		fmt.Fprintf(os.Stderr, "%v", err)
-	}
-
-	if choice == "N" {
+		fallthrough
+	case !yes:
 		return
 	}
 
