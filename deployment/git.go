@@ -68,6 +68,9 @@ func (d *Deploy) getConfigEnvs() (es []string) {
 
 // InitializeRepository as a git repo
 func (d *Deploy) InitializeRepository() error {
+	// preload the config envs before proceeding (just for the verbose msg)
+	_ = d.getConfigEnvs()
+
 	var params = []string{"init"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
