@@ -128,7 +128,6 @@ func getGitErrors(s string) error {
 	var list = []string{}
 	for _, p := range parts {
 		if strings.Contains(p, "error: ") {
-			fmt.Println(p)
 			list = append(list, p)
 		}
 	}
