@@ -50,6 +50,7 @@ type Deploy struct {
 	Path          string
 	Services      services.ServiceInfoList
 	Quiet         bool
+	gitVersion    string
 	groupUID      string
 	pushStartTime time.Time
 	pushEndTime   time.Time

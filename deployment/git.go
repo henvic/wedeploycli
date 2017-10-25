@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -71,6 +72,10 @@ func (d *Deploy) InitializeRepository() error {
 	// preload the config envs before proceeding (just for the verbose msg)
 	_ = d.getConfigEnvs()
 
+	if err := d.getGitVersion(); err != nil {
+		return err
+	}
+
 	var params = []string{"init"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
@@ -87,6 +92,36 @@ func (d *Deploy) InitializeRepository() error {
 	}
 
 	return d.setGitAuthor()
+}
+
+func (d *Deploy) getGitVersion() error {
+	var params = []string{"version"}
+	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
+	var cmd = exec.CommandContext(d.Context, "git", params...)
+	cmd.Env = d.getConfigEnvs()
+	cmd.Dir = d.Path
+	var buf bytes.Buffer
+	cmd.Stderr = errStream
+	cmd.Stdout = &buf
+
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	verbose.Debug(buf.String())
+
+	// filter using semver partially
+	r := regexp.MustCompile(`(\d+.\d+.\d+)(-[0-9A-Za-z-]*.\d*)?`)
+	var b = r.FindStringSubmatch(buf.String())
+
+	switch len(b) {
+	case 0:
+		d.gitVersion = buf.String()
+	default:
+		d.gitVersion = b[0]
+	}
+
+	return nil
 }
 
 func (d *Deploy) setKeepLineEndings() error {
