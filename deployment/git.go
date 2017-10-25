@@ -356,6 +356,10 @@ func (d *Deploy) Commit() (commit string, err error) {
 
 // Push deployment to the WeDeploy remote
 func (d *Deploy) Push() (groupUID string, err error) {
+	if d.useGitCredentialHack() {
+		return d.pushHack()
+	}
+
 	d.pushStartTime = time.Now()
 	defer func() {
 		d.pushEndTime = time.Now()
@@ -397,6 +401,10 @@ func (d *Deploy) Push() (groupUID string, err error) {
 
 // AddRemote on project
 func (d *Deploy) AddRemote() error {
+	if d.useGitCredentialHack() {
+		return d.addRemoteHack()
+	}
+
 	var gitServer = fmt.Sprintf("https://git.%v/%v.git",
 		d.ConfigContext.InfrastructureDomain(),
 		d.ProjectID)
@@ -427,6 +435,11 @@ func (d *Deploy) addEmptyCredentialHelper() (err error) {
 }
 
 func (d *Deploy) addCredentialHelper() (err error) {
+	if d.useGitCredentialHack() {
+		verbose.Debug("Skipping adding git credential helper")
+		return nil
+	}
+
 	if err := d.addEmptyCredentialHelper(); err != nil {
 		return err
 	}
