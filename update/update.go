@@ -204,10 +204,18 @@ func notify(c *config.Config) {
 
 func updateApply(c *config.Config, channel string, resp *equinox.Response) error {
 	if err := resp.Apply(); err != nil {
-		return err
+		return handleUpdateApplyError(err)
 	}
 
 	return updateConfig(c, channel)
+}
+
+func handleUpdateApplyError(err error) error {
+	if err != nil && strings.Contains(err.Error(), "permission denied") {
+		return errwrap.Wrapf(`permission denied. Try "sudo we update" instead`, err)
+	}
+
+	return err
 }
 
 func updateConfig(c *config.Config, channel string) error {
