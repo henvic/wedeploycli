@@ -26,6 +26,7 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/envs"
 	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/services"
@@ -115,10 +116,15 @@ func replaceServicePackageToInterfaceOnRenaming(serviceID string, path string) (
 
 func copyErrStreamAndVerbose(cmd *exec.Cmd) *bytes.Buffer {
 	var bufErr bytes.Buffer
-	if verbose.Enabled {
+	cmd.Stderr = &bufErr
+
+	switch {
+	case verbose.Enabled && verbose.IsUnsafeMode():
 		cmd.Stderr = io.MultiWriter(&bufErr, os.Stderr)
-	} else {
-		cmd.Stderr = &bufErr
+	case verbose.Enabled:
+		verbose.Debug(fmt.Sprintf(
+			"Use %v=true to override security protection (see wedeploy/cli #327)",
+			envs.UnsafeVerbose))
 	}
 
 	return &bufErr
