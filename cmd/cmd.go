@@ -128,7 +128,8 @@ func (m *mainProgram) executeCommand() {
 
 	if m.cmdErr != nil {
 		fmt.Fprintln(os.Stderr, fancy.Error(
-			fmt.Sprintf(`Something went wrong with your "%s" operation.`, m.cmd.UseLine())))
+			fmt.Sprintf(`Something went wrong with your "%s" operation.`,
+				strings.TrimSuffix(m.cmd.UseLine(), " [flags]"))))
 		printError(m.cmdFriendlyErr)
 	}
 

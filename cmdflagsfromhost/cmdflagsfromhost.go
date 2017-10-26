@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
@@ -275,7 +276,7 @@ func (s *SetupHost) verifyCmdReqAuth() error {
 
 func (s *SetupHost) authenticateOrCancel() error {
 	var logIn, err = fancy.Boolean(fmt.Sprintf(`You need to log in before using "%s". Do you want to log in?`,
-		s.cmd.UseLine()))
+		strings.TrimSuffix(s.cmd.UseLine(), " [flags]")))
 
 	if err != nil {
 		return err

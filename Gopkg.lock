@@ -84,15 +84,16 @@
   revision = "10ef21a441db47d8b13ebcc5fd2310f636973c77"
 
 [[projects]]
-  branch = "master"
   name = "github.com/spf13/cobra"
   packages = [".","doc"]
-  revision = "3d7bff8a321b0a0f88b115558bb7e21bec9124ab"
+  revision = "7b2c5ac9fc04fc5efafb60700713d4fa609b777b"
+  version = "v0.0.1"
 
 [[projects]]
   name = "github.com/spf13/pflag"
   packages = ["."]
-  revision = "f1d95a35e132e8a1868023a08932b14f0b8b8fcb"
+  revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/wedeploy/api-go"
@@ -135,6 +136,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6f374150895465eb78a0e63322d6439c50da87f7c9ff559e10efb59146448637"
+  inputs-digest = "44b6fd2a6a482640e0b4a0d45f24d4baedfe8a33ee455ea3a79ea4820e70ed7e"
   solver-name = "gps-cdcl"
   solver-version = 1

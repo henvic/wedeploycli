@@ -38,6 +38,8 @@ func colorSpacingOffset() string {
 }
 
 func printCommandsAndFlags(useLine, example string, cs []*cobra.Command, f *pflag.FlagSet) string {
+	useLine = strings.TrimSuffix(useLine, " [flags]")
+
 	up := &usagePrinter{
 		useLine:        useLine,
 		example:        example,
