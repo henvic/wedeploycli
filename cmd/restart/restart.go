@@ -125,7 +125,7 @@ func (r *restart) watch() {
 		r.rwl.Services = []string{r.service}
 	}
 
-	r.rwl.Watch()
+	r.rwl.Watch(we.Context())
 }
 
 func (r *restart) hasRestartFinished() bool {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/verbose"
 )
@@ -18,10 +19,12 @@ type RestartWatchList struct {
 	projectHealthUID  string
 	servicesHealthUID map[string]string
 	healthMutex       sync.RWMutex
+	wectx             config.Context
 }
 
 // Watch the RestartWatchList
-func (rwl *RestartWatchList) Watch() {
+func (rwl *RestartWatchList) Watch(wectx config.Context) {
+	rwl.wectx = wectx
 	var queue sync.WaitGroup
 	queue.Add(1)
 	go func() {
@@ -53,7 +56,7 @@ func (rwl *RestartWatchList) watchRoutine() {
 
 	rwl.list = New(filter)
 	rwl.list.StopCondition = rwl.isDone
-	rwl.list.Start(rwl.list.wectx)
+	rwl.list.Start(rwl.wectx)
 }
 
 func (rwl *RestartWatchList) isDone() bool {
