@@ -193,7 +193,10 @@ function pretag() {
 
   checkWorkingDir
   runTests
-  echo All tests and checks necessary for release passed.
+  echo "All tests and checks necessary for release passed."
+  echo ""
+  echo "Changes:"
+  git log $LAST_TAG..HEAD --pretty="format:%h %s" --abbrev=10 || true
 }
 
 function release() {
