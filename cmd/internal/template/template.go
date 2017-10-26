@@ -3,6 +3,7 @@ package template
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
