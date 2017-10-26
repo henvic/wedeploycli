@@ -27,10 +27,10 @@ import (
 // Related: https://github.com/git-for-windows/git
 
 // Special treatment constraints:
-// 2.5.0 (Aug 18 2015): weird git credential- error message, but still works
-// 2.5.1 (Aug 28 2015): weird git credential- error message, but still works
-// 2.5.3 (Sep 18 2017): starts breaking
-// 2.13.3 (Jul 13 2017): working again
+// 2.5.0 (Aug 18, 2015): weird git credential- error message, but still works
+// 2.5.1 (Aug 28, 2015): weird git credential- error message, but still works
+// 2.5.3 (Sep 18, 2015): starts breaking
+// 2.13.3 (Jul 13, 2017): working again
 const gitAffectedVersions = "> 2.5.1, < 2.13.3"
 
 func (d *Deploy) pushHack() (groupUID string, err error) {
@@ -70,7 +70,6 @@ func (d *Deploy) pushHack() (groupUID string, err error) {
 	if err != nil {
 		bs := bufErr.String()
 		switch {
-		// I need to see if there are any "error:" strings as well
 		case strings.Contains(bs, "fatal: Authentication failed for"),
 			strings.Contains(bs, "could not read Username"):
 			return "", errors.New("invalid credentials: please update git and try again http://git-scm.com")
@@ -108,7 +107,7 @@ func (d *Deploy) addRemoteHack() error {
 	return cmd.Run()
 }
 
-func (d *Deploy) useGitCredentialHack() bool {
+func (d *Deploy) useCredentialHack() bool {
 	if runtime.GOOS != "windows" {
 		return false
 	}

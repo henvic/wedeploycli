@@ -356,7 +356,7 @@ func (d *Deploy) Commit() (commit string, err error) {
 
 // Push deployment to the WeDeploy remote
 func (d *Deploy) Push() (groupUID string, err error) {
-	if d.useGitCredentialHack() {
+	if d.useCredentialHack() {
 		return d.pushHack()
 	}
 
@@ -385,7 +385,6 @@ func (d *Deploy) Push() (groupUID string, err error) {
 	if err != nil {
 		bs := bufErr.String()
 		switch {
-		// I need to see if there are any "error:" strings as well
 		case strings.Contains(bs, "fatal: Authentication failed for"),
 			strings.Contains(bs, "could not read Username"):
 			return "", errors.New("Invalid credentials")
@@ -401,7 +400,7 @@ func (d *Deploy) Push() (groupUID string, err error) {
 
 // AddRemote on project
 func (d *Deploy) AddRemote() error {
-	if d.useGitCredentialHack() {
+	if d.useCredentialHack() {
 		return d.addRemoteHack()
 	}
 
@@ -435,7 +434,7 @@ func (d *Deploy) addEmptyCredentialHelper() (err error) {
 }
 
 func (d *Deploy) addCredentialHelper() (err error) {
-	if d.useGitCredentialHack() {
+	if d.useCredentialHack() {
 		verbose.Debug("Skipping adding git credential helper")
 		return nil
 	}
