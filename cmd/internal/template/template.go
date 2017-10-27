@@ -26,8 +26,16 @@ type usagePrinter struct {
 	f                   *pflag.FlagSet
 	buf                 *bytes.Buffer
 	tw                  *formatter.TabWriter
-	flagsBufferMap      map[string][]byte
+	flags               flagsDescriptions
 	showFlagsParamField bool
+}
+
+type flagsDescriptions []flagDescription
+
+type flagDescription struct {
+	Name        string
+	Description []byte
+	Used        bool
 }
 
 func colorSpacingOffset() string {
@@ -42,11 +50,10 @@ func printCommandsAndFlags(useLine, example string, cs []*cobra.Command, f *pfla
 	useLine = strings.TrimSuffix(useLine, " [flags]")
 
 	up := &usagePrinter{
-		useLine:        useLine,
-		example:        example,
-		cs:             cs,
-		f:              f,
-		flagsBufferMap: map[string][]byte{},
+		useLine: useLine,
+		example: example,
+		cs:      cs,
+		f:       f,
 	}
 	up.buf = new(bytes.Buffer)
 	up.tw = formatter.NewTabWriter(up.buf)
@@ -56,7 +63,7 @@ func printCommandsAndFlags(useLine, example string, cs []*cobra.Command, f *pfla
 	return up.buf.String()
 }
 
-func (up usagePrinter) printCommands() {
+func (up *usagePrinter) printCommands() {
 	var cmdPart = " [command]"
 
 	if len(up.cs) == 0 {
@@ -91,7 +98,7 @@ func (up usagePrinter) printCommands() {
 	fmt.Fprintln(up.tw, "\t") // \t here keeps the alignment between commands and flags
 }
 
-func (up usagePrinter) printFlags() {
+func (up *usagePrinter) printFlags() {
 	up.f.VisitAll(func(flag *pflag.Flag) {
 		if !flag.Hidden && flag.Value.Type() != "bool" {
 			up.showFlagsParamField = true
@@ -127,28 +134,35 @@ func (up usagePrinter) printFlags() {
 	fmt.Fprintf(up.tw, "%s%s%s", string(begin), string(middle), string(end))
 }
 
-func (up usagePrinter) useFlagsHelpDescriptionFiltered(list []string) []byte {
+func (up *usagePrinter) useFlagsHelpDescriptionFiltered(list []string) []byte {
 	var buf bytes.Buffer
-	for _, flagName := range list {
-		if flagBuf, ok := up.flagsBufferMap[flagName]; ok {
-			buf.Write(flagBuf)
-			delete(up.flagsBufferMap, flagName)
+
+	for _, filtered := range list {
+		for i, flag := range up.flags {
+			if flag.Name == filtered && !flag.Used {
+				up.flags[i].Used = true
+				buf.Write(flag.Description)
+			}
 		}
 	}
 
 	return buf.Bytes()
 }
 
-func (up usagePrinter) useFlagsHelpDescription() []byte {
+func (up *usagePrinter) useFlagsHelpDescription() []byte {
 	var buf bytes.Buffer
-	for _, flagBuf := range up.flagsBufferMap {
-		buf.Write(flagBuf)
+
+	for i, flag := range up.flags {
+		if !flag.Used {
+			up.flags[i].Used = true
+			buf.Write(flag.Description)
+		}
 	}
 
 	return buf.Bytes()
 }
 
-func (up usagePrinter) preparePrintFlag(flag *pflag.Flag) {
+func (up *usagePrinter) preparePrintFlag(flag *pflag.Flag) {
 	if flag.Deprecated != "" || flag.Hidden {
 		return
 	}
@@ -197,7 +211,10 @@ func (up usagePrinter) preparePrintFlag(flag *pflag.Flag) {
 	}
 
 	buf.WriteString("\n")
-	up.flagsBufferMap[flag.Name] = buf.Bytes()
+	up.flags = append(up.flags, flagDescription{
+		Name:        flag.Name,
+		Description: buf.Bytes(),
+	})
 }
 
 func isDefaultFlagValueZero(f *pflag.Flag) bool {
