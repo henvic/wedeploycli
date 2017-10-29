@@ -91,6 +91,15 @@ const (
 	// DeployFailed state
 	DeployFailed = "DEPLOY_FAILED"
 
+	// DeployCanceled state
+	DeployCanceled = "DEPLOY_CANCELED"
+
+	// DeployTimeout state
+	DeployTimeout = "DEPLOY_TIMEOUT"
+
+	// DeployRollback state
+	DeployRollback = "DEPLOY_ROLLBACK"
+
 	// DeployPending state
 	DeployPending = "DEPLOY_PENDING"
 
@@ -152,6 +161,9 @@ var activityTemplates = map[string]string{
 	CollaboratorLeft:                   "{{.ProjectID}} project collaborator left",
 	CustomDomainUpdated:                "{{.Metadata.serviceId}} custom domain updated on project {{.ProjectID}}",
 	DeployFailed:                       "{{.Metadata.serviceId}} deployment failed on project {{.ProjectID}}",
+	DeployCanceled:                     "{{.Metadata.serviceId}} deployment canceled on project {{.ProjectID}}",
+	DeployTimeout:                      "{{.Metadata.serviceId}} deployment timed out on project {{.ProjectID}}",
+	DeployRollback:                     "{{.Metadata.serviceId}} deployment rollback on project {{.ProjectID}}",
 	DeployPending:                      "{{.Metadata.serviceId}} deployment pending on project {{.ProjectID}}",
 	DeployCreated:                      "{{.Metadata.serviceId}} deployment created on project {{.ProjectID}}",
 	DeployStarted:                      "{{.Metadata.serviceId}} deployment started on project {{.ProjectID}}",

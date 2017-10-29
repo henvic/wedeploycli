@@ -62,6 +62,14 @@ type Deploy struct {
 	gitEnvCache   []string
 }
 
+type finalActivitiesStates struct {
+	BuildFailed    []string
+	DeployFailed   []string
+	DeployCanceled []string
+	DeployTimeout  []string
+	DeployRollback []string
+}
+
 func (d *Deploy) renameServiceID(s services.ServiceInfo) error {
 	// ignore service package contents because it is strict (see note below)
 	var _, err = services.Read(s.Location)
@@ -323,20 +331,17 @@ func (d *Deploy) Do() error {
 
 	d.checkActivitiesLoop()
 
-	var fb, fd []string
-	var askLogs = false
-	if err == nil {
-		fb, fd, err = d.checkDeployment()
-		askLogs = (err != nil)
-	}
+	states, err := d.verifyFinalState()
 
 	d.updateDeploymentEndStep(err)
 
 	d.wlm.Stop()
 
+	var askLogs = (len(states.BuildFailed) != 0 || len(states.DeployFailed) != 0)
+
 	if askLogs {
 		errorhandling.SetAfterError(func() {
-			d.maybeOpenLogs(fb, fd)
+			d.maybeOpenLogs(states)
 		})
 	}
 
@@ -460,14 +465,25 @@ func (d *Deploy) UploadDuration() time.Duration {
 
 type servicesMap map[string]*serviceWatch
 
-func (s servicesMap) GetServicesByState(state string) (keys []string) {
-	for k, c := range s {
-		if c.state == state {
-			keys = append(keys, k)
+func (s servicesMap) getFinalActivitiesStates() finalActivitiesStates {
+	var states = finalActivitiesStates{}
+
+	for k, service := range s {
+		switch service.state {
+		case activities.BuildFailed:
+			states.BuildFailed = append(states.BuildFailed, k)
+		case activities.DeployFailed:
+			states.DeployFailed = append(states.DeployFailed, k)
+		case activities.DeployCanceled:
+			states.DeployCanceled = append(states.DeployCanceled, k)
+		case activities.DeployTimeout:
+			states.DeployTimeout = append(states.DeployTimeout, k)
+		case activities.DeployRollback:
+			states.DeployRollback = append(states.DeployRollback, k)
 		}
 	}
 
-	return keys
+	return states
 }
 
 type serviceWatch struct {
@@ -483,6 +499,9 @@ func (s servicesMap) isFinalState(key string) bool {
 	switch s[key].state {
 	case activities.BuildFailed,
 		activities.DeployFailed,
+		activities.DeployCanceled,
+		activities.DeployTimeout,
+		activities.DeployRollback,
 		activities.DeploySucceeded:
 		return true
 	}
@@ -516,6 +535,9 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 		activities.BuildPushed:     "Build push",
 		activities.BuildSucceeded:  "Build successful",
 		activities.DeployFailed:    "Deploy failed",
+		activities.DeployCanceled:  "Deploy canceled",
+		activities.DeployTimeout:   "Deploy timed out",
+		activities.DeployRollback:  "Deploy rollback",
 		activities.DeployCreated:   "Deploy created",
 		activities.DeployPending:   "Deploy pending",
 		activities.DeploySucceeded: "Deployed",
@@ -536,7 +558,10 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 		m.PlayText(d.makeServiceStatusMessage(serviceID, pre))
 	case
 		activities.BuildFailed,
-		activities.DeployFailed:
+		activities.DeployFailed,
+		activities.DeployCanceled,
+		activities.DeployTimeout,
+		activities.DeployRollback:
 		m.StopText(fancy.Error(d.makeServiceStatusMessage(serviceID, pre)))
 	case
 		activities.DeploySucceeded:
@@ -557,6 +582,9 @@ func isActitityTypeDeploymentRelated(activityType string) bool {
 		activities.DeployPending,
 		activities.DeployStarted,
 		activities.DeployFailed,
+		activities.DeployCanceled,
+		activities.DeployTimeout,
+		activities.DeployRollback,
 		activities.DeploySucceeded:
 		return true
 	}
@@ -570,6 +598,9 @@ func (d *Deploy) markActivityState(serviceID, activityType string) {
 		activities.BuildSucceeded,
 		activities.BuildFailed,
 		activities.DeployFailed,
+		activities.DeployCanceled,
+		activities.DeployTimeout,
+		activities.DeployRollback,
 		activities.DeploySucceeded:
 		d.sActivities[serviceID].state = activityType
 	}
@@ -691,50 +722,46 @@ func (d *Deploy) makeServiceStatusMessage(serviceID, pre string) string {
 	return buff.String()
 }
 
-func (d *Deploy) checkDeployment() (failedBuilds []string, failedDeploys []string, err error) {
-	var feedback string
-	failedBuilds = d.sActivities.GetServicesByState(activities.BuildFailed)
-	failedDeploys = d.sActivities.GetServicesByState(activities.DeployFailed)
+func (d *Deploy) verifyFinalState() (states finalActivitiesStates, err error) {
+	states = d.sActivities.getFinalActivitiesStates()
 
-	if len(failedBuilds) == 0 && len(failedDeploys) == 0 {
-		return failedBuilds, failedDeploys, nil
+	if len(states.BuildFailed) == 0 &&
+		len(states.DeployFailed) == 0 &&
+		len(states.DeployCanceled) == 0 &&
+		len(states.DeployTimeout) == 0 &&
+		len(states.DeployRollback) == 0 {
+		return states, nil
 	}
 
-	switch len(d.sActivities) {
-	case len(failedBuilds) + len(failedDeploys):
-		feedback = "deployment failed while"
-	default:
-		feedback = "deployment failed partially while"
+	var emsgs []string
+
+	for _, s := range states.BuildFailed {
+		emsgs = append(emsgs, fmt.Sprintf(`error building service "%s"`, s))
 	}
 
-	if len(failedBuilds) != 0 {
-		feedback += " building service"
-
-		if len(failedBuilds) != 1 {
-			feedback += "s"
-		}
-
-		feedback += " " + color.Format(color.Bold, strings.Join(failedBuilds, ", "))
+	for _, s := range states.DeployFailed {
+		emsgs = append(emsgs, fmt.Sprintf(`error deploying service "%s"`, s))
 	}
 
-	if len(failedBuilds) != 0 && len(failedDeploys) != 0 {
-		feedback += ", and"
+	for _, s := range states.DeployCanceled {
+		emsgs = append(emsgs, fmt.Sprintf(`canceled deployment of service "%s"`, s))
 	}
 
-	if len(failedDeploys) != 0 {
-		feedback += " deploying service"
-
-		if len(failedDeploys) != 1 {
-			feedback += "s"
-		}
-
-		feedback += " " + color.Format(color.Bold, strings.Join(failedDeploys, ", "))
+	for _, s := range states.DeployTimeout {
+		emsgs = append(emsgs, fmt.Sprintf(`timed out deploying "%s"`, s))
 	}
 
-	return failedBuilds, failedDeploys, errors.New(feedback)
+	for _, s := range states.DeployRollback {
+		emsgs = append(emsgs, fmt.Sprintf(`rolling back service "%s"`, s))
+	}
+
+	return states, errors.New(strings.Join(emsgs, "\n"))
 }
 
-func (d *Deploy) maybeOpenLogs(failedBuilds, failedDeploys []string) {
+func (d *Deploy) maybeOpenLogs(states finalActivitiesStates) {
+	var failedBuilds = states.BuildFailed
+	var failedDeploys = states.DeployFailed
+
 	switch yes, err := fancy.Boolean("Open browser to check the logs?"); {
 	case err != nil:
 		fmt.Fprintf(os.Stderr, "%v", err)
