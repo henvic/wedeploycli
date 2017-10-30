@@ -196,7 +196,8 @@ function pretag() {
   echo "All tests and checks necessary for release passed."
   echo ""
   echo "Changes:"
-  git log $LAST_TAG..HEAD --pretty="format:%h %s" --abbrev=10 || true
+  git --no-pager log $LAST_TAG..HEAD --pretty="format:%h %s" --abbrev=10 || true
+  echo ""
 }
 
 function release() {
