@@ -1,10 +1,5 @@
-ServiceID string
-Health string
+ID string
+Scale int
 Image string
-ImageHint string
 CustomDomains []string
 Env map[string]string
-Scale int
-CPU json.Number
-Memory json.Number
-HealthUID string

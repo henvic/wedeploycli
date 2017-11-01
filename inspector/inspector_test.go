@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/wedeploy/api-go/jsonlib"
-	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/tdata"
 
@@ -46,18 +45,6 @@ func TestMain(m *testing.M) {
 	}
 
 	ec = m.Run()
-}
-
-func TestGetSpecContextOverview(t *testing.T) {
-	var got = GetSpec(projects.Project{})
-	var want = []string{`ProjectID string`,
-		`Health string`,
-		`Description string`,
-		`HealthUID string`}
-
-	if !reflect.DeepEqual(want, got) {
-		t.Errorf("Wanted spec %v, got %v instead", want, got)
-	}
 }
 
 func TestPrintServiceSpec(t *testing.T) {

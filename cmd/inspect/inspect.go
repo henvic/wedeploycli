@@ -89,7 +89,7 @@ func printTypeFieldsSpec(field string) error {
 	case "context":
 		i = inspector.ContextOverview{}
 	case "service":
-		i = services.Service{}
+		i = services.ServicePackage{}
 	}
 
 	if i == nil {
