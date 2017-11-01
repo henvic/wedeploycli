@@ -23,7 +23,7 @@ fi
 
 ARCH=$(uname -m | sed 's/x86_64/amd64/' | sed 's/i686/386/')
 UNAME_ARCH=$(echo ${UNAME}_${ARCH} | tr '[:upper:]' '[:lower:]' | tr '_' '-')
-FILE=cli-$RELEASE_CHANNEL-$UNAME_ARCH
+FILE=we-$RELEASE_CHANNEL-$UNAME_ARCH
 PACKAGE_FORMAT=""
 
 # Hacking mktemp's incompatible parameters on BSD and Linux
