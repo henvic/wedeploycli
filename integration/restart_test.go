@@ -52,7 +52,7 @@ func TestRestartInternalServerError(t *testing.T) {
 	e.Assert(t, cmd)
 }
 
-func TestRestartProjectQuiet(t *testing.T) {
+func TestRestartProject(t *testing.T) {
 	var handled bool
 	defer Teardown()
 	Setup()
@@ -69,12 +69,13 @@ func TestRestartProjectQuiet(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"restart", "--remote", "local", "--project", "foo", "--quiet"},
+		Args: []string{"restart", "--remote", "local", "--project", "foo"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
 	var e = &Expect{
 		ExitCode: 0,
+		Stdout:   "Restarting project foo.",
 	}
 
 	cmd.Run()
@@ -84,7 +85,7 @@ func TestRestartProjectQuiet(t *testing.T) {
 		t.Errorf("Restart request not handled.")
 	}
 }
-func TestRestartServiceQuiet(t *testing.T) {
+func TestRestartService(t *testing.T) {
 	var handled bool
 	var handledMutex sync.Mutex
 	defer Teardown()
@@ -117,6 +118,7 @@ func TestRestartServiceQuiet(t *testing.T) {
 
 	var e = &Expect{
 		ExitCode: 0,
+		Stdout:   "Restarting service bar on project foo.",
 	}
 
 	e.Assert(t, cmd)
