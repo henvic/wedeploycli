@@ -30,7 +30,6 @@ type Project struct {
 	ProjectID   string `json:"projectId"`
 	Health      string `json:"health,omitempty"`
 	Description string `json:"description,omitempty"`
-	HealthUID   string `json:"healthUid,omitempty"`
 }
 
 // Services of a given project

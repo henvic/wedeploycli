@@ -60,7 +60,6 @@ type Service struct {
 	Scale         int               `json:"scale,omitempty"`
 	CPU           json.Number       `json:"cpu,omitempty"`
 	Memory        json.Number       `json:"memory,omitempty"`
-	HealthUID     string            `json:"healthUid,omitempty"`
 }
 
 // ServicePackage is the structure for wedeploy.json
