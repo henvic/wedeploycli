@@ -397,7 +397,7 @@ func (d *Deploy) preparePackage() (err error) {
 	d.stepMessage.StopText(
 		fmt.Sprintf("Preparing deployment for project %v in %v...",
 			color.Format(color.FgBlue, d.ProjectID),
-			color.Format(d.ConfigContext.Remote)),
+			color.Format(d.ConfigContext.Remote())),
 	)
 
 	if hasGit := existsDependency("git"); !hasGit {
