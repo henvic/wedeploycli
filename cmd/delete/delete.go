@@ -81,27 +81,27 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if err := confirmation(); err != nil {
+	if err := u.confirmation(); err != nil {
 		return err
 	}
 
 	return u.do()
 }
 
-func confirmation() error {
+func (u *undeployer) confirmation() error {
 	if force {
 		return nil
 	}
 
 	var question string
 
-	if setupHost.Service() != "" {
+	if u.service != "" {
 		question = fmt.Sprintf(`Do you really want to delete the service "%v" on project "%v"?`,
-			color.Format(color.Bold, setupHost.Service()),
-			color.Format(color.Bold, setupHost.Project()))
+			color.Format(color.Bold, u.service),
+			color.Format(color.Bold, u.project))
 	} else {
 		question = fmt.Sprintf(`Do you really want to delete the project "%v"?`,
-			color.Format(color.Bold, setupHost.Project()))
+			color.Format(color.Bold, u.project))
 	}
 
 	var confirm, askErr = fancy.Boolean(question)
