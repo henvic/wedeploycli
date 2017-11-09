@@ -16,12 +16,6 @@ import (
 var DomainCmd = &cobra.Command{
 	Use:   "domain",
 	Short: "Show and configure domain names for services",
-	Long: `Show and configure domain names for services
-
-Changing these values does not change wedeploy.json hard coded values.
-
-Information about name servers configuration at
-http://wedeploy.com/docs/intro/custom-domains.html`,
 	Example: `  we domain (to list domains)
   we domain add foo.com
   we domain rm foo.com`,

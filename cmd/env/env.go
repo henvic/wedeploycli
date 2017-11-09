@@ -18,13 +18,10 @@ import (
 var EnvCmd = &cobra.Command{
 	Use:   "env",
 	Short: "Show and configure environment variables for services",
-	Long: `Show and configure environment variables for services
-
-	Changing these values does not change wedeploy.json hard coded values.
-	You must restart services for changed values to apply.`,
-	Example: `   we env (to list environment variables)
-   we env set foo bar
-   we env rm foo`,
+	Long:  `Show and configure environment variables for services. You must restart the service afterwards.`,
+	Example: `  we env (to list environment variables)
+  we env set foo bar
+  we env rm foo`,
 	PreRunE: preRun,
 	RunE:    run,
 }
