@@ -16,6 +16,7 @@ import (
 )
 
 var inStream io.Reader = os.Stdin
+var errInvalidOption = errors.New("invalid option")
 
 // SelectOption prompts for an option from a list
 func SelectOption(indexLength int, equivalents map[string]int) (index int, err error) {
@@ -44,7 +45,7 @@ func SelectOption(indexLength int, equivalents map[string]int) (index int, err e
 func getSelectOptionIndex(index, indexLength int, err error) (int, error) {
 	index--
 	if err != nil || index < 0 || index >= indexLength {
-		return -1, errors.New("invalid option")
+		return -1, errInvalidOption
 	}
 
 	return index, nil
