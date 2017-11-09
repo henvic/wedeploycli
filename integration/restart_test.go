@@ -15,7 +15,7 @@ func TestRestartInternalServerError(t *testing.T) {
 	Setup()
 
 	servertest.IntegrationMux.HandleFunc(
-		"/projects/foo",
+		"/projects/foo/services/bar",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -34,7 +34,7 @@ func TestRestartInternalServerError(t *testing.T) {
 		})
 
 	var cmd = &Command{
-		Args: []string{"restart", "--remote", "local", "--project", "foo", "--quiet"},
+		Args: []string{"restart", "--remote", "local", "--project", "foo", "--service", "bar", "--quiet"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
@@ -52,39 +52,6 @@ func TestRestartInternalServerError(t *testing.T) {
 	e.Assert(t, cmd)
 }
 
-func TestRestartProject(t *testing.T) {
-	var handled bool
-	defer Teardown()
-	Setup()
-
-	servertest.IntegrationMux.HandleFunc("/projects/foo",
-		tdata.ServerJSONFileHandler("mocks/restart/foo/project_response.json"))
-
-	servertest.IntegrationMux.HandleFunc("/projects/foo/services",
-		tdata.ServerJSONFileHandler("mocks/restart/foo/services_response.json"))
-
-	servertest.IntegrationMux.HandleFunc("/projects/foo/restart",
-		func(w http.ResponseWriter, r *http.Request) {
-			handled = true
-		})
-
-	var cmd = &Command{
-		Args: []string{"restart", "--remote", "local", "--project", "foo"},
-		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
-	}
-
-	var e = &Expect{
-		ExitCode: 0,
-		Stdout:   "Restarting project foo.",
-	}
-
-	cmd.Run()
-	e.Assert(t, cmd)
-
-	if !handled {
-		t.Errorf("Restart request not handled.")
-	}
-}
 func TestRestartService(t *testing.T) {
 	var handled bool
 	var handledMutex sync.Mutex

@@ -116,14 +116,6 @@ func (c *Client) List(ctx context.Context) (list []Project, err error) {
 	return list, err
 }
 
-// Restart restarts a project
-func (c *Client) Restart(ctx context.Context, id string) error {
-	var req = c.Client.URL(ctx, "/projects/"+url.QueryEscape(id)+"/restart")
-
-	c.Client.Auth(req)
-	return apihelper.Validate(req, req.Post())
-}
-
 // Unlink project
 func (c *Client) Unlink(ctx context.Context, projectID string) error {
 	var req = c.Client.URL(ctx, "/projects", projectID)

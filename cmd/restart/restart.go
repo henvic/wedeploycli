@@ -7,18 +7,16 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/services"
 )
 
 // RestartCmd is used for getting restart
 var RestartCmd = &cobra.Command{
 	Use:     "restart",
-	Short:   "Restart project or services",
+	Short:   "Restart services",
 	PreRunE: preRun,
 	RunE:    restartRun,
 	Example: `  we restart --project chat --service data
-  we restart --service data
   we restart --project chat --service data --remote wedeploy
   we restart --url data-chat.wedeploy.io`,
 }
@@ -27,6 +25,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 	Requires: cmdflagsfromhost.Requires{
 		Auth:    true,
 		Project: true,
+		Service: true,
 	},
 	Pattern: cmdflagsfromhost.FullHostPattern,
 }
@@ -46,38 +45,19 @@ type restart struct {
 }
 
 func (r *restart) do() (err error) {
-	switch r.service {
-	case "":
-		projectsClient := projects.New(we.Context())
-		err = projectsClient.Restart(r.ctx, r.project)
-	default:
-		servicesClient := services.New(we.Context())
-		err = servicesClient.Restart(r.ctx, r.project, r.service)
-	}
+	servicesClient := services.New(we.Context())
+	err = servicesClient.Restart(r.ctx, r.project, r.service)
 
-	if err != nil {
-		return err
-	}
-
-	switch r.service {
-	case "":
-		fmt.Printf("Restarting project %s.\n", r.project)
-	default:
+	if err == nil {
 		fmt.Printf("Restarting service %s on project %s.\n", r.service, r.project)
 	}
 
-	return nil
+	return err
 }
 
-func (r *restart) checkProjectOrServiceExists() (err error) {
-	if r.service == "" {
-		projectsClient := projects.New(we.Context())
-		_, err = projectsClient.Get(r.ctx, r.project)
-	} else {
-		servicesClient := services.New(we.Context())
-		_, err = servicesClient.Get(r.ctx, r.project, r.service)
-	}
-
+func (r *restart) checkServiceExists() (err error) {
+	servicesClient := services.New(we.Context())
+	_, err = servicesClient.Get(r.ctx, r.project, r.service)
 	return err
 }
 
@@ -89,11 +69,10 @@ func restartRun(cmd *cobra.Command, args []string) error {
 	var r = &restart{
 		project: setupHost.Project(),
 		service: setupHost.Service(),
+		ctx:     context.Background(),
 	}
 
-	r.ctx = context.Background()
-
-	if err := r.checkProjectOrServiceExists(); err != nil {
+	if err := r.checkServiceExists(); err != nil {
 		return err
 	}
 

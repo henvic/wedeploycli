@@ -2,7 +2,6 @@ package projects
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"reflect"
@@ -153,19 +152,6 @@ func TestList(t *testing.T) {
 	}
 
 	servertest.Teardown()
-}
-
-func TestRestart(t *testing.T) {
-	defer servertest.Teardown()
-	servertest.Setup()
-
-	servertest.Mux.HandleFunc("/projects/foo/restart", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, `"on"`)
-	})
-
-	if err := client.Restart(context.Background(), "foo"); err != nil {
-		t.Errorf("Unexpected error on project restart: %v", err)
-	}
 }
 
 func TestUnlink(t *testing.T) {
