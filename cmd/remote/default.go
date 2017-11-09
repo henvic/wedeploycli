@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdargslen"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/prompt"
 )
 
@@ -26,12 +27,14 @@ func getRemoteFromList() (string, error) {
 	var m = map[string]int{}
 
 	fmt.Println(`Select a remote to use for the next "we" commands:`)
+	fmt.Println(color.Format(color.FgHiBlack, "#\tRemote"))
 
 	for v, k := range keys {
-		fmt.Printf("%d) %v\n", v+1, k)
+		fmt.Printf("%d\t%v\n", v+1, k)
 		m[k] = v + 1
 	}
 
+	fmt.Print("Choice: ")
 	var i, err = prompt.SelectOption(len(keys), m)
 
 	if err != nil {
