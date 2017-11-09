@@ -292,7 +292,7 @@ func (c *Client) Get(ctx context.Context, projectID, serviceID string) (s Servic
 
 // AddDomain in project
 func (c *Client) AddDomain(ctx context.Context, projectID, serviceID string, domain string) (err error) {
-	var service, perr = c.Get(context.Background(), projectID, serviceID)
+	var service, perr = c.Get(ctx, projectID, serviceID)
 
 	if perr != nil {
 		return errwrap.Wrapf("Can not get current domains: {{err}}", perr)
@@ -315,7 +315,7 @@ func maybeAppendDomain(customDomains []string, domain string) []string {
 
 // RemoveDomain in project
 func (c *Client) RemoveDomain(ctx context.Context, projectID string, serviceID, domain string) (err error) {
-	var service, perr = c.Get(context.Background(), projectID, serviceID)
+	var service, perr = c.Get(ctx, projectID, serviceID)
 
 	if perr != nil {
 		return errwrap.Wrapf("Can not get current domains: {{err}}", perr)
