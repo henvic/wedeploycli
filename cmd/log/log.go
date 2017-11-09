@@ -111,8 +111,8 @@ func getSince() (string, error) {
 		return "", errwrap.Wrapf("can't parse since argument: {{err}}.", err)
 	}
 
-	// use microseconds instead of seconds (dashboard takes ms as a param)
-	return fmt.Sprintf("%v000", since), err
+	// use nanoseconds instead of seconds (console takes ns as a param)
+	return fmt.Sprintf("%v000000000", since), err
 }
 
 func init() {
