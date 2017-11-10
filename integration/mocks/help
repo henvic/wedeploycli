@@ -8,6 +8,7 @@
   domain           Show and configure domain names for services
   env              Show and configure environment variables for services
   restart          Restart services
+  delete           Delete project or services
   login            Login into your account
   logout           Logout from your account
   diagnostics      Run system diagnostics and show report

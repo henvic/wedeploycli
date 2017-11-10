@@ -21,7 +21,6 @@ var force bool
 // DeleteCmd is the delete command to undeploy a project or service
 var DeleteCmd = &cobra.Command{
 	Use:     "delete",
-	Hidden:  true,
 	Short:   "Delete project or services",
 	PreRunE: preRun,
 	RunE:    run,
