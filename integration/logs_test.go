@@ -97,6 +97,7 @@ func TestLogs(t *testing.T) {
 			"log",
 			"-u",
 			"nodejs5143-foo.wedeploy.me",
+			"--watch=false",
 			"--no-color"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/",
@@ -132,6 +133,7 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContext(t *testing.T) {
 			"local",
 			"-p",
 			"foo",
+			"--watch=false",
 			"--no-color"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/bucket/foo",
@@ -165,6 +167,7 @@ func TestLogsWithLocalhostAddress(t *testing.T) {
 			"log",
 			"-u",
 			"nodejs5143-foo.wedeploy.me",
+			"--watch=false",
 			"--no-color"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/",
@@ -193,8 +196,7 @@ func TestWatch(t *testing.T) {
 		Args: []string{
 			"log",
 			"-u",
-			"nodejs5143-foo.wedeploy.me",
-			"--watch"},
+			"nodejs5143-foo.wedeploy.me"},
 		Env: []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir: "mocks/home/",
 	}
