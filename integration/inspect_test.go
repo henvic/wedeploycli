@@ -20,8 +20,7 @@ func TestInspectPrintUnavailableStructure(t *testing.T) {
 			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 	}
 
-	var want = `! Something went wrong with your "we inspect" operation.
-! Inspecting "unavailable" is not implemented.`
+	var want = `! Inspecting "unavailable" is not implemented.`
 
 	var e = &Expect{
 		ExitCode: 1,
