@@ -54,6 +54,7 @@ func TestPrintServiceSpec(t *testing.T) {
 		`Image string`,
 		`CustomDomains []string`,
 		`Env map[string]string`,
+		`Dependencies []string`,
 	}
 
 	if !reflect.DeepEqual(want, got) {

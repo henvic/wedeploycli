@@ -69,6 +69,7 @@ type ServicePackage struct {
 	Image         string            `json:"image,omitempty"`
 	CustomDomains []string          `json:"customDomains,omitempty"`
 	Env           map[string]string `json:"env,omitempty"`
+	Dependencies  []string          `json:"dependencies,omitempty"`
 	dockerfile    string
 }
 

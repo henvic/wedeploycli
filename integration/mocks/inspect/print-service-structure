@@ -3,3 +3,4 @@ Scale int
 Image string
 CustomDomains []string
 Env map[string]string
+Dependencies []string
