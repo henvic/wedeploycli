@@ -63,7 +63,7 @@ type Authentication struct {
 	msg             *waitlivemsg.Message
 }
 
-func (a *Authentication) basicAuthLogin() error {
+func (a *Authentication) basicAuthLogin(ctx context.Context) error {
 	var (
 		username string
 		password string
@@ -108,7 +108,13 @@ promptForPassword:
 	go a.wlm.Wait()
 	defer a.wlm.Stop()
 
-	token, err = loginserver.OAuthTokenFromBasicAuth(a.wectx, remoteAddress, username, password)
+	var ba = loginserver.BasicAuth{
+		Username: username,
+		Password: password,
+		Context:  a.wectx,
+	}
+
+	token, err = ba.GetOAuthToken(ctx)
 	a.maybePrintReceivedToken(token)
 
 	if err != nil {
@@ -164,7 +170,7 @@ func (a *Authentication) Run(ctx context.Context, c config.Context) error {
 	}
 
 	if a.NoLaunchBrowser {
-		return a.basicAuthLogin()
+		return a.basicAuthLogin(ctx)
 	}
 
 	fmt.Println("WeDeploy requires your browser for authenticating.")

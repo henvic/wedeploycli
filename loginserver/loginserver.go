@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
@@ -52,7 +53,7 @@ document.querySelector("#authenticate").submit();
 
 // Listen for requests
 func (s *Service) Listen(ctx context.Context) (address string, err error) {
-	s.ctx, s.ctxCancel = context.WithCancel(ctx)
+	s.ctx, s.ctxCancel = context.WithTimeout(ctx, 15*time.Minute)
 	s.netListener, err = net.Listen("tcp", "127.0.0.1:0")
 
 	if err != nil {
@@ -218,14 +219,20 @@ type accessToken struct {
 	AccessToken string `json:"token"`
 }
 
-// OAuthTokenFromBasicAuth gets a token from a Basic Auth flow
-func OAuthTokenFromBasicAuth(c config.Context, remoteAddress, username, password string) (token string, err error) {
-	var apiClient = apihelper.New(c)
+// BasicAuth credentials
+type BasicAuth struct {
+	Username string
+	Password string
+	Context  config.Context
+}
 
-	var request = apiClient.URL(context.Background(), "/login")
+// GetOAuthToken from a Basic Auth flow
+func (b *BasicAuth) GetOAuthToken(ctx context.Context) (token string, err error) {
+	var apiClient = apihelper.New(b.Context)
+	var request = apiClient.URL(ctx, "/login")
 
-	request.Form("email", username)
-	request.Form("password", password)
+	request.Form("email", b.Username)
+	request.Form("password", b.Password)
 
 	if err := apihelper.Validate(request, request.Post()); err != nil {
 		return "", err
