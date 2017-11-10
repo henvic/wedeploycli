@@ -25,7 +25,6 @@ func TestParseNoRemoteList(t *testing.T) {
 		t.Errorf("Wrong error message for parsing when no remote list is loaded")
 	}
 }
-
 func TestParseRemoteAddressNotFoundForAddress(t *testing.T) {
 	var c = New(&remotes.List{})
 
@@ -70,6 +69,35 @@ func TestParseRemoteAddressMultipleRemote(t *testing.T) {
 
 	if err.Error() != "Found multiple remotes for address foo-bar.wedeploy.me: bar, foo" {
 		t.Errorf("Wrong error message for parsing when no remote list is loaded")
+	}
+}
+
+func TestParseMultipleRemoteHostMultipleRemote(t *testing.T) {
+	var c = New(&remotes.List{
+		"foo": remotes.Entry{
+			Service: "wedeploy.me",
+		},
+		"bar": remotes.Entry{
+			Service: "wedeploy.me",
+		},
+	})
+
+	parsed, err := c.Parse(ParseFlags{
+		Host: "wedeploy.me",
+	})
+
+	if parsed != nil {
+		t.Errorf("Expected remote to be nil, got %v instead", parsed)
+	}
+
+	switch err.(type) {
+	case ErrorFoundMultipleRemote:
+	default:
+		t.Errorf("Expected error to be due to multiple remotes found, got %v instead", err)
+	}
+
+	if err != nil && err.Error() != "Found multiple remotes for address wedeploy.me: bar, foo" {
+		t.Errorf("Wrong error message for parsing when no remote list is loaded, got %v instead", err)
 	}
 }
 

@@ -192,7 +192,9 @@ func (c CommandFlagFromHost) parse(host, project, service, remote string) (*Flag
 }
 
 func (c CommandFlagFromHost) parseWithHost(host, remoteFromFlag string) (*FlagsFromHost, error) {
-	if remote, err := c.ParseRemoteAddress(host); err == nil {
+	remote, err := c.ParseRemoteAddress(host)
+
+	if err == nil {
 		if remote != "" && remoteFromFlag != "" {
 			return nil, ErrorRemoteFlagAndHost{}
 		}
@@ -201,6 +203,11 @@ func (c CommandFlagFromHost) parseWithHost(host, remoteFromFlag string) (*FlagsF
 			remote:           remote,
 			isRemoteFromHost: true,
 		}, nil
+	}
+
+	switch err.(type) {
+	case ErrorFoundMultipleRemote:
+		return nil, err
 	}
 
 	flagsFromHost, err := c.parseHost(host)
