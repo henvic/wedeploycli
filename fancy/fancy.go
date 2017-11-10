@@ -141,7 +141,7 @@ func (o *Options) Ask(q string) (string, error) {
 			fmt.Fprintln(os.Stderr,
 				Error(`No valid answer was found for "`+
 					color.Format(color.Reset, choice)+
-					color.Format(color.Format(color.FgHiRed, `"`))))
+					color.Format(color.FgHiRed, `"`)))
 		}
 	}
 }
