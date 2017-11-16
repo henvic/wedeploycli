@@ -16,6 +16,7 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/fancy"
+	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/timehelper"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/waitlivemsg"
@@ -54,6 +55,23 @@ func (d *Deploy) createServicesActivitiesMap() {
 			msgWLM: m,
 		}
 		d.wlm.AddMessage(m)
+	}
+}
+
+func (d *Deploy) reorderDeployments() {
+	projectsClient := projects.New(d.ConfigContext)
+	order, _ := projectsClient.GetDeploymentOrder(d.Context, d.ProjectID, d.groupUID)
+
+	for _, do := range order {
+		if a, ok := d.sActivities[do]; ok {
+			d.wlm.RemoveMessage(a.msgWLM)
+		}
+	}
+
+	for _, do := range order {
+		if a, ok := d.sActivities[do]; ok {
+			d.wlm.AddMessage(a.msgWLM)
+		}
 	}
 }
 
@@ -317,6 +335,8 @@ func clearMessageErrorStringCounter(input string) (output string) {
 }
 
 func (d *Deploy) watchDeployment() {
+	d.reorderDeployments()
+
 	rate := rate.NewLimiter(rate.Every(time.Second), 1)
 
 	for {
