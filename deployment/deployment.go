@@ -118,7 +118,7 @@ func replaceServicePackageToInterfaceOnRenaming(serviceID string, path string) (
 		return nil, err
 	}
 
-	spMap["id"] = serviceID
+	spMap["id"] = strings.ToLower(serviceID)
 	return json.MarshalIndent(&spMap, "", "    ")
 }
 
