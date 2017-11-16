@@ -259,7 +259,7 @@ func (d *Deploy) updateDeploymentEndStep(err error) {
 	switch err {
 	case nil:
 		d.stepMessage.StopText(d.getDeployingMessage() + "\n" +
-			fancy.Success(fmt.Sprintf("Deployment successful in %s", timeElapsed)))
+			fancy.Success(fmt.Sprintf("Deployment succeeded in %s", timeElapsed)))
 	default:
 		d.stepMessage.StopText(d.getDeployingMessage() + "\n" +
 			fancy.Error(fmt.Sprintf("Deployment failed in %s", timeElapsed)))
@@ -531,17 +531,17 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 
 	var prefixes = map[string]string{
 		activities.BuildFailed:     "Build failed",
-		activities.BuildStarted:    "Building",
-		activities.BuildPushed:     "Build push",
-		activities.BuildSucceeded:  "Build successful",
-		activities.DeployFailed:    "Deploy failed",
-		activities.DeployCanceled:  "Deploy canceled",
-		activities.DeployTimeout:   "Deploy timed out",
-		activities.DeployRollback:  "Deploy rollback",
-		activities.DeployCreated:   "Deploy created",
-		activities.DeployPending:   "Deploy pending",
-		activities.DeploySucceeded: "Deployed",
-		activities.DeployStarted:   "Deploying",
+		activities.BuildStarted:    "Build started",
+		activities.BuildPushed:     "Build pushed",
+		activities.BuildSucceeded:  "Build succeeded",
+		activities.DeployFailed:    "Deployment failed",
+		activities.DeployCanceled:  "Deployment canceled",
+		activities.DeployTimeout:   "Deployment timed out",
+		activities.DeployRollback:  "Deployment rollback",
+		activities.DeployCreated:   "Deployment created",
+		activities.DeployPending:   "Deployment pending",
+		activities.DeploySucceeded: "Deployment succeeded",
+		activities.DeployStarted:   "Deployment started",
 	}
 
 	if pre, ok = prefixes[a.Type]; !ok {
