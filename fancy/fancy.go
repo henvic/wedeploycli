@@ -72,18 +72,32 @@ func HiddenPrompt() (string, error) {
 
 // Boolean question
 func Boolean(question string) (yes bool, err error) {
-	var o = Options{}
+	question = Question(question)
+	fmt.Printf("%s %s\n", question, color.Format(color.FgMagenta, "[y/n]"))
 
-	o.Add("y", "Yes")
-	o.Add("n", "No")
+	for {
+		var choice, err = Prompt()
 
-	res, err := o.Ask(question)
+		if err != nil {
+			return false, err
+		}
 
-	if res == "y" {
-		return true, err
+		cInput := strings.TrimSpace(strings.ToLower(choice))
+
+		switch cInput {
+		case "y", "yes", "yeah":
+			return true, nil
+		case "n", "no", "nope":
+			return false, nil
+		case "":
+			fmt.Fprintln(os.Stderr, Error("Select an option."))
+		default:
+			fmt.Fprintln(os.Stderr,
+				Error(`No valid answer was found for "`+
+					color.Format(color.Reset, choice)+
+					color.Format(color.FgHiRed, `"`)))
+		}
 	}
-
-	return false, err
 }
 
 // Options selector
