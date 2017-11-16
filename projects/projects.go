@@ -3,6 +3,7 @@ package projects
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/url"
 	"sort"
 
@@ -140,4 +141,13 @@ func (c *Client) CreateOrUpdate(ctx context.Context, project Project) (pRec Proj
 	}
 
 	return pRec, created, err
+}
+
+// GetDeploymentOrder gets the order of a given deployment
+func (c *Client) GetDeploymentOrder(ctx context.Context, projectID, groupUID string) (order []string, err error) {
+	var addr = fmt.Sprintf("/projects/%s/builds/order/%s",
+		url.QueryEscape(projectID),
+		url.QueryEscape(groupUID))
+	err = c.Client.AuthGet(ctx, addr, &order)
+	return order, err
 }

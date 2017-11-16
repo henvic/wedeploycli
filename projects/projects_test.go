@@ -172,3 +172,24 @@ func TestUnlink(t *testing.T) {
 
 	servertest.Teardown()
 }
+
+func TestGetDeploymentOrder(t *testing.T) {
+	servertest.Setup()
+
+	var want = []string{"data", "auth", "hosting"}
+
+	servertest.Mux.HandleFunc("/projects/foo/builds/order/xyz",
+		tdata.ServerJSONFileHandler("mocks/deployment_order_response.json"))
+
+	var got, err = client.GetDeploymentOrder(context.Background(), "foo", "xyz")
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("Wanted order to be %v, got %v instead", want, got)
+	}
+
+	servertest.Teardown()
+}
