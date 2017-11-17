@@ -85,9 +85,9 @@ func Boolean(question string) (yes bool, err error) {
 		cInput := strings.TrimSpace(strings.ToLower(choice))
 
 		switch cInput {
-		case "y", "yes", "yeah":
+		case "y", "yes", "yep", "yeh", "yeah":
 			return true, nil
-		case "n", "no", "nope":
+		case "n", "no", "nah", "nope":
 			return false, nil
 		case "":
 			fmt.Fprintln(os.Stderr, Error("Select an option."))
