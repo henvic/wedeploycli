@@ -15,6 +15,8 @@ This command runs all code static analysis/quality tools and the unit and integr
 
 If everything passes, a new git tag is created at the end and pushed to origin.
 
+Your editor is open with a tag message you can edit to add more information about the release. By default, the tag message contains a log of changes since the last tagged version.
+
 ## Building
 
 ### Packaging and distribution
