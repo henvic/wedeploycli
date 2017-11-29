@@ -127,10 +127,24 @@ promptForPassword:
 
 func (a *Authentication) tryStdinToken() (bool, error) {
 	file := os.Stdin
-	if fi, err := file.Stat(); err != nil || fi.Size() == 0 {
+	fi, err := file.Stat()
+
+	// Different systems treat Stdin differently
+	// On Ubuntu (Linux), the stdin size is zero even if all
+	// content was already piped, say with:
+	// echo foo | we login
+	// On Darwin (macOS), this is not the case.
+	// See http://learngowith.me/a-better-way-of-handling-stdin/
+
+	if fi.Size() != 0 {
+		goto skipToStdin
+	}
+
+	if err != nil || fi.Mode()&os.ModeCharDevice != 0 {
 		return false, nil
 	}
 
+skipToStdin:
 	reader := bufio.NewReader(file)
 	maybe, err := reader.ReadString('\n')
 
