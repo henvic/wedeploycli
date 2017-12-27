@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
-	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/logs"
 )
@@ -39,6 +38,7 @@ var LogCmd = &cobra.Command{
 	Short:   "Show logs of the services",
 	PreRunE: preRun,
 	RunE:    logRun,
+	Args:    cobra.NoArgs,
 	Example: `  we log --project chat --service data
   we log --service data
   we log --project chat --service data
@@ -47,10 +47,6 @@ var LogCmd = &cobra.Command{
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if err := cmdargslen.Validate(args, 0, 0); err != nil {
-		return err
-	}
-
 	return setupHost.Process(we.Context())
 }
 

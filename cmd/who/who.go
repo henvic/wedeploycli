@@ -6,15 +6,14 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
-	"github.com/wedeploy/cli/cmdargslen"
 )
 
 // WhoCmd get the current user
 var WhoCmd = &cobra.Command{
-	Use:     "who",
-	Short:   "Get who is using WeDeploy locally",
-	PreRunE: cmdargslen.ValidateCmd(0, 0),
-	RunE:    whoRun,
+	Use:   "who",
+	Short: "Get who is using WeDeploy locally",
+	Args:  cobra.NoArgs,
+	RunE:  whoRun,
 }
 
 func whoRun(cmd *cobra.Command, args []string) error {

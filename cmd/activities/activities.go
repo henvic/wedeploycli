@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/activities"
 	"github.com/wedeploy/cli/cmd/internal/we"
-	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 )
 
@@ -14,6 +13,7 @@ import (
 var ActivitiesCmd = &cobra.Command{
 	Use:     "activities",
 	Short:   "List activities of a recent deployment",
+	Args:    cobra.NoArgs,
 	PreRunE: preRun,
 	RunE:    activitiesRun,
 	Hidden:  true,
@@ -25,10 +25,6 @@ var (
 )
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if err := cmdargslen.Validate(args, 0, 0); err != nil {
-		return err
-	}
-
 	return setupHost.Process(we.Context())
 }
 

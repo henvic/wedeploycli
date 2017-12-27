@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/deploy/remote"
 	"github.com/wedeploy/cli/cmd/internal/we"
-	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 )
 
@@ -24,15 +23,12 @@ var quiet bool
 var DeployCmd = &cobra.Command{
 	Use:     "deploy",
 	Short:   "Perform services deployment",
+	Args:    cobra.NoArgs,
 	PreRunE: preRun,
 	RunE:    runRun,
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if err := cmdargslen.Validate(args, 0, 0); err != nil {
-		return err
-	}
-
 	return setupHost.Process(we.Context())
 }
 

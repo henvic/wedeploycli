@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/userhome"
@@ -17,10 +16,10 @@ import (
 
 // UninstallCmd is used for uninstall this tool
 var UninstallCmd = &cobra.Command{
-	Use:     "uninstall",
-	PreRunE: cmdargslen.ValidateCmd(0, 0),
-	RunE:    uninstallRun,
-	Short:   "Uninstall CLI",
+	Use:   "uninstall",
+	Args:  cobra.NoArgs,
+	RunE:  uninstallRun,
+	Short: "Uninstall CLI",
 }
 
 var rmConfig bool

@@ -3,17 +3,16 @@ package docs
 import (
 	"github.com/henvic/browser"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/waitlivemsg"
 )
 
 // DocsCmd opens the docs on the browser
 var DocsCmd = &cobra.Command{
-	Use:     "docs",
-	Short:   "Open docs on your browser",
-	PreRunE: cmdargslen.ValidateCmd(0, 0),
-	RunE:    docsRun,
+	Use:   "docs",
+	Short: "Open docs on your browser",
+	Args:  cobra.NoArgs,
+	RunE:  docsRun,
 }
 
 func open(m *waitlivemsg.Message, ec chan error) {

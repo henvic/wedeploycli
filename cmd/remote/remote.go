@@ -7,7 +7,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
-	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/formatter"
@@ -16,48 +15,48 @@ import (
 
 // RemoteCmd runs the WeDeploy structure for development locally
 var RemoteCmd = &cobra.Command{
-	Use:     "remote",
-	Hidden:  true,
-	Short:   "Configure WeDeploy remotes",
-	PreRunE: cmdargslen.ValidateCmd(0, 0),
-	RunE:    remoteRun,
+	Use:    "remote",
+	Hidden: true,
+	Short:  "Configure WeDeploy remotes",
+	Args:   cobra.NoArgs,
+	RunE:   remoteRun,
 }
 
 var setCmd = &cobra.Command{
 	Use:     "set",
 	Short:   "Set a remote named <name> with <url>",
 	Aliases: []string{"add"},
-	PreRunE: cmdargslen.ValidateCmd(2, 2),
+	Args:    cobra.ExactArgs(2),
 	RunE:    setRun,
 }
 
 var renameCmd = &cobra.Command{
-	Use:     "rename",
-	Short:   "Rename the remote named <old> to <new>",
-	PreRunE: cmdargslen.ValidateCmd(2, 2),
-	RunE:    renameRun,
-	Hidden:  true,
+	Use:    "rename",
+	Short:  "Rename the remote named <old> to <new>",
+	Args:   cobra.ExactArgs(2),
+	RunE:   renameRun,
+	Hidden: true,
 }
 
 var removeCmd = &cobra.Command{
-	Use:     "rm",
-	Short:   "Remove the remote named <name>",
-	PreRunE: cmdargslen.ValidateCmd(1, 1),
-	RunE:    removeRun,
+	Use:   "rm",
+	Short: "Remove the remote named <name>",
+	Args:  cobra.ExactArgs(1),
+	RunE:  removeRun,
 }
 
 var getURLCmd = &cobra.Command{
-	Use:     "get-url",
-	Short:   "Retrieves the URLs for a remote",
-	PreRunE: cmdargslen.ValidateCmd(1, 1),
-	RunE:    getURLRun,
-	Hidden:  true,
+	Use:    "get-url",
+	Short:  "Retrieves the URLs for a remote",
+	Args:   cobra.ExactArgs(1),
+	RunE:   getURLRun,
+	Hidden: true,
 }
 
 var setURLCmd = &cobra.Command{
 	Use:         "set-url",
 	Short:       "Changes URLs for the remote",
-	PreRunE:     cmdargslen.ValidateCmd(2, 2),
+	Args:        cobra.ExactArgs(2),
 	RunE:        setURLRun,
 	Hidden:      true,
 	Annotations: nil,

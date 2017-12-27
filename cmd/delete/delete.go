@@ -2,13 +2,11 @@ package delete
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/canceled"
 	"github.com/wedeploy/cli/cmd/internal/we"
-	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/fancy"
@@ -22,6 +20,7 @@ var force bool
 var DeleteCmd = &cobra.Command{
 	Use:     "delete",
 	Short:   "Delete project or services",
+	Args:    cobra.NoArgs,
 	PreRunE: preRun,
 	RunE:    run,
 	Example: `  we delete --url data.chat.wedeploy.io
@@ -56,14 +55,6 @@ func init() {
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if len(args) != 0 {
-		return errors.New("invalid number of arguments")
-	}
-
-	if err := cmdargslen.Validate(args, 0, 0); err != nil {
-		return err
-	}
-
 	return setupHost.Process(we.Context())
 }
 

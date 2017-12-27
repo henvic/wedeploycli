@@ -7,17 +7,16 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/legal"
 	"github.com/wedeploy/cli/verbose"
 )
 
 // LegalCmd is used for showing the abouts of all used libraries
 var LegalCmd = &cobra.Command{
-	Use:     "legal",
-	PreRunE: cmdargslen.ValidateCmd(0, 0),
-	RunE:    legalRun,
-	Short:   "Legal notices",
+	Use:   "legal",
+	RunE:  legalRun,
+	Args:  cobra.NoArgs,
+	Short: "Legal notices",
 }
 
 func legalRun(cmd *cobra.Command, args []string) error {

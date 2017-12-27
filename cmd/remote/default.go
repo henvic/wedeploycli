@@ -5,7 +5,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
-	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/prompt"
 )
@@ -16,8 +15,8 @@ var defaultCmd = &cobra.Command{
 	Example: `we remote default
 we remote local
 we remote wedeploy`,
-	PreRunE: cmdargslen.ValidateCmd(0, 1),
-	RunE:    setDefaultRun,
+	Args: cobra.MaximumNArgs(1),
+	RunE: setDefaultRun,
 }
 
 func getRemoteFromList() (string, error) {

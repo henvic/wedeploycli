@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/wedeploy/cli/cmd/internal/we"
-	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/list"
@@ -22,6 +21,7 @@ var ListCmd = &cobra.Command{
 	Example: `   we list --project chat --service data
    we list --url data-chat.wedeploy.io`,
 	Short:   "Show list of projects and services",
+	Args:    cobra.NoArgs,
 	PreRunE: preRun,
 	Run:     listRun,
 }
@@ -39,10 +39,6 @@ var setupHost = cmdflagsfromhost.SetupHost{
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if err := cmdargslen.Validate(args, 0, 0); err != nil {
-		return err
-	}
-
 	if err := setupHost.Process(we.Context()); err != nil {
 		return err
 	}

@@ -8,7 +8,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
-	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/services"
 )
@@ -20,6 +19,7 @@ var Cmd = &cobra.Command{
 	Short:   "Set an environment variable for a given service",
 	Example: `  we env set key value
   we env set key=value`,
+	Args:    cobra.RangeArgs(1, 2),
 	PreRunE: preRun,
 	RunE:    run,
 }
@@ -39,10 +39,6 @@ func init() {
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if err := cmdargslen.Validate(args, 1, 2); err != nil {
-		return err
-	}
-
 	return setupHost.Process(we.Context())
 }
 

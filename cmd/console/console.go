@@ -6,7 +6,6 @@ import (
 	"github.com/henvic/browser"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
-	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/waitlivemsg"
@@ -20,6 +19,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 var ConsoleCmd = &cobra.Command{
 	Use:     "console",
 	Short:   "Open the console on your browser",
+	Args:    cobra.NoArgs,
 	PreRunE: consolePreRun,
 	RunE:    consoleRun,
 }
@@ -29,10 +29,6 @@ func init() {
 }
 
 func consolePreRun(cmd *cobra.Command, args []string) error {
-	if err := cmdargslen.Validate(args, 0, 0); err != nil {
-		return err
-	}
-
 	return setupHost.Process(we.Context())
 }
 

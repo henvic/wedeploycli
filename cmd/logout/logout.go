@@ -5,7 +5,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
-	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/fancy"
 )
@@ -14,6 +13,7 @@ import (
 var LogoutCmd = &cobra.Command{
 	Use:     "logout",
 	Short:   "Logout from your account",
+	Args:    cobra.NoArgs,
 	PreRunE: preRun,
 	RunE:    logoutRun,
 }
@@ -27,10 +27,6 @@ func init() {
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if err := cmdargslen.Validate(args, 0, 0); err != nil {
-		return err
-	}
-
 	return setupHost.Process(we.Context())
 }
 

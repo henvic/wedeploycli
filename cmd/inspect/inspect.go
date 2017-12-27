@@ -10,7 +10,6 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmdargslen"
 	"github.com/wedeploy/cli/inspector"
 	"github.com/wedeploy/cli/services"
 )
@@ -21,9 +20,9 @@ var InspectCmd = &cobra.Command{
 	Short: "Inspect environment info",
 	Long: `Use "we inspect" to peek inside a services directory list.
 <type> = context | service`,
-	Hidden:  true,
-	PreRunE: cmdargslen.ValidateCmd(0, 1),
-	RunE:    inspectRun,
+	Hidden: true,
+	Args:   cobra.MaximumNArgs(1),
+	RunE:   inspectRun,
 	Example: `  we inspect context
   we inspect service --format "{{.ID}}"`,
 }
