@@ -139,6 +139,13 @@ func (w *WaitLiveMsg) SetMessages(msgs []*Message) {
 	w.msgsMutex.Unlock()
 }
 
+// GetMessages displayed
+func (w *WaitLiveMsg) GetMessages() []*Message {
+	w.msgsMutex.RLock()
+	defer w.msgsMutex.RUnlock()
+	return w.msgs
+}
+
 // RemoveMessage from the messages slice
 func (w *WaitLiveMsg) RemoveMessage(msg *Message) {
 	w.msgsMutex.Lock()
