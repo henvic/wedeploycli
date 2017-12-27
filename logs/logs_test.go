@@ -11,13 +11,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wedeploy/api-go/jsonlib"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/servertest"
 	"github.com/wedeploy/cli/stringlib"
 	"github.com/wedeploy/cli/tdata"
+	"github.com/wedeploy/wedeploy-sdk-go/jsonlib"
 )
 
 var wectx config.Context

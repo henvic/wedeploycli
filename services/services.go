@@ -13,12 +13,12 @@ import (
 	"strings"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
+	"github.com/wedeploy/wedeploy-sdk-go"
 )
 
 // Client for the services

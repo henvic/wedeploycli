@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wedeploy/api-go/jsonlib"
 	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/tdata"
+	"github.com/wedeploy/wedeploy-sdk-go/jsonlib"
 
 	"reflect"
 

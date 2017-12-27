@@ -96,10 +96,10 @@
   version = "v1.0.0"
 
 [[projects]]
-  name = "github.com/wedeploy/api-go"
+  name = "github.com/wedeploy/wedeploy-sdk-go"
   packages = [".","aggregation","filter","geo","jsonlib","qrange","query","urilib"]
-  revision = "30aad5b57a610ff3a9d0b4125f650ddd1748401d"
-  version = "v2.0.1"
+  revision = "2f3913a2ca0488384c312ac8e3273c39f331f79f"
+  version = "v2.1.1"
 
 [[projects]]
   name = "golang.org/x/crypto"

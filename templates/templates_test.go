@@ -10,7 +10,7 @@ package templates
 import (
 	"testing"
 
-	"github.com/wedeploy/api-go/jsonlib"
+	"github.com/wedeploy/wedeploy-sdk-go/jsonlib"
 )
 
 type mock struct {

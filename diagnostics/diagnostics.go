@@ -10,13 +10,13 @@ import (
 	"sync"
 	"time"
 
-	wedeploy "github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/waitlivemsg"
+	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 
 // Diagnostics for the CLI and environment

@@ -21,11 +21,11 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	uuid "github.com/satori/go.uuid"
-	wedeploy "github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
+	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 
 var (

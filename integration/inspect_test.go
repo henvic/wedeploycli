@@ -6,8 +6,8 @@ import (
 
 	"strings"
 
-	"github.com/wedeploy/api-go/jsonlib"
 	"github.com/wedeploy/cli/tdata"
+	"github.com/wedeploy/wedeploy-sdk-go/jsonlib"
 )
 
 func TestInspectPrintUnavailableStructure(t *testing.T) {

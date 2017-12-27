@@ -11,9 +11,9 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/wedeploy/api-go"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/verbose"
+	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 
 // Disabled flag
