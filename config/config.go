@@ -86,14 +86,7 @@ func (c *Context) SetEndpoint(remote string) error {
 	}
 
 	c.context.Remote = remote
-	var address = r.Infrastructure
-
-	if !isHTTPLocalhost(address) {
-		address = "https://api." + address
-	}
-
-	c.context.Infrastructure = address
-
+	c.context.Infrastructure = r.InfrastructureServer()
 	c.context.InfrastructureDomain = getRemoteAddress(r.Infrastructure)
 	c.context.ServiceDomain = r.Service
 	c.context.Username = r.Username
@@ -113,6 +106,7 @@ type Config struct {
 	NextVersion     string       `ini:"next_version"`
 	EnableAnalytics bool         `ini:"enable_analytics"`
 	AnalyticsID     string       `ini:"analytics_id"`
+	EnableCURL      bool         `ini:"enable_curl"`
 	Path            string       `ini:"-"`
 	Remotes         remotes.List `ini:"-"`
 	file            *ini.File    `ini:"-"`
@@ -213,17 +207,6 @@ func Setup(path string) (wectx Context, err error) {
 
 	wectx.config = c
 	return wectx, nil
-}
-
-func isHTTPLocalhost(address string) bool {
-	address = strings.TrimPrefix(address, "http://")
-	var h, _, err = net.SplitHostPort(address)
-
-	if err != nil {
-		return false
-	}
-
-	return h == "localhost"
 }
 
 func getRemoteAddress(address string) string {
