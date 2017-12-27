@@ -6,6 +6,7 @@ import (
 	"github.com/wedeploy/cli/cmd/activities"
 	"github.com/wedeploy/cli/cmd/autocomplete"
 	"github.com/wedeploy/cli/cmd/console"
+	"github.com/wedeploy/cli/cmd/curl"
 	"github.com/wedeploy/cli/cmd/delete"
 	"github.com/wedeploy/cli/cmd/deploy"
 	"github.com/wedeploy/cli/cmd/diagnostics"
@@ -49,4 +50,5 @@ var commands = []*cobra.Command{
 	gitcredentialhelper.GitCredentialHelperCmd,
 	uninstall.UninstallCmd,
 	about.AboutCmd,
+	curl.CurlCmd,
 }
