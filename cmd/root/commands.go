@@ -21,6 +21,7 @@ import (
 	"github.com/wedeploy/cli/cmd/logout"
 	"github.com/wedeploy/cli/cmd/remote"
 	"github.com/wedeploy/cli/cmd/restart"
+	"github.com/wedeploy/cli/cmd/token"
 	"github.com/wedeploy/cli/cmd/uninstall"
 	"github.com/wedeploy/cli/cmd/update"
 	versioncmd "github.com/wedeploy/cli/cmd/version"
@@ -51,4 +52,5 @@ var commands = []*cobra.Command{
 	uninstall.UninstallCmd,
 	about.AboutCmd,
 	curl.CurlCmd,
+	token.TokenCmd,
 }
