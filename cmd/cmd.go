@@ -3,9 +3,11 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"syscall"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
@@ -124,10 +126,11 @@ func (m *mainProgram) executeCommand() {
 	case canceled.Command:
 		fmt.Fprintln(os.Stderr, fancy.Success(m.cmdErr))
 		m.cmdErr = nil
-	}
-
-	if m.cmdErr != nil {
-		printError(m.cmdFriendlyErr)
+	case *exec.ExitError: // don't print error message
+	default:
+		if m.cmdErr != nil {
+			printError(m.cmdFriendlyErr)
+		}
 	}
 
 	m.reportCommand()
@@ -136,6 +139,12 @@ func (m *mainProgram) executeCommand() {
 		m.commandErrorConditionalUsage()
 		errorhandling.RunAfterError()
 		verbose.PrintDeferred()
+
+		if ee, ok := m.cmdErr.(*exec.ExitError); ok {
+			ws := ee.Sys().(syscall.WaitStatus)
+			os.Exit(ws.ExitStatus())
+		}
+
 		os.Exit(1)
 	}
 }
