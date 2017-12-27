@@ -371,7 +371,6 @@ func (c *Client) GetEnvironmentVariables(ctx context.Context, projectID, service
 type linkRequestBody struct {
 	ServiceID string            `json:"serviceId,omitempty"`
 	Image     string            `json:"image,omitempty"`
-	Port      string            `json:"port,omitempty"`
 	Scale     int               `json:"scale,omitempty"`
 	Env       map[string]string `json:"env,omitempty"`
 	Version   string            `json:"version,omitempty"`
