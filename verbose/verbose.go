@@ -21,7 +21,8 @@ var (
 	// ErrStream is the stream for errors
 	ErrStream io.Writer = os.Stderr
 
-	unsafeVerbose           = false
+	unsafeVerbose = false
+
 	bufDeferredVerbose      bytes.Buffer
 	bufDeferredVerboseMutex sync.Mutex
 )
