@@ -80,7 +80,9 @@ func logRun(cmd *cobra.Command, args []string) error {
 
 	switch watchArg {
 	case true:
-		logs.Watch(we.Context(),
+		logs.Watch(
+			context.Background(),
+			we.Context(),
 			&logs.Watcher{
 				Filter:          filter,
 				PoolingInterval: time.Second,

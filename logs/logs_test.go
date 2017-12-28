@@ -241,7 +241,7 @@ func TestWatch(t *testing.T) {
 		wg.Done()
 	}()
 
-	Watch(wectx, watcher)
+	Watch(context.Background(), wectx, watcher)
 
 	wg.Wait()
 
@@ -301,7 +301,7 @@ func TestWatcherStart(t *testing.T) {
 	done := make(chan bool, 1)
 
 	go func() {
-		watcher.Start(wectx)
+		watcher.Start(context.Background(), wectx)
 		// this sleep has to be slightly greater than pooling * requests
 		time.Sleep(60 * time.Millisecond)
 		watcher.Stop()

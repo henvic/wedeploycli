@@ -61,11 +61,15 @@ type Filter struct {
 // Watcher structure
 type Watcher struct {
 	Client          *Client
-	Filter          *Filter
 	PoolingInterval time.Duration
-	filterMutex     sync.Mutex
-	end             bool
-	endMutex        sync.Mutex
+
+	Filter      *Filter
+	filterMutex sync.Mutex
+
+	ctx context.Context
+
+	end      bool
+	endMutex sync.Mutex
 }
 
 // SeverityToLevel map
@@ -182,13 +186,13 @@ func (c *Client) List(ctx context.Context, filter *Filter) error {
 }
 
 // Watch logs
-func Watch(wectx config.Context, watcher *Watcher) {
+func Watch(ctx context.Context, wectx config.Context, watcher *Watcher) {
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	watcher.Start(wectx)
+	watcher.Start(ctx, wectx)
 
 	go func() {
 		<-sigs
@@ -203,7 +207,8 @@ func Watch(wectx config.Context, watcher *Watcher) {
 }
 
 // Start for Watcher
-func (w *Watcher) Start(wectx config.Context) {
+func (w *Watcher) Start(ctx context.Context, wectx config.Context) {
+	w.ctx = ctx
 	w.Client = New(wectx)
 
 	go func() {
@@ -253,7 +258,7 @@ func printList(list []Log) {
 }
 
 func (w *Watcher) pool() {
-	var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	var ctx, cancel = context.WithTimeout(w.ctx, 10*time.Second)
 	var list, err = w.Client.GetList(ctx, w.Filter)
 
 	cancel()
