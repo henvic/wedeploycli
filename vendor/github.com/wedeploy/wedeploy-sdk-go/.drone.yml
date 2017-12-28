@@ -1,6 +1,6 @@
 build:
-  image: golang:1.7.1
+  image: golang:1.9
   commands:
     - go version
     - go get -t -v ./...
-    - go test -v ./...
+    - go test -v ./... -race
