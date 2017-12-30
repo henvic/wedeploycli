@@ -45,15 +45,18 @@ type Deploy struct {
 	Path          string
 	Services      services.ServiceInfoList
 	Quiet         bool
+
 	gitVersion    string
 	groupUID      string
 	pushStartTime time.Time
 	pushEndTime   time.Time
+
 	sActivities   servicesMap
 	wlm           waitlivemsg.WaitLiveMsg
 	stepMessage   *waitlivemsg.Message
 	uploadMessage *waitlivemsg.Message
-	gitEnvCache   []string
+
+	gitEnvCache []string
 }
 
 func (d *Deploy) renameServiceID(s services.ServiceInfo) error {
