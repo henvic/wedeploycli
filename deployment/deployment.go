@@ -56,6 +56,8 @@ type Deploy struct {
 	stepMessage   *waitlivemsg.Message
 	uploadMessage *waitlivemsg.Message
 
+	tmpWorkDir string
+
 	gitEnvCache []string
 }
 

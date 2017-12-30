@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -44,7 +46,6 @@ func (d *Deploy) getConfigEnvs() (es []string) {
 	}
 
 	envs["GIT_DIR"] = d.getGitPath()
-	envs["GIT_WORK_TREE"] = d.Path
 
 	switch runtime.GOOS {
 	case "windows":
@@ -209,18 +210,77 @@ func (d *Deploy) GetCurrentBranch() (branch string, err error) {
 	return branch, nil
 }
 
-func (d *Deploy) stageEachService(path string) error {
-	var params = []string{"add", path}
+func (d *Deploy) walkFn(path string, info os.FileInfo, err error) error {
+	if err != nil {
+		return errwrap.Wrapf("can't read file "+path+" {err}}", err)
+	}
+
+	if info.Name() == ".git" {
+		return filepath.SkipDir
+	}
+
+	var toTmp = fmt.Sprintf("%s%s", d.tmpWorkDir, path)
+
+	if info.IsDir() {
+		return os.MkdirAll(toTmp, info.Mode())
+	}
+
+	from, err := os.Open(path)
+
+	if err != nil {
+		return err
+	}
+
+	defer from.Close()
+
+	to, err := os.OpenFile(toTmp, os.O_RDWR|os.O_CREATE, info.Mode())
+
+	if err != nil {
+		return err
+	}
+
+	defer to.Close()
+
+	_, err = io.Copy(to, from)
+	return err
+}
+
+func (d *Deploy) stageEachService(path string) (err error) {
+	if err = filepath.Walk(path, d.walkFn); err != nil {
+		return err
+	}
+
+	var params = []string{"add", d.tmpWorkDir + path}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = d.getConfigEnvs()
-	cmd.Dir = d.Path
+	cmd.Env = append(d.getConfigEnvs(), "GIT_WORK_TREE="+d.getTempProjectWorkDir())
+	cmd.Dir = d.tmpWorkDir + d.Path
 	cmd.Stderr = errStream
 
 	return cmd.Run()
 }
 
+func (d *Deploy) getTempProjectWorkDir() string {
+	return d.tmpWorkDir + d.Path
+}
+
 func (d *Deploy) stageAllFiles() (err error) {
+	defer func() {
+		if d.tmpWorkDir != "" {
+			_ = os.RemoveAll(d.tmpWorkDir)
+		}
+	}()
+
+	d.tmpWorkDir, err = ioutil.TempDir("", "wedeploy")
+
+	if err != nil {
+		return err
+	}
+
+	if err = os.MkdirAll(d.getTempProjectWorkDir(), 0700); err != nil {
+		return err
+	}
+
 	for _, s := range d.Services {
 		if err := d.stageEachService(s.Location); err != nil {
 			return err
@@ -331,7 +391,7 @@ func (d *Deploy) Commit() (commit string, err error) {
 
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = d.getConfigEnvs()
+	cmd.Env = append(d.getConfigEnvs(), "GIT_WORK_TREE="+d.Path)
 	cmd.Dir = d.Path
 
 	if verbose.Enabled {
