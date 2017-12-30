@@ -71,14 +71,17 @@ func (m *Message) GetText() string {
 
 func (m *Message) getSymbol() string {
 	m.mutex.RLock()
-	defer m.mutex.RUnlock()
+	var c = m.counter
+	m.mutex.RUnlock()
 
-	if m.counter == -1 || m.text == "" {
+	if c == -1 || m.text == "" {
 		return ""
 	}
 
-	var symbol = spinners[m.counter]
-	m.counter = (m.counter + 1) % len(spinners)
+	var symbol = spinners[c]
+	m.mutex.Lock()
+	m.counter = (c + 1) % len(spinners)
+	m.mutex.Unlock()
 
 	return symbol
 }
