@@ -10,27 +10,6 @@ import (
 	"github.com/wedeploy/wedeploy-sdk-go/jsonlib"
 )
 
-func TestInspectPrintUnavailableStructure(t *testing.T) {
-	defer Teardown()
-	Setup()
-
-	var cmd = &Command{
-		Args: []string{"inspect", "unavailable"},
-		Env: []string{
-			"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
-	}
-
-	var want = `! Inspecting "unavailable" is not implemented.`
-
-	var e = &Expect{
-		ExitCode: 1,
-		Stderr:   want,
-	}
-
-	cmd.Run()
-	e.Assert(t, cmd)
-}
-
 func TestInspectPrintServiceStructure(t *testing.T) {
 	defer Teardown()
 	Setup()
