@@ -14,7 +14,7 @@ var TokenCmd = &cobra.Command{
 	Short:   "Get current logged-in user token",
 	PreRunE: preRun,
 	RunE:    tokenRun,
-	Hidden:  true,
+	Args:    cobra.NoArgs,
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{

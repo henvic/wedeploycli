@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/inspect/context"
 	"github.com/wedeploy/cli/cmd/inspect/service"
+	"github.com/wedeploy/cli/cmd/inspect/token"
 )
 
 // InspectCmd returns information about current environment
@@ -19,4 +20,5 @@ var InspectCmd = &cobra.Command{
 func init() {
 	InspectCmd.AddCommand(inspectservice.ServiceCmd)
 	InspectCmd.AddCommand(inspectcontext.ContextCmd)
+	InspectCmd.AddCommand(token.TokenCmd)
 }
