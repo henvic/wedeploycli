@@ -219,7 +219,13 @@ func (d *Deploy) walkFn(path string, info os.FileInfo, ef error) (err error) {
 		return filepath.SkipDir
 	}
 
-	var toTmp = fmt.Sprintf("%s%s", d.tmpWorkDir, path)
+	p := path
+
+	if runtime.GOOS == "windows" {
+		p = strings.Replace(p, ":", "", 1)
+	}
+
+	var toTmp = fmt.Sprintf("%s%s", d.tmpWorkDir, p)
 
 	if info.IsDir() {
 		return os.MkdirAll(toTmp, info.Mode())
@@ -254,22 +260,42 @@ func (d *Deploy) walkFn(path string, info os.FileInfo, ef error) (err error) {
 }
 
 func (d *Deploy) stageEachService(path string) (err error) {
+	p := path
+
+	if runtime.GOOS == "windows" {
+		p = strings.Replace(path, ":", "", 1)
+	}
+
 	if err = filepath.Walk(path, d.walkFn); err != nil {
 		return err
 	}
 
-	var params = []string{"add", d.tmpWorkDir + path}
+	var dp = d.Path
+
+	if runtime.GOOS == "windows" {
+		dp = strings.Replace(dp, ":", "", 1)
+	}
+
+	var params = []string{"add", d.tmpWorkDir + p}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Env = append(d.getConfigEnvs(), "GIT_WORK_TREE="+d.getTempProjectWorkDir())
-	cmd.Dir = d.tmpWorkDir + d.Path
+	cmd.Dir = d.tmpWorkDir + dp
 	cmd.Stderr = errStream
 
 	return cmd.Run()
 }
 
 func (d *Deploy) getTempProjectWorkDir() string {
-	return d.tmpWorkDir + d.Path
+	var dp = d.Path
+
+	if runtime.GOOS == "windows" {
+		dp = strings.Replace(dp, ":", "", 1)
+	}
+
+	var tmpProject = d.tmpWorkDir + dp
+
+	return tmpProject
 }
 
 func (d *Deploy) stageAllFiles() (err error) {
