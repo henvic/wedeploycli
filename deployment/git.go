@@ -210,9 +210,9 @@ func (d *Deploy) GetCurrentBranch() (branch string, err error) {
 	return branch, nil
 }
 
-func (d *Deploy) walkFn(path string, info os.FileInfo, err error) error {
-	if err != nil {
-		return errwrap.Wrapf("can't read file "+path+" {err}}", err)
+func (d *Deploy) walkFn(path string, info os.FileInfo, ef error) (err error) {
+	if ef != nil {
+		return errwrap.Wrapf("can't read file "+path+" {err}}", ef)
 	}
 
 	if info.Name() == ".git" {
@@ -231,7 +231,11 @@ func (d *Deploy) walkFn(path string, info os.FileInfo, err error) error {
 		return err
 	}
 
-	defer from.Close()
+	defer func() {
+		if eff := from.Close(); eff != nil && err == nil {
+			err = eff
+		}
+	}()
 
 	to, err := os.OpenFile(toTmp, os.O_RDWR|os.O_CREATE, info.Mode())
 
@@ -239,7 +243,11 @@ func (d *Deploy) walkFn(path string, info os.FileInfo, err error) error {
 		return err
 	}
 
-	defer to.Close()
+	defer func() {
+		if eft := to.Close(); eft != nil && err == nil {
+			err = eft
+		}
+	}()
 
 	_, err = io.Copy(to, from)
 	return err
