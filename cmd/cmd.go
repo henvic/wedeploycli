@@ -124,7 +124,12 @@ func (m *mainProgram) executeCommand() {
 
 	switch m.cmdErr.(type) {
 	case canceled.Command:
-		fmt.Fprintln(os.Stderr, fancy.Success(m.cmdErr))
+		cc := m.cmdErr.(canceled.Command)
+
+		if !cc.Quiet() {
+			fmt.Fprintln(os.Stderr, fancy.Success(m.cmdErr))
+		}
+
 		m.cmdErr = nil
 	case *exec.ExitError: // don't print error message
 	default:
