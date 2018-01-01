@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/autocomplete"
+	"github.com/wedeploy/cli/cmd/canceled"
 	"github.com/wedeploy/cli/cmd/cmdmanager"
 	"github.com/wedeploy/cli/cmd/internal/template"
 	"github.com/wedeploy/cli/cmd/internal/we"
@@ -29,6 +30,8 @@ var Cmd = &cobra.Command{
 }
 
 var (
+	longHelp bool
+
 	deferred bool
 	version  bool
 )
@@ -56,6 +59,13 @@ func init() {
 	maybeEnableVerboseByEnv()
 
 	Cmd.PersistentFlags().BoolVarP(
+		&longHelp,
+		"long-help",
+		"H",
+		false,
+		"Show help message (hidden commands and flags included)")
+
+	Cmd.PersistentFlags().BoolVarP(
 		&deferred,
 		"defer-verbose",
 		"V",
@@ -80,6 +90,7 @@ func init() {
 
 	cmdmanager.HideFlag("version", Cmd)
 	hideHelpFlag()
+	cmdmanager.HidePersistentFlag("long-help", Cmd)
 	cmdmanager.HidePersistentFlag("defer-verbose", Cmd)
 	cmdmanager.HidePersistentFlag("no-verbose-requests", Cmd)
 	cmdmanager.HidePersistentFlag("no-color", Cmd)
@@ -114,7 +125,27 @@ Please install the Linux version of this application with:
 curl https://cdn.wedeploy.com/cli/latest/wedeploy.sh -sL | bash`)
 }
 
+func checkLongHelp(cmd *cobra.Command) error {
+	if cmd.Flag("long-help").Value.String() != "true" {
+		return nil
+	}
+
+	if err := cmd.Flag("help").Value.Set("true"); err != nil {
+		panic(err)
+	}
+
+	if err := cmd.Help(); err != nil {
+		return err
+	}
+
+	return canceled.Skip()
+}
+
 func persistentPreRun(cmd *cobra.Command, args []string) error {
+	if err := checkLongHelp(cmd); err != nil {
+		return err
+	}
+
 	if deferred {
 		verbose.Enabled = true
 		verbose.Deferred = true

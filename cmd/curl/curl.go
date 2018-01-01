@@ -87,8 +87,20 @@ type argsF struct {
 func (af *argsF) maybeGetBoolArgument() (is bool) {
 	arg := af.input[af.pos]
 
+	// -H might be either --long-help or curl header
+	if arg == "-H" && (af.pos+1 >= len(af.input) ||
+		strings.HasPrefix(af.input[af.pos+1], "-")) {
+		af.weArgs = append(af.weArgs, arg)
+		return true
+	}
+
 	for _, p := range af.pfs {
 		if arg == "--"+p.Name || arg == "-"+p.Shorthand {
+			// -H requires a special treatment, given above
+			if arg == "-H" {
+				continue
+			}
+
 			af.weArgs = append(af.weArgs, arg)
 
 			if p.Value.Type() != "bool" && af.pos+1 < len(af.input) {
@@ -337,7 +349,8 @@ func (cr *curlRunner) run(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	if cmd.Flag("help").Value.String() == "true" || len(args) == 0 {
+	if cmd.Flag("help").Value.String() == "true" ||
+		cmd.Flag("long-help").Value.String() == "true" || len(args) == 0 {
 		return cmd.Help()
 	}
 

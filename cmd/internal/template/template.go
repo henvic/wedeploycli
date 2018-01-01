@@ -28,6 +28,8 @@ type usagePrinter struct {
 	tw                  *formatter.TabWriter
 	flags               flagsDescriptions
 	showFlagsParamField bool
+
+	longHelp bool
 }
 
 type flagsDescriptions []flagDescription
@@ -55,6 +57,14 @@ func printCommandsAndFlags(useLine, example string, cs []*cobra.Command, f *pfla
 		cs:      cs,
 		f:       f,
 	}
+
+	switch longHelp, err := f.GetBool("long-help"); {
+	case err != nil:
+		panic(err)
+	case longHelp:
+		up.longHelp = true
+	}
+
 	up.buf = new(bytes.Buffer)
 	up.tw = formatter.NewTabWriter(up.buf)
 	up.printCommands()
@@ -90,7 +100,7 @@ func (up *usagePrinter) printCommands() {
 	fmt.Fprint(up.tw, color.Format(color.FgHiBlack, "  Command\t"+colorSpacingOffset()+"Description")+"\n")
 
 	for _, c := range up.cs {
-		if c.IsAvailableCommand() {
+		if up.longHelp || c.IsAvailableCommand() {
 			fmt.Fprintf(up.tw, "  %v\t%v\n", c.Name(), c.Short)
 		}
 	}
@@ -100,7 +110,7 @@ func (up *usagePrinter) printCommands() {
 
 func (up *usagePrinter) printFlags() {
 	up.f.VisitAll(func(flag *pflag.Flag) {
-		if !flag.Hidden && flag.Value.Type() != "bool" {
+		if (up.longHelp || !flag.Hidden) && flag.Value.Type() != "bool" {
 			up.showFlagsParamField = true
 		}
 	})
@@ -126,8 +136,12 @@ func (up *usagePrinter) printFlags() {
 
 	var end = up.useFlagsHelpDescriptionFiltered([]string{
 		"help",
+		"long-help",
 		"quiet",
+		"no-color",
 		"verbose",
+		"defer-verbose",
+		"no-verbose-requests",
 	})
 
 	var middle = up.useFlagsHelpDescription()
@@ -163,7 +177,7 @@ func (up *usagePrinter) useFlagsHelpDescription() []byte {
 }
 
 func (up *usagePrinter) preparePrintFlag(flag *pflag.Flag) {
-	if flag.Deprecated != "" || flag.Hidden {
+	if flag.Deprecated != "" || (!up.longHelp && flag.Hidden) {
 		return
 	}
 
