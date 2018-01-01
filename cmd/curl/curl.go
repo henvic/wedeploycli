@@ -244,9 +244,6 @@ func expandPathsToFullRequests(wectx config.Context, params []string) ([]string,
 
 			// expand string arguments, except for --url
 			if curlargs.IsCLIStringArgument(params[i-1]) && params[i-1] != "--url" {
-				fmt.Println("?????" + p)
-				fmt.Println(params[i-1])
-				fmt.Println(curlargs.IsCLIStringArgument(params[i-1]))
 				out = append(out, p)
 				continue
 			}
