@@ -13,7 +13,7 @@ import (
 
 // Question formatter
 func Question(a interface{}) string {
-	var q = color.Format(color.FgMagenta, color.BgHiMagenta, "?") + " "
+	var q = color.Format(color.FgMagenta, "?") + " "
 	var parts = strings.Split(fmt.Sprintf("%v", a), "\n")
 	var buf = &bytes.Buffer{}
 	for i, p := range parts {
@@ -29,17 +29,17 @@ func Question(a interface{}) string {
 
 // Info formatter
 func Info(a interface{}) string {
-	return invertedBlockFormatter(color.FgHiYellow, color.BgYellow, "!", a)
+	return exclamationSymbolFormatter(color.FgHiYellow, "!", a)
 }
 
 // Success formatter
 func Success(a interface{}) string {
-	return invertedBlockFormatter(color.FgHiGreen, color.BgGreen, "!", a)
+	return exclamationSymbolFormatter(color.FgHiGreen, "!", a)
 }
 
 // Error formatter
 func Error(a interface{}) string {
-	return invertedBlockFormatter(color.FgHiRed, color.BgRed, "!", formatError(a))
+	return exclamationSymbolFormatter(color.FgHiRed, "!", formatError(a))
 }
 
 // Tip formatter
@@ -196,8 +196,8 @@ func formatError(a interface{}) string {
 	return errMsg
 }
 
-func invertedBlockFormatter(fg color.Attribute, bg color.Attribute, prefix, a interface{}) string {
-	var q = color.Format(fg, bg, prefix) + " "
+func exclamationSymbolFormatter(fg color.Attribute, prefix, a interface{}) string {
+	var q = color.Format(fg, prefix) + " "
 	var parts = strings.Split(fmt.Sprintf("%v", a), "\n")
 	var buf = &bytes.Buffer{}
 	for i, p := range parts {

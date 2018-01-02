@@ -81,8 +81,8 @@ func (up *usagePrinter) printCommands() {
 	}
 
 	fmt.Fprintf(up.buf, "%s%s",
-		color.Format(color.FgYellow, color.BgHiYellow, "!"),
-		fmt.Sprintf("%v\n", color.Format(color.FgHiYellow,
+		color.Format(color.Reset, "!"),
+		fmt.Sprintf("%v\n", color.Format(color.FgHiBlack,
 			fmt.Sprintf(" Usage: %s%s [flag]", up.useLine, cmdPart))))
 
 	if up.example != "" {

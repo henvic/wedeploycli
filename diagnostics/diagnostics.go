@@ -178,7 +178,7 @@ func Write(w io.Writer, r Report) {
 	for k, v := range r {
 		fmt.Fprintf(os.Stderr,
 			"%v\n%s",
-			color.Format(color.Bold, color.BgHiBlue, " %v ", k),
+			color.Format(color.Bold, " %v ", k),
 			v)
 	}
 }
