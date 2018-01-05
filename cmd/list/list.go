@@ -3,11 +3,10 @@ package list
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/fancy"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/services"
@@ -23,7 +22,7 @@ var ListCmd = &cobra.Command{
 	Short:   "Show list of projects and services",
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,
-	Run:     listRun,
+	RunE:    listRun,
 }
 
 var (
@@ -67,11 +66,7 @@ func checkProjectOrServiceExists() (err error) {
 	return nil
 }
 
-func alwaysStop() bool {
-	return true
-}
-
-func listRun(cmd *cobra.Command, args []string) {
+func listRun(cmd *cobra.Command, args []string) error {
 	var filter = list.Filter{
 		Project: setupHost.Project(),
 	}
@@ -86,16 +81,15 @@ func listRun(cmd *cobra.Command, args []string) {
 
 	l.Detailed = detailed
 
-	if watch {
-		fmt.Println(fancy.Info("--watch is in use. List of services will be updated when a change occurs."))
-	}
-
 	if !watch {
-		l.PoolingInterval = time.Minute
-		l.StopCondition = alwaysStop
+		return l.Once(context.Background(), we.Context())
 	}
 
-	l.Start(we.Context())
+	fmt.Println(color.Format(color.FgHiBlack,
+		"List of services will be updated when a change occurs.\n"))
+
+	l.Start(context.Background(), we.Context())
+	return nil
 }
 
 func init() {

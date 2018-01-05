@@ -1,20 +1,22 @@
 package list
 
 import (
-	"fmt"
+	"context"
+	"errors"
 	"io"
 	"os"
 	"os/signal"
+	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
 
 	"github.com/henvic/uilive"
-	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/services"
 )
 
 // Filter parameters for the list command
@@ -25,21 +27,42 @@ type Filter struct {
 
 // List services object
 type List struct {
-	Detailed           bool
-	Filter             Filter
-	PoolingInterval    time.Duration
-	Projects           []projects.Project
-	HandleRequestError func(error) string
-	StopCondition      (func() bool)
-	Teardown           func(l *List)
-	end                chan bool
-	livew              *uilive.Writer
-	outStream          io.Writer
-	w                  *formatter.TabWriter
-	retry              int
-	killed             bool
-	killLock           sync.Mutex
-	wectx              config.Context
+	Detailed bool
+
+	Filter          Filter
+	PoolingInterval time.Duration
+
+	Projects   []projects.Project
+	lastError  error
+	updated    chan bool
+	watchMutex sync.RWMutex
+
+	SelectNumber  bool
+	ProjectHeader func(projectID string) string
+	ServiceHeader func(serviceID, projectID string) string
+	ProjectFooter func(projectID string) string
+	ServiceFooter func(serviceID, projectID string) string
+
+	livew     *uilive.Writer
+	outStream io.Writer
+
+	projectsClient *projects.Client
+	servicesClient *services.Client
+
+	w *formatter.TabWriter
+
+	retry int
+
+	wectx     config.Context
+	ctx       context.Context
+	stop      context.CancelFunc
+	selectors []Selection
+}
+
+// Selection of a list
+type Selection struct {
+	Project string
+	Service string
 }
 
 // New creates a list using the values of a passed Filter
@@ -47,90 +70,82 @@ func New(filter Filter) *List {
 	var l = &List{
 		Filter:          filter,
 		PoolingInterval: time.Second,
+		updated:         make(chan bool, 1),
 	}
 
-	l.HandleRequestError = l.handleRequestError
 	return l
 }
 
-// Printf list
-func (l *List) Printf(format string, a ...interface{}) {
-	fmt.Fprintf(l.w, format, a...)
-}
-
-func (l *List) printList() {
-	l.w.Init(l.outStream)
-	var ps, err = l.fetch()
-	l.Projects = ps
-
-	if err != nil {
-		l.Printf("%v", l.HandleRequestError(err))
-		return
-	}
-
-	l.retry = 0
-	l.printProjects()
-	_ = l.w.Flush()
-}
-
-func (l *List) handleRequestError(err error) string {
-	l.retry++
-	return fmt.Sprintf("%v %v #%d\n", color.Format(color.BgHiRed, color.FgRed, "!"), errorhandling.Handle(err), l.retry)
-}
-
-// Start for the list
-func (l *List) Start(wectx config.Context) {
+func (l *List) prepare(ctx context.Context, wectx config.Context) {
+	l.ctx, l.stop = context.WithCancel(ctx)
 	l.wectx = wectx
-	sigs := make(chan os.Signal, 1)
-	l.end = make(chan bool, 1)
 
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	l.projectsClient = projects.New(l.wectx)
+	l.servicesClient = services.New(l.wectx)
 
 	l.livew = uilive.New()
 	l.outStream = l.livew
 	l.w = formatter.NewTabWriter(l.outStream)
+}
 
+// Start for the list
+func (l *List) Start(ctx context.Context, wectx config.Context) {
+	l.prepare(ctx, wectx)
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Reset(syscall.SIGINT, syscall.SIGTERM)
+
+	go l.update()
 	go l.watch()
-	go l.watchKill(sigs)
+	go l.watchKiller(sigs)
 
-	<-l.end
-	l.finish()
+	<-l.ctx.Done()
+	signal.Reset(syscall.SIGINT, syscall.SIGTERM)
 }
 
-func (l *List) watchKill(sigs chan os.Signal) {
-	<-sigs
-	l.Stop()
-	l.killLock.Lock()
-	l.killed = true
-	l.killLock.Unlock()
+// Once runs the list only once
+func (l *List) Once(ctx context.Context, wectx config.Context) error {
+	l.PoolingInterval = time.Minute
+	l.prepare(ctx, wectx)
+	l.updateHandler()
+	l.w.Init(l.outStream)
+	l.watchHandler()
+
+	l.watchMutex.RLock()
+	var le = l.lastError
+	l.watchMutex.RUnlock()
+	return le
 }
 
-func (l *List) finish() {
-	if l.Teardown != nil {
-		l.Teardown(l)
+// GetSelection of service or project
+func (l *List) GetSelection(option string) (Selection, error) {
+	var num, err = strconv.Atoi(option)
+
+	if err != nil {
+		return Selection{
+			Project: option,
+		}, nil
 	}
-}
 
-func (l *List) watch() {
-p:
-	l.printList()
-	l.Flush()
+	var sel = l.selectors
 
-	if l.StopCondition != nil && l.StopCondition() {
-		l.Stop()
-		return
+	if len(sel) < num {
+		return Selection{}, errors.New("invalid selection")
 	}
 
-	time.Sleep(l.PoolingInterval)
-	goto p
+	var s = sel[num-1]
+	return s, nil
 }
 
-// Flush list
-func (l *List) Flush() {
-	_ = l.livew.Flush()
-}
+func isContextError(err error) bool {
+	if err == nil {
+		return false
+	}
 
-// Stop for the list
-func (l *List) Stop() {
-	l.end <- true
+	if strings.Contains(err.Error(), context.DeadlineExceeded.Error()) ||
+		strings.Contains(err.Error(), context.Canceled.Error()) {
+		return true
+	}
+
+	return false
 }

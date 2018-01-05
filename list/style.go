@@ -1,26 +1,55 @@
 package list
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
 	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/errorhandling"
 	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/services"
 )
 
+// Printf list
+func (l *List) Printf(format string, a ...interface{}) {
+	fmt.Fprintf(l.w, format, a...)
+}
+
+var headers = []string{
+	"Project",
+	"Service",
+	"Image",
+	"Status",
+}
+
+var detailedHeaders = []string{
+	"Instances",
+	"CPU",
+	"Memory",
+}
+
 func (l *List) printProjects() {
-	if len(l.Projects) == 0 {
+	l.selectors = []Selection{}
+
+	l.watchMutex.RLock()
+	var projects = l.Projects
+	l.watchMutex.RUnlock()
+
+	if len(projects) == 0 {
 		l.Printf("No project found.\n")
 		return
 	}
 
-	var header = "Project\tService\tImage\tStatus"
+	var header string
+
+	if l.SelectNumber {
+		header = "#\t"
+	}
+
+	header += strings.Join(headers, "\t")
+
 	if l.Detailed {
-		header += "\tInstances\tCPU\tMemory"
+		header += "\t" + strings.Join(detailedHeaders, "\t")
 	}
 
 	if formatter.Human {
@@ -29,56 +58,33 @@ func (l *List) printProjects() {
 
 	l.Printf("%s\n", color.Format(color.FgHiBlack, header))
 
-	for _, p := range l.Projects {
+	for _, p := range projects {
 		l.printProject(p)
 	}
-
 }
 
 func (l *List) printProject(p projects.Project) {
-	servicesClient := services.New(l.wectx)
-
-	var services, err = p.Services(context.Background(), servicesClient)
-
-	if err != nil {
-		l.Printf("%v\n", errorhandling.Handle(err))
-		return
-	}
-
-	l.printServices(p.ProjectID, services)
-}
-
-func (l *List) printServices(projectID string, cs []services.Service) {
+	cs := p.Services
 	for _, service := range cs {
 		if len(l.Filter.Services) != 0 && !inArray(service.ServiceID, l.Filter.Services) {
 			continue
 		}
 
-		l.printService(projectID, service)
+		l.printService(p.ProjectID, service)
+	}
+
+	var tabs = strings.Repeat("\t", len(headers)-1)
+
+	if l.Detailed {
+		tabs = strings.Repeat("\t", len(detailedHeaders)+1)
 	}
 
 	if len(cs) == 0 {
-		l.Printf("%v    \t%v\t    \n",
-			projectID,
-			color.Format(color.FgYellow, "zero services deployed"))
+		l.Printf("%v    \t%v",
+			p.ProjectID,
+			color.Format(color.FgYellow, "zero services deployed")+tabs+"\n")
 		return
 	}
-}
-
-func getHealth(health string) string {
-	var h = map[string]string{
-		"":        "Waiting",
-		"up":      "Online",
-		"down":    "Offline",
-		"warn":    "Warning",
-		"unknown": "Unknown",
-	}
-
-	if friendly, ok := h[health]; ok {
-		return friendly
-	}
-
-	return health
 }
 
 func (l *List) printImage(s services.Service) {
@@ -91,14 +97,23 @@ func (l *List) printImage(s services.Service) {
 	l.Printf("%v\t", image)
 }
 
-func (l *List) printService(projectID string, c services.Service) {
-	l.Printf("%v\t%v\t", projectID, l.getServiceDomain(projectID, c.ServiceID))
-	l.printImage(c)
-	l.Printf("%v\t", getHealth(c.Health))
-	l.printInstances(c.Scale)
+func (l *List) printService(projectID string, s services.Service) {
+	if l.SelectNumber {
+		l.selectors = append(l.selectors, Selection{
+			Project: projectID,
+			Service: s.ServiceID,
+		})
+
+		l.Printf("%d\t", len(l.selectors))
+	}
+
+	l.Printf("%v\t%v\t", projectID, l.getServiceDomain(projectID, s.ServiceID))
+	l.printImage(s)
+	l.Printf("%v\t", s.Health)
+	l.printInstances(s.Scale)
 
 	if l.Detailed {
-		l.Printf("%v\t%v MB", c.CPU, c.Memory)
+		l.Printf("%.6v\t%.6v MB", s.CPU, s.Memory)
 	}
 
 	l.Printf("\n")

@@ -1,3 +1,9 @@
 {
-    "projectId": "app"
+    "projectId": "app",
+    "services": [
+        {
+            "serviceId": "service",
+            "health": "Online"
+        }
+    ]
 }

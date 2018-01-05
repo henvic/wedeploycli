@@ -1,4 +1,16 @@
 [{
 	"projectId": "wechat",
-	"health": "up"
+	"health": "up",
+	"services": [
+		{
+			"serviceId": "data",
+			"health": "healthy",
+			"image": "wedeploy/engine"
+		},
+		{
+			"serviceId": "static",
+			"health": "healthy",
+			"image": "wedeploy/hosting"
+		}
+	]
 }]

@@ -17,10 +17,6 @@ func TestList(t *testing.T) {
 		"/projects",
 		tdata.ServerJSONFileHandler("./mocks/list/projects_response.json"))
 
-	servertest.IntegrationMux.HandleFunc(
-		"/projects/wechat/services",
-		tdata.ServerJSONFileHandler("./mocks/list/services_response.json"))
-
 	var cmd = &Command{
 		Args: []string{"list", "--remote", "local", "--no-color"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
@@ -97,10 +93,6 @@ func TestListServiceFromInsideProject(t *testing.T) {
 	servertest.IntegrationMux.HandleFunc(
 		"/projects/app/services/service",
 		tdata.ServerJSONFileHandler("./mocks/home/bucket/project/service/wedeploy.json"))
-
-	servertest.IntegrationMux.HandleFunc(
-		"/projects/app/services",
-		tdata.ServerJSONFileHandler("./mocks/home/bucket/project/service/service_list.json"))
 
 	var cmd = &Command{
 		Args: []string{"list", "--service", "service", "--project", "app", "--remote", "local", "--no-color"},
