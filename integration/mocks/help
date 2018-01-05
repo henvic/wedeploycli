@@ -1,6 +1,6 @@
 ! Usage: we [command] [flag]
   Command               Description
-  deploy           Perform services deployment
+  deploy           Deploy your services
   list             Show list of projects and services
   console          Open the console on your browser
   docs             Open docs on your browser

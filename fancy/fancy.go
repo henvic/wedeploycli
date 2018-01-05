@@ -29,17 +29,17 @@ func Question(a interface{}) string {
 
 // Info formatter
 func Info(a interface{}) string {
-	return exclamationSymbolFormatter(color.FgHiYellow, "!", a)
+	return color.Format(color.FgHiBlack, a)
 }
 
 // Success formatter
 func Success(a interface{}) string {
-	return exclamationSymbolFormatter(color.FgHiGreen, "!", a)
+	return color.Format(color.FgHiGreen, a)
 }
 
 // Error formatter
 func Error(a interface{}) string {
-	return exclamationSymbolFormatter(color.FgHiRed, "!", formatError(a))
+	return color.Format(color.FgHiBlack, formatError(a))
 }
 
 // Tip formatter
@@ -194,19 +194,4 @@ func formatError(a interface{}) string {
 	}
 
 	return errMsg
-}
-
-func exclamationSymbolFormatter(fg color.Attribute, prefix, a interface{}) string {
-	var q = color.Format(fg, prefix) + " "
-	var parts = strings.Split(fmt.Sprintf("%v", a), "\n")
-	var buf = &bytes.Buffer{}
-	for i, p := range parts {
-		fmt.Fprint(buf, q+color.Format(fg, p))
-
-		if i < len(parts)-1 {
-			fmt.Fprintln(buf, "")
-		}
-	}
-
-	return buf.String()
 }

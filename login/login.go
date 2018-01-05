@@ -280,13 +280,14 @@ func (a *Authentication) success(username string) {
 }
 
 func (a *Authentication) printTipCommands(buf *bytes.Buffer) {
-	fmt.Fprintln(buf, fancy.Info("Check out some useful commands in case you wanna start learning the CLI:"))
+	fmt.Fprintln(buf, fancy.Info("Check out some useful commands in case you wanna start learning the CLI:\n"))
 	tw := formatter.NewTabWriter(buf)
-	fmt.Fprintln(tw, color.Format(color.FgHiBlack, "  Command\t     Description"))
-	fmt.Fprintln(tw, "  we\tShow list of all commands available in WeDeploy CLI")
-	fmt.Fprintln(tw, "  we docs\tOpen docs on your browser")
+	fmt.Fprintln(tw, color.Format(color.FgHiBlack, "  Command\t  Description"))
+	fmt.Fprintln(tw, "  we\t  Show list of all commands available in WeDeploy CLI")
+	fmt.Fprintln(tw, "  we deploy\t  Deploy your services")
+	fmt.Fprintln(tw, "  we docs\t  Open docs on your browser")
 	_ = tw.Flush()
-	fmt.Fprint(buf, fancy.Info("Type a command and press Enter to execute it."))
+	fmt.Fprint(buf, fancy.Info("\nType a command and press Enter to execute it."))
 }
 
 func (a *Authentication) saveUser(username, token string) (err error) {
