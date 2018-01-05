@@ -22,7 +22,7 @@ var quiet bool
 // DeployCmd runs services
 var DeployCmd = &cobra.Command{
 	Use:     "deploy",
-	Short:   "Perform services deployment",
+	Short:   "Deploy your services",
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,
 	RunE:    runRun,
