@@ -171,13 +171,16 @@ func setURLRun(cmd *cobra.Command, args []string) error {
 	var name = args[0]
 	var uri = args[1]
 
-	if _, ok := r[name]; !ok {
+	remote, ok := r[name]
+
+	if !ok {
 		return errors.New("fatal: remote " + name + " does not exists.")
 	}
 
-	r.Set(name, remotes.Entry{
-		Infrastructure: uri,
-	})
+	remote.Infrastructure = uri
+
+	r.Set(name, remote)
+
 	return conf.Save()
 }
 
