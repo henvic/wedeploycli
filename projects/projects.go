@@ -31,11 +31,8 @@ type Project struct {
 	ProjectID   string `json:"projectId"`
 	Health      string `json:"health,omitempty"`
 	Description string `json:"description,omitempty"`
-}
 
-// Services of a given project
-func (p *Project) Services(ctx context.Context, s *services.Client) (services.Services, error) {
-	return s.List(ctx, p.ProjectID)
+	Services services.Services `json:"services,omitempty"`
 }
 
 var (
@@ -108,9 +105,30 @@ func (c *Client) Get(ctx context.Context, id string) (project Project, err error
 	return project, err
 }
 
+// GetWithServices project by ID with a list of its services
+func (c *Client) GetWithServices(ctx context.Context, id string) (project Project, err error) {
+	if id == "" {
+		return project, ErrEmptyProjectID
+	}
+
+	err = c.Client.AuthGet(ctx,
+		fmt.Sprintf("/projects/%s?listServices=true", url.QueryEscape(id)),
+		&project)
+	return project, err
+}
+
 // List projects
 func (c *Client) List(ctx context.Context) (list []Project, err error) {
 	err = c.Client.AuthGet(ctx, "/projects", &list)
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].ProjectID < list[j].ProjectID
+	})
+	return list, err
+}
+
+// ListWithServices projects with a list of its services
+func (c *Client) ListWithServices(ctx context.Context) (list []Project, err error) {
+	err = c.Client.AuthGet(ctx, "/projects?listServices=true", &list)
 	sort.Slice(list, func(i, j int) bool {
 		return list[i].ProjectID < list[j].ProjectID
 	})

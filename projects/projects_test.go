@@ -11,6 +11,7 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/servertest"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/tdata"
 )
 
@@ -119,6 +120,36 @@ func TestGet(t *testing.T) {
 	servertest.Teardown()
 }
 
+func TestGetWithServices(t *testing.T) {
+	servertest.Setup()
+
+	servertest.Mux.HandleFunc(
+		"/projects/images",
+		tdata.ServerJSONFileHandler("mocks/project_get_response_with_services.json"))
+
+	var list, err = client.Get(context.Background(), "images")
+
+	var want = Project{
+		ProjectID: "images",
+		Health:    "on",
+		Services: services.Services{
+			services.Service{
+				ServiceID: "hi",
+			},
+		},
+	}
+
+	if !reflect.DeepEqual(want, list) {
+		t.Errorf("Wanted %v, got %v instead", want, list)
+	}
+
+	if err != nil {
+		t.Errorf("Wanted error to be nil, got %v instead", err)
+	}
+
+	servertest.Teardown()
+}
+
 func TestGetEmpty(t *testing.T) {
 	var _, err = client.Get(context.Background(), "")
 
@@ -140,6 +171,38 @@ func TestList(t *testing.T) {
 		Project{
 			ProjectID: "images",
 			Health:    "on",
+		},
+	}
+
+	if !reflect.DeepEqual(want, list) {
+		t.Errorf("Wanted %v, got %v instead", want, list)
+	}
+
+	if err != nil {
+		t.Errorf("Wanted error to be nil, got %v instead", err)
+	}
+
+	servertest.Teardown()
+}
+
+func TestListWithServices(t *testing.T) {
+	servertest.Setup()
+
+	servertest.Mux.HandleFunc(
+		"/projects",
+		tdata.ServerJSONFileHandler("mocks/projects_response_with_services.json"))
+
+	var list, err = client.List(context.Background())
+
+	var want = []Project{
+		Project{
+			ProjectID: "images",
+			Health:    "on",
+			Services: services.Services{
+				services.Service{
+					ServiceID: "hi",
+				},
+			},
 		},
 	}
 
