@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -210,92 +209,21 @@ func (d *Deploy) GetCurrentBranch() (branch string, err error) {
 	return branch, nil
 }
 
-func (d *Deploy) walkFn(path string, info os.FileInfo, ef error) (err error) {
-	if ef != nil {
-		return errwrap.Wrapf("can't read file "+path+" {err}}", ef)
-	}
-
-	if info.Name() == ".git" {
-		return filepath.SkipDir
-	}
-
-	p := path
-
-	if runtime.GOOS == "windows" {
-		p = strings.Replace(p, ":", "", 1)
-	}
-
-	var toTmp = fmt.Sprintf("%s%s", d.tmpWorkDir, p)
-
-	if info.IsDir() {
-		return os.MkdirAll(toTmp, info.Mode())
-	}
-
-	from, err := os.Open(path)
+func (d *Deploy) stageService(path string) error {
+	dest, err := d.copyServiceFiles(path)
 
 	if err != nil {
 		return err
 	}
 
-	defer func() {
-		if eff := from.Close(); eff != nil && err == nil {
-			err = eff
-		}
-	}()
-
-	to, err := os.OpenFile(toTmp, os.O_RDWR|os.O_CREATE, info.Mode())
-
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		if eft := to.Close(); eft != nil && err == nil {
-			err = eft
-		}
-	}()
-
-	_, err = io.Copy(to, from)
-	return err
-}
-
-func (d *Deploy) stageEachService(path string) (err error) {
-	p := path
-
-	if runtime.GOOS == "windows" {
-		p = strings.Replace(path, ":", "", 1)
-	}
-
-	if err = filepath.Walk(path, d.walkFn); err != nil {
-		return err
-	}
-
-	var dp = d.Path
-
-	if runtime.GOOS == "windows" {
-		dp = strings.Replace(dp, ":", "", 1)
-	}
-
-	var params = []string{"add", d.tmpWorkDir + p}
+	var params = []string{"add", dest}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = append(d.getConfigEnvs(), "GIT_WORK_TREE="+d.getTempProjectWorkDir())
-	cmd.Dir = d.tmpWorkDir + dp
+	cmd.Env = append(d.getConfigEnvs(), "GIT_WORK_TREE="+d.tmpWorkDir)
+	cmd.Dir = d.tmpWorkDir
 	cmd.Stderr = errStream
 
 	return cmd.Run()
-}
-
-func (d *Deploy) getTempProjectWorkDir() string {
-	var dp = d.Path
-
-	if runtime.GOOS == "windows" {
-		dp = strings.Replace(dp, ":", "", 1)
-	}
-
-	var tmpProject = d.tmpWorkDir + dp
-
-	return tmpProject
 }
 
 func (d *Deploy) stageAllFiles() (err error) {
@@ -311,12 +239,12 @@ func (d *Deploy) stageAllFiles() (err error) {
 		return err
 	}
 
-	if err = os.MkdirAll(d.getTempProjectWorkDir(), 0700); err != nil {
+	if err = d.processGitIgnore(); err != nil {
 		return err
 	}
 
 	for _, s := range d.Services {
-		if err := d.stageEachService(s.Location); err != nil {
+		if err := d.stageService(s.Location); err != nil {
 			return err
 		}
 	}
@@ -386,6 +314,31 @@ func (d *Deploy) gitRenameServiceIDUpdateIndex(hashObject, path string) error {
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
 	return cmd.Run()
+}
+
+func (d *Deploy) processGitIgnore() (err error) {
+	var params = []string{"status", "--ignored", "--untracked-files=all", "--porcelain", "--", "."}
+	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
+	var cmd = exec.CommandContext(d.Context, "git", params...)
+	cmd.Env = append(d.getConfigEnvs(), "GIT_WORK_TREE="+d.Path)
+	cmd.Dir = d.Path
+	cmd.Stderr = errStream
+
+	var out = &bytes.Buffer{}
+	cmd.Stdout = out
+	d.ignoreList = map[string]bool{}
+
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	for _, w := range bytes.Split(out.Bytes(), []byte("\n")) {
+		if bytes.HasPrefix(w, []byte("!! ")) {
+			d.ignoreList[string(bytes.TrimPrefix(w, []byte("!! ")))] = true
+		}
+	}
+
+	return nil
 }
 
 func (d *Deploy) getLastCommit() (commit string, err error) {

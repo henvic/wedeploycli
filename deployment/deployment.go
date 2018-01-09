@@ -57,6 +57,7 @@ type Deploy struct {
 	uploadMessage *waitlivemsg.Message
 
 	tmpWorkDir string
+	ignoreList map[string]bool
 
 	gitEnvCache []string
 }
@@ -74,12 +75,6 @@ func (d *Deploy) renameServiceID(s services.ServiceInfo) error {
 		return err
 	}
 
-	var rel, errRel = filepath.Rel(d.Path, s.Location)
-
-	if errRel != nil {
-		return err
-	}
-
 	// It is necessary to use a map instead of relying on the structure we have
 	// to avoid compatibility issues due to lack of a synchronization channel
 	// between the CLI team and the other teams in maintaining wedeploy.json structure
@@ -89,7 +84,8 @@ func (d *Deploy) renameServiceID(s services.ServiceInfo) error {
 		return err
 	}
 
-	return d.gitRenameServiceID(bin, filepath.Join(rel, "wedeploy.json"))
+	return d.gitRenameServiceID(bin, filepath.Join(filepath.Base(s.Location),
+		"wedeploy.json"))
 }
 
 func replaceServicePackageToInterfaceOnRenaming(serviceID string, path string) ([]byte, error) {
