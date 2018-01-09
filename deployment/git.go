@@ -91,6 +91,10 @@ func (d *Deploy) InitializeRepository() error {
 		return err
 	}
 
+	if err := d.setStopLineEndingsWarnings(); err != nil {
+		return err
+	}
+
 	return d.setGitAuthor()
 }
 
@@ -126,6 +130,17 @@ func (d *Deploy) getGitVersion() error {
 
 func (d *Deploy) setKeepLineEndings() error {
 	var params = []string{"config", "core.autocrlf", "false", "--local"}
+	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
+	var cmd = exec.CommandContext(d.Context, "git", params...)
+	cmd.Env = d.getConfigEnvs()
+	cmd.Dir = d.Path
+	cmd.Stderr = errStream
+
+	return cmd.Run()
+}
+
+func (d *Deploy) setStopLineEndingsWarnings() error {
+	var params = []string{"config", "core.safecrlf", "false", "--local"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.Context, "git", params...)
 	cmd.Env = d.getConfigEnvs()
