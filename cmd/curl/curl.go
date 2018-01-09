@@ -394,7 +394,7 @@ func (cr *curlRunner) run(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	if print {
-		fmt.Printf("curl %v\n", strings.Join(curlArgs, " "))
+		printCURLCommand(curlArgs)
 		return nil
 	}
 
@@ -411,4 +411,19 @@ func curl(ctx context.Context, params []string) error {
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	return cmd.Run()
+}
+
+func printCURLCommand(args []string) {
+	fmt.Printf("curl")
+
+	for _, a := range args {
+		if strings.ContainsRune(a, ' ') {
+			fmt.Printf(` "%s"`, a)
+			break
+		}
+
+		fmt.Printf(" %s", a)
+	}
+
+	fmt.Printf("\n")
 }
