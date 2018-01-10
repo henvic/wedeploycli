@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -19,13 +18,8 @@ import (
 	"github.com/wedeploy/cli/verbose"
 )
 
-// Cleanup directory
-func (d *Deploy) Cleanup() error {
-	return os.RemoveAll(d.getGitPath())
-}
-
 // CreateGitDirectory creates the git directory for the deployment
-func (d *Deploy) CreateGitDirectory() error {
+func (d *Deploy) createGitDirectory() error {
 	return os.MkdirAll(d.getGitPath(), 0700)
 }
 
@@ -68,7 +62,7 @@ func (d *Deploy) getConfigEnvs() (es []string) {
 }
 
 // InitializeRepository as a git repo
-func (d *Deploy) InitializeRepository() error {
+func (d *Deploy) initializeRepository() error {
 	// preload the config envs before proceeding (just for the verbose msg)
 	_ = d.getConfigEnvs()
 
@@ -78,7 +72,7 @@ func (d *Deploy) InitializeRepository() error {
 
 	var params = []string{"init"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
@@ -101,7 +95,7 @@ func (d *Deploy) InitializeRepository() error {
 func (d *Deploy) getGitVersion() error {
 	var params = []string{"version"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	var buf bytes.Buffer
@@ -131,7 +125,7 @@ func (d *Deploy) getGitVersion() error {
 func (d *Deploy) setKeepLineEndings() error {
 	var params = []string{"config", "core.autocrlf", "false", "--local"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
@@ -142,7 +136,7 @@ func (d *Deploy) setKeepLineEndings() error {
 func (d *Deploy) setStopLineEndingsWarnings() error {
 	var params = []string{"config", "core.safecrlf", "false", "--local"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
@@ -151,15 +145,7 @@ func (d *Deploy) setStopLineEndingsWarnings() error {
 }
 
 func (d *Deploy) getGitPath() string {
-	var cachePath = d.Path
-
-	// on Windows, drive units start with ":", if we don't remove it we get the following error:
-	// 'GetFileAttributesEx U:\...U:\...: The filename, directory name, or volume label syntax is incorrect.
-	if runtime.GOOS == "windows" {
-		cachePath = strings.Replace(d.Path, ":", "", 1)
-	}
-
-	return filepath.Join(userhome.GetHomeDir(), ".wedeploy", "tmp", "repos", cachePath)
+	return filepath.Join(d.getTmpWorkDir(), "git")
 }
 
 func (d *Deploy) getGitRemote() string {
@@ -184,7 +170,7 @@ func (d *Deploy) setGitAuthor() error {
 func (d *Deploy) setGitAuthorName() error {
 	var params = []string{"config", "user.name", "WeDeploy user", "--local"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
@@ -195,7 +181,7 @@ func (d *Deploy) setGitAuthorName() error {
 func (d *Deploy) setGitAuthorEmail() error {
 	var params = []string{"config", "user.email", "user@deployment", "--local"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
@@ -207,7 +193,7 @@ func (d *Deploy) setGitAuthorEmail() error {
 func (d *Deploy) GetCurrentBranch() (branch string, err error) {
 	var params = []string{"symbolic-ref", "HEAD"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = d.getConfigEnvs()
 	var buf bytes.Buffer
 	cmd.Dir = d.Path
@@ -231,11 +217,14 @@ func (d *Deploy) stageService(path string) error {
 		return err
 	}
 
+	var tmpWorkDir = d.getTmpWorkDir()
+
 	var params = []string{"add", dest}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
-	cmd.Env = append(d.getConfigEnvs(), "GIT_WORK_TREE="+d.tmpWorkDir)
-	cmd.Dir = d.tmpWorkDir
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
+	var workTree = filepath.Join(tmpWorkDir, "services")
+	cmd.Env = append(d.getConfigEnvs(), "GIT_WORK_TREE="+workTree)
+	cmd.Dir = filepath.Join(tmpWorkDir, "services")
 	cmd.Stderr = errStream
 
 	return cmd.Run()
@@ -243,16 +232,12 @@ func (d *Deploy) stageService(path string) error {
 
 func (d *Deploy) stageAllFiles() (err error) {
 	defer func() {
-		if d.tmpWorkDir != "" {
-			_ = os.RemoveAll(d.tmpWorkDir)
+		var tmpWorkDir = d.getTmpWorkDir()
+
+		if tmpWorkDir != "" {
+			_ = os.RemoveAll(filepath.Join(tmpWorkDir, "services"))
 		}
 	}()
-
-	d.tmpWorkDir, err = ioutil.TempDir("", "wedeploy")
-
-	if err != nil {
-		return err
-	}
 
 	if err = d.processGitIgnore(); err != nil {
 		return err
@@ -299,7 +284,7 @@ func (d *Deploy) gitRenameServiceID(content []byte, path string) error {
 func (d *Deploy) gitRenameServiceIDHashObject(content []byte) (hashObject string, err error) {
 	var params = []string{"hash-object", "-w", "--stdin"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	var in = &bytes.Buffer{}
@@ -324,7 +309,7 @@ func (d *Deploy) gitRenameServiceIDHashObject(content []byte) (hashObject string
 func (d *Deploy) gitRenameServiceIDUpdateIndex(hashObject, path string) error {
 	var params = []string{"update-index", "--add", "--cacheinfo", "100644", hashObject, path}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
@@ -334,7 +319,7 @@ func (d *Deploy) gitRenameServiceIDUpdateIndex(hashObject, path string) error {
 func (d *Deploy) processGitIgnore() (err error) {
 	var params = []string{"status", "--ignored", "--untracked-files=all", "--porcelain", "--", "."}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = append(d.getConfigEnvs(), "GIT_WORK_TREE="+d.Path)
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
@@ -347,10 +332,21 @@ func (d *Deploy) processGitIgnore() (err error) {
 		return err
 	}
 
+	const ignorePattern = "!! "
+
 	for _, w := range bytes.Split(out.Bytes(), []byte("\n")) {
-		if bytes.HasPrefix(w, []byte("!! ")) {
-			d.ignoreList[string(bytes.TrimPrefix(w, []byte("!! ")))] = true
+		if bytes.HasPrefix(w, []byte(ignorePattern)) {
+			p := filepath.Join(d.Path,
+				string(bytes.TrimPrefix(w, []byte(ignorePattern))))
+			d.ignoreList[p] = true
 		}
+	}
+
+	if len(d.ignoreList) != 0 {
+		verbose.Debug(fmt.Sprintf(
+			"Ignoring %d files and directories found on .gitignore files",
+			len(d.ignoreList)))
+
 	}
 
 	return nil
@@ -359,7 +355,7 @@ func (d *Deploy) processGitIgnore() (err error) {
 func (d *Deploy) getLastCommit() (commit string, err error) {
 	var params = []string{"rev-parse", "HEAD"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = d.getConfigEnvs()
 	var buf bytes.Buffer
 	cmd.Dir = d.Path
@@ -392,7 +388,7 @@ func (d *Deploy) Commit() (commit string, err error) {
 	}
 
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = append(d.getConfigEnvs(), "GIT_WORK_TREE="+d.Path)
 	cmd.Dir = d.Path
 
@@ -434,7 +430,7 @@ func (d *Deploy) Push() (groupUID string, err error) {
 	}
 
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = append(d.getConfigEnvs(),
 		"GIT_TERMINAL_PROMPT=0",
 		envs.GitCredentialRemoteToken+"="+d.ConfigContext.Token(),
@@ -472,7 +468,7 @@ func (d *Deploy) AddRemote() error {
 
 	var params = []string{"remote", "add", d.getGitRemote(), gitServer}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
@@ -487,7 +483,7 @@ func (d *Deploy) addEmptyCredentialHelper() (err error) {
 	var params = []string{"config", "--add", "credential.helper", ""}
 	verbose.Debug("Resetting credential helpers")
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
@@ -520,10 +516,23 @@ func (d *Deploy) addCredentialHelper() (err error) {
 
 	var params = []string{"config", "--add", "credential.helper", credentialHelper}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 	cmd.Stderr = errStream
 	cmd.Stdout = outStream
 	return cmd.Run()
+}
+
+func (d *Deploy) getTmpWorkDir() string {
+	d.tmpWorkDirLock.RLock()
+	var dir = d.tmpWorkDir
+	d.tmpWorkDirLock.RUnlock()
+	return dir
+}
+
+func (d *Deploy) setTmpWorkDir(dir string) {
+	d.tmpWorkDirLock.Lock()
+	d.tmpWorkDir = dir
+	d.tmpWorkDirLock.Unlock()
 }

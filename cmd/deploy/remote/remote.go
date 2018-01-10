@@ -94,7 +94,6 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 	}
 
 	var deploy = &deployment.Deploy{
-		Context:       ctx,
 		ProjectID:     rd.ProjectID,
 		ServiceID:     rd.ServiceID,
 		LocationRemap: rd.remap,
@@ -104,7 +103,7 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 		Quiet:         rd.Quiet,
 	}
 
-	err = deploy.Do()
+	err = deploy.Do(ctx)
 	return deploy.GetGroupUID(), err
 }
 

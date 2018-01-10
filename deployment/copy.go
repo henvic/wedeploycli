@@ -13,7 +13,7 @@ func (d *Deploy) copyServiceFiles(path string) (copyPath string, err error) {
 	c := copyServiceFiles{
 		deploy:      d,
 		servicePath: path,
-		copyPath:    filepath.Join(d.tmpWorkDir, filepath.Base(path)),
+		copyPath:    filepath.Join(d.getTmpWorkDir(), "services", filepath.Base(path)),
 	}
 
 	if err = filepath.Walk(path, c.walkFn); err != nil {

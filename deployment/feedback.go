@@ -60,7 +60,7 @@ func (d *Deploy) createServicesActivitiesMap() {
 
 func (d *Deploy) reorderDeployments() {
 	projectsClient := projects.New(d.ConfigContext)
-	order, _ := projectsClient.GetDeploymentOrder(d.Context, d.ProjectID, d.groupUID)
+	order, _ := projectsClient.GetDeploymentOrder(d.ctx, d.ProjectID, d.groupUID)
 
 	for _, do := range order {
 		if a, ok := d.sActivities[do]; ok {
@@ -276,7 +276,7 @@ func (d *Deploy) markActivityState(serviceID, activityType string) {
 
 func (d *Deploy) checkActivities() (end bool, err error) {
 	var as activities.Activities
-	var ctx, cancel = context.WithTimeout(d.Context, 5*time.Second)
+	var ctx, cancel = context.WithTimeout(d.ctx, 5*time.Second)
 	defer cancel()
 
 	activitiesClient := activities.New(d.ConfigContext)
@@ -340,7 +340,7 @@ func (d *Deploy) watchDeployment() {
 	rate := rate.NewLimiter(rate.Every(time.Second), 1)
 
 	for {
-		if er := rate.Wait(d.Context); er != nil {
+		if er := rate.Wait(d.ctx); er != nil {
 			verbose.Debug(er)
 		}
 

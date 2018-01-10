@@ -13,6 +13,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -37,7 +38,6 @@ var (
 
 // Deploy project
 type Deploy struct {
-	Context       context.Context
 	ConfigContext config.Context
 	ProjectID     string
 	ServiceID     string
@@ -56,7 +56,12 @@ type Deploy struct {
 	stepMessage   *waitlivemsg.Message
 	uploadMessage *waitlivemsg.Message
 
-	tmpWorkDir string
+	ctx       context.Context
+	ctxCancel context.CancelFunc
+
+	tmpWorkDir     string
+	tmpWorkDirLock sync.RWMutex
+
 	ignoreList map[string]bool
 
 	gitEnvCache []string
@@ -196,20 +201,13 @@ func extractGroupUIDFromBuild(e []byte) (groupUID string, err error) {
 	return bds[0].GroupUID, nil
 }
 
-func (d *Deploy) cleanupAfter() {
-	if err := d.Cleanup(); err != nil {
-		verbose.Debug(
-			errwrap.Wrapf("Error trying to clean up directory after deployment: {{err}}", err))
-	}
-}
-
 func (d *Deploy) listenCleanupOnCancel() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
 		<-sigs
-		_ = d.Cleanup()
+		d.ctxCancel()
 	}()
 }
 
@@ -247,7 +245,8 @@ func (d *Deploy) prepare() {
 }
 
 // Do deployment
-func (d *Deploy) Do() error {
+func (d *Deploy) Do(ctx context.Context) error {
+	d.ctx, d.ctxCancel = context.WithCancel(ctx)
 	d.stepMessage = &waitlivemsg.Message{}
 	d.wlm = waitlivemsg.WaitLiveMsg{}
 	d.prepare()
@@ -289,18 +288,32 @@ func (d *Deploy) do() (err error) {
 	d.createStatusMessages()
 	d.createServicesActivitiesMap()
 
-	if err = d.Cleanup(); err != nil {
-		return errwrap.Wrapf("Can not clean up directory for deployment: {{err}}", err)
-	}
-
 	d.listenCleanupOnCancel()
-	defer signal.Reset(syscall.SIGINT, syscall.SIGTERM)
 
-	if err = d.CreateGitDirectory(); err != nil {
-		return errwrap.Wrapf("Can not create temporary directory for deployment: {{err}}", err)
+	defer func() {
+		if ec := d.Cleanup(); ec != nil {
+			if err == nil {
+				err = ec
+				return
+			}
+
+			verbose.Debug(err)
+		}
+
+		signal.Reset(syscall.SIGINT, syscall.SIGTERM)
+	}()
+
+	tmpWorkDir, err := ioutil.TempDir("", "wedeploy")
+
+	if err != nil {
+		return err
 	}
 
-	defer d.cleanupAfter()
+	d.setTmpWorkDir(tmpWorkDir)
+
+	if err = d.createGitDirectory(); err != nil {
+		return err
+	}
 
 	if err = d.preparePackage(); err != nil {
 		return err
@@ -327,7 +340,7 @@ func (d *Deploy) preparePackage() (err error) {
 		return errors.New("git was not found on your system: please visit https://git-scm.com/")
 	}
 
-	if err = d.InitializeRepository(); err != nil {
+	if err = d.initializeRepository(); err != nil {
 		return err
 	}
 
@@ -373,6 +386,17 @@ func (d *Deploy) uploadPackage() (err error) {
 	d.uploadMessage.StopText(
 		fancy.Success(fmt.Sprintf("Upload completed in %v",
 			timehelper.RoundDuration(d.UploadDuration(), time.Second))))
+	return nil
+}
+
+// Cleanup directory
+func (d *Deploy) Cleanup() error {
+	var tmpWorkDir = d.getTmpWorkDir()
+
+	if tmpWorkDir != "" {
+		return os.RemoveAll(d.getTmpWorkDir())
+	}
+
 	return nil
 }
 

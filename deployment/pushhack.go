@@ -48,7 +48,7 @@ func (d *Deploy) pushHack() (groupUID string, err error) {
 	verbose.Debug(fmt.Sprintf("Running git push %v master -force",
 		verbose.SafeEscape(d.getGitRemote())))
 
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = append(d.getConfigEnvs(),
 		"GIT_TERMINAL_PROMPT=0",
 		envs.GitCredentialRemoteToken+"="+d.ConfigContext.Token(),
@@ -96,7 +96,7 @@ func (d *Deploy) addRemoteHack() error {
 		d.getGitRemote(),
 		verbose.SafeEscape(gitServer)))
 
-	var cmd = exec.CommandContext(d.Context, "git", params...)
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
 	cmd.Env = d.getConfigEnvs()
 	cmd.Dir = d.Path
 
