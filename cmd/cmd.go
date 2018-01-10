@@ -145,7 +145,9 @@ func (m *mainProgram) executeCommand() {
 		errorhandling.RunAfterError()
 		verbose.PrintDeferred()
 
-		if ee, ok := m.cmdErr.(*exec.ExitError); ok {
+		var maybeExitErr = errwrap.GetType(m.cmdErr, &exec.ExitError{})
+
+		if ee, ok := maybeExitErr.(*exec.ExitError); ok {
 			ws := ee.Sys().(syscall.WaitStatus)
 			os.Exit(ws.ExitStatus())
 		}
