@@ -378,15 +378,19 @@ func TestReadFileNotFound(t *testing.T) {
 	}
 }
 
-func TestReadInvalidServiceID(t *testing.T) {
-	var s, err = Read("mocks/app-for/invalid-email-id")
+func TestReadEmail(t *testing.T) {
+	var s, err = Read("mocks/app-for/email")
+
+	if s.ID != "email" {
+		t.Errorf(`Expected email to be "email", got %v instead`, s.ID)
+	}
 
 	if s.Scale != 10 {
 		t.Errorf("Expected scale to be 10, got %v instead", s.Scale)
 	}
 
-	if err != ErrInvalidServiceID {
-		t.Errorf("Expected %v, got %v instead", ErrInvalidServiceID, err)
+	if err != nil {
+		t.Errorf("Expected err to be nil, got %v instead", err)
 	}
 }
 
