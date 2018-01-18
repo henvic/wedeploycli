@@ -22,6 +22,7 @@ var EnvCmd = &cobra.Command{
 	Example: `  we env (to list environment variables)
   we env set foo bar
   we env rm foo`,
+	Args:    cobra.MaximumNArgs(1),
 	PreRunE: preRun,
 	RunE:    run,
 }
