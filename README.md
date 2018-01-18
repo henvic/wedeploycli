@@ -4,7 +4,7 @@ Install this tool with
 
 `curl http://cdn.wedeploy.com/cli/latest/wedeploy.sh -sL | bash`
 
-or download from our [stable release channel](https://dl.equinox.io/wedeploy/cli/stable).
+or download from our [stable release channel](https://dl.equinox.io/wedeploy/we/stable).
 
 To update this tool, just run `we update`.
 
