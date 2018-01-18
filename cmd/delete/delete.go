@@ -89,10 +89,14 @@ func (u *undeployer) confirmation() error {
 	var question string
 
 	if u.service != "" {
+		fmt.Println(color.Format(color.FgRed, color.Bold,
+			"Deleting a service cannot be undone. All the access and domains related to this service will be lost."))
 		question = fmt.Sprintf(`Do you really want to delete the service "%v" on project "%v"?`,
 			color.Format(color.Bold, u.service),
 			color.Format(color.Bold, u.project))
 	} else {
+		fmt.Println(color.Format(color.FgRed, color.Bold,
+			"Deleting a project cannot be undone. All the access and domains related to services on this project will be lost."))
 		question = fmt.Sprintf(`Do you really want to delete the project "%v"?`,
 			color.Format(color.Bold, u.project))
 	}
@@ -107,7 +111,7 @@ func (u *undeployer) confirmation() error {
 		return nil
 	}
 
-	return canceled.CancelCommand("delete canceled")
+	return canceled.Skip()
 }
 
 func (u *undeployer) do() (err error) {
@@ -126,9 +130,22 @@ func (u *undeployer) do() (err error) {
 
 	switch u.service {
 	case "":
-		fmt.Printf("Deleting project %s.\n", u.project)
+		fmt.Printf(color.Format(
+			color.FgHiBlack, "Deleting project \"")+
+			"%s"+
+			color.Format(color.FgHiBlack, "\".")+
+			"\n",
+			u.project)
 	default:
-		fmt.Printf("Deleting service %s on project %s.\n", u.service, u.project)
+		fmt.Printf(color.Format(
+			color.FgHiBlack, "Deleting service \"")+
+			"%v"+
+			color.Format(color.FgHiBlack, "\" on project \"")+
+			"%v"+
+			color.Format(color.FgHiBlack, "\".")+
+			"\n",
+			u.service,
+			u.project)
 	}
 
 	return nil
