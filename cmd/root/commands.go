@@ -19,6 +19,7 @@ import (
 	"github.com/wedeploy/cli/cmd/log"
 	"github.com/wedeploy/cli/cmd/login"
 	"github.com/wedeploy/cli/cmd/logout"
+	"github.com/wedeploy/cli/cmd/new"
 	"github.com/wedeploy/cli/cmd/open"
 	"github.com/wedeploy/cli/cmd/remote"
 	"github.com/wedeploy/cli/cmd/restart"
@@ -32,6 +33,7 @@ var commands = []*cobra.Command{
 	activities.ActivitiesCmd,
 	deploy.DeployCmd,
 	list.ListCmd,
+	new.NewCmd,
 	open.OpenCmd,
 	console.ConsoleCmd,
 	docs.DocsCmd,

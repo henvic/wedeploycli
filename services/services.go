@@ -38,6 +38,37 @@ func New(wectx config.Context) *Client {
 // Services of services for helper functions
 type Services []Service
 
+// CreateBody is the body for creating a service
+type CreateBody struct {
+	CPU           json.Number       `json:"cpu"`
+	CustomDomains []string          `json:"customDomains,omitempty"`
+	Env           map[string]string `json:"env,omitempty"`
+	Image         string            `json:"image,omitempty"`
+	Memory        json.Number       `json:"memory,omitempty"`
+	Port          int               `json:"port,omitempty"`
+	Scale         int               `json:"scale,omitempty"`
+	ServiceID     string            `json:"serviceId,omitempty"`
+	Volume        string            `json:"volume,omitempty"`
+}
+
+// Create on the backend
+func (c *Client) Create(ctx context.Context, projectID string, body CreateBody) (s Service, err error) {
+	var req = c.Client.URL(ctx, "/projects/"+projectID+"/services")
+
+	c.Client.Auth(req)
+
+	if err := apihelper.SetBody(req, body); err != nil {
+		return s, err
+	}
+
+	if err := apihelper.Validate(req, req.Post()); err != nil {
+		return s, err
+	}
+
+	err = apihelper.DecodeJSON(req, &s)
+	return s, err
+}
+
 // Get a service from the service list
 func (cs Services) Get(id string) (c Service, err error) {
 	for _, c := range cs {
