@@ -21,11 +21,14 @@ var (
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{
+	Pattern: cmdflagsfromhost.FullHostPattern,
+
 	Requires: cmdflagsfromhost.Requires{
 		Auth:    true,
 		Project: true,
 	},
-	Pattern: cmdflagsfromhost.FullHostPattern,
+
+	PromptMissingProject: true,
 }
 
 func init() {

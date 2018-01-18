@@ -22,12 +22,15 @@ var RestartCmd = &cobra.Command{
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
+	Pattern: cmdflagsfromhost.FullHostPattern,
+
 	Requires: cmdflagsfromhost.Requires{
 		Auth:    true,
 		Project: true,
 		Service: true,
 	},
-	Pattern: cmdflagsfromhost.FullHostPattern,
+
+	PromptMissingProject: true,
 }
 
 func init() {

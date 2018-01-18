@@ -38,10 +38,13 @@ type undeployer struct {
 
 var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern: cmdflagsfromhost.FullHostPattern,
+
 	Requires: cmdflagsfromhost.Requires{
 		Project: true,
 		Auth:    true,
 	},
+
+	PromptMissingProject: true,
 }
 
 func init() {
