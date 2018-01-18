@@ -26,6 +26,10 @@ func (l *List) watchHandler() {
 	l.watchMutex.RUnlock()
 
 	if le != nil {
+		if l.once {
+			return
+		}
+
 		l.Printf("%v #%d\n", errorhandling.Handle(le), retry)
 		return
 	}

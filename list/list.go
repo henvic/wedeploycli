@@ -51,6 +51,8 @@ type List struct {
 
 	w *formatter.TabWriter
 
+	once bool
+
 	retry int
 
 	wectx     config.Context
@@ -105,6 +107,8 @@ func (l *List) Start(ctx context.Context, wectx config.Context) {
 
 // Once runs the list only once
 func (l *List) Once(ctx context.Context, wectx config.Context) error {
+	l.once = true
+
 	l.PoolingInterval = time.Minute
 	l.prepare(ctx, wectx)
 	l.updateHandler()
