@@ -362,7 +362,7 @@ func (cr *curlRunner) run(cmd *cobra.Command, args []string) (err error) {
 			EnableCmd.CommandPath())
 	}
 
-	if err := setupHost.Process(wectx); err != nil {
+	if err := setupHost.Process(context.Background(), wectx); err != nil {
 		return err
 	}
 

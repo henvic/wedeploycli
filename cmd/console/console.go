@@ -1,6 +1,7 @@
 package console
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/henvic/browser"
@@ -29,7 +30,7 @@ func init() {
 }
 
 func consolePreRun(cmd *cobra.Command, args []string) error {
-	return setupHost.Process(we.Context())
+	return setupHost.Process(context.Background(), we.Context())
 }
 
 func open(m *waitlivemsg.Message, ec chan error) {

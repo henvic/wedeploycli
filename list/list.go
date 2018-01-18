@@ -2,11 +2,9 @@ package list
 
 import (
 	"context"
-	"errors"
 	"io"
 	"os"
 	"os/signal"
-	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -23,6 +21,8 @@ import (
 type Filter struct {
 	Project  string
 	Services []string
+
+	HideServices bool
 }
 
 // List services object
@@ -115,26 +115,6 @@ func (l *List) Once(ctx context.Context, wectx config.Context) error {
 	var le = l.lastError
 	l.watchMutex.RUnlock()
 	return le
-}
-
-// GetSelection of service or project
-func (l *List) GetSelection(option string) (Selection, error) {
-	var num, err = strconv.Atoi(option)
-
-	if err != nil {
-		return Selection{
-			Project: option,
-		}, nil
-	}
-
-	var sel = l.selectors
-
-	if len(sel) < num {
-		return Selection{}, errors.New("invalid selection")
-	}
-
-	var s = sel[num-1]
-	return s, nil
 }
 
 func isContextError(err error) bool {

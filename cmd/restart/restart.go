@@ -62,7 +62,7 @@ func (r *restart) checkServiceExists() (err error) {
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	return setupHost.Process(we.Context())
+	return setupHost.Process(context.Background(), we.Context())
 }
 
 func restartRun(cmd *cobra.Command, args []string) error {

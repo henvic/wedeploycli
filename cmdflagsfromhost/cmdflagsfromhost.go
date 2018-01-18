@@ -13,6 +13,8 @@ import (
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/flagsfromhost"
+	"github.com/wedeploy/cli/isterm"
+	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/login"
 	"github.com/wedeploy/cli/metrics"
 	"github.com/wedeploy/cli/services"
@@ -28,17 +30,22 @@ type Requires struct {
 
 // SetupHost is the structure for host and flags parsing
 type SetupHost struct {
-	Pattern             Pattern
-	Requires            Requires
-	UseServiceDirectory bool
-	AllowMissingProject bool
-	url                 string
-	project             string
-	service             string
-	remote              string
-	cmd                 *cobra.Command
-	wectx               config.Context
-	parsed              *flagsfromhost.FlagsFromHost
+	ctx context.Context
+
+	Pattern              Pattern
+	Requires             Requires
+	UseServiceDirectory  bool
+	PromptMissingProject bool
+	PromptMissingService bool
+	AllowMissingProject  bool
+	HideServicesPrompt   bool
+	url                  string
+	project              string
+	service              string
+	remote               string
+	cmd                  *cobra.Command
+	wectx                config.Context
+	parsed               *flagsfromhost.FlagsFromHost
 }
 
 // Pattern for the host and flags
@@ -151,7 +158,8 @@ func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 }
 
 // Process flags
-func (s *SetupHost) Process(wectx config.Context) (err error) {
+func (s *SetupHost) Process(ctx context.Context, wectx config.Context) (err error) {
+	s.ctx = ctx
 	s.wectx = wectx
 	s.parsed, err = s.tryParseFlags()
 
@@ -161,6 +169,10 @@ func (s *SetupHost) Process(wectx config.Context) (err error) {
 
 	if err = s.loadValues(); err != nil {
 		return err
+	}
+
+	if !s.Requires.Auth {
+		return nil
 	}
 
 	return s.verifyCmdReqAuth()
@@ -208,57 +220,110 @@ func (s *SetupHost) getServiceFromCurrentWorkingDirectory() (service string, err
 }
 
 func (s *SetupHost) loadValues() (err error) {
-	var service = s.parsed.Service()
-	var project = s.parsed.Project()
-	var remote = s.parsed.Remote()
+	s.service = s.parsed.Service()
+	s.project = s.parsed.Project()
+	s.remote = s.parsed.Remote()
 
-	if remote == "" {
-		remote = defaults.CloudRemote
+	if s.remote == "" {
+		s.remote = defaults.CloudRemote
 	}
 
 	if s.Pattern&RemotePattern == 0 {
 		return errors.New("Remote is not allowed for this command")
 	}
 
-	if s.Pattern&ProjectPattern == 0 && project != "" {
+	if s.Pattern&ProjectPattern == 0 && s.project != "" {
 		return errors.New("Project is not allowed for this command")
 	}
 
-	if s.Pattern&ServicePattern == 0 && service != "" {
+	if s.Pattern&ServicePattern == 0 && s.service != "" {
 		return errors.New("Service is not allowed for this command")
 	}
 
-	if service == "" && s.UseServiceDirectory && s.parsed.Project() == "" {
-		service, err = s.getServiceFromCurrentWorkingDirectory()
+	if s.service == "" && s.UseServiceDirectory && s.project == "" {
+		s.service, err = s.getServiceFromCurrentWorkingDirectory()
 		if err != nil {
 			return err
 		}
 	}
 
-	if (s.Pattern&ProjectPattern == 0 && s.Pattern&ServicePattern == 0) && service != "" {
+	if err := s.wectx.SetEndpoint(s.Remote()); err != nil {
+		return err
+	}
+
+	if (s.Pattern&ProjectPattern == 0 && s.Pattern&ServicePattern == 0) && s.service != "" {
 		return errors.New("Service parameter is not allowed for this command")
 	}
 
-	if s.Requires.Service && service == "" {
+	if err = s.maybePromptMissing(); err != nil {
+		return err
+	}
+
+	if s.Requires.Service && s.service == "" {
 		return errors.New("Service and project are required")
 	}
 
-	if s.Requires.Project && project == "" {
+	if s.Requires.Project && s.project == "" {
 		return errors.New("Project is required")
 	}
 
-	s.service = service
-	s.project = project
-	s.remote = remote
-
-	return s.wectx.SetEndpoint(s.Remote())
+	return nil
 }
 
-func (s *SetupHost) verifyCmdReqAuth() error {
-	if !s.Requires.Auth {
+func (s *SetupHost) maybePromptMissing() (err error) {
+	if !isterm.Check() {
 		return nil
 	}
 
+	if (s.PromptMissingProject && s.project == "") ||
+		(s.PromptMissingService && s.service == "") {
+		if err = s.verifyCmdReqAuth(); err != nil {
+			return err
+		}
+
+		if err := s.promptMissingProjectOrService(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *SetupHost) promptMissingProjectOrService() (err error) {
+	var filter = list.Filter{
+		Project: s.project,
+	}
+
+	if s.service != "" {
+		filter.Services = []string{s.service}
+	}
+
+	var l = list.New(filter)
+	var selection *list.Selection
+
+	switch {
+	case s.Pattern&ProjectPattern != 0 && s.Pattern&ServicePattern != 0 &&
+		s.Requires.Service && !s.HideServicesPrompt:
+		selection, err = l.PromptService(s.ctx, s.wectx)
+	case s.Pattern&ProjectPattern != 0 && s.Pattern&ServicePattern != 0 &&
+		s.Requires.Project && !s.HideServicesPrompt:
+		selection, err = l.PromptProjectOrService(s.ctx, s.wectx)
+	case s.Pattern&ProjectPattern != 0 && s.Requires.Project:
+		selection, err = l.PromptProject(s.ctx, s.wectx)
+	default:
+		return errors.New("not implemented")
+	}
+
+	if err != nil {
+		return err
+	}
+
+	s.project = selection.Project
+	s.service = selection.Service
+	return nil
+}
+
+func (s *SetupHost) verifyCmdReqAuth() error {
 	if hasAuth := (s.wectx.Token() != ""); hasAuth {
 		return nil
 	}

@@ -38,7 +38,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if err := setupHost.Process(we.Context()); err != nil {
+	if err := setupHost.Process(context.Background(), we.Context()); err != nil {
 		return err
 	}
 

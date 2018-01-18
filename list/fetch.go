@@ -19,6 +19,10 @@ func (l *List) fetchAllProjects() (ps []projects.Project, err error) {
 	var ctx, cancel = context.WithTimeout(l.ctx, 30*time.Second)
 	defer cancel()
 
+	if l.Filter.HideServices {
+		return l.projectsClient.List(ctx)
+	}
+
 	return l.projectsClient.ListWithServices(ctx)
 }
 
@@ -29,7 +33,13 @@ func (l *List) fetchOneProject() (ps []projects.Project, err error) {
 	var p projects.Project
 
 	projectsClient := projects.New(l.wectx)
-	p, err = projectsClient.GetWithServices(ctx, l.Filter.Project)
+
+	switch l.Filter.HideServices {
+	case true:
+		p, err = projectsClient.Get(ctx, l.Filter.Project)
+	default:
+		p, err = projectsClient.GetWithServices(ctx, l.Filter.Project)
+	}
 
 	// make sure to just add project if no error was received
 	if err == nil {

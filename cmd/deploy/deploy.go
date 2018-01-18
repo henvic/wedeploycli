@@ -29,7 +29,7 @@ var DeployCmd = &cobra.Command{
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	return setupHost.Process(we.Context())
+	return setupHost.Process(context.Background(), we.Context())
 }
 
 func runRun(cmd *cobra.Command, args []string) error {

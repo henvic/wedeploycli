@@ -41,7 +41,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return setupHost.Process(we.Context())
+	return setupHost.Process(context.Background(), we.Context())
 }
 
 func run(cmd *cobra.Command, args []string) error {

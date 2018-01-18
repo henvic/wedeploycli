@@ -1,6 +1,7 @@
 package logout
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -27,7 +28,7 @@ func init() {
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	return setupHost.Process(we.Context())
+	return setupHost.Process(context.Background(), we.Context())
 }
 
 func logoutRun(cmd *cobra.Command, args []string) error {
