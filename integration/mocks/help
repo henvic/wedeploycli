@@ -2,6 +2,7 @@
   Command               Description
   deploy           Deploy your services
   list             Show list of projects and services
+  open             Open service on your browser
   console          Open the console on your browser
   docs             Open docs on your browser
   log              Show logs of the services
