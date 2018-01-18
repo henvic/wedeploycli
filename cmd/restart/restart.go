@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/services"
 )
 
@@ -52,7 +53,15 @@ func (r *restart) do() (err error) {
 	err = servicesClient.Restart(r.ctx, r.project, r.service)
 
 	if err == nil {
-		fmt.Printf("Restarting service %s on project %s.\n", r.service, r.project)
+		fmt.Printf(color.Format(color.FgHiBlack,
+			"Restarting service \"")+
+			"%s"+color.Format(color.FgHiBlack,
+			"\" on project \"")+
+			"%s"+
+			color.Format(color.FgHiBlack, "\".")+
+			"\n",
+			r.service,
+			r.project)
 	}
 
 	return err
