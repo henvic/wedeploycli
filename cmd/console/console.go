@@ -13,7 +13,7 @@ import (
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern: cmdflagsfromhost.FullHostPattern,
+	Pattern: cmdflagsfromhost.RemotePattern,
 }
 
 // ConsoleCmd opens the browser console
