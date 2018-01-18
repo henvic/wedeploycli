@@ -95,7 +95,7 @@ func Boolean(question string) (yes bool, err error) {
 			fmt.Fprintln(os.Stderr,
 				Error(`No valid answer was found for "`+
 					color.Format(color.Reset, choice)+
-					color.Format(color.FgHiRed, `"`)))
+					`"`))
 		}
 	}
 }
@@ -163,7 +163,7 @@ func (o *Options) Ask(q string) (string, error) {
 			fmt.Fprintln(os.Stderr,
 				Error(`No valid answer was found for "`+
 					color.Format(color.Reset, choice)+
-					color.Format(color.FgHiRed, `"`)))
+					`"`))
 		}
 	}
 }
