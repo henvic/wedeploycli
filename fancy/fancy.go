@@ -103,6 +103,7 @@ func Boolean(question string) (yes bool, err error) {
 // Options selector
 type Options struct {
 	list []option
+	Hash bool
 }
 
 type option struct {
@@ -134,7 +135,14 @@ func (o *Options) Ask(q string) (string, error) {
 		names = append(names, option.name)
 	}
 
-	fmt.Printf("%s %s\n", q, color.Format(color.FgMagenta, "[%s]", strings.Join(names, "/")))
+	var printedList = "#"
+
+	if !o.Hash {
+		printedList = strings.Join(names, "/")
+	}
+
+	fmt.Printf("%s %s\n", q, color.Format(color.FgMagenta, "[%s]", printedList))
+
 	fmt.Print(o.List())
 
 	for {
