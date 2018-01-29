@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -258,7 +259,7 @@ func testTrySubmitError(t *testing.T) {
 	var s = Sender{}
 	server = "http://localhost:-1/"
 
-	lines, err := s.TrySubmit(conf)
+	lines, err := s.TrySubmit(context.Background(), conf)
 
 	if err == nil || !strings.HasPrefix(err.Error(), "Can not submit analytics:") {
 		t.Errorf("Expected error for TrySubmit() on invalid port not found, got %v instead", err)
@@ -309,7 +310,7 @@ func testTrySubmit(t *testing.T) {
 
 func testTrySubmitWithoutPurging(t *testing.T) {
 	var s = Sender{}
-	lines, err := s.TrySubmit(conf)
+	lines, err := s.TrySubmit(context.Background(), conf)
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v instead", err)
@@ -329,7 +330,7 @@ func testTrySubmitAndPurge(t *testing.T) {
 		Purge: true,
 	}
 
-	lines, err := s.TrySubmit(conf)
+	lines, err := s.TrySubmit(context.Background(), conf)
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v instead", err)
@@ -355,7 +356,7 @@ func testTrySubmitNothingToSend(t *testing.T) {
 		Purge: true,
 	}
 
-	lines, err := s.TrySubmit(conf)
+	lines, err := s.TrySubmit(context.Background(), conf)
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v instead", err)
@@ -420,7 +421,8 @@ func (te *testStatusMetricsStory) testDisable(t *testing.T) {
 		t.Errorf("Expected no error while disabling analytics, got %v instead", err)
 	}
 
-	trySubmitCounter, trySubmitErr := (&Sender{}).TrySubmit(conf)
+	sender := &Sender{}
+	trySubmitCounter, trySubmitErr := sender.TrySubmit(context.Background(), conf)
 	wantTrySubmitErr := "Aborting submission of analytics (analytics report status = disabled)"
 
 	if trySubmitCounter != 0 ||
@@ -519,7 +521,8 @@ func TestSubmitMetricFileNotFound(t *testing.T) {
 
 	metricsPath = abs("mocks/not-exists")
 
-	var lines, err = (&Sender{}).TrySubmit(conf)
+	sender := &Sender{}
+	var lines, err = sender.TrySubmit(context.Background(), conf)
 
 	if err != nil {
 		t.Errorf("TrySubmit error should be nil, got %v instead", err)

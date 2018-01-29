@@ -39,6 +39,9 @@ var (
 const (
 	// MetricsSubmissionTimeout is the timeout for a metrics submission request
 	MetricsSubmissionTimeout = 45 * time.Second
+
+	// PreparingMetricsText is used to indicate the system is ready preparing the metrics to send
+	PreparingMetricsText = "Preparing metrics"
 )
 
 // SetPID enhances real PID with prefix to distinguish between repeating PIDs
@@ -186,14 +189,14 @@ func (e *eventRecorder) rec(ie event) (err error) {
 }
 
 // TrySubmit events file if enabled
-func (s *Sender) TrySubmit(conf *config.Config) (int, error) {
+func (s *Sender) TrySubmit(ctx context.Context, conf *config.Config) (int, error) {
 	if !conf.EnableAnalytics {
 		return 0, errors.New(
 			"Aborting submission of analytics (analytics report status = disabled)")
 	}
 
 	verbose.Debug("Submitting analytics")
-	var lines, err = s.trySend()
+	var lines, err = s.trySend(ctx)
 
 	if err != nil {
 		return 0, errwrap.Wrapf("Can not submit analytics: {{err}}", err)
@@ -217,7 +220,7 @@ type Sender struct {
 	lines   int
 }
 
-func (s *Sender) trySend() (events int, err error) {
+func (s *Sender) trySend(ctx context.Context) (events int, err error) {
 	if err = s.read(); err != nil {
 		return 0, err
 	}
@@ -226,7 +229,7 @@ func (s *Sender) trySend() (events int, err error) {
 		return 0, nil
 	}
 
-	err = s.send()
+	err = s.send(ctx)
 	return s.lines, err
 }
 
@@ -300,6 +303,8 @@ func (s *Sender) maybeSubmitOnBackground() error {
 
 func (s *Sender) submitOnBackground() error {
 	var cmd = exec.Command(os.Args[0], "metrics", "usage", "submit")
+	var pr, pw = io.Pipe()
+	cmd.Stdout = pw
 
 	if err := cmd.Start(); err != nil {
 		return errwrap.Wrapf("Error trying to submit metrics on background: {{err}}", err)
@@ -309,7 +314,24 @@ func (s *Sender) submitOnBackground() error {
 		`Started short-lived analytics reporting background process (PID %v)
 Metrics stored in ~/.we_metrics are going to be submitted in batch to WeDeploy`,
 		cmd.Process.Pid))
-	return nil
+
+	return s.testPreparingMetrics(pr)
+}
+
+func (s *Sender) testPreparingMetrics(pr *io.PipeReader) error {
+	go func() {
+		time.Sleep(100 * time.Millisecond)
+		_ = pr.Close()
+	}()
+
+	b, _ := ioutil.ReadAll(pr)
+
+	if strings.Contains(string(b), PreparingMetricsText) {
+		verbose.Debug("CLI metrics submission process swapped in background")
+		return nil
+	}
+
+	return errors.New("maybe error when swapping metrics submission process")
 }
 
 func (s *Sender) read() (err error) {
@@ -333,15 +355,15 @@ func (s *Sender) countLines() {
 	}
 }
 
-func (s *Sender) send() (err error) {
+func (s *Sender) send(ctx context.Context) (err error) {
 	var request = wedeploy.URL(server)
 	request.Body(bytes.NewReader(s.content))
 
-	var ctx, cancelFunc = context.WithTimeout(context.Background(), MetricsSubmissionTimeout)
-	request.SetContext(ctx)
+	ctxwt, cancelFunc := context.WithTimeout(ctx, MetricsSubmissionTimeout)
+	defer cancelFunc()
+	request.SetContext(ctxwt)
 	err = request.Post()
 	verbosereq.Feedback(request)
-	cancelFunc()
 
 	return err
 }
