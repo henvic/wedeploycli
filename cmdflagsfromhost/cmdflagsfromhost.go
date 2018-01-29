@@ -240,7 +240,8 @@ func (s *SetupHost) loadValues() (err error) {
 		return errors.New("Service is not allowed for this command")
 	}
 
-	if s.service == "" && s.UseServiceDirectory && s.project == "" {
+	if s.service == "" && s.project == "" &&
+		s.UseServiceDirectory && !s.PromptMissingService {
 		s.service, err = s.getServiceFromCurrentWorkingDirectory()
 		if err != nil {
 			return err
