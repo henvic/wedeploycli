@@ -43,10 +43,6 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/henvic/pseudoterm"
-
-[[constraint]]
-  branch = "master"
   name = "github.com/henvic/uilive"
 
 [[constraint]]
