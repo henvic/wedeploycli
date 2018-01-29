@@ -1,0 +1,22 @@
+{
+  "wedeploy/auth": {
+    "name": "WeDeploy™ Auth",
+    "image": "wedeploy/auth",
+    "category": "WeDeploy™",
+    "description": "Simple authentication with email/password or third-party providers like GitHub and Google.",
+    "versions": [
+      "2.0.0"
+    ],
+    "state": "active"
+  },
+  "wedeploy/data": {
+    "name": "WeDeploy™ Data",
+    "image": "wedeploy/data",
+    "category": "WeDeploy™",
+    "description": "Scalable JSON database with search and realtime that makes building realtime apps dramatically easier.",
+    "versions": [
+      "2.0.0"
+    ],
+    "state": "active"
+  }
+}
