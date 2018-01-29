@@ -2,6 +2,6 @@ build:
   image: golang:1.9
   commands:
     - go version
-    - go test $(go list ./... | grep -v /vendor/ | grep -v /integration$) -race
+    - go test $(go list ./... | grep -v /integration$) -race
     - go test github.com/wedeploy/cli/integration
     

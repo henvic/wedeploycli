@@ -16,4 +16,4 @@ alias golintt='test -z "$(golint ./... | grep -v "^vendor" | tee /dev/stderr)"'
 
 # Run govet
 # Excluding vendor/ directory verification
-alias govet='go vet $(go list ./... | grep -v /vendor/)'
+alias govet='go vet $(go list ./...)'

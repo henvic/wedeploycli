@@ -40,7 +40,7 @@ push_to_coveralls() {
     goveralls -coverprofile="$profile"
 }
 
-generate_cover_data $(go list ./... | grep -v /vendor/)
+generate_cover_data $(go list ./...)
 show_cover_report func
 case "$1" in
 "")

@@ -10,7 +10,7 @@ get-dependencies: check-go
 
 	./scripts/deps.sh
 list-packages:
-	go list ./... | grep -v /vendor/
+	go list ./...
 build:
 	go build
 fast-test:
