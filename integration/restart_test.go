@@ -85,7 +85,7 @@ func TestRestartService(t *testing.T) {
 
 	var e = &Expect{
 		ExitCode: 0,
-		Stdout:   "Restarting service bar on project foo.",
+		Stdout:   `Restarting service "bar" on project "foo".`,
 	}
 
 	e.Assert(t, cmd)
