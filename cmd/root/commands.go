@@ -19,6 +19,7 @@ import (
 	"github.com/wedeploy/cli/cmd/log"
 	"github.com/wedeploy/cli/cmd/login"
 	"github.com/wedeploy/cli/cmd/logout"
+	"github.com/wedeploy/cli/cmd/metrics"
 	"github.com/wedeploy/cli/cmd/new"
 	"github.com/wedeploy/cli/cmd/open"
 	"github.com/wedeploy/cli/cmd/remote"
@@ -54,5 +55,6 @@ var commands = []*cobra.Command{
 	gitcredentialhelper.GitCredentialHelperCmd,
 	uninstall.UninstallCmd,
 	about.AboutCmd,
+	metrics.MetricsCmd,
 	curl.CurlCmd,
 }
