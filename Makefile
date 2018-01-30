@@ -1,8 +1,10 @@
-.SILENT: main get-dependencies list-packages build fast-test test build-integration-tests tag release promote check-go check-cli-release-config-path
-.PHONY: get-dependencies list-packages build fast-test test build-integration-tests tag release promote
+.SILENT: main development-environment get-dependencies list-packages build fast-test test build-integration-tests tag release promote check-go check-cli-release-config-path
+.PHONY: development-environment get-dependencies list-packages build fast-test test build-integration-tests tag release promote
 main:
 	echo "WeDeploy CLI build tool commands:"
-	echo "get-dependencies, list-packages, build, fast-test, test, tag, release, promote"
+	echo "development-environment, get-dependencies, list-packages, build, fast-test, test, tag, release, promote"
+development-environment:
+	./scripts/development-environment.sh
 get-dependencies: check-go
 	if ! which dep &> /dev/null; \
 	then >&2 echo "Install dep to manage dependencies with go get -u github.com/golang/dep/cmd/dep"; \
