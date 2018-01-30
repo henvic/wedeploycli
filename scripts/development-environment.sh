@@ -92,7 +92,7 @@ function tipGoVisualCode() {
   echo "Then use it to install the Go extension or install it using the CLI:"
   echo "\"code --install-extension lukehoban.Go\""
 
-  if [ $UNAME -eq "Darwin" ] ; then
+  if [ $UNAME == "darwin" ] ; then
     echo "For macOS, you must install the Go debugger for Visual Studio Code manually."
     echo "Please see https://github.com/Microsoft/vscode-go/wiki/Debugging-Go-code-using-VS-Code"
     echo "and https://github.com/go-delve/homebrew-delve/issues/19"
