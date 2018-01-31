@@ -5,10 +5,28 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-function checkCONT() {
-  if [[ $CONT != "y" && $CONT != "yes" ]]; then
-    exit 1
+function checkNoCONT() {
+  if [[ $WE_DEVENV_CONT == "n" || $WE_DEVENV_CONT == "no" ]]; then
+    return
   fi
+
+  exit 1
+}
+
+function checkYesCONT() {
+  if [[ $WE_DEVENV_CONT == "y" || $WE_DEVENV_CONT == "yes" ]]; then
+    return
+  fi
+
+  exit 1
+}
+
+function welcome() {
+  echo "WeDeploy Command-Line-Interface Development Environment installer."
+  echo ""
+  echo "This program tries to install and verify all necessary dependencies for doing CLI development."
+  echo "It should work on Linux and macOS and either guide the user through the instalation process."
+  echo ""
 }
 
 function passGit() {
@@ -18,15 +36,15 @@ function passGit() {
     return
   fi
 
-  (which xcode-select >> /dev/null) && ecbrew=$? || ecbrew=$?
+  (which xcode-select >> /dev/null) && WE_DEV_ENV_ECBREW=$? || WE_DEV_ENV_ECBREW=$?
   if [ $ecxcode -ne 0 ] ; then
     >&2 echo "Git wasn't found. Install it with your package manager or download it from"
     >&2 echo "https://git-scm.com"
     exit 1
   fi
 
-  read -p "Git wasn't found. Install Command Lines Tools using Xcode? [no]: " CONT < /dev/tty
-  checkCONT
+  read -p "Git wasn't found. Install Command Lines Tools using Xcode? [yes]: " WE_DEVENV_CONT < /dev/tty
+  checkYesCONT
   xcode-select --install
 }
 
@@ -37,15 +55,19 @@ function passGo() {
     return
   fi
 
-  if [ $ecbrew -ne 0 ] ; then
+  if [ $WE_DEV_ENV_ECBREW -ne 0 ] ; then
     >&2 echo "Go wasn't found. Install it with your package manager or download it from"
     >&2 echo "https://golang.org"
     exit 1
   fi
 
-  read -p "Go wasn't found. Install Go with brew? [no]: " CONT < /dev/tty
-  checkCONT
+  read -p "Go wasn't found. Install Go with brew? [yes]: " WE_DEVENV_CONT < /dev/tty
+  checkYesCONT
   brew install go
+}
+
+function passVimExtension() {
+  echo "If you use the Vim editor, see https://github.com/fatih/vim-go"
 }
 
 function passGoVisualCodeExtension() {
@@ -60,11 +82,18 @@ function passGoVisualCodeExtension() {
 }
 
 function installGoVisualCodeExtension() {
-  echo "Installing Go extension for Visual Studio Code."
-  # don't ask for doing 'Go: Install/Update Tools' on VS because the user is probably going to be prompted soon
-  code --install-extension lukehoban.Go
+  (code --list-extensions | grep ^lukehoban.Go$ >> /dev/null) && ec=$? || ec=$?
 
-  if [ $ecbrew -eq 0 ] ; then
+  if [ $ec -eq 0 ] ; then
+    echo "Skipping installing Visual Studio Code extension for Go (already installed)."
+    return
+  fi
+
+  echo "Installing Go extension for Visual Studio Code."
+  code --install-extension lukehoban.Go
+  # don't ask for doing 'Go: Install/Update Tools' on VS because the user is probably going to be prompted soon
+
+  if [ $ec -eq 0 ] ; then
     maybeInstallDelveOnMac
   fi
 }
@@ -77,8 +106,8 @@ function maybeInstallDelveOnMac() {
     return
   fi
 
-  read -p "Installing the debugger adds a self-signed certificate on your keychain. Continue? [no]: " CONT < /dev/tty
-  checkCONT
+  read -p "Installing the debugger adds a self-signed certificate on your keychain. Continue? [yes]: " WE_DEVENV_CONT < /dev/tty
+  checkYesCONT
 
   echo "Installing debugger for macOS"
   curl https://raw.githubusercontent.com/derekparker/delve/master/scripts/gencert.sh | bash
@@ -92,7 +121,7 @@ function tipGoVisualCode() {
   echo "Then use it to install the Go extension or install it using the CLI:"
   echo "\"code --install-extension lukehoban.Go\""
 
-  if [ $UNAME == "darwin" ] ; then
+  if [ $WE_DEVENV_UNAME == "darwin" ] ; then
     echo "For macOS, you must install the Go debugger for Visual Studio Code manually."
     echo "Please see https://github.com/Microsoft/vscode-go/wiki/Debugging-Go-code-using-VS-Code"
     echo "and https://github.com/go-delve/homebrew-delve/issues/19"
@@ -103,12 +132,12 @@ function tipGoVisualCode() {
     # https://github.com/Microsoft/vscode-go/wiki/Debugging-Go-code-using-VS-Code
   fi
 
-  read -p "Continue? [no]: " CONT < /dev/tty
-  checkCONT
+  read -p "Continue? [yes]: " WE_DEVENV_CONT < /dev/tty
+  checkYesCONT
 }
 
 function setupGopath() {
-  GOPATH=${GOPATH:-""}
+  export GOPATH=${GOPATH:-""}
   
   if [ ! -z $GOPATH ] ; then
     echo "Skipping setting \$GOPATH. \$GOPATH is already set to $GOPATH"
@@ -120,146 +149,114 @@ function setupGopath() {
   echo
   echo "GOPATH is the location where your Go ecosystem/files should live (including this repository)."
   echo "After you set GOPATH the following directory \$GOPATH/bin will also be added on your \$PATH"
-  read -p "Set GOPATH [default: ~/go]: " gp < /dev/tty;
-  GP_TMP_SET=true
-  GP_TEMP=${GP_TEMP:-$HOME/go}
-  export GOPATH=$GP_TEMP
+  read -p "Set \$GOPATH [default: ~/go]: " gp < /dev/tty;
+  WE_DEVENV_NEW_GOPATH_SET=true
+  export GOPATH=${GOPATH:-$HOME/go}
   
-  if [ -f $HOME/.bash_profile ] ; then
-    echo "export GOPATH=$GP_TEMP" >> $HOME/.zshrc
-  fi
-
-  if [ -f $HOME/.bashrc ] ; then
-    echo "export GOPATH=$GP_TEMP" >> $HOME/.bashrc
-  fi
+  echo "export GOPATH=$GOPATH" >> $HOME/.bashrc
 
   if [ -f $HOME/.zshrc ] ; then
-    echo "export GOPATH=$GP_TEMP" >> $HOME/.zshrc
+    echo "export GOPATH=$GOPATH" >> $HOME/.zshrc
   fi
 
   if [ -f $HOME/.config/fish/config.fish ] ; then
-    echo "set -x GOPATH $GP_TEMP" >> $HOME/.config/fish/config.fish
+    echo "set -x GOPATH $GOPATH" >> $HOME/.config/fish/config.fish
   fi
 
   mkdir -p $GOPATH/bin
   mkdir -p $GOPATH/src/github.com/wedeploy
 
   case ":$PATH:" in
-    *:$GP_TEMP/bin:*) return;;
+    *:$GOPATH/bin:*) return;;
     *)
-      export PATH=$GP_TEMP/bin:\$PATH
+      export PATH=$GOPATH/bin:$PATH
 
-      if [ -f $HOME/.bash_profile ] ; then
-        echo "export PATH=$GP_TEMP/bin:\$PATH" >> $HOME/.bash_profile
-      fi
-
-      if [ -f $HOME/.bashrc ] ; then
-        echo "export PATH=$GP_TEMP/bin:\$PATH" >> $HOME/.bashrc
-      fi
+      echo "export PATH=$GOPATH/bin:\$PATH" >> $HOME/.bashrc
 
       if [ -f $HOME/.zshrc ] ; then
-        echo "export PATH=$GP_TEMP/bin:\$PATH" >> $HOME/.zshrc
+        echo "export PATH=$GOPATH/bin:\$PATH" >> $HOME/.zshrc
       fi
 
       if [ -f $HOME/.config/fish/config.fish ] ; then
-        echo "set -x PATH $GP_TEMP/bin:\$PATH" >> $HOME/.config/fish/config.fish
+        echo "set -x PATH $GOPATH/bin:\$PATH" >> $HOME/.config/fish/config.fish
       fi
     ;;
   esac
 }
 
-function setupIAlias() {
-  (which i >> /dev/null) && ec=$? || ec=$?
-
-  if [ $ec -eq 0 ] ; then
-    echo "Skipping setting alias \"i\". It is already in use"
-    which i
-    return
-  fi
-
-  GP_TMP_SET=true
-
-  if [ -f $HOME/.bash_profile ] ; then
-    echo "alias i=\"\$GOPATH/src/github.com/wedeploy/cli/scripts/build-run.sh \$@\"" >> $HOME/.bash_profile
-  fi
-
-  if [ -f $HOME/.bashrc ] ; then
-    echo "alias i=\"\$GOPATH/src/github.com/wedeploy/cli/scripts/build-run.sh \$@\"" >> $HOME/.bashrc
-  fi
-
-  if [ -f $HOME/.zshrc ] ; then
-    echo "alias i=\"\$GOPATH/src/github.com/wedeploy/cli/scripts/build-run.sh \$@\"" >> $HOME/.zshrc
-  fi
-
-  if [ -f $HOME/.config/fish/config.fish ] ; then
-    echo "alias i=\"\$GOPATH/src/github.com/wedeploy/cli/scripts/build-run.sh \$argv[2..-1]\"" >> $HOME/.config/fish/config.fish
+function setupI() {
+  if [ ! -f $GOPATH/bin/i ] ; then
+    ln -s $GOPATH/src/github.com/wedeploy/cli/scripts/build-run.sh $GOPATH/bin/i
   fi
 }
 
 function passGoDevDependencies() {
-  echo "Installing developer dependencies:"
+  echo "Installing developer tools."
   
-  echo "vendorlicenses (github.com/henvic/vendorlicenses)"
+  echo "vendorlicenses https://github.com/henvic/vendorlicenses"
   go get -u github.com/henvic/vendorlicenses
   
-  echo "errcheck (github.com/kisielk/errcheck)"
+  echo "errcheck https://github.com/kisielk/errcheck"
   go get -u github.com/kisielk/errcheck
   
-  echo "golint (github.com/golang/lint/golint)"
+  echo "golint https://github.com/golang/lint/golint"
   go get -u github.com/golang/lint/golint
   
-  echo "megacheck (https://github.com/dominikh/go-tools/tree/master/cmd/megacheck)"
+  echo "megacheck https://github.com/dominikh/go-tools/tree/master/cmd/megacheck"
   go get -u honnef.co/go/tools/cmd/megacheck
 }
 
 function maybeMoveToGopathDir() {
-  BN=$(basename $PWD)
-  WEDEPLOY_GO_DIR=$GOPATH/src/github.com/wedeploy
+  WE_DEVENV_BN=$(basename $PWD)
+  WE_DEVENV_GO_DIR=$GOPATH/src/github.com/wedeploy
 
-  if [ $PWD = $WEDEPLOY_GO_DIR/cli ] ; then
+  if [ $PWD = $WE_DEVENV_GO_DIR/cli ] ; then
     return
   fi
 
   echo "You need to keep Go code together inside your \$GOPATH respecting Go package paths schema."
-  echo "Therefore, the CLI package is going to be moved from $PWD to $WEDEPLOY_GO_DIR."
-  read -p "Continue? [no]: " CONT < /dev/tty
-  checkCONT
+  echo "Therefore, the CLI package is going to be moved from $PWD to $WE_DEVENV_GO_DIR."
+  read -p "Continue? [yes]: " WE_DEVENV_CONT < /dev/tty
+  checkYesCONT
   
-  if [ -f $WEDEPLOY_GO_DIR/cli ] ; then
-    >&2 echo "A directory already exists for this package on your \$GOPATH: $WEDEPLOY_GO_DIR/cli. Aborting."
+  if [ -f $WE_DEVENV_GO_DIR/cli ] ; then
+    >&2 echo "A directory already exists for this package on your \$GOPATH: $WE_DEVENV_GO_DIR/cli. Aborting."
     exit 1
   fi
 
-  mv ../$BN $WEDEPLOY_GO_DIR/cli
-  echo "Project moved to $WEDEPLOY_GO_DIR/cli"
+  mv ../$WE_DEVENV_BN $WE_DEVENV_GO_DIR/cli
+  echo "Project moved to $WE_DEVENV_GO_DIR/cli"
 }
 
 function infoRenewShell() {
-  if [ $GP_TMP_SET == true ] ; then
-    echo "The following environment variables \$GOPATH and \$PATH and the alias \"i\" were created or modified."
-    echo "You must now either close and reopen all shells to start using them or call these commands:"
+  echo "Compile and immediately run the CLI program by using \"i\" instead of \"we\" from inside any directory."
+  echo "For example: instead of using \"we list\" to list your services, use \"i list\" like this:"
+  echo
+  echo "$ i list --help"
+  bash -c "i deploy --help"
+
+  if [[ $WE_DEVENV_NEW_GOPATH_SET == true ]] ; then
+    echo
+    echo "The following environment variables \$GOPATH and \$PATH were created:"
     echo "export GOPATH=$GOPATH"
     echo "export PATH=$GOPATH/bin:\$PATH"
-    echo "alias i=\"\$GOPATH/src/github.com/wedeploy/cli/scripts/build-run.sh \$@\""
+    echo
+    echo "You might need to open a new shell after this to start using the \"i\" command."
   fi
-
-  echo
-  echo "Once you are ready try to compile the software by running \"go build\" and then executing \"./cli\""
-  echo "To compile and immediately run the CLI program you can run \"i\" instead of \"we\" in any directory on your shell."
 }
 
-GP_TMP=$HOME/go
-GP_TMP_SET=false
-UNAME=$(uname | tr '[:upper:]' '[:lower:]')
+WE_DEVENV_NEW_GOPATH_SET=false
+WE_DEVENV_UNAME=$(uname | tr '[:upper:]' '[:lower:]')
 cd $(dirname $0)/..
-(which brew >> /dev/null) && ecbrew=$? || ecbrew=$?
+(which brew >> /dev/null) && WE_DEV_ENV_ECBREW=$? || WE_DEV_ENV_ECBREW=$?
 
+welcome
 passGit
 passGo
-echo "If you use the Vim editor, see https://github.com/fatih/vim-go"
+passVimExtension
 passGoVisualCodeExtension
 setupGopath
-setupIAlias
+setupI
 passGoDevDependencies
 maybeMoveToGopathDir
 infoRenewShell
