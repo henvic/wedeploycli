@@ -194,7 +194,7 @@ function passGoDevDependencies() {
   echo "Installing developer tools."
   
   echo "vendorlicenses https://github.com/henvic/vendorlicenses"
-  go get -u github.com/henvic/vendorlicenses
+  go get -u github.com/henvic/vendorlicenses/cmd/vendorlicenses
   
   echo "errcheck https://github.com/kisielk/errcheck"
   go get -u github.com/kisielk/errcheck
