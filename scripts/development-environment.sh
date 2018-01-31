@@ -23,9 +23,7 @@ function checkYesCONT() {
 
 function welcome() {
   echo "WeDeploy Command-Line-Interface Development Environment installer."
-  echo ""
   echo "This program tries to install and verify all necessary dependencies for doing CLI development."
-  echo "It should work on Linux and macOS and either guide the user through the instalation process."
   echo ""
 }
 
@@ -144,44 +142,64 @@ function setupGopath() {
     return
   fi
 
-  echo "You must set the \$GOPATH environment variable now."
-  echo "More information on https://golang.org/doc/code.html#GOPATH"
+  echo "You must set the \$GOPATH environment variable now (see https://golang.org/doc/code.html#GOPATH)."
   echo
-  echo "GOPATH is the location where your Go ecosystem/files should live (including this repository)."
-  echo "After you set GOPATH the following directory \$GOPATH/bin will also be added on your \$PATH"
+  echo "GOPATH is the location where your Go ecosystem/files lives. \$GOPATH/bin will also be added on your \$PATH."
   read -p "Set \$GOPATH [default: ~/go]: " gp < /dev/tty;
   WE_DEVENV_NEW_GOPATH_SET=true
   export GOPATH=${GOPATH:-$HOME/go}
-  
-  echo "export GOPATH=$GOPATH" >> $HOME/.bashrc
+
+  [ -f $HOME/.bashrc ] && (cat $HOME/.bashrc | grep "^export GOPATH=$GOPATH$" >> /dev/null) && ec=$? || ec=$?
+
+  if [ $ec -ne 0 ] ; then
+    echo "export GOPATH=$GOPATH" >> $HOME/.bashrc
+  fi
 
   if [ -f $HOME/.zshrc ] ; then
-    echo "export GOPATH=$GOPATH" >> $HOME/.zshrc
+    [ -f $HOME/.zshrc ] && (cat $HOME/.zshrc | grep "^export GOPATH=$GOPATH$" >> /dev/null) && ec=$? || ec=$?
+
+    if [ $ec -ne 0 ] ; then
+      echo "export GOPATH=$GOPATH" >> $HOME/.zshrc
+    fi
   fi
 
   if [ -f $HOME/.config/fish/config.fish ] ; then
-    echo "set -x GOPATH $GOPATH" >> $HOME/.config/fish/config.fish
+    (cat $HOME/.config/fish/config.fish | grep "^set -x GOPATH $GOPATH$" >> /dev/null) && ec=$? || ec=$?
+
+    if [ $ec -ne 0 ] ; then
+      echo "set -x GOPATH $GOPATH" >> $HOME/.config/fish/config.fish
+    fi
   fi
 
   mkdir -p $GOPATH/bin
   mkdir -p $GOPATH/src/github.com/wedeploy
 
   case ":$PATH:" in
-    *:$GOPATH/bin:*) return;;
-    *)
-      export PATH=$GOPATH/bin:$PATH
-
-      echo "export PATH=$GOPATH/bin:\$PATH" >> $HOME/.bashrc
-
-      if [ -f $HOME/.zshrc ] ; then
-        echo "export PATH=$GOPATH/bin:\$PATH" >> $HOME/.zshrc
-      fi
-
-      if [ -f $HOME/.config/fish/config.fish ] ; then
-        echo "set -x PATH $GOPATH/bin:\$PATH" >> $HOME/.config/fish/config.fish
-      fi
-    ;;
+    *:$GOPATH/bin:*)
+      return;;
   esac
+
+  export PATH=$GOPATH/bin:$PATH
+
+  [ -f $HOME/.bashrc ] && (cat $HOME/.bashrc | grep "^export PATH=\$GOPATH/bin:\$PATH$" >> /dev/null) && ec=$? || ec=$?
+
+  if [ $ec -ne 0 ] ; then
+    echo "export PATH=\$GOPATH/bin:\$PATH" >> $HOME/.bashrc
+  fi
+
+  [ -f $HOME/.zshrc ] && (cat $HOME/.zshrc | grep "^export PATH=\$GOPATH/bin:\$PATH$" >> /dev/null) && ec=$? || ec=$?
+
+  if [ $ec -ne 0 ] ; then
+    echo "export PATH=\$GOPATH/bin:\$PATH" >> $HOME/.zshrc
+  fi
+
+  if [ -f $HOME/.config/fish/config.fish ] ; then
+    (cat $HOME/.config/fish/config.fish | grep "^set -x PATH \$GOPATH/bin:\$PATH$" >> /dev/null) && ec=$? || ec=$?
+
+    if [ $ec -ne 0 ] ; then
+      echo "set -x PATH \$GOPATH/bin:\$PATH" >> $HOME/.config/fish/config.fish
+    fi
+  fi
 }
 
 function setupI() {
@@ -237,11 +255,9 @@ function infoRenewShell() {
 
   if [[ $WE_DEVENV_NEW_GOPATH_SET == true ]] ; then
     echo
-    echo "The following environment variables \$GOPATH and \$PATH were created:"
+    echo "Copy these two lines below on your shell or open a new one to start programming and to use the \"i\" command:"
     echo "export GOPATH=$GOPATH"
-    echo "export PATH=$GOPATH/bin:\$PATH"
-    echo
-    echo "You might need to open a new shell after this to start using the \"i\" command."
+    echo "export PATH=\$GOPATH/bin:\$PATH"
   fi
 }
 
