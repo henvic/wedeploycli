@@ -12,6 +12,7 @@ import (
 	"gopkg.in/ini.v1"
 
 	"github.com/hashicorp/errwrap"
+	version "github.com/hashicorp/go-version"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/remotes"
@@ -268,7 +269,29 @@ func (c *Config) read() error {
 	}
 
 	c.readRemotes()
+	c.checkNextVersionCacheIsNewer()
+
 	return nil
+}
+
+func (c *Config) checkNextVersionCacheIsNewer() {
+	vThis, err := version.NewVersion(defaults.Version)
+
+	if err != nil {
+		verbose.Debug(err)
+		return
+	}
+
+	vNext, err := version.NewVersion(c.NextVersion)
+
+	if err != nil {
+		verbose.Debug(err)
+		return
+	}
+
+	if vThis.GreaterThan(vNext) {
+		c.NextVersion = ""
+	}
 }
 
 func parseRemoteSectionName(parsable string) (parsed string, is bool) {
