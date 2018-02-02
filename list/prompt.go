@@ -44,7 +44,13 @@ func (l *List) PromptProject(ctx context.Context, wectx config.Context) (*Select
 		}
 	}
 
-	return l.getSelection(option)
+	selection, err := l.getSelection(option)
+
+	if err == nil {
+		fmt.Println("")
+	}
+
+	return selection, err
 }
 
 // PromptProjectOrService from the list selection
@@ -69,7 +75,13 @@ func (l *List) PromptProjectOrService(ctx context.Context, wectx config.Context)
 		return nil, errors.New("no selection")
 	}
 
-	return l.selectPromptProjectOrService(option, l.Projects)
+	selection, err := l.selectPromptProjectOrService(option, l.Projects)
+
+	if err == nil {
+		fmt.Println("")
+	}
+
+	return selection, err
 }
 
 func (l *List) selectPromptProjectOrService(option string, projects []projects.Project) (*Selection, error) {
@@ -157,7 +169,13 @@ func (l *List) PromptService(ctx context.Context, wectx config.Context) (*Select
 		return nil, errors.New("no selection")
 	}
 
-	return l.selectPromptService(option, l.Projects)
+	selection, err := l.selectPromptService(option, l.Projects)
+
+	if err == nil {
+		fmt.Println("")
+	}
+
+	return selection, err
 }
 
 func (l *List) selectPromptService(option string, projects []projects.Project) (*Selection, error) {
