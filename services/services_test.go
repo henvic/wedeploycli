@@ -519,6 +519,43 @@ func TestUnsetEnvironmentVariable(t *testing.T) {
 	servertest.Teardown()
 }
 
+func TestScale(t *testing.T) {
+	servertest.Setup()
+
+	servertest.Mux.HandleFunc("/projects/foo/services/bar/scale",
+		func(w http.ResponseWriter, r *http.Request) {
+			var body, err = ioutil.ReadAll(r.Body)
+
+			if err != nil {
+				t.Error(err)
+			}
+
+			var data map[string]json.RawMessage
+
+			err = json.Unmarshal(body, &data)
+
+			if err != nil {
+				t.Error(err)
+			}
+
+			jsonlib.AssertJSONMarshal(t,
+				`{"value": 10}`,
+				data)
+
+			w.WriteHeader(http.StatusNoContent)
+		})
+
+	var scale = Scale{
+		Current: 10,
+	}
+
+	if err := client.Scale(context.Background(), "foo", "bar", scale); err != nil {
+		t.Errorf("Unexpected error on setting service scale: %v", err)
+	}
+
+	servertest.Teardown()
+}
+
 func TestRestart(t *testing.T) {
 	servertest.Setup()
 

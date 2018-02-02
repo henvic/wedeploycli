@@ -565,6 +565,30 @@ func (c *Client) UnsetEnvironmentVariable(ctx context.Context, projectID, servic
 	return apihelper.Validate(req, req.Delete())
 }
 
+// Scale of the service
+type Scale struct {
+	Current int `json:"value"`
+}
+
+// Scale sets the scale for a given service
+func (c *Client) Scale(ctx context.Context, projectID, serviceID string, s Scale) (err error) {
+	var req = c.Client.URL(ctx,
+		"/projects",
+		url.QueryEscape(projectID),
+		"/services",
+		url.QueryEscape(serviceID),
+		"/scale")
+	c.Client.Auth(req)
+
+	err = apihelper.SetBody(req, &s)
+
+	if err != nil {
+		return err
+	}
+
+	return apihelper.Validate(req, req.Patch())
+}
+
 // Restart restarts a service inside a project
 func (c *Client) Restart(ctx context.Context, projectID, serviceID string) error {
 	var req = c.Client.URL(ctx, "/projects/"+
