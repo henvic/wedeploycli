@@ -150,6 +150,19 @@ function setEditor() {
 }
 
 function tag() {
+  (which gpg >> /dev/null) && ec=$? || ec=$?
+
+  if [ ! $ec -eq 0 ] ; then
+    >&2 echo "GPG is required to tag signed releases with git. Install it on your system."
+
+    if [ $(uname) == "Darwin" ] ; then
+      >&2 echo "Tip: on macOS use https://gpgtools.org instead of \"brew\" to install it."
+    fi
+
+
+    exit 1
+  fi
+
   echo "Waiting for a ChangeLog / release summary."
 
   if [ $OVERWRITE_TAG == true ] ; then
