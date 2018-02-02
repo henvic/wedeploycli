@@ -46,7 +46,7 @@ var LogCmd = &cobra.Command{
   we log --service data
   we log --project chat --service data
   we log --url data-chat.wedeploy.io
-  we log --url data-chat.wedeploy.io --instance abc`,
+  we log --url data-chat.wedeploy.io --instance 10ab22`,
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
