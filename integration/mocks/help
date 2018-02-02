@@ -9,6 +9,7 @@
   log              Show logs of the services
   domain           Show and configure domain names for services
   env              Show and configure environment variables for services
+  scale            Configure number of instances for services
   restart          Restart services
   delete           Delete project or services
   login            Login into your account

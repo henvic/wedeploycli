@@ -24,6 +24,7 @@ import (
 	"github.com/wedeploy/cli/cmd/open"
 	"github.com/wedeploy/cli/cmd/remote"
 	"github.com/wedeploy/cli/cmd/restart"
+	"github.com/wedeploy/cli/cmd/scale"
 	"github.com/wedeploy/cli/cmd/uninstall"
 	"github.com/wedeploy/cli/cmd/update"
 	versioncmd "github.com/wedeploy/cli/cmd/version"
@@ -41,6 +42,7 @@ var commands = []*cobra.Command{
 	log.LogCmd,
 	domain.DomainCmd,
 	env.EnvCmd,
+	scale.ScaleCmd,
 	restart.RestartCmd,
 	delete.DeleteCmd,
 	login.LoginCmd,
