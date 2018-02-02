@@ -3,6 +3,8 @@ package template
 import (
 	"bytes"
 	"fmt"
+	"reflect"
+	"runtime"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -14,14 +16,13 @@ import (
 // Configure template for cobra commands
 func Configure(rootCmd *cobra.Command) {
 	cobra.AddTemplateFunc("printCommandsAndFlags", printCommandsAndFlags)
-	rootCmd.SetUsageTemplate(`{{printCommandsAndFlags .UseLine .Example .Commands .Flags}}`)
+	rootCmd.SetUsageTemplate(`{{printCommandsAndFlags .}}`)
 	rootCmd.SetHelpTemplate(`{{if not (eq .CommandPath "` + rootCmd.Name() + `")}}{{with or .Long .Short }}{{color FgYellow BgHiYellow "!"}} {{. | trim | color FgHiYellow}}
 {{end}}{{end}}{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}`)
 }
 
 type usagePrinter struct {
-	useLine             string
-	example             string
+	cmd                 *cobra.Command
 	cs                  []*cobra.Command
 	f                   *pflag.FlagSet
 	buf                 *bytes.Buffer
@@ -48,17 +49,14 @@ func colorSpacingOffset() string {
 	return ""
 }
 
-func printCommandsAndFlags(useLine, example string, cs []*cobra.Command, f *pflag.FlagSet) string {
-	useLine = strings.TrimSuffix(useLine, " [flags]")
-
+func printCommandsAndFlags(cmd *cobra.Command) string {
 	up := &usagePrinter{
-		useLine: useLine,
-		example: example,
-		cs:      cs,
-		f:       f,
+		cmd: cmd,
+		cs:  cmd.Commands(),
+		f:   cmd.Flags(),
 	}
 
-	switch longHelp, err := f.GetBool("long-help"); {
+	switch longHelp, err := up.f.GetBool("long-help"); {
 	case err != nil:
 		panic(err)
 	case longHelp:
@@ -80,16 +78,22 @@ func (up *usagePrinter) printCommands() {
 		cmdPart = ""
 	}
 
-	fmt.Fprintf(up.buf, "%s%s",
-		color.Format(color.Reset, "!"),
-		fmt.Sprintf("%v\n", color.Format(color.FgHiBlack,
-			fmt.Sprintf(" Usage: %s%s [flag]", up.useLine, cmdPart))))
+	usage := fmt.Sprintf(" Usage: %s%s [flag]",
+		strings.TrimSuffix(up.cmd.UseLine(), " [flags]"),
+		cmdPart)
 
-	if up.example != "" {
+	if up.cmd.Args == nil || runtime.FuncForPC(reflect.ValueOf(up.cmd.Args).Pointer()).Name() !=
+		runtime.FuncForPC(reflect.ValueOf(cobra.NoArgs).Pointer()).Name() {
+		usage += " [<args>]"
+	}
+
+	fmt.Fprintf(up.buf, "%s%s\n", color.Format(color.Reset, "!"), color.Format(color.FgHiBlack, usage))
+
+	if up.cmd.Example != "" {
 		fmt.Fprintf(up.buf,
 			"%s%s\n\n",
 			color.Format(color.FgHiYellow, "  Examples:\n"),
-			up.example,
+			up.cmd.Example,
 		)
 	}
 
