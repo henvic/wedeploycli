@@ -24,8 +24,7 @@ var DomainCmd = &cobra.Command{
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern:             cmdflagsfromhost.FullHostPattern,
-	UseServiceDirectory: true,
+	Pattern: cmdflagsfromhost.FullHostPattern,
 	Requires: cmdflagsfromhost.Requires{
 		Auth:    true,
 		Project: true,

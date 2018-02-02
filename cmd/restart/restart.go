@@ -15,6 +15,7 @@ import (
 var RestartCmd = &cobra.Command{
 	Use:     "restart",
 	Short:   "Restart services",
+	Args:    cobra.NoArgs,
 	PreRunE: preRun,
 	RunE:    restartRun,
 	Example: `  we restart --project chat --service data
@@ -32,6 +33,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 	},
 
 	PromptMissingProject: true,
+	PromptMissingService: true,
 }
 
 func init() {
