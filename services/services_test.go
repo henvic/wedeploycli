@@ -43,6 +43,35 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+func TestServiceTypeHelper(t *testing.T) {
+	var s = Service{
+		ServiceID: "abc",
+		Image:     "off",
+	}
+
+	var want = "off"
+	var got = s.Type()
+
+	if want != got {
+		t.Errorf("Expected type to be shown as %v, got %v instead", want, got)
+	}
+}
+
+func TestServiceTypeHelperHint(t *testing.T) {
+	var s = Service{
+		ServiceID: "abc",
+		Image:     "off",
+		ImageHint: "on",
+	}
+
+	var want = "on"
+	var got = s.Type()
+
+	if want != got {
+		t.Errorf("Expected type to be shown as %v, got %v instead", want, got)
+	}
+}
+
 func TestGetListFromDirectory(t *testing.T) {
 	var services, err = GetListFromDirectory("mocks/app")
 

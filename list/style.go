@@ -155,16 +155,6 @@ func (l *List) printProject(p projects.Project) {
 	}
 }
 
-func (l *List) printImage(s services.Service) {
-	var image = s.ImageHint
-
-	if image == "" {
-		image = s.Image
-	}
-
-	l.Printf("%v\t", image)
-}
-
 func (l *List) printService(projectID string, s services.Service) {
 	if l.SelectNumber {
 		l.selectors = append(l.selectors, Selection{
@@ -176,7 +166,7 @@ func (l *List) printService(projectID string, s services.Service) {
 	}
 
 	l.Printf("%v\t%v\t", projectID, l.getServiceDomain(projectID, s.ServiceID))
-	l.printImage(s)
+	l.Printf("%v\t", s.Type())
 	l.Printf("%v\t", s.Health)
 	l.printInstances(s.Scale)
 

@@ -93,6 +93,15 @@ type Service struct {
 	Memory        json.Number       `json:"memory,omitempty"`
 }
 
+// Type returns the image hint or the image
+func (s *Service) Type() string {
+	if s.ImageHint != "" {
+		return s.ImageHint
+	}
+
+	return s.Image
+}
+
 // ServicePackage is the structure for wedeploy.json
 type ServicePackage struct {
 	ID            string            `json:"id,omitempty"`
