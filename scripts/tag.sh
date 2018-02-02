@@ -159,7 +159,6 @@ function tag() {
       >&2 echo "Tip: on macOS use https://gpgtools.org instead of \"brew\" to install it."
     fi
 
-
     exit 1
   fi
 
