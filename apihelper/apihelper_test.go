@@ -190,6 +190,28 @@ func TestAPIFaultGet(t *testing.T) {
 	}
 }
 
+func TestAPIFaultContextMissingMessage(t *testing.T) {
+	var e = &APIFault{
+		Status:  404,
+		Message: "Resource Not Found",
+		Errors: APIFaultErrors{
+			APIFaultError{
+				Reason: "x",
+				Context: APIFaultErrorContext{
+					"other": "abc",
+				},
+			},
+		},
+	}
+
+	var want = "Reason (missing friendly message): x"
+	var got = e.Error()
+
+	if got != want {
+		t.Errorf("Wanted reason to be %v, got %v", want, got)
+	}
+}
+
 func TestAPIFaultGetNotFound(t *testing.T) {
 	var e = &APIFault{
 		Status:  404,

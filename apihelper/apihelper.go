@@ -55,7 +55,12 @@ func (a APIFault) Error() string {
 	}
 
 	for _, value := range a.Errors {
-		s = append(s, fmt.Sprintf("%v", value.Context.Message()))
+		switch em := value.Context.Message(); em {
+		case "":
+			s = append(s, fmt.Sprintf("Reason (missing friendly message): %v", value.Reason))
+		default:
+			s = append(s, fmt.Sprintf("%v", em))
+		}
 	}
 
 	return strings.Join(s, "; ")
@@ -132,7 +137,13 @@ func (c APIFaultErrorContext) Message() string {
 		return ""
 	}
 
-	return fmt.Sprintf("%v", c["message"])
+	m, ok := c["message"]
+
+	if !ok {
+		return ""
+	}
+
+	return fmt.Sprintf("%v", m)
 }
 
 var (
@@ -263,10 +274,10 @@ func reportHTTPError(request *wedeploy.WeDeploy) error {
 		return err
 	}
 
-	var jsonErr bool
-	jsonErr, err = reportHTTPErrorTryJSON(request, body)
+	var isJSONErr bool
+	isJSONErr, err = reportHTTPErrorTryJSON(request, body)
 
-	if err == nil || jsonErr {
+	if err == nil || isJSONErr {
 		return reportHTTPErrorNotJSON(request, body)
 	}
 
