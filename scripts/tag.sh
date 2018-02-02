@@ -145,7 +145,7 @@ function runTestsOnDrone() {
 
 function setEditor() {
   editor="${EDITOR:editor}"
-  editor=$(git config core.editor)
+  editor=$(git config core.editor) || true
   editor="${editor:-vi}"
 }
 
