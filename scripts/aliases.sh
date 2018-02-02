@@ -1,8 +1,10 @@
 #!/bin/bash
 
-# Run code without building by invoking "i"
+# Run code without building by invoking "i" (commented on purpose)
+# A better alternative is to create a symbolic link to this file,
+# like "make development-environment.sh" does
 # e.g., "i link" instead of "we link"
-alias i="$GOPATH/src/github.com/wedeploy/cli/scripts/build-run.sh $@"
+# alias i="$GOPATH/src/github.com/wedeploy/cli/scripts/build-run.sh $@"
 
 # Run go tests and generate test coverage for the current directory
 alias gotest='go test -race -coverprofile=coverage.out && go tool cover -html coverage.out -o coverage.html'
