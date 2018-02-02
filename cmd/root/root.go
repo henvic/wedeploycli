@@ -23,6 +23,7 @@ import (
 var Cmd = &cobra.Command{
 	Use:               "we",
 	Short:             "WeDeploy CLI Tool",
+	Args:              cobra.NoArgs,
 	PersistentPreRunE: persistentPreRun,
 	RunE:              runE,
 	SilenceErrors:     true,
