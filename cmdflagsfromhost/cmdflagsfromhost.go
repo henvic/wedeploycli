@@ -92,6 +92,16 @@ func (s *SetupHost) ServiceDomain() string {
 	return s.wectx.Config().Remotes[s.remote].Service
 }
 
+// Host returns the host for a given service or partial host for a given project
+func (s *SetupHost) Host() (host string) {
+	if s.service != "" {
+		host = s.service + "-"
+	}
+
+	host += s.project + "." + s.ServiceDomain()
+	return host
+}
+
 // Init flags on a given command
 func (s *SetupHost) Init(cmd *cobra.Command) {
 	var none = true
