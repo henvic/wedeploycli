@@ -3,6 +3,7 @@ package list
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/formatter"
@@ -31,6 +32,7 @@ var detailedServicesHeaders = []string{
 	"Instances",
 	"CPU",
 	"Memory",
+	"Created at",
 }
 
 func (l *List) printServicesHeaders() {
@@ -171,7 +173,7 @@ func (l *List) printService(projectID string, s services.Service) {
 	l.printInstances(s.Scale)
 
 	if l.Detailed {
-		l.Printf("%.6v\t%.6v MB", s.CPU, s.Memory)
+		l.Printf("%.6v\t%.6v MB\t%s", s.CPU, s.Memory, s.CreatedAtTime().Format(time.RFC822))
 	}
 
 	l.Printf("\n")
