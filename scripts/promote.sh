@@ -39,4 +39,8 @@ NEW_RELEASE_VERSION=$(echo $NEW_RELEASE_VERSION | sed 's/^v//')
 read -p "Promote version to release channel [stable]: " RELEASE_CHANNEL < /dev/tty;
 RELEASE_CHANNEL=${RELEASE_CHANNEL:-"stable"}
 
+if [ $RELEASE_CHANNEL == "stable" ] ; then
+  echo "Update https://wedeploy.com/updates/cli/ if this release contains news worth mentioning to the users."
+fi
+
 equinox publish --channel $RELEASE_CHANNEL --config $config --release $NEW_RELEASE_VERSION

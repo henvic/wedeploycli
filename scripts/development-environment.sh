@@ -224,6 +224,30 @@ function passGoDevDependencies() {
   go get -u honnef.co/go/tools/cmd/megacheck
 }
 
+function passPublishingDependencies() {
+  if [ ! $ec -eq 0 ] ; then
+    >&2 echo "Warning: To tag new versions of the CLI you must have GPG installed."
+    >&2 echo "You might be required to setup a pair of public/private certificates."
+
+    if [ $(uname) == "Darwin" ] ; then
+      >&2 echo "Tip: on macOS use https://gpgtools.org instead of \"brew\" to install it."
+    fi
+
+    exit 1
+  fi
+
+  (which equinox >> /dev/null) && ec=$? || ec=$?
+
+  if [ $ec -eq 0 ] ; then
+    return
+  fi
+
+  echo "Installing release tool for the CLI (equinox)"
+  brew install eqnxio/equinox/release-tool
+
+  (which gpg >> /dev/null) && ec=$? || ec=$?
+}
+
 function maybeMoveToGopathDir() {
   WE_DEVENV_BN=$(basename $PWD)
   WE_DEVENV_GO_DIR=$GOPATH/src/github.com/wedeploy
@@ -274,5 +298,6 @@ passGoVisualCodeExtension
 setupGopath
 setupI
 passGoDevDependencies
+passPublishingDependencies
 maybeMoveToGopathDir
 infoRenewShell

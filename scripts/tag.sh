@@ -154,9 +154,10 @@ function tag() {
 
   if [ ! $ec -eq 0 ] ; then
     >&2 echo "GPG is required to tag signed releases with git. Install it on your system."
+    >&2 echo "You might be required to setup a pair of public/private certificates."
 
     if [ $(uname) == "Darwin" ] ; then
-      >&2 echo "Tip: on macOS use https://gpgtools.org instead of \"brew\" to install it."
+      >&2 echo "Tip: On macOS use https://gpgtools.org instead of \"brew\" to install it."
     fi
 
     exit 1
