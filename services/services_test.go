@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/kylelemons/godebug/pretty"
@@ -41,6 +42,20 @@ func TestMain(m *testing.M) {
 
 	client = New(wectx)
 	os.Exit(m.Run())
+}
+
+func TestServiceCreatedAtTimeHelper(t *testing.T) {
+	var s = Service{
+		ServiceID: "abc",
+		CreatedAt: 1517599604871,
+	}
+
+	var got = s.CreatedAtTime()
+	var want = time.Date(2018, time.February, 2, 19, 26, 44, 0, time.UTC)
+
+	if !got.Equal(want) {
+		t.Errorf("Expected time didn't match: wanted %v, got %v", want, got)
+	}
 }
 
 func TestServiceTypeHelper(t *testing.T) {

@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
@@ -91,6 +92,13 @@ type Service struct {
 	Scale         int               `json:"scale,omitempty"`
 	CPU           json.Number       `json:"cpu,omitempty"`
 	Memory        json.Number       `json:"memory,omitempty"`
+	CreatedAt     int64             `json:"createdAt,omitempty"`
+}
+
+// CreatedAtTime extracts from the Unix timestamp format and returns the createdAt value
+func (s *Service) CreatedAtTime() time.Time {
+	var createdAt = s.CreatedAt / 1000
+	return time.Unix(createdAt, 0)
 }
 
 // Type returns the image hint or the image
