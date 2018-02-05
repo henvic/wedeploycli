@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -81,6 +80,10 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 	rd.ctx = ctx
 	wectx := we.Context()
 
+	if rd.path, err = getWorkingDirectory(); err != nil {
+		return "", err
+	}
+
 	if err = rd.getProjectID(); err != nil {
 		return "", err
 	}
@@ -108,10 +111,6 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 }
 
 func (rd *RemoteDeployment) loadServicesList() (err error) {
-	if rd.path, err = os.Getwd(); err != nil {
-		return err
-	}
-
 	if err = rd.loadServicesListFromPath(); err != nil {
 		return err
 	}
