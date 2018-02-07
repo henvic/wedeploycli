@@ -138,7 +138,7 @@ func Update(c *config.Config, channel string) error {
 		return err
 	}
 
-	fmt.Println(fancy.Success("Updated to version " + resp.ReleaseVersion))
+	fmt.Printf("Updated to version %s\n", resp.ReleaseVersion)
 	return err
 }
 

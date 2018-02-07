@@ -32,11 +32,6 @@ func Info(a interface{}) string {
 	return color.Format(color.FgHiBlack, a)
 }
 
-// Success formatter
-func Success(a interface{}) string {
-	return color.Format(color.FgHiGreen, a)
-}
-
 // Error formatter
 func Error(a interface{}) string {
 	return color.Format(color.FgHiBlack, formatError(a))

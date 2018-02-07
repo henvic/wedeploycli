@@ -278,7 +278,7 @@ func (a *Authentication) success(username string) {
 }
 
 func (a *Authentication) printTipCommands(buf *bytes.Buffer) {
-	fmt.Fprintln(buf, fancy.Info("Check out some useful commands in case you wanna start learning the CLI:\n"))
+	fmt.Fprintln(buf, fancy.Info("See some of the useful commands you can start using on the WeDeploy CLI.\n"))
 	tw := formatter.NewTabWriter(buf)
 	fmt.Fprintln(tw, color.Format(color.FgHiBlack, "  Command\t     Description"))
 	fmt.Fprintln(tw, "  we\tShow list of all commands available in WeDeploy CLI")
