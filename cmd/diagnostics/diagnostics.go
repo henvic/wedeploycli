@@ -26,11 +26,11 @@ var (
 
 // DiagnosticsCmd sets the user credential
 var DiagnosticsCmd = &cobra.Command{
-	Use:     "diagnostics",
-	Short:   "Run system diagnostics and show report",
-	RunE:    diagnosticsRun,
-	Args:    cobra.NoArgs,
-	Aliases: []string{"check"},
+	Use:    "diagnostics",
+	Short:  "Run system diagnostics and show report",
+	RunE:   diagnosticsRun,
+	Args:   cobra.NoArgs,
+	Hidden: true,
 }
 
 func diagnosticsRun(cmd *cobra.Command, args []string) error {

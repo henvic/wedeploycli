@@ -14,7 +14,6 @@
   delete           Delete project or services
   login            Login into your account
   logout           Logout from your account
-  diagnostics      Run system diagnostics and show report
   version          Show CLI version
   update           Update CLI to the latest version
   uninstall        Uninstall CLI
