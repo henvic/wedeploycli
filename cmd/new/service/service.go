@@ -116,7 +116,7 @@ func (ns *newService) run(cmd *cobra.Command, args []string) error {
 		color.Format(color.FgHiBlack, "\" created.")+"\n",
 		s.ServiceID,
 		setupHost.Project(),
-		setupHost.InfrastructureDomain())
+		setupHost.ServiceDomain())
 
 	return nil
 }
