@@ -41,3 +41,12 @@ var (
 	// StableReleaseChannel for the distribution of the CLI tool
 	StableReleaseChannel = "stable"
 )
+
+// MousetrapHelpText is used by cobra to show an error message when the user tries to use the CLI
+// without a terminal open (i.e., double-clicking on Windows Explorer)
+const MousetrapHelpText = `This is a command line tool.
+
+You need to open this using a terminal/console application.
+
+If you want to learn how to use the CLI for WeDeploy, please see:
+https://wedeploy.com/docs/intro/using-the-command-line/`

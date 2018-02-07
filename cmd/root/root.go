@@ -47,6 +47,7 @@ func maybeEnableVerboseByEnv() {
 func init() {
 	template.Configure(Cmd)
 	cobra.EnableCommandSorting = false
+	cobra.MousetrapHelpText = defaults.MousetrapHelpText
 	autocomplete.RootCmd = Cmd
 
 	Cmd.PersistentFlags().BoolVarP(
