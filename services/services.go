@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 	"github.com/wedeploy/wedeploy-sdk-go"
@@ -479,22 +478,6 @@ func (c *Client) Unlink(ctx context.Context, projectID, serviceID string) error 
 	c.Client.Auth(req)
 
 	return apihelper.Validate(req, req.Delete())
-}
-
-// GetRegistry gets a list of service images
-func GetRegistry(ctx context.Context) (registry []Register, err error) {
-	var request = wedeploy.URL(defaults.Hub, "/registry")
-	request.SetContext(ctx)
-
-	err = apihelper.Validate(request, request.Get())
-
-	if err != nil {
-		return nil, err
-	}
-
-	err = apihelper.DecodeJSON(request, &registry)
-
-	return registry, err
 }
 
 // Read a service directory properties (defined by a wedeploy.json and/or Dockerfile on it)

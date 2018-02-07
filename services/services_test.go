@@ -419,26 +419,6 @@ func TestLink(t *testing.T) {
 	servertest.Teardown()
 }
 
-func TestRegistry(t *testing.T) {
-	servertest.Setup()
-
-	servertest.Mux.HandleFunc(
-		"/registry",
-		tdata.ServerJSONFileHandler("mocks/registry.json"))
-
-	var registry, err = GetRegistry(context.Background())
-
-	if len(registry) != 7 {
-		t.Errorf("Expected registry to have 7 images")
-	}
-
-	if err != nil {
-		t.Errorf("Expected no error, got %v instead", err)
-	}
-
-	servertest.Teardown()
-}
-
 func TestRead(t *testing.T) {
 	var c, err = Read("mocks/app/email")
 
