@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/wedeploy/cli/fancy"
 
@@ -52,13 +54,8 @@ func (ns *newService) getOrSelectImageType() (string, error) {
 		Hash: true,
 	}
 
-	var number = 0
-	var mapOptions = map[string]string{}
-
 	for n, i := range catalog {
-		number++
-		mapOptions[fmt.Sprintf("%d", number)] = n
-		options.Add(fmt.Sprintf("%d", number), "\t"+i.Name+"    \t"+color.Format(color.FgHiBlack, i.Image))
+		options.Add(fmt.Sprintf("%d", n+1), "\t"+i.Name+"    \t"+color.Format(color.FgHiBlack, i.Image))
 	}
 
 	option, err := options.Ask("Select a Service Type")
@@ -67,9 +64,16 @@ func (ns *newService) getOrSelectImageType() (string, error) {
 		return "", err
 	}
 
-	var choice = catalog[mapOptions[option]]
+	choice, err := strconv.Atoi(option)
 
-	return choice.Image, nil
+	switch {
+	case err == nil:
+		return catalog[choice-1].Image, nil
+	case choice < 1 || choice > len(catalog):
+		return "", errors.New("invalid option")
+	default:
+		return option, nil
+	}
 }
 
 func (ns *newService) run(cmd *cobra.Command, args []string) error {

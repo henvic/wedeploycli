@@ -295,15 +295,15 @@ func TestGetEmptyProjectAndServiceID(t *testing.T) {
 func TestCatalogItem(t *testing.T) {
 	servertest.Setup()
 
-	var want = map[string]CatalogItem{
-		"wedeploy/auth": CatalogItem{
+	var want = Catalog{
+		CatalogItem{
 			Category:    "WeDeploy™",
 			Description: "Simple authentication with email/password or third-party providers like GitHub and Google.",
 			Image:       "wedeploy/auth",
 			Name:        "WeDeploy™ Auth",
 			State:       "active",
 			Versions:    []string{"2.0.0"}},
-		"wedeploy/data": CatalogItem{
+		CatalogItem{
 			Category:    "WeDeploy™",
 			Description: "Scalable JSON database with search and realtime that makes building realtime apps dramatically easier.",
 			Image:       "wedeploy/data",
