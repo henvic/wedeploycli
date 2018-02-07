@@ -187,7 +187,6 @@ func (a *Authentication) Run(ctx context.Context, c config.Context) error {
 		return a.basicAuthLogin(ctx)
 	}
 
-	fmt.Println("WeDeploy requires your browser for authenticating.")
 	yes, err := fancy.Boolean("Open your browser and authenticate?")
 
 	if err != nil {
