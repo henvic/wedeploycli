@@ -1,10 +1,10 @@
 package docs
 
 import (
+	"fmt"
+
 	"github.com/henvic/browser"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/fancy"
-	"github.com/wedeploy/cli/waitlivemsg"
 )
 
 // DocsCmd opens the docs on the browser
@@ -15,27 +15,13 @@ var DocsCmd = &cobra.Command{
 	RunE:  docsRun,
 }
 
-func open(m *waitlivemsg.Message, ec chan error) {
+func docsRun(cmd *cobra.Command, args []string) error {
 	err := browser.OpenURL("https://wedeploy.com/docs/")
 
 	if err != nil {
-		m.StopText(fancy.Error("Failed to open docs on your browser [1/2]"))
-		ec <- err
-		return
+		return err
 	}
 
-	m.StopText("Docs opened on your browser [2/2]")
-	ec <- err
-}
-
-func docsRun(cmd *cobra.Command, args []string) error {
-	var m = waitlivemsg.NewMessage("Opening docs on your browser [1/2]")
-	var wlm = waitlivemsg.New(nil)
-	go wlm.Wait()
-	wlm.AddMessage(m)
-	var ec = make(chan error, 1)
-	go open(m, ec)
-	var err = <-ec
-	wlm.Stop()
-	return err
+	fmt.Println("Docs opened on your browser.")
+	return nil
 }
