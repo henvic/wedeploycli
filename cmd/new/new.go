@@ -22,7 +22,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 // NewCmd is used to create new projects/services
 var NewCmd = &cobra.Command{
 	Use:     "new",
-	Short:   "Create new project or install new service",
+	Short:   "Create new project or install new service\n\t\t",
 	PreRunE: preRun,
 	RunE:    newRun,
 	Args:    cobra.NoArgs,

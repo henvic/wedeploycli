@@ -10,7 +10,7 @@ import (
 // DocsCmd opens the docs on the browser
 var DocsCmd = &cobra.Command{
 	Use:   "docs",
-	Short: "Open docs on your browser",
+	Short: "Open docs on your browser\n\t\t",
 	Args:  cobra.NoArgs,
 	RunE:  docsRun,
 }

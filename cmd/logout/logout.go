@@ -13,7 +13,7 @@ import (
 // LogoutCmd unsets the user credential
 var LogoutCmd = &cobra.Command{
 	Use:     "logout",
-	Short:   "Logout from your account",
+	Short:   "Logout from your account\n\t\t",
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,
 	RunE:    logoutRun,

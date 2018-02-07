@@ -3,20 +3,24 @@
   deploy           Deploy your services
   list             Show list of projects and services
   new              Create new project or install new service
-  open             Open service on your browser
-  console          Open the console on your browser
-  docs             Open docs on your browser
+                       
   log              Show logs of the services
   domain           Show and configure domain names for services
   env              Show and configure environment variables for services
   scale            Configure number of instances for services
   restart          Restart services
   delete           Delete project or services
+                       
   login            Login into your account
   logout           Logout from your account
-  version          Show CLI version
+                       
+  open             Open service on your browser
+  console          Open the console on your browser
+  docs             Open docs on your browser
+                       
   update           Update CLI to the latest version
   uninstall        Uninstall CLI
+  version          Show CLI version
   about            About this software
                    
   Flag                  Description
