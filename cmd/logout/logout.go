@@ -41,9 +41,9 @@ func logoutRun(cmd *cobra.Command, args []string) error {
 		fmt.Println(fancy.Info(fmt.Sprintf(`You are not logged in on %s.`,
 			remote.Infrastructure)))
 	default:
-		fmt.Println(fancy.Success(fmt.Sprintf("You (%s) have been logged out of %s.",
+		fmt.Printf("You (%s) have been logged out of %s.\n",
 			remote.Username,
-			remote.Infrastructure)))
+			remote.Infrastructure)
 	}
 
 	remote.Username = ""

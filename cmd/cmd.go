@@ -127,7 +127,7 @@ func (m *mainProgram) executeCommand() {
 		cc := m.cmdErr.(canceled.Command)
 
 		if !cc.Quiet() {
-			fmt.Fprintln(os.Stderr, fancy.Success(m.cmdErr))
+			fmt.Fprintln(os.Stderr, m.cmdErr)
 		}
 
 		m.cmdErr = nil

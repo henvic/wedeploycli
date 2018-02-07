@@ -79,7 +79,7 @@ func (a *Authentication) basicAuthLogin(ctx context.Context) error {
 	fmt.Println(color.Format(color.FgHiYellow, "\n            Open this URL in your browser for creating a password:"))
 	fmt.Println(color.Format(color.FgHiBlack, fmt.Sprintf("            %v%v/password/reset\n", defaults.DashboardURLPrefix, remoteAddress)))
 
-	fmt.Println(fancy.Question("Type your credentials for logging in. Your email: ") + color.Format(color.FgHiMagenta, "[ex: user@domain.com]"))
+	fmt.Println(fancy.Question("Type your credentials for logging in. Your email: ") + color.Format(color.FgHiBlack, "[ex: user@domain.com]"))
 promptForUsername:
 	if username, err = fancy.Prompt(); err != nil {
 		return err
@@ -266,12 +266,10 @@ func (a *Authentication) success(username string) {
 	var remote = conf.Remotes[a.wectx.Remote()]
 
 	var buf = &bytes.Buffer{}
-	fmt.Fprintln(buf, fancy.Success(fmt.Sprintf("Authentication completed in %s [2/2]", timehelper.RoundDuration(duration, time.Second))))
-	fmt.Fprintln(buf, fancy.Success(fmt.Sprintf(`You're logged in as "`+
-		color.Format(color.Reset, color.Bold, username)+
-		color.Format(color.FgHiGreen, `" on "`)+
-		color.Format(color.Reset, color.Bold, remote.Infrastructure)+
-		color.Format(color.FgHiGreen, `".`))))
+	fmt.Fprintf(buf, "Authentication completed in %s [2/2]\n", timehelper.RoundDuration(duration, time.Second))
+	fmt.Fprintf(buf, "You're logged in as \"%s\" on \"%s\".\n",
+		color.Format(color.Reset, color.Bold, username),
+		color.Format(color.Reset, color.Bold, remote.Infrastructure))
 
 	if a.TipCommands {
 		a.printTipCommands(buf)
@@ -282,10 +280,10 @@ func (a *Authentication) success(username string) {
 func (a *Authentication) printTipCommands(buf *bytes.Buffer) {
 	fmt.Fprintln(buf, fancy.Info("Check out some useful commands in case you wanna start learning the CLI:\n"))
 	tw := formatter.NewTabWriter(buf)
-	fmt.Fprintln(tw, color.Format(color.FgHiBlack, "  Command\t  Description"))
-	fmt.Fprintln(tw, "  we\t  Show list of all commands available in WeDeploy CLI")
-	fmt.Fprintln(tw, "  we deploy\t  Deploy your services")
-	fmt.Fprintln(tw, "  we docs\t  Open docs on your browser")
+	fmt.Fprintln(tw, color.Format(color.FgHiBlack, "  Command\t     Description"))
+	fmt.Fprintln(tw, "  we\tShow list of all commands available in WeDeploy CLI")
+	fmt.Fprintln(tw, "  we deploy\tDeploy your services")
+	fmt.Fprintln(tw, "  we docs\tOpen docs on your browser")
 	_ = tw.Flush()
 	fmt.Fprint(buf, fancy.Info("\nType a command and press Enter to execute it."))
 }

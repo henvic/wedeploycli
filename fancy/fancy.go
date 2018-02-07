@@ -13,7 +13,7 @@ import (
 
 // Question formatter
 func Question(a interface{}) string {
-	var q = color.Format(color.FgMagenta, "?") + " "
+	var q = color.Format(color.FgHiBlack, "?") + " "
 	var parts = strings.Split(fmt.Sprintf("%v", a), "\n")
 	var buf = &bytes.Buffer{}
 	for i, p := range parts {
@@ -44,7 +44,7 @@ func Error(a interface{}) string {
 
 // Tip formatter
 func Tip(a interface{}) string {
-	return fmt.Sprintf("%v%v%v", color.Format(color.FgHiMagenta, "["), a, color.Format(color.FgHiMagenta, "]"))
+	return fmt.Sprintf("%v%v%v", color.Format(color.FgHiBlack, "["), a, color.Format(color.FgHiBlack, "]"))
 }
 
 // Prompt with fancy "> "
@@ -73,7 +73,7 @@ func HiddenPrompt() (string, error) {
 // Boolean question
 func Boolean(question string) (yes bool, err error) {
 	question = Question(question)
-	fmt.Printf("%s %s\n", question, color.Format(color.FgMagenta, "[y/n]"))
+	fmt.Printf("%s %s\n", question, color.Format(color.FgHiBlack, "[y/n]"))
 
 	for {
 		var choice, err = Prompt()
@@ -120,7 +120,7 @@ func (o *Options) Add(name, description string) {
 func (o *Options) List() string {
 	var buf = &bytes.Buffer{}
 	for _, option := range o.list {
-		fmt.Fprintf(buf, "%s %s\n", color.Format(color.FgHiMagenta, color.Bold, strings.ToUpper(option.name)), option.description)
+		fmt.Fprintf(buf, "%s %s\n", color.Format(color.FgHiBlack, color.Bold, strings.ToUpper(option.name)), option.description)
 	}
 
 	return buf.String()
@@ -141,7 +141,7 @@ func (o *Options) Ask(q string) (string, error) {
 		printedList = strings.Join(names, "/")
 	}
 
-	fmt.Printf("%s %s\n", q, color.Format(color.FgMagenta, "[%s]", printedList))
+	fmt.Printf("%s %s\n", q, color.Format(color.FgHiBlack, "[%s]", printedList))
 
 	fmt.Print(o.List())
 

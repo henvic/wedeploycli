@@ -39,7 +39,7 @@ func (d *Diagnostics) exec(e *Executable) {
 	var desc = waitlivemsg.NewMessage("Checking\t" + e.Description)
 	defer func() {
 		if e.IgnoreError || e.err == nil {
-			desc.StopText(fancy.Success("Checked\t") + e.Description)
+			desc.StopText("Checked\t" + e.Description)
 		} else {
 			desc.StopText(fancy.Error("Error\t") + e.Description)
 		}

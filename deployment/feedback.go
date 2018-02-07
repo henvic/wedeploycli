@@ -80,11 +80,11 @@ func (d *Deploy) updateDeploymentEndStep(err error) {
 
 	switch err {
 	case nil:
-		d.stepMessage.StopText(d.getDeployingMessage() + "\n" +
-			fancy.Success(fmt.Sprintf("Deployment succeeded in %s", timeElapsed)))
+		d.stepMessage.StopText(d.getDeployingMessage() +
+			fmt.Sprintf("\nDeployment succeeded in %s", timeElapsed))
 	default:
-		d.stepMessage.StopText(d.getDeployingMessage() + "\n" +
-			fancy.Error(fmt.Sprintf("Deployment failed in %s", timeElapsed)))
+		d.stepMessage.StopText(d.getDeployingMessage() +
+			fmt.Sprintf("\nDeployment failed in %s", timeElapsed))
 	}
 }
 
@@ -233,7 +233,7 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 		m.StopText(fancy.Error(d.makeServiceStatusMessage(serviceID, pre)))
 	case
 		activities.DeploySucceeded:
-		m.StopText(fancy.Success(d.makeServiceStatusMessage(serviceID, pre)))
+		m.StopText(d.makeServiceStatusMessage(serviceID, pre))
 	default:
 		m.StopText(d.makeServiceStatusMessage(serviceID, pre))
 	}

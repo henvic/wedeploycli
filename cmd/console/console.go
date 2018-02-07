@@ -42,7 +42,7 @@ func open(m *waitlivemsg.Message, ec chan error) {
 		return
 	}
 
-	m.StopText(fancy.Success("Console opened on your browser [2/2]"))
+	m.StopText("Console opened on your browser [2/2]")
 	ec <- err
 }
 

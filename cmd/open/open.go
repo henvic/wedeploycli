@@ -52,7 +52,7 @@ func open(m *waitlivemsg.Message, ec chan error) {
 		return
 	}
 
-	m.StopText(fancy.Success("Service opened on your browser [2/2]"))
+	m.StopText("Service opened on your browser [2/2]")
 	ec <- err
 }
 

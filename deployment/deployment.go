@@ -383,9 +383,8 @@ func (d *Deploy) uploadPackage() (err error) {
 		return err
 	}
 
-	d.uploadMessage.StopText(
-		fancy.Success(fmt.Sprintf("Upload completed in %v",
-			timehelper.RoundDuration(d.UploadDuration(), time.Second))))
+	d.uploadMessage.StopText(fmt.Sprintf("Upload completed in %v",
+		timehelper.RoundDuration(d.UploadDuration(), time.Second)))
 	return nil
 }
 

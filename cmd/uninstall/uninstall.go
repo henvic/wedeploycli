@@ -51,7 +51,7 @@ func uninstallChan(m *waitlivemsg.Message, ec chan error) {
 		return
 	}
 
-	m.StopText(fancy.Success("WeDeploy CLI uninstalled [2/2]") + "\n" +
+	m.StopText("WeDeploy CLI uninstalled [2/2]\n" +
 		fancy.Info("WeDeploy CLI is not working on your computer anymore.") + "\n" +
 		color.Format(color.FgHiYellow, "  For installing it again, type this command and press Enter:\n") +
 		color.Format(color.FgHiBlack, "  $ curl http://cdn.wedeploy.com/cli/latest/wedeploy.sh -sL | bash"))
@@ -67,7 +67,7 @@ func removeConfigOnlyChan(m *waitlivemsg.Message, ec chan error) {
 		return
 	}
 
-	m.StopText(fancy.Success("User profile and configuration removed [2/2]"))
+	m.StopText("User profile and configuration removed [2/2]")
 	ec <- nil
 }
 
