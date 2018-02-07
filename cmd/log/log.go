@@ -119,6 +119,8 @@ func getSince() (string, error) {
 func init() {
 	LogCmd.Flags().StringVar(&instanceArg, "instance", "", `Instance (node) UID`)
 	LogCmd.Flags().StringVar(&severityArg, "level", "0", `Severity (critical, error, warning, info (default), debug)`)
+	LogCmd.Flag("level").Hidden = true
+
 	LogCmd.Flags().StringVar(&sinceArg, "since", "", "Show since moment (i.e., 20min, 3h, UNIX timestamp)")
 	LogCmd.Flags().BoolVarP(&watchArg, "watch", "w", true, "Watch / follow log output")
 	_ = LogCmd.Flags().MarkHidden("watch")
