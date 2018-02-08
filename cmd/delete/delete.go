@@ -2,6 +2,7 @@ package delete
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -86,32 +87,32 @@ func (u *undeployer) confirmation() error {
 		return nil
 	}
 
-	var question string
-
 	if u.service != "" {
-		fmt.Println(color.Format(color.FgRed, color.Bold,
-			"Deleting a service cannot be undone. All the access and domains related to this service will be lost."))
-		question = fmt.Sprintf(`Do you really want to delete the service "%v" on project "%v"?`,
-			color.Format(color.Bold, u.service),
-			color.Format(color.Bold, u.project))
+		fmt.Print(color.Format(color.FgRed, color.Bold, "Deleting a service cannot be undone."))
+		fmt.Println(" All the access and domains related to this service will be lost.")
+		fmt.Printf("Enter the service ID %s to delete it permanently:\n",
+			color.Format(color.ReverseVideo, u.service))
 	} else {
-		fmt.Println(color.Format(color.FgRed, color.Bold,
-			"Deleting a project cannot be undone. All the access and domains related to services on this project will be lost."))
-		question = fmt.Sprintf(`Do you really want to delete the project "%v"?`,
-			color.Format(color.Bold, u.project))
+		fmt.Print(color.Format(color.FgRed, color.Bold, "Deleting a project cannot be undone."))
+		fmt.Println(" All the services and the access and domains related to this project will be lost.")
+		fmt.Printf("Enter the project ID %s to delete it permanently:\n",
+			color.Format(color.ReverseVideo, u.project))
 	}
 
-	var confirm, askErr = fancy.Boolean(question)
+	var verify, askErr = fancy.Prompt()
 
 	if askErr != nil {
 		return askErr
 	}
 
-	if confirm {
+	switch {
+	case verify == "":
+		return canceled.Skip()
+	case (u.service != "" && verify == u.service) || u.service == "" && verify == u.project:
 		return nil
+	default:
+		return errors.New("invalid value")
 	}
-
-	return canceled.Skip()
 }
 
 func (u *undeployer) do() (err error) {
