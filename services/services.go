@@ -434,6 +434,17 @@ type EnvironmentVariable struct {
 	Value string `json:"value,omitempty"`
 }
 
+// GetEnvironmentVariable gets a single environment variable of a service
+func (c *Client) GetEnvironmentVariable(ctx context.Context, projectID, serviceID, name string) (env EnvironmentVariable, err error) {
+	err = c.Client.AuthGet(ctx, "/projects/"+
+		url.QueryEscape(projectID)+
+		"/services/"+
+		url.QueryEscape(serviceID)+
+		"/environment-variables/"+
+		url.QueryEscape(name), &env)
+	return env, err
+}
+
 // GetEnvironmentVariables of a service
 func (c *Client) GetEnvironmentVariables(ctx context.Context, projectID, serviceID string) (envs []EnvironmentVariable, err error) {
 	err = c.Client.AuthGet(ctx, "/projects/"+

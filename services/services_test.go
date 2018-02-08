@@ -381,6 +381,62 @@ func TestList(t *testing.T) {
 	servertest.Teardown()
 }
 
+func TestGetEnvironmentVariable(t *testing.T) {
+	servertest.Setup()
+
+	var want = EnvironmentVariable{
+		Name:  "MAX_APP_THREADS",
+		Value: "10",
+	}
+
+	servertest.Mux.HandleFunc("/projects/henvic/services/pix/environment-variables/MAX_APP_THREADS",
+		tdata.ServerJSONFileHandler("mocks/env_response.json"))
+
+	var got, err = client.GetEnvironmentVariable(context.Background(), "henvic", "pix", "MAX_APP_THREADS")
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("Response does not match with wanted structure.")
+		t.Errorf(pretty.Compare(want, got))
+	}
+
+	servertest.Teardown()
+}
+
+func TestGetEnvironmentVariables(t *testing.T) {
+	servertest.Setup()
+
+	var want = []EnvironmentVariable{
+		EnvironmentVariable{
+			Name:  "MAX_APP_THREADS",
+			Value: "10",
+		},
+		EnvironmentVariable{
+			Name:  "WEBSITE_NAMESPACE",
+			Value: "web",
+		},
+	}
+
+	servertest.Mux.HandleFunc("/projects/henvic/services/pix/environment-variables",
+		tdata.ServerJSONFileHandler("mocks/envs_response.json"))
+
+	var got, err = client.GetEnvironmentVariables(context.Background(), "henvic", "pix")
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("Response does not match with wanted structure.")
+		t.Errorf(pretty.Compare(want, got))
+	}
+
+	servertest.Teardown()
+}
+
 func TestLink(t *testing.T) {
 	servertest.Setup()
 
