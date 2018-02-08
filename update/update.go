@@ -123,8 +123,8 @@ func Notify(c *config.Config) {
 
 // Update this tool
 func Update(c *config.Config, channel string) error {
-	fmt.Printf(`Channel "%s" is now selected.\n`, channel)
-	fmt.Printf("Current installed version is \n" + defaults.Version)
+	fmt.Printf("Current installed version is %s.\n", defaults.Version)
+	fmt.Printf("Channel \"%s\" is now selected.\n", channel)
 
 	var resp, err = check(channel)
 
