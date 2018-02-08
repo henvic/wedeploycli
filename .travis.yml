@@ -11,3 +11,8 @@ script:
   - make test
 after_success:
   - sh $(pwd)/scripts/coverage.sh --coveralls
+notifications:
+  slack:
+    rooms:
+      - wedeploy:uYPuakDDBwOqCog3bR8atIHz#ci
+    on_success: change
