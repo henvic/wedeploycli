@@ -13,6 +13,7 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/cmd/canceled"
 	"github.com/wedeploy/cli/cmd/internal/we"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/deployment"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/inspector"
@@ -52,13 +53,17 @@ func (rd *RemoteDeployment) getProjectID() (err error) {
 	}
 
 	if rd.ProjectID != "" {
-		_, err := projectsClient.Get(context.Background(), rd.ProjectID)
+		userProject, err := projectsClient.Get(context.Background(), rd.ProjectID)
 
 		if err == nil {
 			return nil
 		}
 
 		if epf, ok := err.(*apihelper.APIFault); !ok || epf.Status != http.StatusNotFound {
+			return err
+		}
+
+		if err := rd.confirmation(userProject); err != nil {
 			return err
 		}
 	}
@@ -239,4 +244,24 @@ func (rd *RemoteDeployment) loadServicesListFromPath() (err error) {
 	}
 
 	return nil
+}
+
+func (rd *RemoteDeployment) confirmation(userProject projects.Project) error {
+	if userProject.ProjectID != "" {
+		return nil
+	} 
+
+	fmt.Println(color.Format(color.FgYellow, "Project does not exist"))
+
+	var question = fmt.Sprintf("Do you want to create project \"%s\"?", rd.ProjectID)
+
+	switch ok, askErr := fancy.Boolean(question); {
+	case askErr != nil:
+		return askErr
+	case ok:
+		fmt.Println("")
+		return nil
+	}
+	
+	return canceled.CancelCommand("Deployment canceled.")
 }
