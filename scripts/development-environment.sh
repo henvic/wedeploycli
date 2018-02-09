@@ -225,6 +225,8 @@ function passGoDevDependencies() {
 }
 
 function passPublishingDependencies() {
+  (which gpg >> /dev/null) && ec=$? || ec=$?
+
   if [ ! $ec -eq 0 ] ; then
     >&2 echo "Warning: To tag new versions of the CLI you must have GPG installed."
     >&2 echo "You might be required to setup a pair of public/private certificates."
@@ -232,8 +234,6 @@ function passPublishingDependencies() {
     if [ $(uname) == "Darwin" ] ; then
       >&2 echo "Tip: on macOS use https://gpgtools.org instead of \"brew\" to install it."
     fi
-
-    exit 1
   fi
 
   (which equinox >> /dev/null) && ec=$? || ec=$?
@@ -244,8 +244,6 @@ function passPublishingDependencies() {
 
   echo "Installing release tool for the CLI (equinox)"
   brew install eqnxio/equinox/release-tool
-
-  (which gpg >> /dev/null) && ec=$? || ec=$?
 }
 
 function maybeMoveToGopathDir() {
