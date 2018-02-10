@@ -249,9 +249,9 @@ func (rd *RemoteDeployment) loadServicesListFromPath() (err error) {
 func (rd *RemoteDeployment) confirmation(userProject projects.Project) error {
 	if userProject.ProjectID != "" {
 		return nil
-	} 
+	}
 
-	fmt.Println(color.Format(color.FgYellow, "Project does not exist"))
+	fmt.Println(color.Format(color.FgHiBlack, "Project does not exist."))
 
 	var question = fmt.Sprintf("Do you want to create project \"%s\"?", rd.ProjectID)
 
@@ -262,6 +262,6 @@ func (rd *RemoteDeployment) confirmation(userProject projects.Project) error {
 		fmt.Println("")
 		return nil
 	}
-	
+
 	return canceled.CancelCommand("Deployment canceled.")
 }
