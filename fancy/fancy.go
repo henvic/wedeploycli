@@ -115,7 +115,7 @@ func (o *Options) Add(name, description string) {
 func (o *Options) List() string {
 	var buf = &bytes.Buffer{}
 	for _, option := range o.list {
-		fmt.Fprintf(buf, "%s %s\n", color.Format(color.FgHiBlack, color.Bold, strings.ToUpper(option.name)), option.description)
+		fmt.Fprintf(buf, "%s %s\n", color.Format(color.FgHiBlack, color.Bold, strings.ToLower(option.name)), option.description)
 	}
 
 	return buf.String()
