@@ -1,6 +1,7 @@
 package inspector
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -31,6 +32,7 @@ func GetSpec(t interface{}) []string {
 
 // ContextOverview for the context visualization
 type ContextOverview struct {
+	ProjectID string
 	Services []services.ServiceInfo
 }
 
@@ -64,6 +66,17 @@ func (overview *ContextOverview) loadServicesList(directory string) error {
 	}
 
 	overview.Services = list
+	return nil
+}
+
+func (overview *ContextOverview) UniqueProjectID() (error) {
+	fmt.Println("overview.Services", overview.Services)
+	for _, sInfo := range overview.Services {
+		if overview.ProjectID != "" && sInfo.ProjectID != overview.ProjectID {
+			return errors.New("You can only have one unique Project ID in your wedeploy.json's")
+		}
+		overview.ProjectID = sInfo.ProjectID
+	}
 	return nil
 }
 
