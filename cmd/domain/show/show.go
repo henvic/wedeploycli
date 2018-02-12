@@ -1,4 +1,4 @@
-package add
+package show
 
 import (
 	"context"
@@ -10,12 +10,13 @@ import (
 	"github.com/wedeploy/cli/services"
 )
 
-// Cmd for adding a domain
+// Cmd for showing
 var Cmd = &cobra.Command{
-	Use:     "add",
-	Aliases: []string{"set"},
-	Short:   "Add custom domain to a given service",
-	Example: "  we domain add example.com",
+	Use:     "show",
+	Aliases: []string{"list"},
+	Short:   "Show your domains for a given service",
+	Example: `  we domain show`,
+	Args:    cobra.NoArgs,
 	PreRunE: preRun,
 	RunE:    run,
 }
@@ -46,5 +47,5 @@ func run(cmd *cobra.Command, args []string) error {
 		ServicesClient: services.New(we.Context()),
 	}
 
-	return c.Add(context.Background(), args)
+	return c.Show(context.Background())
 }
