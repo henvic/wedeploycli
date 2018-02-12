@@ -217,7 +217,7 @@ func TestListWithServices(t *testing.T) {
 	servertest.Teardown()
 }
 
-func TestUnlink(t *testing.T) {
+func TestDelete(t *testing.T) {
 	servertest.Setup()
 
 	servertest.Mux.HandleFunc("/projects/foo", func(w http.ResponseWriter, r *http.Request) {
@@ -227,7 +227,7 @@ func TestUnlink(t *testing.T) {
 		}
 	})
 
-	var err = client.Unlink(context.Background(), "foo")
+	var err = client.Delete(context.Background(), "foo")
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v instead", err)

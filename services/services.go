@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 	"github.com/wedeploy/wedeploy-sdk-go"
 )
@@ -82,16 +81,15 @@ func (cs Services) Get(id string) (c Service, err error) {
 
 // Service structure
 type Service struct {
-	ServiceID     string            `json:"serviceId,omitempty"`
-	Health        string            `json:"health,omitempty"`
-	Image         string            `json:"image,omitempty"`
-	ImageHint     string            `json:"imageHint,omitempty"`
-	CustomDomains []string          `json:"customDomains,omitempty"`
-	Env           map[string]string `json:"env,omitempty"`
-	Scale         int               `json:"scale,omitempty"`
-	CPU           json.Number       `json:"cpu,omitempty"`
-	Memory        json.Number       `json:"memory,omitempty"`
-	CreatedAt     int64             `json:"createdAt,omitempty"`
+	ServiceID     string      `json:"serviceId,omitempty"`
+	Health        string      `json:"health,omitempty"`
+	Image         string      `json:"image,omitempty"`
+	ImageHint     string      `json:"imageHint,omitempty"`
+	CustomDomains []string    `json:"customDomains,omitempty"`
+	Scale         int         `json:"scale,omitempty"`
+	CPU           json.Number `json:"cpu,omitempty"`
+	Memory        json.Number `json:"memory,omitempty"`
+	CreatedAt     int64       `json:"createdAt,omitempty"`
 }
 
 // CreatedAtTime extracts from the Unix timestamp format and returns the createdAt value
@@ -121,13 +119,12 @@ type ServicePackage struct {
 }
 
 // Service returns a Service type created taking wedeploy.json as base
-func (cp ServicePackage) Service() *Service {
+func (sp ServicePackage) Service() *Service {
 	return &Service{
-		ServiceID:     cp.ID,
-		Scale:         cp.Scale,
-		Image:         cp.Image,
-		CustomDomains: cp.CustomDomains,
-		Env:           cp.Env,
+		ServiceID:     sp.ID,
+		Scale:         sp.Scale,
+		Image:         sp.Image,
+		CustomDomains: sp.CustomDomains,
 	}
 }
 
@@ -455,45 +452,8 @@ func (c *Client) GetEnvironmentVariables(ctx context.Context, projectID, service
 	return envs, err
 }
 
-type linkRequestBody struct {
-	ServiceID string            `json:"serviceId,omitempty"`
-	Image     string            `json:"image,omitempty"`
-	Scale     int               `json:"scale,omitempty"`
-	Env       map[string]string `json:"env,omitempty"`
-	Version   string            `json:"version,omitempty"`
-	Source    string            `json:"source,omitempty"`
-}
-
-// Link service to project
-func (c *Client) Link(ctx context.Context, projectID string, service Service, source string) (err error) {
-	var reqBody = linkRequestBody{
-		ServiceID: service.ServiceID,
-		Image:     service.Image,
-		Scale:     service.Scale,
-		Env:       service.Env,
-		Source:    source,
-	}
-
-	if reqBody.Scale == 0 {
-		reqBody.Scale = 1
-	}
-
-	verbose.Debug("Linking service " + service.ServiceID + " to project " + projectID)
-
-	var req = c.Client.URL(ctx, "/projects", url.QueryEscape(projectID), "/services")
-	c.Client.Auth(req)
-
-	err = apihelper.SetBody(req, reqBody)
-
-	if err != nil {
-		return err
-	}
-
-	return apihelper.Validate(req, req.Post())
-}
-
-// Unlink service
-func (c *Client) Unlink(ctx context.Context, projectID, serviceID string) error {
+// Delete service
+func (c *Client) Delete(ctx context.Context, projectID, serviceID string) error {
 	var req = c.Client.URL(ctx,
 		"/projects",
 		url.QueryEscape(projectID),

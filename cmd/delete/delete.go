@@ -119,10 +119,10 @@ func (u *undeployer) do() (err error) {
 	switch u.service {
 	case "":
 		projectsClient := projects.New(we.Context())
-		err = projectsClient.Unlink(u.context, u.project)
+		err = projectsClient.Delete(u.context, u.project)
 	default:
 		servicesClient := services.New(we.Context())
-		err = servicesClient.Unlink(u.context, u.project, u.service)
+		err = servicesClient.Delete(u.context, u.project, u.service)
 	}
 
 	if err != nil {

@@ -437,44 +437,6 @@ func TestGetEnvironmentVariables(t *testing.T) {
 	servertest.Teardown()
 }
 
-func TestLink(t *testing.T) {
-	servertest.Setup()
-
-	servertest.Mux.HandleFunc(
-		"/projects/sound/services",
-		func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "POST" {
-				t.Errorf("Expected install method to be PUT")
-			}
-
-			var body, err = ioutil.ReadAll(r.Body)
-
-			if err != nil {
-				t.Error(err)
-			}
-
-			var data map[string]json.RawMessage
-
-			err = json.Unmarshal(body, &data)
-
-			if err != nil {
-				t.Error(err)
-			}
-
-			jsonlib.AssertJSONMarshal(t,
-				`{"serviceId":"speaker", "scale": 1, "source": "mocks/app/speaker"}`,
-				data)
-		})
-
-	var err = client.Link(context.Background(), "sound", Service{ServiceID: "speaker"}, "mocks/app/speaker")
-
-	if err != nil {
-		t.Errorf("Unexpected error on Install: %v", err)
-	}
-
-	servertest.Teardown()
-}
-
 func TestRead(t *testing.T) {
 	var c, err = Read("mocks/app/email")
 
@@ -632,7 +594,7 @@ func TestUnlink(t *testing.T) {
 		}
 	})
 
-	var err = client.Unlink(context.Background(), "foo", "bar")
+	var err = client.Delete(context.Background(), "foo", "bar")
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v instead", err)

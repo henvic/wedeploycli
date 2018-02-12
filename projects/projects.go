@@ -135,8 +135,8 @@ func (c *Client) ListWithServices(ctx context.Context) (list []Project, err erro
 	return list, err
 }
 
-// Unlink project
-func (c *Client) Unlink(ctx context.Context, projectID string) error {
+// Delete project
+func (c *Client) Delete(ctx context.Context, projectID string) error {
 	var req = c.Client.URL(ctx, "/projects", projectID)
 	c.Client.Auth(req)
 
