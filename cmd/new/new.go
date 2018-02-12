@@ -2,7 +2,6 @@ package new
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/wedeploy/cli/cmd/canceled"
 	"github.com/wedeploy/cli/cmd/internal/we"
@@ -45,13 +44,12 @@ func newRun(cmd *cobra.Command, args []string) error {
 		return cmd.Help()
 	}
 
-	fmt.Println(fancy.Question("Do you want to create a new project or install a new service?"))
 	var options = fancy.Options{}
 	options.Add("1", "Create a project")
 	options.Add("2", "Install a service")
 	options.Add("3", "Cancel")
 
-	switch option, err := options.Ask("What is your option"); option {
+	switch option, err := options.Ask("Do you want to create a new project or install a new service?"); option {
 	case "1", "p", "project":
 		return project.Cmd.RunE(cmd, []string{})
 	case "2", "s", "service":

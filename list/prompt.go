@@ -132,12 +132,11 @@ func chooseSelectionForProjectOrService(option string, projects []projects.Proje
 }
 
 func dedupPromptProjectOrService(projectCandidate, serviceCandidate *Selection) (*Selection, error) {
-	fmt.Println(fancy.Question("There is both a service and a project with the same ID."))
 	var options = fancy.Options{}
 	options.Add("1", "project")
 	options.Add("2", "service")
 
-	switch option, err := options.Ask("What is your option"); option {
+	switch option, err := options.Ask("There is both a service and a project with the same ID."); option {
 	case "1", "p", "project":
 		return projectCandidate, nil
 	case "2", "s", "service":
