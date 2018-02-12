@@ -1,37 +1,36 @@
-package set
+package add
 
 import (
 	"context"
-	"errors"
-
-	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmd/env/internal/commands"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/services"
 )
 
-// Cmd for removing a domain
+// Cmd for setting an environment variable
 var Cmd = &cobra.Command{
 	Use:     "set",
 	Aliases: []string{"add"},
 	Short:   "Set an environment variable for a given service",
 	Example: `  we env set key value
   we env set key=value`,
-	Args:    cobra.RangeArgs(1, 2),
 	PreRunE: preRun,
 	RunE:    run,
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern:             cmdflagsfromhost.FullHostPattern,
-	UseServiceDirectory: true,
+	Pattern: cmdflagsfromhost.FullHostPattern,
+
 	Requires: cmdflagsfromhost.Requires{
 		Auth:    true,
 		Project: true,
 		Service: true,
 	},
+
+	PromptMissingService: true,
 }
 
 func init() {
@@ -42,43 +41,11 @@ func preRun(cmd *cobra.Command, args []string) error {
 	return setupHost.Process(context.Background(), we.Context())
 }
 
-func getEnvPair(args []string) (key, value string, err error) {
-	key = args[0]
-
-	// don't check if value for environment variable is empty
-	// as it is an acceptable value, no matter how useless it might be
-
-	if len(args) == 2 {
-		value = args[1]
-	}
-
-	if value == "" && len(args) == 1 {
-		var v = strings.SplitN(key, "=", 2)
-
-		if len(v) != 2 {
-			return "", "", errors.New("Missing environment variable value")
-		}
-
-		key = v[0]
-		value = v[1]
-	}
-
-	return key, value, nil
-}
-
 func run(cmd *cobra.Command, args []string) error {
-	var key, value, err = getEnvPair(args)
-
-	if err != nil {
-		return err
+	var c = commands.Command{
+		SetupHost:      setupHost,
+		ServicesClient: services.New(we.Context()),
 	}
 
-	servicesClient := services.New(we.Context())
-
-	return servicesClient.SetEnvironmentVariable(
-		context.Background(),
-		setupHost.Project(),
-		setupHost.Service(),
-		key,
-		value)
+	return c.Add(context.Background(), args)
 }

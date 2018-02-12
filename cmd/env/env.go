@@ -2,42 +2,53 @@ package env
 
 import (
 	"context"
-	"fmt"
-	"sort"
 
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmd/env/internal/commands"
 	cmdenvset "github.com/wedeploy/cli/cmd/env/set"
+	cmdenvshow "github.com/wedeploy/cli/cmd/env/show"
 	cmdenvunset "github.com/wedeploy/cli/cmd/env/unset"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
+	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/services"
-	"github.com/wedeploy/cli/verbose"
 )
+
+type interativeEnvCmd struct {
+	ctx context.Context
+	c   commands.Command
+}
+
+var ie = &interativeEnvCmd{}
 
 // EnvCmd controls the envs for a given project
 var EnvCmd = &cobra.Command{
 	Use:   "env",
 	Short: "Show and configure environment variables for services",
 	Long:  `Show and configure environment variables for services. You must restart the service afterwards.`,
-	Example: `  we env (to list environment variables)
+	Example: `  we env (to list and change your environment variables values)
   we env set foo bar
   we env rm foo`,
-	Args:    cobra.MaximumNArgs(1),
-	PreRunE: preRun,
-	RunE:    run,
+	Args:    cobra.NoArgs,
+	PreRunE: ie.preRun,
+	RunE:    ie.run,
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern:             cmdflagsfromhost.FullHostPattern,
-	UseServiceDirectory: true,
+	Pattern: cmdflagsfromhost.FullHostPattern,
+
 	Requires: cmdflagsfromhost.Requires{
 		Auth:    true,
 		Project: true,
 		Service: true,
 	},
+
+	PromptMissingService: true,
 }
 
-func preRun(cmd *cobra.Command, args []string) error {
+func (ie *interativeEnvCmd) preRun(cmd *cobra.Command, args []string) error {
+	ie.ctx = context.Background()
+
 	if _, _, err := cmd.Find(args); err != nil {
 		return err
 	}
@@ -45,35 +56,57 @@ func preRun(cmd *cobra.Command, args []string) error {
 	return setupHost.Process(context.Background(), we.Context())
 }
 
-func run(cmd *cobra.Command, args []string) error {
-	servicesClient := services.New(we.Context())
+func (ie *interativeEnvCmd) run(cmd *cobra.Command, args []string) error {
+	ie.c = commands.Command{
+		SetupHost:      setupHost,
+		ServicesClient: services.New(we.Context()),
+	}
 
-	var envs, err = servicesClient.GetEnvironmentVariables(context.Background(),
-		setupHost.Project(),
-		setupHost.Service())
+	if err := ie.c.Show(ie.ctx); err != nil {
+		return err
+	}
+
+	var operations = fancy.Options{}
+
+	const (
+		addOption   = "a"
+		unsetOption = "d"
+	)
+
+	operations.Add(addOption, "Add environment variable")
+	operations.Add(unsetOption, "Delete environment variable")
+
+	op, err := operations.Ask("Select one of the operations for \"" + setupHost.Host() + "\":")
 
 	if err != nil {
 		return err
 	}
 
-	if len(envs) == 0 {
-		verbose.Debug("No environment variable found.")
-		return nil
+	switch op {
+	case unsetOption:
+		err = ie.unsetCmd()
+	default:
+		err = ie.addCmd()
 	}
 
-	sort.Slice(envs, func(i, j int) bool {
-		return envs[i].Name < envs[j].Name
-	})
-
-	for _, v := range envs {
-		fmt.Printf("%v=%v\n", v.Name, v.Value)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	return ie.c.Show(ie.ctx)
+}
+
+func (ie *interativeEnvCmd) addCmd() error {
+	return ie.c.Add(ie.ctx, []string{})
+}
+
+func (ie *interativeEnvCmd) unsetCmd() error {
+	return ie.c.Delete(ie.ctx, []string{})
 }
 
 func init() {
 	setupHost.Init(EnvCmd)
+	EnvCmd.AddCommand(cmdenvshow.Cmd)
 	EnvCmd.AddCommand(cmdenvset.Cmd)
 	EnvCmd.AddCommand(cmdenvunset.Cmd)
 }

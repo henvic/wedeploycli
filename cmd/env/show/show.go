@@ -1,4 +1,4 @@
-package unset
+package show
 
 import (
 	"context"
@@ -10,12 +10,13 @@ import (
 	"github.com/wedeploy/cli/services"
 )
 
-// Cmd for removing an environment variable
+// Cmd for showing
 var Cmd = &cobra.Command{
-	Use:     "rm",
-	Aliases: []string{"unset", "del", "delete"},
-	Short:   "Remove an environment variable for a given service",
-	Example: "  we env rm foo",
+	Use:     "show",
+	Aliases: []string{"list"},
+	Short:   "Show your environment variable values for a given service",
+	Example: `  we env show
+  we env show key`,
 	PreRunE: preRun,
 	RunE:    run,
 }
@@ -46,13 +47,5 @@ func run(cmd *cobra.Command, args []string) error {
 		ServicesClient: services.New(we.Context()),
 	}
 
-	ctx := context.Background()
-
-	if len(args) == 0 {
-		if err := c.Show(ctx); err != nil {
-			return err
-		}
-	}
-
-	return c.Delete(ctx, args)
+	return c.Show(context.Background(), args...)
 }
