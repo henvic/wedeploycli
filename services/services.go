@@ -502,6 +502,40 @@ func Read(path string) (*ServicePackage, error) {
 	return &data, nil
 }
 
+type requestBodySetEnv struct {
+	Env envMap `json:"env"`
+}
+
+type envMap map[string]string
+
+// SetEnvironmentVariables redefines the set of current environment variables
+func (c *Client) SetEnvironmentVariables(ctx context.Context, projectID, serviceID string, envs []EnvironmentVariable) error {
+	var req = c.Client.URL(ctx,
+		"/projects",
+		url.QueryEscape(projectID),
+		"/services",
+		url.QueryEscape(serviceID),
+		"/environment-variables/")
+
+	c.Client.Auth(req)
+
+	var em = envMap{}
+
+	for _, e := range envs {
+		em[e.Name] = e.Value
+	}
+
+	var m = requestBodySetEnv{
+		Env: em,
+	}
+
+	if err := apihelper.SetBody(req, m); err != nil {
+		return errwrap.Wrapf("Can not set body for setting environment variable: {{err}}", err)
+	}
+
+	return apihelper.Validate(req, req.Put())
+}
+
 // SetEnvironmentVariable sets an environment variable
 func (c *Client) SetEnvironmentVariable(ctx context.Context, projectID, serviceID, key, value string) error {
 	var req = c.Client.URL(ctx,

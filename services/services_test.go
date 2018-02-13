@@ -484,6 +484,54 @@ func TestReadCorrupted(t *testing.T) {
 	}
 }
 
+func TestSetEnvironmentVariables(t *testing.T) {
+	servertest.Setup()
+
+	var envs = []EnvironmentVariable{
+		EnvironmentVariable{
+			Name:  "xyz",
+			Value: "abc",
+		},
+	}
+
+	var want = requestBodySetEnv{
+		Env: envMap{
+			"xyz": "abc",
+		},
+	}
+
+	servertest.Mux.HandleFunc("/projects/foo/services/bar/environment-variables",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodPut {
+				t.Errorf("Expected method %v, got %v instead", http.MethodPut, r.Method)
+			}
+
+			var body, err = ioutil.ReadAll(r.Body)
+
+			if err != nil {
+				t.Errorf("Error parsing response")
+			}
+
+			var got requestBodySetEnv
+
+			err = json.Unmarshal(body, &got)
+
+			if err != nil {
+				t.Error(err)
+			}
+
+			if !reflect.DeepEqual(want, got) {
+				t.Errorf("Expected received values for environment variables doesn't match.")
+			}
+		})
+
+	if err := client.SetEnvironmentVariables(context.Background(), "foo", "bar", envs); err != nil {
+		t.Errorf("Expected no error when setting environment variables, got %v instead", err)
+	}
+
+	servertest.Teardown()
+}
+
 func TestSetEnvironmentVariable(t *testing.T) {
 	servertest.Setup()
 
