@@ -162,7 +162,7 @@ func (c *Command) getAddEnvs(args []string) (envs []services.EnvironmentVariable
 }
 
 func splitEnvKeyValueParameters(args []string) (envs []services.EnvironmentVariable, err error) {
-	if len(args) == 2 {
+	if len(args) == 2 && !strings.Contains(args[0], "=") && !strings.Contains(args[1], "=") {
 		envs = append(envs, services.EnvironmentVariable{
 			Name:  args[0],
 			Value: args[1],
