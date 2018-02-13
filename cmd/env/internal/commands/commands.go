@@ -114,6 +114,8 @@ func (c *Command) Add(ctx context.Context, args []string) error {
 }
 
 func (c *Command) getAddEnvs(args []string) (envs []services.EnvironmentVariable, err error) {
+	args = filterEmptyEnvValues(args)
+
 	if len(args) == 0 {
 		fmt.Println(fancy.Question("Type environment variables for \"" + c.SetupHost.Host() + "\" (e.g., A=1 B=2 C=3)"))
 		var argss string
@@ -198,7 +200,7 @@ func (c *Command) getDeleteEnvKeys(args []string) ([]string, error) {
 		}
 	}
 
-	return filterEmptyEnvKeys(envs), nil
+	return filterEmptyEnvValues(envs), nil
 }
 
 func (c *Command) getEnvKeyOrOption(answer string) string {
@@ -216,7 +218,7 @@ func (c *Command) getEnvKeyOrOption(answer string) string {
 	}
 }
 
-func filterEmptyEnvKeys(envKeys []string) []string {
+func filterEmptyEnvValues(envKeys []string) []string {
 	var filtered []string
 
 	for _, e := range envKeys {
