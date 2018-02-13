@@ -14,7 +14,8 @@ import (
 )
 
 var (
-	file string
+	file    string
+	replace bool
 )
 
 // Cmd for setting an environment variable
@@ -45,6 +46,8 @@ func init() {
 	setupHost.Init(Cmd)
 	Cmd.Flags().StringVarP(&file, "file", "F", "",
 		"Read environment variables from file")
+	Cmd.Flags().BoolVar(&replace, "replace", false,
+		"Replace set of environment variables")
 }
 
 func checkFileAndArgs(cmd *cobra.Command, args []string) error {
@@ -84,7 +87,15 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		if err != nil {
 			return err
 		}
+
+		c.SkipPrompt = true
 	}
 
-	return c.Add(context.Background(), args)
+	ctx := context.Background()
+
+	if replace {
+		return c.Replace(ctx, args)
+	}
+
+	return c.Add(ctx, args)
 }

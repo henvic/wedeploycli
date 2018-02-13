@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"sort"
@@ -13,9 +14,13 @@ import (
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/fancy"
+	"github.com/wedeploy/cli/isterm"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/services"
 )
+
+// ErrNoEnvToAdd is used when there is no environment varaible to add
+var ErrNoEnvToAdd = errors.New("no environment variable to add")
 
 // Command for environment variables
 type Command struct {
@@ -23,6 +28,8 @@ type Command struct {
 	ServicesClient *services.Client
 
 	Envs []services.EnvironmentVariable
+
+	SkipPrompt bool
 }
 
 func has(filterEnvKeys []string, key string) bool {
@@ -113,10 +120,29 @@ func (c *Command) Add(ctx context.Context, args []string) error {
 	return nil
 }
 
+// Replace environment variables
+func (c *Command) Replace(ctx context.Context, args []string) error {
+	var envs, err = c.getAddEnvs(args)
+
+	if err != nil && err != ErrNoEnvToAdd {
+		return err
+	}
+
+	if err = c.ServicesClient.SetEnvironmentVariables(ctx, c.SetupHost.Project(), c.SetupHost.Service(), envs); err != nil {
+		return err
+	}
+
+	for _, env := range envs {
+		fmt.Printf("Environment variable \"%v\" added.\n", env.Name)
+	}
+
+	return nil
+}
+
 func (c *Command) getAddEnvs(args []string) (envs []services.EnvironmentVariable, err error) {
 	args = filterEmptyEnvValues(args)
 
-	if len(args) == 0 {
+	if len(args) == 0 && !c.SkipPrompt && isterm.Check() {
 		fmt.Println(fancy.Question("Type environment variables for \"" + c.SetupHost.Host() + "\" (e.g., A=1 B=2 C=3)"))
 		var argss string
 		argss, err = fancy.Prompt()
@@ -126,6 +152,10 @@ func (c *Command) getAddEnvs(args []string) (envs []services.EnvironmentVariable
 		}
 
 		args = strings.Split(argss, " ")
+	}
+
+	if strings.Join(args, "") == "" {
+		return envs, ErrNoEnvToAdd
 	}
 
 	return splitEnvKeyValueParameters(args)
