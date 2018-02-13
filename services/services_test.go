@@ -485,10 +485,9 @@ func TestReadCorrupted(t *testing.T) {
 }
 
 func TestSetEnvironmentVariable(t *testing.T) {
-	t.Skipf("Skipping until https://github.com/wedeploy/cli/issues/186 is closed")
 	servertest.Setup()
 
-	servertest.Mux.HandleFunc("/projects/foo/services/bar/env/xyz",
+	servertest.Mux.HandleFunc("/projects/foo/services/bar/environment-variables/xyz",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != http.MethodPut {
 				t.Errorf("Expected method %v, got %v instead", http.MethodPut, r.Method)
@@ -500,10 +499,20 @@ func TestSetEnvironmentVariable(t *testing.T) {
 				t.Errorf("Error parsing response")
 			}
 
-			var wantBody = `"abc"`
+			var want = map[string]string{
+				"value": "abc",
+			}
 
-			if string(body) != wantBody {
-				t.Errorf("Wanted body to be %v, got %v instead", wantBody, string(body))
+			var got map[string]string
+
+			err = json.Unmarshal(body, &got)
+
+			if err != nil {
+				t.Error(err)
+			}
+
+			if !reflect.DeepEqual(want, got) {
+				t.Errorf("Expected received values for environment variable doesn't match.")
 			}
 		})
 
@@ -515,10 +524,9 @@ func TestSetEnvironmentVariable(t *testing.T) {
 }
 
 func TestUnsetEnvironmentVariable(t *testing.T) {
-	t.Skipf("Skipping until https://github.com/wedeploy/cli/issues/186 is closed")
 	servertest.Setup()
 
-	servertest.Mux.HandleFunc("/projects/foo/services/bar/env/xyz",
+	servertest.Mux.HandleFunc("/projects/foo/services/bar/environment-variables/xyz",
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != http.MethodDelete {
 				t.Errorf("Expected method %v, got %v instead", http.MethodDelete, r.Method)
@@ -526,7 +534,7 @@ func TestUnsetEnvironmentVariable(t *testing.T) {
 		})
 
 	if err := client.UnsetEnvironmentVariable(context.Background(), "foo", "bar", "xyz"); err != nil {
-		t.Errorf("Expected no error when adding domains, got %v instead", err)
+		t.Errorf("Expected no error when unsetting environment variable, got %v instead", err)
 	}
 
 	servertest.Teardown()
