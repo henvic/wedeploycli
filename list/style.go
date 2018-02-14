@@ -21,6 +21,10 @@ var projectsHeaders = []string{
 	"Status",
 }
 
+var detailedProjectsHeaders = []string{
+	"Created at",
+}
+
 var servicesHeaders = []string{
 	"Project",
 	"Service",
@@ -81,7 +85,7 @@ func (l *List) printProjectsOnlyHeaders() {
 	projectsHeader += strings.Join(projectsHeaders, "\t")
 
 	if l.Detailed {
-		projectsHeader += "\t" + strings.Join(detailedServicesHeaders, "\t")
+		projectsHeader += "\t" + strings.Join(detailedProjectsHeaders, "\t")
 	}
 
 	if formatter.Human {
@@ -125,10 +129,24 @@ func (l *List) printProject(p projects.Project) {
 	}
 
 	if l.Filter.HideServices {
-		l.Printf("%v    \t%v\n", p.ProjectID, p.Health)
+		l.printProjectOnly(p)
 		return
 	}
 
+	l.printProjectServices(p)
+}
+
+func (l *List) printProjectOnly(p projects.Project) {
+	l.Printf("%v    \t%v", p.ProjectID, p.Health)
+
+	if l.Detailed {
+		l.Printf("    %v\t", p.CreatedAtTime().Format(time.RFC822))
+	}
+
+	l.Printf("\n")
+}
+
+func (l *List) printProjectServices(p projects.Project) {
 	cs := p.Services
 
 	for _, service := range cs {

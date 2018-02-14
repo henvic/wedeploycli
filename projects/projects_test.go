@@ -6,6 +6,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
@@ -34,6 +35,20 @@ func TestMain(m *testing.M) {
 
 	client = New(wectx)
 	os.Exit(m.Run())
+}
+
+func TestProjectCreatedAtTimeHelper(t *testing.T) {
+	var s = Project{
+		ProjectID: "abc",
+		CreatedAt: 1517599604871,
+	}
+
+	var got = s.CreatedAtTime()
+	var want = time.Date(2018, time.February, 2, 19, 26, 44, 0, time.UTC)
+
+	if !got.Equal(want) {
+		t.Errorf("Expected time didn't match: wanted %v, got %v", want, got)
+	}
 }
 
 func TestCreate(t *testing.T) {

@@ -1,12 +1,10 @@
-package list
+package listservices
 
 import (
 	"context"
 	"fmt"
 
 	"github.com/wedeploy/cli/cmd/internal/we"
-	listprojects "github.com/wedeploy/cli/cmd/list/projects"
-	listservices "github.com/wedeploy/cli/cmd/list/services"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/list"
@@ -16,12 +14,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ListCmd is used for getting a list of projects and services
-var ListCmd = &cobra.Command{
-	Use: "list",
-	Example: `  we list --project chat --service data
-   we list --url data-chat.wedeploy.io`,
-	Short:   "Show list of projects and services",
+// ListServicesCmd is used for getting a list of projects and services
+var ListServicesCmd = &cobra.Command{
+	Use: "services",
+	Example: `  we list services --project chat --service data
+   we list services --url data-chat.wedeploy.io`,
+	Short:   "Show list of services",
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,
 	RunE:    listRun,
@@ -34,9 +32,14 @@ var (
 
 var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern: cmdflagsfromhost.FullHostPattern,
+
 	Requires: cmdflagsfromhost.Requires{
-		Auth: true,
+		Auth:    true,
+		Project: true,
 	},
+
+	HideServicesPrompt:   true,
+	PromptMissingProject: true,
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
@@ -95,13 +98,11 @@ func listRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	setupHost.Init(ListCmd)
+	setupHost.Init(ListServicesCmd)
 
-	ListCmd.Flags().BoolVarP(
+	ListServicesCmd.Flags().BoolVarP(
 		&detailed,
 		"detailed", "d", false, "Show more services details")
 
-	ListCmd.Flags().BoolVarP(&watch, "watch", "w", false, "Show and watch for changes")
-	ListCmd.AddCommand(listservices.ListServicesCmd)
-	ListCmd.AddCommand(listprojects.ListProjectsCmd)
+	ListServicesCmd.Flags().BoolVarP(&watch, "watch", "w", false, "Show and watch for changes")
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"sort"
+	"time"
 
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
@@ -31,8 +32,15 @@ type Project struct {
 	ProjectID   string `json:"projectId"`
 	Health      string `json:"health,omitempty"`
 	Description string `json:"description,omitempty"`
+	CreatedAt   int64  `json:"createdAt,omitempty"`
 
 	Services services.Services `json:"services,omitempty"`
+}
+
+// CreatedAtTime extracts from the Unix timestamp format and returns the createdAt value
+func (p *Project) CreatedAtTime() time.Time {
+	var createdAt = p.CreatedAt / 1000
+	return time.Unix(createdAt, 0)
 }
 
 var (
