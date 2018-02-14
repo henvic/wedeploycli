@@ -188,9 +188,9 @@ func TestInspectContextOverviewWithDuplicatedServices(t *testing.T) {
 
 func TestInspectServiceCorruptedOnContextOverview(t *testing.T) {
 	var _, err = InspectContext("", "./mocks/corrupted-service-outside-project")
-	var wantErr = fmt.Sprintf(`can't load service on %v: error parsing wedeploy.json on %v:`+
-		` invalid character ':' after top-level value`,
-		abs("./mocks/corrupted-service-outside-project"),
+	var wantErr = fmt.Sprintf(`error parsing wedeploy.json on %v:`+
+		` invalid character ':' after top-level value.
+The wedeploy.json file syntax is described at https://wedeploy.com/docs/deploy/configuring-deployments/`,
 		abs("./mocks/corrupted-service-outside-project"))
 
 	if err == nil || err.Error() != wantErr {

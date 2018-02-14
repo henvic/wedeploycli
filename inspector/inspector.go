@@ -1,9 +1,11 @@
 package inspector
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/findresource"
@@ -37,13 +39,20 @@ type ContextOverview struct {
 func (overview *ContextOverview) loadService(directory string) error {
 	var servicePath, _, cerr = getServicePackage(directory)
 
-	switch {
-	case os.IsNotExist(cerr):
-	case cerr != nil:
-		return errwrap.Wrapf("can't load service on "+servicePath+": {{err}}", cerr)
+	if cerr == nil || os.IsNotExist(cerr) {
+		return nil
 	}
 
-	return nil
+	if errwrap.GetType(cerr, &json.SyntaxError{}) != nil {
+		return errwrap.Wrapf(`{{err}}.
+The wedeploy.json file syntax is described at https://wedeploy.com/docs/deploy/configuring-deployments/`, cerr)
+	}
+
+	if strings.Contains(cerr.Error(), servicePath) {
+		return cerr
+	}
+
+	return errwrap.Wrapf("can't load service on "+servicePath+": {{err}}", cerr)
 }
 
 // Load the context overview for a given directory
