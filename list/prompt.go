@@ -15,7 +15,13 @@ import (
 
 // PromptProject from the list selection
 func (l *List) PromptProject(ctx context.Context, wectx config.Context) (*Selection, error) {
-	fmt.Print("Please select a project from the list below.\n")
+	switch l.CreateProjectOnEmpty {
+	case true:
+		fmt.Print("Please select a project from the list below or create a new one.\n")
+	default:
+		fmt.Print("Please select a project from the list below.\n")
+	}
+
 	l.SelectNumber = true
 	l.Filter.HideServices = true
 
@@ -45,6 +51,12 @@ func (l *List) PromptProject(ctx context.Context, wectx config.Context) (*Select
 	}
 
 	selection, err := l.getSelection(option)
+
+	if err != nil && l.CreateProjectOnEmpty {
+		return &Selection{
+			Project: option,
+		}, nil
+	}
 
 	if err == nil {
 		fmt.Println("")

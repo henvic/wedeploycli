@@ -11,10 +11,16 @@ import (
 
 var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern: cmdflagsfromhost.FullHostPattern,
+
 	Requires: cmdflagsfromhost.Requires{
-		Auth: true,
+		Auth:    true,
+		Project: true,
 	},
-	AllowMissingProject: true,
+
+	AllowMissingProject:  true,
+	PromptMissingProject: true,
+	HideServicesPrompt:   true,
+	CreateProjectOnEmpty: true,
 }
 
 var quiet bool

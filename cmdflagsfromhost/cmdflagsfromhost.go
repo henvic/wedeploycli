@@ -39,6 +39,7 @@ type SetupHost struct {
 	PromptMissingService bool
 	AllowMissingProject  bool
 	HideServicesPrompt   bool
+	CreateProjectOnEmpty bool
 	url                  string
 	project              string
 	service              string
@@ -310,6 +311,7 @@ func (s *SetupHost) promptMissingProjectOrService() (err error) {
 	}
 
 	var l = list.New(filter)
+	l.CreateProjectOnEmpty = s.CreateProjectOnEmpty
 	var selection *list.Selection
 
 	switch {
