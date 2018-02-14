@@ -187,7 +187,7 @@ func formatError(a interface{}) string {
 	}
 
 	switch l := errMsg[len(errMsg)-1:]; l {
-	case "!", ".", "?":
+	case "!", ".", "?", "/":
 	default:
 		errMsg = errMsg + "."
 	}
