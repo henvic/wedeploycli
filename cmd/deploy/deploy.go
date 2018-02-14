@@ -2,11 +2,13 @@ package deploy
 
 import (
 	"context"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/deploy/remote"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
+	"github.com/wedeploy/cli/inspector"
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{
@@ -34,7 +36,22 @@ var DeployCmd = &cobra.Command{
 	RunE:    runRun,
 }
 
+func validateWedeployJSONs() error {
+	wd, err := os.Getwd()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = inspector.InspectContext("", wd)
+	return err
+}
+
 func preRun(cmd *cobra.Command, args []string) error {
+	if err := validateWedeployJSONs(); err != nil {
+		return err
+	}
+
 	return setupHost.Process(context.Background(), we.Context())
 }
 
