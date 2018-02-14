@@ -34,6 +34,7 @@ var (
 
 var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern: cmdflagsfromhost.FullHostPattern,
+
 	Requires: cmdflagsfromhost.Requires{
 		Auth: true,
 	},
