@@ -68,6 +68,10 @@ function passVimExtension() {
   echo "If you use the Vim editor, see https://github.com/fatih/vim-go"
 }
 
+function passSublimeExtension() {
+  echo "If you use Sublime, try the GoSublime extension."
+}
+
 function passGoVisualCodeExtension() {
   (which code >> /dev/null) && ec=$? || ec=$?
 
@@ -292,6 +296,7 @@ welcome
 passGit
 passGo
 passVimExtension
+passSublimeExtension
 passGoVisualCodeExtension
 setupGopath
 setupI
