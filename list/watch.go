@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/wedeploy/cli/errorhandling"
+	"github.com/wedeploy/cli/errorhandler"
 )
 
 func (l *List) watchHandler() {
@@ -30,7 +30,7 @@ func (l *List) watchHandler() {
 			return
 		}
 
-		l.Printf("%v #%d\n", errorhandling.Handle(le), retry)
+		l.Printf("%v #%d\n", errorhandler.Handle(le), retry)
 		return
 	}
 

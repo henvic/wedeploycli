@@ -22,7 +22,7 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/envs"
-	"github.com/wedeploy/cli/errorhandling"
+	"github.com/wedeploy/cli/errorhandler"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/metrics"
@@ -120,7 +120,7 @@ func printError(e error) {
 
 func (m *mainProgram) executeCommand() {
 	m.cmd, m.cmdErr = root.Cmd.ExecuteC()
-	m.cmdFriendlyErr = errorhandling.Handle(m.cmdErr)
+	m.cmdFriendlyErr = errorhandler.Handle(m.cmdErr)
 
 	switch m.cmdErr.(type) {
 	case canceled.Command:
@@ -142,7 +142,7 @@ func (m *mainProgram) executeCommand() {
 
 	if m.cmdErr != nil {
 		m.commandErrorConditionalUsage()
-		errorhandling.RunAfterError()
+		errorhandler.RunAfterError()
 		verbose.PrintDeferred()
 
 		var maybeExitErr = errwrap.GetType(m.cmdErr, &exec.ExitError{})
@@ -172,7 +172,7 @@ func (m *mainProgram) getCommandErrorDetails() map[string]string {
 	}
 
 	var extra = map[string]string{
-		"error_type": errorhandling.GetTypes(m.cmdErr),
+		"error_type": errorhandler.GetTypes(m.cmdErr),
 	}
 
 	if m.cmdErr.Error() != m.cmdFriendlyErr.Error() {
@@ -207,7 +207,7 @@ func (m *mainProgram) maybeSubmitAnalyticsReport() {
 		if err := metrics.SubmitEventuallyOnBackground(m.config); err != nil {
 			fmt.Fprintf(os.Stderr,
 				"Error trying to submit analytics on background: %v\n",
-				errorhandling.Handle(err))
+				errorhandler.Handle(err))
 		}
 	}
 }
@@ -225,7 +225,7 @@ func (cl *configLoader) loadConfig() {
 	cl.wectx = wectx
 
 	if err != nil {
-		printError(errorhandling.Handle(err))
+		printError(errorhandler.Handle(err))
 		verbose.PrintDeferred()
 		os.Exit(1)
 	}
@@ -259,7 +259,7 @@ func (cl *configLoader) applyChanges() {
 	}
 
 	if err := cl.wectx.Config().Save(); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", errorhandling.Handle(err))
+		fmt.Fprintf(os.Stderr, "%v\n", errorhandler.Handle(err))
 		verbose.PrintDeferred()
 		os.Exit(1)
 	}
@@ -286,7 +286,7 @@ func isCommand(cmd string) bool {
 }
 
 func setErrorHandlingCommandName() {
-	errorhandling.CommandName = strings.Join(os.Args[1:], " ")
+	errorhandler.CommandName = strings.Join(os.Args[1:], " ")
 }
 
 func panickingListener(panicking *bool) {
@@ -294,7 +294,7 @@ func panickingListener(panicking *bool) {
 		return
 	}
 
-	errorhandling.Info()
+	errorhandler.Info()
 	// don't recover from panic to get more context
 	// to avoid having to handle it
 	// unless we find out it is really useful later

@@ -23,7 +23,7 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/envs"
-	"github.com/wedeploy/cli/errorhandling"
+	"github.com/wedeploy/cli/errorhandler"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/timehelper"
@@ -276,7 +276,7 @@ func (d *Deploy) Do(ctx context.Context) error {
 	var askLogs = (len(states.BuildFailed) != 0 || len(states.DeployFailed) != 0)
 
 	if askLogs {
-		errorhandling.SetAfterError(func() {
+		errorhandler.SetAfterError(func() {
 			d.maybeOpenLogs(states)
 		})
 	}

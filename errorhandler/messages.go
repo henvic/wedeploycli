@@ -1,4 +1,4 @@
-package errorhandling
+package errorhandler
 
 var errorReasonMessage = messages{
 	"restricted":                     "Access is restricted to collaborators",

@@ -18,7 +18,7 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/colorwheel"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/errorhandling"
+	"github.com/wedeploy/cli/errorhandler"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -265,7 +265,7 @@ func (w *Watcher) pool() {
 
 	if err != nil {
 		errStreamMutex.Lock()
-		fmt.Fprintf(errStream, "%v\n", errorhandling.Handle(err))
+		fmt.Fprintf(errStream, "%v\n", errorhandler.Handle(err))
 		errStreamMutex.Unlock()
 		return
 	}
@@ -283,7 +283,7 @@ func (w *Watcher) pool() {
 
 	if err := w.incSinceArgument(list); err != nil {
 		errStreamMutex.Lock()
-		fmt.Fprintf(errStream, "%v\n", errorhandling.Handle(err))
+		fmt.Fprintf(errStream, "%v\n", errorhandler.Handle(err))
 		errStreamMutex.Unlock()
 		return
 	}
