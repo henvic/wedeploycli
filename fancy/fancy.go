@@ -186,10 +186,6 @@ func formatError(a interface{}) string {
 		errMsg = fmt.Sprintf("%s%s", strings.ToUpper(errMsg[0:1]), errMsg[1:])
 	}
 
-	if strings.Contains(errMsg, "\n") {
-		return errMsg
-	}
-
 	switch l := errMsg[len(errMsg)-1:]; l {
 	case "!", ".", "?":
 	default:
