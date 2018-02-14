@@ -2,7 +2,7 @@
 
 Install this tool with
 
-`curl http://cdn.wedeploy.com/cli/latest/wedeploy.sh -sL | bash`
+`curl https://cdn.wedeploy.com/cli/latest/wedeploy.sh -fsSL | bash`
 
 or download from our [stable release channel](https://dl.equinox.io/wedeploy/we/stable).
 
