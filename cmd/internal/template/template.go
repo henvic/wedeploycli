@@ -143,6 +143,7 @@ func (up *usagePrinter) printFlags() {
 		"long-help",
 		"quiet",
 		"no-color",
+		"no-tty",
 		"verbose",
 		"defer-verbose",
 		"no-verbose-requests",

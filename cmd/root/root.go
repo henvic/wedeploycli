@@ -15,6 +15,7 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/envs"
+	"github.com/wedeploy/cli/isterm"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 )
@@ -86,6 +87,12 @@ func init() {
 		false,
 		"Disable color output")
 
+	Cmd.PersistentFlags().BoolVar(
+		&isterm.NoTTY,
+		"no-tty",
+		false,
+		"Run without terminal support")
+
 	Cmd.Flags().BoolVar(
 		&version,
 		"version", false, "Print version information and quit")
@@ -96,6 +103,7 @@ func init() {
 	cmdmanager.HidePersistentFlag("defer-verbose", Cmd)
 	cmdmanager.HidePersistentFlag("no-verbose-requests", Cmd)
 	cmdmanager.HidePersistentFlag("no-color", Cmd)
+	cmdmanager.HidePersistentFlag("no-tty", Cmd)
 
 	for _, c := range commands {
 		Cmd.AddCommand(c)

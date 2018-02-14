@@ -8,8 +8,15 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+// NoTTY helps to simulate a non-terminal process
+var NoTTY = false
+
 // Check if user is using terminal
 func Check() bool {
+	if NoTTY {
+		return false
+	}
+
 	_, skip := os.LookupEnv(envs.SkipTerminalVerification)
 	is := terminal.IsTerminal(int(os.Stdin.Fd()))
 
