@@ -30,7 +30,8 @@ var errorReasonMessage = messages{
 var errorReasonCommandMessageOverrides = map[string]messages{
 	"deploy": messages{
 		"invalidDocumentValue": "Access denied to this project",
-		"restricted":           "Access is restricted to collaborators: get permission or use another project ID",
+		"restricted": `Looks like this project already exists and you don't have access to it.
+Please try another project ID or make sure someone adds you as a collaborator`,
 	},
 	"remove": messages{
 		"deleteProject":  "Can not delete project",
