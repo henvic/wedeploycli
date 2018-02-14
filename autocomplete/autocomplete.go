@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/wedeploy/cli/deployment"
 )
 
 // RootCmd is the entry-point of the program
@@ -12,6 +13,10 @@ var RootCmd *cobra.Command
 
 // AutoInstall autocomplete
 func AutoInstall() {
+	if deployment.IsGitHomeSandbox() {
+		return
+	}
+
 	autoInstall()
 }
 

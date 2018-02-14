@@ -23,6 +23,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/deployment"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
@@ -164,12 +165,12 @@ func (e *eventRecorder) appendEvent() error {
 	var file, err = os.OpenFile(metricsPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
 	defer func() {
 		if ef := file.Close(); ef != nil {
-			verbose.Debug("Error appending metric to metrics file: %v", ef)
+			verbose.Debug("Error appending metric to metrics file:", ef)
 		}
 	}()
 
 	if err != nil {
-		return errwrap.Wrapf("Can not open metrics file: {{err}}", err)
+		return err
 	}
 
 	if _, err = file.Write(append(e.jsonMarshaled, []byte("\n")...)); err != nil {
@@ -237,6 +238,10 @@ func (s *Sender) trySend(ctx context.Context) (events int, err error) {
 // if the analytics reporting is enabled
 func SubmitEventuallyOnBackground(conf *config.Config) (err error) {
 	if !conf.EnableAnalytics {
+		return nil
+	}
+
+	if deployment.IsGitHomeSandbox() {
 		return nil
 	}
 
