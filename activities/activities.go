@@ -28,13 +28,13 @@ func New(wectx config.Context) *Client {
 
 // Activity record
 type Activity struct {
-	ID         string            `json:"id"`
-	CreatedAt  int64             `json:"createdAt"`
-	Commit     string            `json:"commit"`
-	ProjectID  string            `json:"projectId"`
-	ProjectUID string            `json:"projectUid"`
-	Type       string            `json:"type"`
-	Metadata   map[string]string `json:"metadata"`
+	ID         string                 `json:"id"`
+	CreatedAt  int64                  `json:"createdAt"`
+	Commit     string                 `json:"commit"`
+	ProjectID  string                 `json:"projectId"`
+	ProjectUID string                 `json:"projectUid"`
+	Type       string                 `json:"type"`
+	Metadata   map[string]interface{} `json:"metadata"`
 }
 
 // Activities slice

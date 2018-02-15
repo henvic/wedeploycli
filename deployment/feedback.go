@@ -178,7 +178,7 @@ func (d *Deploy) verifyFinalState() (states finalActivitiesStates, err error) {
 }
 
 func (d *Deploy) updateActivityState(a activities.Activity) {
-	var serviceID, ok = a.Metadata["serviceId"]
+	var serviceID, ok = a.Metadata["serviceId"].(string)
 
 	// stop processing if service is not any of the watched deployment cycle types,
 	// or if service ID is somehow not available
