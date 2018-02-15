@@ -197,22 +197,7 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 	var m = d.sActivities[serviceID].msgWLM
 	var pre string
 
-	var prefixes = map[string]string{
-		activities.BuildFailed:     "Build failed",
-		activities.BuildStarted:    "Build started",
-		activities.BuildPushed:     "Build pushed",
-		activities.BuildSucceeded:  "Build succeeded",
-		activities.DeployFailed:    "Deployment failed",
-		activities.DeployCanceled:  "Deployment canceled",
-		activities.DeployTimeout:   "Deployment timed out",
-		activities.DeployRollback:  "Deployment rollback",
-		activities.DeployCreated:   "Deployment created",
-		activities.DeployPending:   "Deployment pending",
-		activities.DeploySucceeded: "Deployment succeeded",
-		activities.DeployStarted:   "Deployment started",
-	}
-
-	if pre, ok = prefixes[a.Type]; !ok {
+	if pre, ok = activities.FriendlyActivities[a.Type]; !ok {
 		pre = a.Type
 	}
 

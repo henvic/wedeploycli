@@ -149,6 +149,22 @@ const (
 	ServiceRestarted = "SERVICE_RESTARTED"
 )
 
+// FriendlyActivities related to project
+var FriendlyActivities = map[string]string{
+	BuildFailed:     "Build failed",
+	BuildStarted:    "Build started",
+	BuildPushed:     "Build pushed",
+	BuildSucceeded:  "Build succeeded",
+	DeployFailed:    "Deployment failed",
+	DeployCanceled:  "Deployment canceled",
+	DeployTimeout:   "Deployment timed out",
+	DeployRollback:  "Deployment rollback",
+	DeployCreated:   "Deployment created",
+	DeployPending:   "Deployment pending",
+	DeploySucceeded: "Deployment succeeded",
+	DeployStarted:   "Deployment started",
+}
+
 var activityTemplates = map[string]string{
 	BuildFailed:                        "{{.Metadata.serviceId}} build failed on project {{.ProjectID}}",
 	BuildStarted:                       "{{.Metadata.serviceId}} build started on project {{.ProjectID}}",
