@@ -29,11 +29,14 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
+	Pattern: cmdflagsfromhost.ProjectAndRemotePattern,
+
 	Requires: cmdflagsfromhost.Requires{
 		Project: true,
 		Auth:    true,
 	},
-	Pattern: cmdflagsfromhost.ProjectAndRemotePattern,
+
+	PromptMissingProject: true,
 }
 
 func init() {
