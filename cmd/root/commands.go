@@ -13,7 +13,6 @@ import (
 	"github.com/wedeploy/cli/cmd/docs"
 	"github.com/wedeploy/cli/cmd/domain"
 	"github.com/wedeploy/cli/cmd/env"
-	"github.com/wedeploy/cli/cmd/gitcredentialhelper"
 	"github.com/wedeploy/cli/cmd/inspect"
 	"github.com/wedeploy/cli/cmd/list"
 	"github.com/wedeploy/cli/cmd/log"
@@ -55,7 +54,6 @@ var commands = []*cobra.Command{
 	versioncmd.VersionCmd,
 	inspect.InspectCmd,
 	who.WhoCmd,
-	gitcredentialhelper.GitCredentialHelperCmd,
 	about.AboutCmd,
 	metrics.MetricsCmd,
 	curl.CurlCmd,

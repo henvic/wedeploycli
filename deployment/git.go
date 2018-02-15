@@ -18,15 +18,6 @@ import (
 	"github.com/wedeploy/cli/verbose"
 )
 
-// GitHomeSandbox is a fake "$HOME" used as git sandbox (relative)
-var GitHomeSandbox = filepath.Join(".wedeploy", "git-sandbox")
-
-// IsGitHomeSandbox tells whether the execution is inside the git-sandbox
-// This is the case for "we git-credential-helper"
-func IsGitHomeSandbox() bool {
-	return strings.HasSuffix(userhome.GetHomeDir(), fmt.Sprintf("%c%s", filepath.Separator, GitHomeSandbox))
-}
-
 // CreateGitDirectory creates the git directory for the deployment
 func (d *Deploy) createGitDirectory() error {
 	return os.MkdirAll(d.getGitPath(), 0700)
@@ -55,9 +46,9 @@ func (d *Deploy) getConfigEnvs() (es []string) {
 		envs["GIT_CONFIG_NOSYSTEM"] = "true"
 	}
 
-	var ghsFullpath = filepath.Join(userhome.GetHomeDir(), GitHomeSandbox)
-	envs["HOME"] = ghsFullpath
-	envs["XDG_CONFIG_HOME"] = ghsFullpath
+	var sandboxHome = filepath.Join(userhome.GetHomeDir(), ".wedeploy", "git-sandbox")
+	envs["HOME"] = sandboxHome
+	envs["XDG_CONFIG_HOME"] = sandboxHome
 	envs["GIT_CONFIG"] = filepath.Join(d.getGitPath(), "config")
 
 	for key, value := range envs {

@@ -21,7 +21,6 @@ import (
 	colortemplate "github.com/wedeploy/cli/color/template"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/deployment"
 	"github.com/wedeploy/cli/envs"
 	"github.com/wedeploy/cli/errorhandler"
 	"github.com/wedeploy/cli/fancy"
@@ -98,8 +97,7 @@ func (m *mainProgram) autocomplete() {
 func (m *mainProgram) setupMetrics() {
 	metrics.SetPID(os.Getpid())
 
-	var homeDir = strings.TrimSuffix(userhome.GetHomeDir(), deployment.GitHomeSandbox)
-	var weMetricsPath = filepath.Join(homeDir, ".we_metrics")
+	var weMetricsPath = filepath.Join(userhome.GetHomeDir(), ".we_metrics")
 	metrics.SetPath(weMetricsPath)
 }
 

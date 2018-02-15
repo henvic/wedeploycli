@@ -23,7 +23,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/deployment"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/verbosereq"
 	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
@@ -238,10 +237,6 @@ func (s *Sender) trySend(ctx context.Context) (events int, err error) {
 // if the analytics reporting is enabled
 func SubmitEventuallyOnBackground(conf *config.Config) (err error) {
 	if !conf.EnableAnalytics {
-		return nil
-	}
-
-	if deployment.IsGitHomeSandbox() {
 		return nil
 	}
 
