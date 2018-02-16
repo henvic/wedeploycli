@@ -6,10 +6,10 @@ source ../procs/shared_procs.tcl
 # if env(TESTER_EMAIL) has a value, assume tester already exists
 # otherwise, default tester needs to be created
 if { ![info exists ::env(TESTER_EMAIL)] } {
-	print_msg "TESTER_EMAIL: $_tester(email)"
-	create_user $_tester(email)
+  print_msg "TESTER_EMAIL: $_tester(email)"
+  create_user $_tester(email)
 } else {
-	print_msg "TESTER_EMAIL: $::env(TESTER_EMAIL)"
+  print_msg "TESTER_EMAIL: $::env(TESTER_EMAIL)"
 }
 
 # initialize test report file
@@ -25,7 +25,7 @@ set test_files {
 
 # run tests
 foreach {test_file} $test_files {
-	source $test_file
+  source $test_file
 }
 
 print_msg "All done running tests!" green

@@ -7,43 +7,43 @@ set _tester(email) cli-tester@test.com
 set _tester(pw) test
 
 if { [info exists env(TESTER_EMAIL)] } {
-	set _tester(email) $::env(TESTER_EMAIL)
+  set _tester(email) $::env(TESTER_EMAIL)
 }
 
 proc add_to_report {text} {
-	set file [open $::_test_report a+]
-	puts $file $text
-	close $file
+  set file [open $::_test_report a+]
+  puts $file $text
+  close $file
 }
 
 proc handle_timeout {{message ""}} {
   print_msg "Timeout Error: $message" red
   set stack [print_stack]
 
-	add_to_report "Timeout Error:\n$stack"
+  add_to_report "Timeout Error:\n$stack"
 
-	set timeout $::_default_timeout
-	send \003  ;# control-C
-	expect expect-cli/tests
+  set timeout $::_default_timeout
+  send \003  ;# control-C
+  expect expect-cli/tests
 }
 
 proc print_msg {text {color cyan}} {
-	if { [string match {SCENARIO:*} $text] } {
-		set color magenta
-		add_to_report $text
-	}
+  if { [string match {SCENARIO:*} $text] } {
+    set color magenta
+    add_to_report $text
+  }
 
-	if { [string match {Finished!} $text] } { set color green }
+  if { [string match {Finished!} $text] } { set color green }
 
-	switch $color {
-		green { set color_code 32 }
-		magenta { set color_code 35 }
-		red { set color_code 31 }
-		cyan -
-		default { set color_code 36}
-	}
+  switch $color {
+    green { set color_code 32 }
+    magenta { set color_code 35 }
+    red { set color_code 31 }
+    cyan -
+    default { set color_code 36}
+  }
 
-	puts "\n\033\[01;$color_code;m$text \033\[0;m\n"
+  puts "\n\033\[01;$color_code;m$text \033\[0;m\n"
 }
 
 proc print_stack {} {
@@ -74,28 +74,28 @@ proc print_stack {} {
 }
 
 proc login {email pw} {
-	send "we login --no-browser\r"
-	expect {
-		timeout { handle_timeout; error "Login failed" }
-		"Your email:" {
-			send "$email\r"
-			expect "Now, your password:"
-			send "$pw\r"
-			expect {
-				timeout { handle_timeout; error "Login failed" }
-				"Authentication failed" { error "Login failed" }
-				"Type a command and press Enter to execute it."
-			}
-		}
-		"Already logged in"
-	}
+  send "we login --no-browser\r"
+  expect {
+    timeout { handle_timeout; error "Login failed" }
+    "Your email:" {
+      send "$email\r"
+      expect "Now, your password:"
+      send "$pw\r"
+      expect {
+        timeout { handle_timeout; error "Login failed" }
+        "Authentication failed" { error "Login failed" }
+        "Type a command and press Enter to execute it."
+      }
+    }
+    "Already logged in"
+  }
 }
 
 proc logout {email} {
-	send "we logout\r"
-	expect {
-		timeout { handle_timeout }
-		"You are not logged in" {}
-		"You ($email) have been logged out"
-	}
+  send "we logout\r"
+  expect {
+    timeout { handle_timeout }
+    "You are not logged in" {}
+    "You ($email) have been logged out"
+  }
 }
