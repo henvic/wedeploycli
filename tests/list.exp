@@ -1,0 +1,92 @@
+#! /usr/bin/expect
+
+source ../procs/shared_procs.tcl
+source ../procs/curl_procs.tcl
+
+set timeout $::_default_timeout
+
+spawn $env(SHELL)
+
+#####################################################
+print_msg "SCENARIO: Cannot list without logging in"
+#####################################################
+
+logout $_tester(email)
+
+while {1} {
+  send "we list\r"
+  expect {
+    timeout { handle_timeout; break }
+    "You need to log in before using \"we list\"."
+  }
+  send "n\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Login canceled."
+  }
+
+  send "we list\r"
+  expect {
+    timeout { handle_timeout; break }
+    "You need to log in before using \"we list\"."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Do you want to log in?"
+  }
+  send "y\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Open your browser and authenticate?"
+  }
+  send "n\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Login canceled." { break }
+  }
+}
+
+#####################################################
+print_msg "SCENARIO: List with no projects"
+#####################################################
+
+login $_tester(email) $_tester(pw)
+
+send "we list\r"
+expect {
+  timeout { handle_timeout }
+  "No project found."
+}
+
+#####################################################
+print_msg "SCENARIO: List project with no services"
+#####################################################
+
+create_project "list1"
+
+send "we list\r"
+expect {
+  timeout { handle_timeout }
+  "list1*zero services deployed"
+}
+
+delete_project "list1"
+
+#####################################################
+print_msg "SCENARIO: List project and services"
+#####################################################
+
+create_project "list2"
+create_service "list2" "hosting1"
+create_service "list2" "hosting2"
+
+send "we list\r"
+expect {
+  timeout {handle_timeout}
+  -re "list2.*hosting1-list2\.wedeploy\.sh.*wedeploy/hosting.*none\
+      .*list2.*hosting2-list2\.wedeploy\.sh.*wedeploy/hosting.*none"
+}
+
+delete_project "list2"
+
+print_msg Finished! green

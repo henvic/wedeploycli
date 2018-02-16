@@ -1,0 +1,31 @@
+#! /usr/bin/expect
+
+source ../procs/shared_procs.tcl
+
+spawn $env(SHELL)
+
+#####################################################
+print_msg "SCENARIO: Login without browser"
+#####################################################
+
+logout $_tester(email)
+
+while {1} {
+	send "we login --no-browser\r"
+	expect {
+		timeout { handle_timeout; break }
+		"Your email:"
+	}
+	send "$_tester(email)\r"
+	expect {
+		timeout { handle_timeout; break }
+		"Now, your password:"
+	}
+	send "$_tester(pw)\r"
+	expect {
+		timeout { handle_timeout; break }
+		"Type a command and press Enter to execute it." {break}
+	}
+}
+
+print_msg "Finished!" green

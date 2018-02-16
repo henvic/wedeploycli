@@ -1,0 +1,118 @@
+#! /usr/bin/expect
+
+source ../procs/curl_procs.tcl
+source ../procs/shared_procs.tcl
+
+spawn $env(SHELL)
+
+send "cd ../fixtures/test1\r"
+expect {
+	timeout {
+		handle_timeout
+		error "Had problem changing to project directory"
+	 }
+	"fixtures/test1"
+}
+
+#####################################################
+print_msg "SCENARIO: Cannot deploy without logging in"
+#####################################################
+
+logout $_tester(email)
+
+while {1} {
+	send "we deploy\r"
+	expect "You need to log in before using \"we deploy\"."
+	expect {
+		timeout { handle_timeout; break }
+		"Do you want to log in?"
+	}
+	send "n\r"
+	expect {
+		timeout { handle_timeout; break }
+		"Login canceled."
+	}
+	send "we deploy\r"
+	expect "You need to log in before using \"we deploy\"."
+	expect {
+		timeout { handle_timeout; break }
+		"Do you want to log in?"
+	}
+	send "y\r"
+	expect {
+		timeout { handle_timeout; break }
+		"Open your browser and authenticate?"
+	}
+	send "n\r"
+	expect {
+		timeout { handle_timeout; break }
+		"Login canceled." { break }
+	}
+}
+
+#####################################################
+print_msg "SCENARIO: Deploy to a new project"
+#####################################################
+
+login $_tester(email) $_tester(pw)
+
+while {1} {
+	send "we deploy\r"
+	expect {
+		timeout { handle_timeout; break }
+		"Type a project ID"
+	}
+	send "deploy1\r"
+	expect {
+		timeout { handle_timeout; break }
+		"Project does not exist."
+	}
+	expect {
+		timeout { handle_timeout; break }
+		"Do you want to create project \"deploy1\""
+	}
+	send "y\r"
+	expect "Deploying services on project"
+	set timeout 30
+	expect {
+		timeout { handle_timeout; break }
+		"Deployment succeeded" { break }
+	}
+}
+
+set timeout $::_default_timeout
+verify_service_exists deploy1 ui
+delete_project deploy1
+
+#####################################################
+print_msg "SCENARIO: Deploy to an existing project"
+#####################################################
+
+login $_tester(email) $_tester(pw)
+
+create_project deploy2
+
+while {1} {
+	send "we deploy\r"
+	expect {
+		timeout { handle_timeout; break }
+		"Type a project ID or #"
+	}
+	send "deploy2\r"
+	expect {
+		timeout { handle_timeout; break }
+		"Deploying services on project"
+	}
+	set timeout 30
+	expect {
+		timeout {
+			handle_timeout; break }
+		"Deployment succeeded" { break }
+	}
+}
+
+set timeout $::_default_timeout
+verify_service_exists deploy2 ui
+delete_project deploy2
+
+print_msg "Finished!"
