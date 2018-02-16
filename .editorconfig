@@ -11,22 +11,10 @@ insert_final_newline = true
 [*.md]
 trim_trailing_whitespace = false
 
-[*.rb]
+[*.tcl]
 indent_style = space
 indent_size = 2
 
-[*.coffee]
-indent_style = space
-indent_size = 2
-
-[*.html.erb]
-indent_style = space
-indent_size = 2
-
-[*.yml]
-indent_style = space
-indent_size = 2
-
-[Gemfile]
+[*.exp]
 indent_style = space
 indent_size = 2
