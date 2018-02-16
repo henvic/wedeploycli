@@ -193,7 +193,7 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 		return
 	}
 
-	d.markActivityState(serviceID, a.Type)
+	d.markDeploymentTransition(serviceID, a.Type)
 	var m = d.sActivities[serviceID].msgWLM
 	var pre string
 
@@ -245,17 +245,54 @@ func isActitityTypeDeploymentRelated(activityType string) bool {
 	return false
 }
 
-func (d *Deploy) markActivityState(serviceID, activityType string) {
-	switch activityType {
-	case
+// ValidTransitions for deployment states (from -> to)
+var ValidTransitions = map[string][]string{
+	activities.BuildFailed: []string{
 		activities.BuildSucceeded,
-		activities.BuildFailed,
 		activities.DeployFailed,
 		activities.DeployCanceled,
 		activities.DeployTimeout,
 		activities.DeployRollback,
-		activities.DeploySucceeded:
+		activities.DeploySucceeded,
+	},
+	activities.BuildSucceeded: []string{
+		activities.DeployFailed,
+		activities.DeployCanceled,
+		activities.DeployTimeout,
+		activities.DeployRollback,
+		activities.DeploySucceeded,
+	},
+	activities.DeployFailed: []string{
+		activities.DeploySucceeded,
+	},
+	activities.DeployCanceled: []string{
+		activities.DeploySucceeded,
+	},
+	activities.DeployTimeout: []string{
+		activities.DeploySucceeded,
+	},
+	activities.DeployRollback: []string{
+		activities.DeploySucceeded,
+	},
+	activities.DeploySucceeded: []string{},
+}
+
+func (d *Deploy) markDeploymentTransition(serviceID, activityType string) {
+	var old = d.sActivities[serviceID].state
+
+	var validFrom, ok = ValidTransitions[old]
+
+	if !ok {
 		d.sActivities[serviceID].state = activityType
+		verbose.Debug("Unexpected Transition: from: ", old, "to: ", activityType)
+		return
+	}
+
+	for _, eachValid := range validFrom {
+		if activityType == eachValid {
+			d.sActivities[serviceID].state = activityType
+			return
+		}
 	}
 }
 

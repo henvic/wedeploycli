@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"sort"
 
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
@@ -45,6 +46,10 @@ func (as Activities) Reverse() (ras []Activity) {
 	for l := len(as) - 1; l >= 0; l-- {
 		ras = append(ras, as[l])
 	}
+
+	sort.SliceStable(ras, func(i, j int) bool {
+		return ras[i].CreatedAt < ras[j].CreatedAt
+	})
 
 	return ras
 }
