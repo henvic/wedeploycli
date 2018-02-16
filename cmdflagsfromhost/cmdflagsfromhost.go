@@ -32,21 +32,24 @@ type Requires struct {
 type SetupHost struct {
 	ctx context.Context
 
-	Pattern              Pattern
-	Requires             Requires
-	UseServiceDirectory  bool
-	PromptMissingProject bool
-	PromptMissingService bool
-	AllowMissingProject  bool
-	HideServicesPrompt   bool
-	CreateProjectOnEmpty bool
-	url                  string
-	project              string
-	service              string
-	remote               string
-	cmd                  *cobra.Command
-	wectx                config.Context
-	parsed               *flagsfromhost.FlagsFromHost
+	Pattern  Pattern
+	Requires Requires
+
+	UseServiceDirectory bool
+
+	PromptMissingProject       bool
+	PromptMissingService       bool
+	AllowMissingProject        bool
+	AllowCreateProjectOnPrompt bool
+	HideServicesPrompt         bool
+
+	url     string
+	project string
+	service string
+	remote  string
+	cmd     *cobra.Command
+	wectx   config.Context
+	parsed  *flagsfromhost.FlagsFromHost
 }
 
 // Pattern for the host and flags
@@ -311,7 +314,7 @@ func (s *SetupHost) promptMissingProjectOrService() (err error) {
 	}
 
 	var l = list.New(filter)
-	l.CreateProjectOnEmpty = s.CreateProjectOnEmpty
+	l.AllowCreateProjectOnPrompt = s.AllowCreateProjectOnPrompt
 	var selection *list.Selection
 
 	switch {

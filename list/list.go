@@ -37,8 +37,8 @@ type List struct {
 	updated    chan bool
 	watchMutex sync.RWMutex
 
-	CreateProjectOnEmpty bool
-	SelectNumber         bool
+	AllowCreateProjectOnPrompt bool
+	SelectNumber               bool
 
 	ProjectHeader func(projectID string) string
 	ServiceHeader func(serviceID, projectID string) string

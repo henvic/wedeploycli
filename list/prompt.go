@@ -15,7 +15,7 @@ import (
 
 // PromptProject from the list selection
 func (l *List) PromptProject(ctx context.Context, wectx config.Context) (*Selection, error) {
-	switch l.CreateProjectOnEmpty {
+	switch l.AllowCreateProjectOnPrompt {
 	case true:
 		fmt.Print("Please select a project from the list below or create a new one.\n")
 	default:
@@ -52,7 +52,7 @@ func (l *List) PromptProject(ctx context.Context, wectx config.Context) (*Select
 
 	selection, err := l.getSelection(option)
 
-	if err != nil && l.CreateProjectOnEmpty {
+	if err != nil && l.AllowCreateProjectOnPrompt {
 		return &Selection{
 			Project: option,
 		}, nil

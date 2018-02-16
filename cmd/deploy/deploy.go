@@ -19,10 +19,10 @@ var setupHost = cmdflagsfromhost.SetupHost{
 		Project: true,
 	},
 
-	AllowMissingProject:  true,
-	PromptMissingProject: true,
-	HideServicesPrompt:   true,
-	CreateProjectOnEmpty: true,
+	AllowMissingProject:        true,
+	PromptMissingProject:       true,
+	HideServicesPrompt:         true,
+	AllowCreateProjectOnPrompt: true,
 }
 
 var quiet bool
