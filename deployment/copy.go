@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/wedeploy/cli/deployment/internal/ignore"
 )
 
 func (d *Deploy) copyServiceFiles(path string) (copyPath string, err error) {
@@ -35,7 +36,7 @@ func (c *copyServiceFiles) walkFn(path string, info os.FileInfo, ef error) (err 
 		return errwrap.Wrapf("can't read file "+path+" {err}}", ef)
 	}
 
-	if info.Name() == ".git" {
+	if info.Name() == ".git" || ignore.Match(info.Name()) {
 		return filepath.SkipDir
 	}
 
