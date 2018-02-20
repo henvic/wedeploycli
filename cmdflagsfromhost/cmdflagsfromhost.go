@@ -8,10 +8,8 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmd/canceled"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/flagsfromhost"
 	"github.com/wedeploy/cli/isterm"
 	"github.com/wedeploy/cli/list"
@@ -356,16 +354,8 @@ func (s *SetupHost) verifyCmdReqAuth() error {
 }
 
 func (s *SetupHost) authenticateOrCancel() error {
-	var logIn, err = fancy.Boolean(fmt.Sprintf(`You need to log in before using "%s". Do you want to log in?`,
-		strings.TrimSuffix(s.cmd.UseLine(), " [flags]")))
-
-	if err != nil {
-		return err
-	}
-
-	if !logIn {
-		return canceled.CancelCommand("Login canceled.")
-	}
+	fmt.Printf("You need to log in before using \"%s\".\n",
+		strings.TrimSuffix(s.cmd.UseLine(), " [flags]"))
 
 	a := login.Authentication{
 		NoLaunchBrowser: false,
