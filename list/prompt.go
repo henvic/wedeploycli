@@ -10,7 +10,6 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/projects"
-	"github.com/wedeploy/cli/prompt"
 )
 
 // PromptProject from the list selection
@@ -32,7 +31,7 @@ func (l *List) PromptProject(ctx context.Context, wectx config.Context) (*Select
 	fmt.Println("")
 	fmt.Println(fancy.Question("Type a project ID or #:"))
 
-	option, err := prompt.Prompt()
+	option, err := fancy.Prompt()
 
 	if err != nil {
 		return nil, err
@@ -77,7 +76,7 @@ func (l *List) PromptProjectOrService(ctx context.Context, wectx config.Context)
 	fmt.Println("")
 	fmt.Println(fancy.Question("Type a project/service ID or a service #:"))
 
-	var option, err = prompt.Prompt()
+	var option, err = fancy.Prompt()
 
 	if err != nil {
 		return nil, err
@@ -170,7 +169,7 @@ func (l *List) PromptService(ctx context.Context, wectx config.Context) (*Select
 	fmt.Println("")
 	fmt.Println(fancy.Question("Type a service ID or #:"))
 
-	var option, err = prompt.Prompt()
+	var option, err = fancy.Prompt()
 
 	if err != nil {
 		return nil, err
