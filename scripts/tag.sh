@@ -115,10 +115,9 @@ function runTests() {
   megacheck ./...
   echo "Running tests (may take a while)."
 
-  if [[ $skipIntegrationTests = true ]] ; then
-    go test $(go list ./... | grep -v /integration$) -race
-  else
-    go test $(go list ./...) -race
+  go test $(go list ./... | grep -v /integration$) -race
+  if [[ $skipIntegrationTests != true ]] ; then
+    go test github.com/wedeploy/cli/integration
   fi
 }
 
