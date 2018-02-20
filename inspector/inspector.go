@@ -55,7 +55,11 @@ func (overview *ContextOverview) Load(directory string) error {
 		return err
 	}
 
-	return overview.loadServicesList(directory)
+	if err := overview.loadServicesList(directory); err != nil {
+		return err
+	}
+	
+	return overview.setUniqueProjectID()
 }
 
 func (overview *ContextOverview) loadServicesList(directory string) error {
@@ -69,8 +73,8 @@ func (overview *ContextOverview) loadServicesList(directory string) error {
 	return nil
 }
 
-func (overview *ContextOverview) UniqueProjectID() (error) {
-	fmt.Println("overview.Services", overview.Services)
+// setUniqueProjectID and return error if not unique
+func (overview *ContextOverview) setUniqueProjectID() (error) {
 	for _, sInfo := range overview.Services {
 		if overview.ProjectID != "" && sInfo.ProjectID != overview.ProjectID {
 			return errors.New("You can only have one unique Project ID in your wedeploy.json's")

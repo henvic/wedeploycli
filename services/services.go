@@ -111,7 +111,7 @@ func (s *Service) Type() string {
 
 // ServicePackage is the structure for wedeploy.json
 type ServicePackage struct {
-	ProjectID 	  string 			`json:projectId,omitempty`
+	ProjectID 	  string 						`json:"projectId,omitempty"`
 	ID            string            `json:"id,omitempty"`
 	Scale         int               `json:"scale,omitempty"`
 	Image         string            `json:"image,omitempty"`
@@ -246,7 +246,6 @@ func (l *listFromDirectoryGetter) Walk(root string) (ServiceInfoList, error) {
 			return nil, err
 		}
 	}
-	fmt.Println("l.list", l.list)
 	return l.list, nil
 }
 
@@ -530,7 +529,6 @@ func Read(path string) (*ServicePackage, error) {
 	if hasDockerfile {
 		data.dockerfile = string(dockerfile)
 	}
-	fmt.Println("data", data)
 	return &data, nil
 }
 

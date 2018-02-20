@@ -49,7 +49,9 @@ func TestMain(m *testing.M) {
 
 func TestPrintServiceSpec(t *testing.T) {
 	var got = GetSpec(services.ServicePackage{})
-	var want = []string{`ID string`,
+	var want = []string{
+		`ProjectID string`,
+		`ID string`,
 		`Scale int`,
 		`Image string`,
 		`CustomDomains []string`,
@@ -64,7 +66,10 @@ func TestPrintServiceSpec(t *testing.T) {
 
 func TestPrintContextSpec(t *testing.T) {
 	var got = GetSpec(ContextOverview{})
-	var want = []string{`Services []services.ServiceInfo`}
+	var want = []string{
+		`ProjectID string`,
+		`Services []services.ServiceInfo`,
+	}
 
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("Wanted spec %v, got %v instead", want, got)
@@ -206,12 +211,15 @@ func TestInspectContextOverview(t *testing.T) {
 	}
 
 	var want = fmt.Sprintf(`{
+    "ProjectID": "exampleProject",
     "Services": [
         {
+            "ProjectID": "exampleProject",
             "ServiceID": "email",
             "Location": "%v"
         },
         {
+            "ProjectID": "exampleProject",
             "ServiceID": "other",
             "Location": "%v"
         }
@@ -233,8 +241,10 @@ func TestInspectContextOverviewService(t *testing.T) {
 	}
 
 	var want = fmt.Sprintf(`{
+    "ProjectID": "exampleProject",
     "Services": [
         {
+            "ProjectID": "exampleProject",
             "ServiceID": "email",
             "Location": "%v"
         }

@@ -39,11 +39,12 @@ type RemoteDeployment struct {
 func (rd *RemoteDeployment) getProjectID() (err error) {
 	projectsClient := projects.New(we.Context())
 	var overview = inspector.ContextOverview{}
-	overview.Load(rd.path)
 
-	if err := overview.UniqueProjectID(); err != nil {
+	if err := overview.Load(rd.path); err != nil {
 		return err
-	} else if overview.ProjectID != "" {
+	}
+
+	if overview.ProjectID != "" {
 		rd.ProjectID = overview.ProjectID
 	} 
 
