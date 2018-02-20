@@ -61,8 +61,8 @@ func (c *Command) Show(ctx context.Context) error {
 		color.Format(color.FgHiBlack, "#"),
 		color.Format(color.FgHiBlack, "Domain"))
 
-	for _, v := range c.Domains {
-		fmt.Printf("%d\t%s\n", len(c.Domains), v)
+	for pos, v := range c.Domains {
+		fmt.Printf("%d\t%s\n", pos+1, v)
 	}
 
 	return nil
