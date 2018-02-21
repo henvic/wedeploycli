@@ -20,7 +20,7 @@ import (
 var ListCmd = &cobra.Command{
 	Use: "list",
 	Example: `  we list --project chat --service data
-   we list --url data-chat.wedeploy.io`,
+  we list --url data-chat.wedeploy.io`,
 	Short:   "Show list of projects and services",
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,
