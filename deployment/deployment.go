@@ -43,7 +43,9 @@ type Deploy struct {
 	ServiceID     string
 	Path          string
 	Services      services.ServiceInfoList
-	Quiet         bool
+
+	CopyPackage string
+	Quiet       bool
 
 	gitVersion    string
 	groupUID      string

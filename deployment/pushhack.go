@@ -13,7 +13,6 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
-	"time"
 
 	version "github.com/hashicorp/go-version"
 	"github.com/wedeploy/cli/envs"
@@ -34,11 +33,6 @@ import (
 const gitAffectedVersions = "> 2.5.1, < 2.13.3"
 
 func (d *Deploy) pushHack() (groupUID string, err error) {
-	d.pushStartTime = time.Now()
-	defer func() {
-		d.pushEndTime = time.Now()
-	}()
-
 	var params = []string{"push", d.getGitRemote(), "master", "--force"}
 
 	if verbose.Enabled {

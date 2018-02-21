@@ -29,11 +29,14 @@ type RemoteDeployment struct {
 	ProjectID string
 	ServiceID string
 	Remote    string
-	Quiet     bool
-	path      string
-	services  services.ServiceInfoList
-	remap     []string
-	ctx       context.Context
+
+	CopyPackage string
+	Quiet       bool
+
+	path     string
+	services services.ServiceInfoList
+	remap    []string
+	ctx      context.Context
 }
 
 func (rd *RemoteDeployment) getProjectID() (err error) {
@@ -109,7 +112,9 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 		Path:          rd.path,
 		ConfigContext: wectx,
 		Services:      rd.services,
-		Quiet:         rd.Quiet,
+
+		CopyPackage: rd.CopyPackage,
+		Quiet:       rd.Quiet,
 	}
 
 	err = deploy.Do(ctx)

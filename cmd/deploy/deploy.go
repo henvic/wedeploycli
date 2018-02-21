@@ -53,7 +53,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		ProjectID: setupHost.Project(),
 		ServiceID: setupHost.Service(),
 		Remote:    setupHost.Remote(),
-		Quiet:     quiet,
+
+		CopyPackage: copyPackage,
+		Quiet:       quiet,
 	}
 
 	_, err = rd.Run(context.Background())
@@ -63,6 +65,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 func init() {
 	DeployCmd.Flags().BoolVarP(&quiet, "quiet", "q", false,
 		"Deploy without watching status")
+	DeployCmd.Flags().StringVar(&copyPackage, "copy-pkg", "",
+		"Path to copy the deployment package to (for debugging)")
+	_ = DeployCmd.Flags().MarkHidden("copy-pkg")
 
 	setupHost.Init(DeployCmd)
 }

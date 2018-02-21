@@ -406,16 +406,38 @@ func (d *Deploy) Commit() (commit string, err error) {
 	return commit, nil
 }
 
+func (d *Deploy) copyGitPackage() error {
+	fmt.Println("Debugging: copying (cloning) package file to " + d.CopyPackage)
+
+	var target = fmt.Sprintf("%s-%s", d.ProjectID, d.pushStartTime.Format("2006-01-02-15-04-05Z0700"))
+	var params = []string{"clone", d.getGitPath(), target}
+
+	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
+	var cmd = exec.CommandContext(d.ctx, "git", params...)
+	cmd.Env = d.getConfigEnvs()
+	cmd.Dir = d.CopyPackage
+	cmd.Stderr = errStream
+
+	return cmd.Run()
+}
+
 // Push deployment to the WeDeploy remote
 func (d *Deploy) Push() (groupUID string, err error) {
-	if d.useCredentialHack() {
-		return d.pushHack()
-	}
-
 	d.pushStartTime = time.Now()
 	defer func() {
 		d.pushEndTime = time.Now()
 	}()
+
+	if d.CopyPackage != "" {
+		if err := d.copyGitPackage(); err != nil {
+			verbose.Debug("Error trying to copy git package for debugging.")
+			verbose.Debug(err)
+		}
+	}
+
+	if d.useCredentialHack() {
+		return d.pushHack()
+	}
 
 	var params = []string{"push", d.getGitRemote(), "master", "--force"}
 
