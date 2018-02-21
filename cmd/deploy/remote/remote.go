@@ -44,7 +44,7 @@ func (rd *RemoteDeployment) getProjectID() (err error) {
 
 	if rd.ProjectID == "" {
 		if !isterm.Check() {
-			return errors.New("Project ID is missing")
+			return errors.New("project ID is missing")
 		}
 
 		fmt.Println(fancy.Question("Choose a project ID") + " " + fancy.Tip("default: random"))
