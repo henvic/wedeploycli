@@ -2,13 +2,12 @@ package deploy
 
 import (
 	"context"
-	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/deploy/remote"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/inspector"
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{
@@ -19,6 +18,8 @@ var setupHost = cmdflagsfromhost.SetupHost{
 		Project: true,
 	},
 
+	UseProjectFromWorkingDirectory: true,
+
 	AllowMissingProject:        true,
 	PromptMissingProject:       true,
 	HideServicesPrompt:         true,
@@ -26,6 +27,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 }
 
 var quiet bool
+var copyPackage string
 
 // DeployCmd runs services
 var DeployCmd = &cobra.Command{
@@ -33,29 +35,20 @@ var DeployCmd = &cobra.Command{
 	Short:   "Deploy your services",
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,
-	RunE:    runRun,
-}
-
-func validateWedeployJSONs() error {
-	wd, err := os.Getwd()
-
-	if err != nil {
-		return err
-	}
-
-	_, err = inspector.InspectContext("", wd)
-	return err
+	RunE:    run,
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if err := validateWedeployJSONs(); err != nil {
-		return err
-	}
-
 	return setupHost.Process(context.Background(), we.Context())
 }
 
-func runRun(cmd *cobra.Command, args []string) error {
+func run(cmd *cobra.Command, args []string) (err error) {
+	if copyPackage != "" {
+		if copyPackage, err = filepath.Abs(copyPackage); err != nil {
+			return err
+		}
+	}
+
 	var rd = &deployremote.RemoteDeployment{
 		ProjectID: setupHost.Project(),
 		ServiceID: setupHost.Service(),
@@ -63,7 +56,7 @@ func runRun(cmd *cobra.Command, args []string) error {
 		Quiet:     quiet,
 	}
 
-	var _, err = rd.Run(context.Background())
+	_, err = rd.Run(context.Background())
 	return err
 }
 

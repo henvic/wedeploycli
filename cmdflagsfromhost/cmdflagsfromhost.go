@@ -10,7 +10,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/flagsfromhost"
+	"github.com/wedeploy/cli/inspector"
 	"github.com/wedeploy/cli/isterm"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/login"
@@ -33,7 +35,8 @@ type SetupHost struct {
 	Pattern  Pattern
 	Requires Requires
 
-	UseServiceDirectory bool
+	UseProjectFromWorkingDirectory bool
+	UseServiceDirectory            bool
 
 	PromptMissingProject       bool
 	PromptMissingService       bool
@@ -208,6 +211,36 @@ func (s *SetupHost) addServiceFlag(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&s.service, "service", "s", "", "Perform the operation for a specific service")
 }
 
+func (s *SetupHost) getProjectFromCurrentWorkingDirectory() (project string, err error) {
+	var overview = inspector.ContextOverview{}
+
+	if err = overview.Load("."); err != nil {
+		return "", err
+	}
+
+	if overview.ProjectID == "" {
+		return "", nil
+	}
+
+	if !isterm.Check() {
+		return overview.ProjectID, nil
+	}
+
+	fmt.Println(`A reference to a project ID was found within your services.`)
+
+	yes, err := fancy.Boolean(fmt.Sprintf(`Use inferred project ID "%s"?`, overview.ProjectID))
+
+	if err != nil {
+		return "", err
+	}
+
+	if !yes {
+		return "", nil
+	}
+
+	return overview.ProjectID, nil
+}
+
 func (s *SetupHost) getServiceFromCurrentWorkingDirectory() (service string, err error) {
 	if s.Pattern&ProjectPattern == 0 {
 		return "", nil
@@ -250,6 +283,13 @@ func (s *SetupHost) loadValues() (err error) {
 
 	if s.Pattern&ServicePattern == 0 && s.service != "" {
 		return errors.New("Service is not allowed for this command")
+	}
+
+	if s.project == "" && s.UseProjectFromWorkingDirectory {
+		s.project, err = s.getProjectFromCurrentWorkingDirectory()
+		if err != nil {
+			return err
+		}
 	}
 
 	if s.service == "" && s.project == "" &&

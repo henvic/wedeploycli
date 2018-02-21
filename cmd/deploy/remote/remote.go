@@ -101,10 +101,11 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 		return "", errors.New("no service available for deployment was found")
 	}
 
+	rd.verboseRemappedServices()
+
 	var deploy = &deployment.Deploy{
 		ProjectID:     rd.ProjectID,
 		ServiceID:     rd.ServiceID,
-		LocationRemap: rd.remap,
 		Path:          rd.path,
 		ConfigContext: wectx,
 		Services:      rd.services,
@@ -113,6 +114,16 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 
 	err = deploy.Do(ctx)
 	return deploy.GetGroupUID(), err
+}
+
+func (rd *RemoteDeployment) verboseRemappedServices() {
+	if !verbose.Enabled {
+		return
+	}
+
+	for _, s := range rd.remap {
+		verbose.Debug("Service " + s + " had service ID mapped or inferred")
+	}
 }
 
 func (rd *RemoteDeployment) loadServicesList() (err error) {

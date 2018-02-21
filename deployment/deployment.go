@@ -41,7 +41,6 @@ type Deploy struct {
 	ConfigContext config.Context
 	ProjectID     string
 	ServiceID     string
-	LocationRemap []string
 	Path          string
 	Services      services.ServiceInfoList
 	Quiet         bool
@@ -67,7 +66,7 @@ type Deploy struct {
 	gitEnvCache []string
 }
 
-func (d *Deploy) renameServiceID(s services.ServiceInfo) error {
+func (d *Deploy) prepareAndModifyServicePackage(s services.ServiceInfo) error {
 	// ignore service package contents because it is strict (see note below)
 	var _, err = services.Read(s.Location)
 
@@ -84,16 +83,16 @@ func (d *Deploy) renameServiceID(s services.ServiceInfo) error {
 	// to avoid compatibility issues due to lack of a synchronization channel
 	// between the CLI team and the other teams in maintaining wedeploy.json structure
 	// synced.
-	bin, err := replaceServicePackageToInterfaceOnRenaming(s.ServiceID, s.Location)
+	bin, err := getPreparedServicePackage(s.ServiceID, s.Location)
 	if err != nil {
 		return err
 	}
 
-	return d.gitRenameServiceID(bin, filepath.Join(filepath.Base(s.Location),
+	return d.overwriteServicePackage(bin, filepath.Join(filepath.Base(s.Location),
 		"wedeploy.json"))
 }
 
-func replaceServicePackageToInterfaceOnRenaming(serviceID string, path string) ([]byte, error) {
+func getPreparedServicePackage(serviceID string, path string) ([]byte, error) {
 	// this smells a little bad because wedeploy.json is the responsibility of the services package
 	// and I shouldn't be accessing it directly from here
 	var spMap = map[string]interface{}{}
@@ -111,6 +110,8 @@ func replaceServicePackageToInterfaceOnRenaming(serviceID string, path string) (
 	}
 
 	spMap["id"] = strings.ToLower(serviceID)
+	delete(spMap, "projectId")
+
 	return json.MarshalIndent(&spMap, "", "    ")
 }
 

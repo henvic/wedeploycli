@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -33,11 +34,14 @@ func GetSpec(t interface{}) []string {
 
 // ContextOverview for the context visualization
 type ContextOverview struct {
-	Services []services.ServiceInfo
+	ProjectID string
+	Services  []services.ServiceInfo
+
+	directory string
 }
 
-func (overview *ContextOverview) loadService(directory string) error {
-	var servicePath, _, cerr = getServicePackage(directory)
+func (overview *ContextOverview) loadService() error {
+	var servicePath, _, cerr = getServicePackage(overview.directory)
 
 	if cerr == nil || os.IsNotExist(cerr) {
 		return nil
@@ -56,23 +60,58 @@ The wedeploy.json file syntax is described at https://wedeploy.com/docs/deploy/c
 }
 
 // Load the context overview for a given directory
-func (overview *ContextOverview) Load(directory string) error {
-
-	if err := overview.loadService(directory); err != nil {
+func (overview *ContextOverview) Load(directory string) (err error) {
+	if directory, err = filepath.Abs(directory); err != nil {
 		return err
 	}
 
-	return overview.loadServicesList(directory)
+	overview.directory = directory
+
+	if err := overview.loadService(); err != nil {
+		return err
+	}
+
+	if err := overview.loadServicesList(); err != nil {
+		return err
+	}
+
+	return overview.setUniqueProjectID()
 }
 
-func (overview *ContextOverview) loadServicesList(directory string) error {
-	var list, err = services.GetListFromDirectory(directory)
+func (overview *ContextOverview) loadServicesList() error {
+	var list, err = services.GetListFromDirectory(overview.directory)
 
 	if err != nil {
 		return err
 	}
 
 	overview.Services = list
+	return nil
+}
+
+// setUniqueProjectID and return error if not unique
+func (overview *ContextOverview) setUniqueProjectID() error {
+	var prevService services.ServiceInfo
+
+	for i, sInfo := range overview.Services {
+		if i > 0 && sInfo.ProjectID != overview.ProjectID {
+			relCurrent, _ := filepath.Rel(overview.directory, sInfo.Location)
+			relPrev, _ := filepath.Rel(overview.directory, prevService.Location)
+			return fmt.Errorf(
+				`services "%s" and "%s" must have the same project ID defined on "%s" and "%s" (currently: "%s" and "%s")`,
+				prevService.ServiceID,
+				sInfo.ServiceID,
+				filepath.Join(relPrev, "wedeploy.json"),
+				filepath.Join(relCurrent, "wedeploy.json"),
+				overview.ProjectID,
+				sInfo.ProjectID,
+			)
+		}
+
+		prevService = sInfo
+		overview.ProjectID = sInfo.ProjectID
+	}
+
 	return nil
 }
 

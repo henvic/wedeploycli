@@ -112,14 +112,17 @@ func TestGetListFromDirectory(t *testing.T) {
 
 	var want = ServiceInfoList{
 		ServiceInfo{
+			"exampleProject",
 			"email",
 			abs("mocks/app/email"),
 		},
 		ServiceInfo{
+			"exampleProject",
 			"landing",
 			abs("mocks/app/landing"),
 		},
 		ServiceInfo{
+			"exampleProject",
 			"speaker",
 			abs("mocks/app/speaker"),
 		},
@@ -177,6 +180,7 @@ func TestGetListFromDirectoryOnProjectWithServicesInsideSubdirectories(t *testin
 
 	var want = ServiceInfoList{
 		ServiceInfo{
+			"exampleProject",
 			"level1",
 			abs("mocks/project-with-services-inside-subdirs/service-level-1"),
 		},

@@ -249,39 +249,33 @@ func (d *Deploy) stageAllFiles() (err error) {
 		}
 	}
 
-	if err = d.maybeRenameServiceIDs(); err != nil {
-		return errwrap.Wrapf("can't stage custom wedeploy.json to replace service ID: {{err}}", err)
+	if err = d.overwriteWedeployJSONFiles(); err != nil {
+		return errwrap.Wrapf("can't stage wedeploy.json: {{err}}", err)
 	}
 
 	return nil
 }
 
-func (d *Deploy) maybeRenameServiceIDs() error {
-	for _, remapLocation := range d.LocationRemap {
-		for _, service := range d.Services {
-			if service.Location != remapLocation {
-				continue
-			}
-
-			if err := d.renameServiceID(service); err != nil {
-				return err
-			}
+func (d *Deploy) overwriteWedeployJSONFiles() error {
+	for _, service := range d.Services {
+		if err := d.prepareAndModifyServicePackage(service); err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
 
-func (d *Deploy) gitRenameServiceID(content []byte, path string) error {
-	switch hashObject, err := d.gitRenameServiceIDHashObject(content); {
+func (d *Deploy) overwriteServicePackage(content []byte, path string) error {
+	switch hashObject, err := d.overwriteServicePackageHashObject(content); {
 	case err != nil:
 		return err
 	default:
-		return d.gitRenameServiceIDUpdateIndex(hashObject, path)
+		return d.overwriteServicePackageUpdateIndex(hashObject, path)
 	}
 }
 
-func (d *Deploy) gitRenameServiceIDHashObject(content []byte) (hashObject string, err error) {
+func (d *Deploy) overwriteServicePackageHashObject(content []byte) (hashObject string, err error) {
 	var params = []string{"hash-object", "-w", "--stdin"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.ctx, "git", params...)
@@ -306,7 +300,7 @@ func (d *Deploy) gitRenameServiceIDHashObject(content []byte) (hashObject string
 	return out.String(), nil
 }
 
-func (d *Deploy) gitRenameServiceIDUpdateIndex(hashObject, path string) error {
+func (d *Deploy) overwriteServicePackageUpdateIndex(hashObject, path string) error {
 	var params = []string{"update-index", "--add", "--cacheinfo", "100644", hashObject, path}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(d.ctx, "git", params...)

@@ -49,7 +49,9 @@ func TestMain(m *testing.M) {
 
 func TestPrintServiceSpec(t *testing.T) {
 	var got = GetSpec(services.ServicePackage{})
-	var want = []string{`ID string`,
+	var want = []string{
+		`ID string`,
+		`ProjectID string`,
 		`Scale int`,
 		`Image string`,
 		`CustomDomains []string`,
@@ -64,7 +66,10 @@ func TestPrintServiceSpec(t *testing.T) {
 
 func TestPrintContextSpec(t *testing.T) {
 	var got = GetSpec(ContextOverview{})
-	var want = []string{`Services []services.ServiceInfo`}
+	var want = []string{
+		`ProjectID string`,
+		`Services []services.ServiceInfo`,
+	}
 
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("Wanted spec %v, got %v instead", want, got)
@@ -178,12 +183,6 @@ func TestInspectContextOverviewWithDuplicatedServices(t *testing.T) {
 			`can't list services: ID "other" was found duplicated on services`) {
 		t.Errorf("Expected error to contain duplicated information, got %v instead", err)
 	}
-
-	var want = ContextOverview{}
-
-	if !reflect.DeepEqual(want, overview) {
-		t.Errorf("Wanted ContextOverview %+v, got %+v instead", want, overview)
-	}
 }
 
 func TestInspectServiceCorruptedOnContextOverview(t *testing.T) {
@@ -206,12 +205,15 @@ func TestInspectContextOverview(t *testing.T) {
 	}
 
 	var want = fmt.Sprintf(`{
+    "ProjectID": "exampleProject",
     "Services": [
         {
+            "ProjectID": "exampleProject",
             "ServiceID": "email",
             "Location": "%v"
         },
         {
+            "ProjectID": "exampleProject",
             "ServiceID": "other",
             "Location": "%v"
         }
@@ -225,6 +227,26 @@ func TestInspectContextOverview(t *testing.T) {
 	}
 }
 
+func TestInspectContextOverviewMismatchedProjectID(t *testing.T) {
+	var _, err = InspectContext("", "./mocks/project-with-mismatched-project-id")
+
+	var wantErr = `services "email" and "other" must have the same project ID defined on "email/wedeploy.json" and "other/wedeploy.json" (currently: "exampleProject" and "notExampleProject")`
+
+	if err == nil || err.Error() != wantErr {
+		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
+	}
+}
+
+func TestInspectContextOverviewMismatchedProjectIDWhenEmpty(t *testing.T) {
+	var _, err = InspectContext("", "./mocks/project-with-mismatched-project-id-2")
+
+	var wantErr = `services "email" and "other" must have the same project ID defined on "email/wedeploy.json" and "other/wedeploy.json" (currently: "" and "notExampleProject")`
+
+	if err == nil || err.Error() != wantErr {
+		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
+	}
+}
+
 func TestInspectContextOverviewService(t *testing.T) {
 	var got, err = InspectContext("", "./mocks/my-project/email")
 
@@ -233,8 +255,10 @@ func TestInspectContextOverviewService(t *testing.T) {
 	}
 
 	var want = fmt.Sprintf(`{
+    "ProjectID": "exampleProject",
     "Services": [
         {
+            "ProjectID": "exampleProject",
             "ServiceID": "email",
             "Location": "%v"
         }

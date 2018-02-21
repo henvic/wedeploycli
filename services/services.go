@@ -110,6 +110,7 @@ func (s *Service) Type() string {
 // ServicePackage is the structure for wedeploy.json
 type ServicePackage struct {
 	ID            string            `json:"id,omitempty"`
+	ProjectID     string            `json:"projectId,omitempty"`
 	Scale         int               `json:"scale,omitempty"`
 	Image         string            `json:"image,omitempty"`
 	CustomDomains []string          `json:"customDomains,omitempty"`
@@ -158,6 +159,7 @@ var (
 
 // ServiceInfo is for a tuple of service ID and Location.
 type ServiceInfo struct {
+	ProjectID string
 	ServiceID string
 	Location  string
 }
@@ -299,6 +301,7 @@ func (l *listFromDirectoryGetter) addFunc(sp *ServicePackage, dir string) error 
 	}
 
 	l.list = append(l.list, ServiceInfo{
+		ProjectID: sp.ProjectID,
 		ServiceID: sp.ID,
 		Location:  dir,
 	})
