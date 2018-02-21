@@ -149,6 +149,40 @@ func TestGetListFromDirectory(t *testing.T) {
 	}
 }
 
+func TestGetListFromDirectoryIgnoreNestedServiceOnRootLevel(t *testing.T) {
+	var services, err = GetListFromDirectory("mocks/nest")
+
+	if err != nil {
+		t.Errorf("Expected %v, got %v instead", nil, err)
+	}
+
+	var wantIDs = []string{"hi"}
+
+	if !reflect.DeepEqual(services.GetIDs(), wantIDs) {
+		t.Errorf("Want %v, got %v instead", wantIDs, services)
+	}
+
+	var wantLocations = []string{
+		abs("mocks/nest"),
+	}
+
+	if !reflect.DeepEqual(services.GetLocations(), wantLocations) {
+		t.Errorf("Want %v, got %v instead", wantLocations, services)
+	}
+
+	var want = ServiceInfoList{
+		ServiceInfo{
+			"",
+			"hi",
+			abs("mocks/nest"),
+		},
+	}
+
+	if !reflect.DeepEqual(services, want) {
+		t.Errorf("Want %v, got %v instead", want, services)
+	}
+}
+
 func TestGetListFromDirectoryOnProjectWithServicesInsideSubdirectories(t *testing.T) {
 	var services, err = GetListFromDirectory("mocks/project-with-services-inside-subdirs")
 

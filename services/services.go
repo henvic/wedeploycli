@@ -231,6 +231,11 @@ func (l *listFromDirectoryGetter) Walk(root string) (ServiceInfoList, error) {
 		return nil, err
 	}
 
+	// service found at base level, don't traverse or look any further
+	if len(l.list) != 0 {
+		return l.list, nil
+	}
+
 	files, err := ioutil.ReadDir(l.root)
 
 	if err != nil {
