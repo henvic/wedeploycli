@@ -37,7 +37,11 @@ func (c *copyServiceFiles) walkFn(path string, info os.FileInfo, ef error) (err 
 	}
 
 	if info.Name() == ".git" || ignore.Match(info.Name()) {
-		return filepath.SkipDir
+		if info.IsDir() {
+			return filepath.SkipDir
+		}
+
+		return nil
 	}
 
 	if _, has := c.deploy.ignoreList[path]; has {
