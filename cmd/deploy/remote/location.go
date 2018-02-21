@@ -30,6 +30,7 @@ var forbiddenLocations = []string{
 	"/home",
 	"/mnt",
 	"/Volumes",
+	"/Users",
 }
 
 func getWorkingDirectory() (wd string, err error) {
