@@ -116,7 +116,8 @@ type ServicePackage struct {
 	CustomDomains []string          `json:"customDomains,omitempty"`
 	Env           map[string]string `json:"env,omitempty"`
 	Dependencies  []string          `json:"dependencies,omitempty"`
-	dockerfile    string
+
+	dockerfile string
 }
 
 // Service returns a Service type created taking wedeploy.json as base
