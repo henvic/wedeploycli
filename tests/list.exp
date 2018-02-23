@@ -19,22 +19,6 @@ while {1} {
     timeout { handle_timeout; break }
     "You need to log in before using \"we list\"."
   }
-  send "n\r"
-  expect {
-    timeout { handle_timeout; break }
-    "Login canceled."
-  }
-
-  send "we list\r"
-  expect {
-    timeout { handle_timeout; break }
-    "You need to log in before using \"we list\"."
-  }
-  expect {
-    timeout { handle_timeout; break }
-    "Do you want to log in?"
-  }
-  send "y\r"
   expect {
     timeout { handle_timeout; break }
     "Open your browser and authenticate?"
@@ -42,7 +26,7 @@ while {1} {
   send "n\r"
   expect {
     timeout { handle_timeout; break }
-    "Login canceled." { break }
+    "Login canceled." {break}
   }
 }
 

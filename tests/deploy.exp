@@ -22,23 +22,10 @@ logout $_tester(email)
 
 while {1} {
   send "we deploy\r"
-  expect "You need to log in before using \"we deploy\"."
   expect {
     timeout { handle_timeout; break }
-    "Do you want to log in?"
+    "You need to log in before using \"we deploy\"."
   }
-  send "n\r"
-  expect {
-    timeout { handle_timeout; break }
-    "Login canceled."
-  }
-  send "we deploy\r"
-  expect "You need to log in before using \"we deploy\"."
-  expect {
-    timeout { handle_timeout; break }
-    "Do you want to log in?"
-  }
-  send "y\r"
   expect {
     timeout { handle_timeout; break }
     "Open your browser and authenticate?"
@@ -46,7 +33,7 @@ while {1} {
   send "n\r"
   expect {
     timeout { handle_timeout; break }
-    "Login canceled." { break }
+    "Login canceled." {break}
   }
 }
 
