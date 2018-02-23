@@ -30,7 +30,7 @@ proc handle_timeout {{message ""}} {
 proc print_msg {text {color cyan}} {
   if { [string match {SCENARIO:*} $text] } {
     set color magenta
-    add_to_report $text
+    add_to_report "$text\n"
   }
 
   if { [string match {Finished!} $text] } { set color green }
@@ -64,13 +64,13 @@ proc print_stack {} {
       set cmd "[string range $cmd 0 $max_string_size]..."
     }
 
-    set stack_line "ERROR: cmd: $cmd | $file | line $line"
+    set stack_line "  ERROR: [file tail $file] | line $line | cmd: $cmd "
 
     lappend stack $stack_line
   }
 
-  puts " [join $stack "\n"]"
-  return " [join $stack "\n"]"
+  puts [join $stack "\n"]
+  return [join $stack "\n"]
 }
 
 proc login {email pw} {
