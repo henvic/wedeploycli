@@ -5,13 +5,13 @@ source ../procs/shared_procs.tcl
 
 spawn $env(SHELL)
 
-send "cd ../fixtures/test1\r"
+send "cd ../fixtures/projectA\r"
 expect {
   timeout {
     handle_timeout
     error "Had problem changing to project directory"
    }
-  "fixtures/test1"
+  "fixtures/projectA"
 }
 
 #####################################################
