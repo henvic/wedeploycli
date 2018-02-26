@@ -145,6 +145,8 @@ proc delete_project {project} {
 }
 
 proc verify_service_exists {project service} {
+  print_msg "Verifying service $service-$project"
+
   set url $::base_url/projects/$project/services/$service
   set response_code [http_get $url]
 

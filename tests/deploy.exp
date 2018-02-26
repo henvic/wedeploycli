@@ -102,4 +102,52 @@ set timeout $::_default_timeout
 verify_service_exists deploy2 ui
 delete_project deploy2
 
+#####################################################
+print_msg "SCENARIO: Deploy project with two services"
+#####################################################
+
+login $_tester(email) $_tester(pw)
+
+send "cd ../projectB\r"
+expect {
+  timeout {
+    handle_timeout
+    error "Had problem changing to project directory"
+   }
+  "fixtures/projectA"
+}
+
+create_project deploy3
+
+set timeout 30
+
+while {1} {
+  send "we deploy -p deploy3\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Deploying services on project"
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Deployment succeeded in"
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Upload completed in"
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Deployment succeeded"
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Deployment succeeded" {break}
+  }
+}
+
+set timeout $::_default_timeout
+verify_service_exists deploy3 ui1
+verify_service_exists deploy3 ui2
+delete_project deploy3
+
 print_msg "Finished!"
