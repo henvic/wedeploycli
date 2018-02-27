@@ -20,7 +20,8 @@ close $report_file
 set test_files {
   login.exp \
   list.exp \
-  deploy.exp
+  deploy.exp \
+  log.exp
 }
 
 # run tests
@@ -29,5 +30,3 @@ foreach {test_file} $test_files {
 }
 
 print_msg "All done running tests!" green
-
-# TODO:  clean temp directory

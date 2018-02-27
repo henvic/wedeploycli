@@ -1,0 +1,136 @@
+#! /usr/bin/expect
+
+source ../procs/curl_procs.tcl
+source ../procs/shared_procs.tcl
+
+spawn $env(SHELL)
+
+#####################################################
+print_msg "SCENARIO: Cannot view log without signing in"
+#####################################################
+
+logout $_tester(email)
+
+while {1} {
+  send "we log\r"
+  expect {
+    timeout { handle_timeout; break }
+    "You need to log in before using \"we log\"."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Open your browser and authenticate?"
+  }
+  send "n\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Login canceled." { break }
+  }
+}
+
+#####################################################
+print_msg "SCENARIO: View logs by selecting project/service ID"
+#####################################################
+
+login $_tester(email) $_tester(pw)
+
+create_project log1
+create_service log1 ui1qa
+create_service log1 ui2qa
+
+while {1} {
+  send "we log\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Type a project/service ID or a service #"
+  }
+  send "ui2qa\r"
+  expect {
+    timeout { handle_timeout; break }
+    -re "ui2qa.*Deploy in progress"
+  }
+  expect {
+    timeout { handle_timeout; break }
+    -re "ui2qa.*HOSTING will now listen on 0.0.0.0:80."
+  }
+  expect {
+    timeout {}
+    "ui1qa" { expectation_not_met "Should not see logs for ui1qa"; break }
+  }
+  control_c
+
+  send "we log\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Type a project/service ID or a service #"
+  }
+  send "1\r"
+  expect {
+    timeout { handle_timeout; break }
+    -re "ui1qa.*Deploy in progress"
+  }
+  expect {
+    timeout { handle_timeout; break }
+    -re "ui1qa.*HOSTING will now listen on 0.0.0.0:80."
+  }
+  expect {
+    timeout {}
+    "ui2qa" { expectation_not_met "Should not see logs for ui2qa"; break }
+  }
+  control_c
+  break
+}
+
+#####################################################
+print_msg "SCENARIO: View logs with -p flag"
+#####################################################
+
+while {1} {
+  send "we log -p log1\r"
+  expect {
+    timeout { handle_timeout; break }
+    -re "ui1qa.*Deploy in progress.*ui2qa.*Deploy in progress"
+  }
+  expect {
+    timeout { handle_timeout; break }
+    -re "ui1qa.*HOSTING will now listen on 0.0.0.0:80."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    -re "ui2qa.*HOSTING will now listen on 0.0.0.0:80."
+  }
+  control_c
+  send "we log -p log2\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Not found"
+  }
+  control_c
+  break
+}
+
+#####################################################
+print_msg "SCENARIO: View logs with -p and -s flags"
+#####################################################
+
+while {1} {
+  send "we log -p log1 -s ui2qa\r"
+  expect {
+    timeout { handle_timeout; break }
+    -re "ui2qa.*Deploy in progress"
+  }
+  expect {
+    timeout { handle_timeout; break }
+    -re "ui2qa.*HOSTING will now listen on 0.0.0.0:80."
+  }
+  expect {
+    timeout {}
+    "ui1qa" { expectation_not_met "Should not see logs for ui1qa"; break }
+  }
+  control_c
+  break
+}
+
+delete_project log1
+
+print_msg "Finished!"

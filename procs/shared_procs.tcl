@@ -16,6 +16,21 @@ proc add_to_report {text} {
   close $file
 }
 
+proc control_c {} {
+  send \003
+  expect {
+    timeout { handle_timeout; error "^C failed" }
+    "cli-functional-tests/"
+  }
+}
+
+proc expectation_not_met {message} {
+  print_msg "Expectation not met: $message" red
+  set stack [print_stack]
+  add_to_report "Expectation Not Met Error:\n$stack"
+  set timeout $::_default_timeout
+}
+
 proc handle_timeout {{message ""}} {
   print_msg "Timeout Error: $message" red
   set stack [print_stack]
@@ -23,8 +38,7 @@ proc handle_timeout {{message ""}} {
   add_to_report "Timeout Error:\n$stack"
 
   set timeout $::_default_timeout
-  send \003  ;# control-C
-  expect expect-cli/tests
+  control_c
 }
 
 proc print_msg {text {color cyan}} {
