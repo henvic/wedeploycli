@@ -49,10 +49,12 @@ while {1} {
     timeout { handle_timeout; break }
     -re "ui2qa.*Deploy in progress"
   }
+  set timeout 30
   expect {
     timeout { handle_timeout; break }
     -re "ui2qa.*HOSTING will now listen on 0.0.0.0:80."
   }
+  set timeout $::_default_timeout
   expect {
     timeout {}
     "ui1qa" { expectation_not_met "Should not see logs for ui1qa"; break }
