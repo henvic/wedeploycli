@@ -24,8 +24,9 @@ while {1} {
   send "$_tester(pw)\r"
   expect {
     timeout { handle_timeout; break }
-    "Type a command and press Enter to execute it." {break}
+    "Type a command and press Enter to execute it."
   }
+  break
 }
 
 print_msg "Finished!" green

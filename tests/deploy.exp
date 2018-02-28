@@ -33,8 +33,9 @@ while {1} {
   send "n\r"
   expect {
     timeout { handle_timeout; break }
-    "Login canceled." {break}
+    "Login canceled."
   }
+  break
 }
 
 #####################################################
@@ -63,8 +64,9 @@ while {1} {
   set timeout 30
   expect {
     timeout { handle_timeout; break }
-    "Deployment succeeded" { break }
+    "Deployment succeeded"
   }
+  break
 }
 
 set timeout $::_default_timeout
@@ -94,8 +96,9 @@ while {1} {
   expect {
     timeout {
       handle_timeout; break }
-    "Deployment succeeded" { break }
+    "Deployment succeeded"
   }
+  break
 }
 
 set timeout $::_default_timeout
@@ -141,8 +144,9 @@ while {1} {
   }
   expect {
     timeout { handle_timeout; break }
-    "Deployment succeeded" {break}
+    "Deployment succeeded"
   }
+  break
 }
 
 set timeout $::_default_timeout

@@ -27,7 +27,7 @@ proc control_c {} {
 proc expectation_not_met {message} {
   print_msg "Expectation not met: $message" red
   set stack [print_stack]
-  add_to_report "Expectation Not Met Error:\n$stack"
+  add_to_report "Expectation Not Met Error: $message\n$stack"
   set timeout $::_default_timeout
 }
 
@@ -35,7 +35,7 @@ proc handle_timeout {{message ""}} {
   print_msg "Timeout Error: $message" red
   set stack [print_stack]
 
-  add_to_report "Timeout Error:\n$stack"
+  add_to_report "Timeout Error: $message\n$stack"
 
   set timeout $::_default_timeout
   control_c
