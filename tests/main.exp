@@ -21,7 +21,8 @@ set test_files {
   login.exp \
   list.exp \
   deploy.exp \
-  log.exp
+  log.exp \
+  restart.exp
 }
 
 # run tests
