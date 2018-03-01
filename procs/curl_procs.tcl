@@ -23,8 +23,7 @@ proc http_get {url {args}} {
     -url $url \
     -userpwd $::auth
 
-  catch { $curl_handle perform } curl_error_number
-  if { $curl_error_number != 0 } {
+  if { [catch {$curl_handle perform} curl_error_number] } {
     error [curl::easystrerror $curl_error_number]
   }
 
@@ -43,8 +42,7 @@ proc http_post {url userpw data} {
     -post 1 \
     -postfields $data
 
-  catch { $curl_handle perform } curl_error_number
-  if { $curl_error_number != 0 } {
+  if { [catch {$curl_handle perform} curl_error_number] } {
     error [curl::easystrerror $curl_error_number]
   }
 
@@ -105,8 +103,7 @@ proc create_user {email {pw test} {name Tester} {plan standard}} {
     -post 1 \
     -postfields $data
 
-  catch { $curl_handle perform } curl_error_number
-  if { $curl_error_number != 0 } {
+  if { [catch {$curl_handle perform} curl_error_number] } {
     error [curl::easystrerror $curl_error_number]
   }
 
@@ -129,8 +126,7 @@ proc delete_project {project} {
     -url $url \
     -userpwd $::auth
 
-  catch { $curl_handle perform } curl_error_number
-  if { $curl_error_number != 0 } {
+  if { [catch {$curl_handle perform} curl_error_number] } {
     error [curl::easystrerror $curl_error_number]
   }
 

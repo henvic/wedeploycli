@@ -23,7 +23,8 @@ set test_files {
   deploy.exp \
   log.exp \
   restart.exp \
-  new.exp
+  new.exp \
+  delete.exp
 }
 
 # run tests
