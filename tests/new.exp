@@ -1,0 +1,94 @@
+#! /usr/bin/expect
+
+source ../procs/curl_procs.tcl
+source ../procs/shared_procs.tcl
+
+spawn $env(SHELL)
+
+#####################################################
+print_msg "SCENARIO: Cannot `we new` without signing in"
+#####################################################
+
+logout $_tester(email)
+
+while {1} {
+  send "we new\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Do you want to create a new project or install a new service?"
+  }
+  send "1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "You need to log in before using \"we new project\"."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Open your browser and authenticate?"
+  }
+  send "n\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Login canceled."
+  }
+  break
+}
+
+#####################################################
+print_msg "SCENARIO: Create a project and service"
+#####################################################
+
+login $_tester(email) $_tester(pw)
+
+while {1} {
+  send "we new\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Do you want to create a new project or install a new service?"
+  }
+  send "1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Choose a project ID"
+  }
+  send "new1\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "Project*new1*created."
+  }
+  send "we new\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Do you want to create a new project or install a new service?"
+  }
+  send "2\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Please select a project from the list below."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Type a project ID or #"
+  }
+  send "new1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Select a Service Type"
+  }
+  send "4\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Choose a Service ID"
+  }
+  send "hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Service*hosting1-new1.wedeploy.sh*created"
+  }
+  break
+}
+
+verify_service_exists new1 hosting1
+delete_project new1
+
+print_msg "Finished!"
