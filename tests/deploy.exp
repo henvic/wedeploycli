@@ -1,8 +1,5 @@
 #! /usr/bin/expect
 
-source ../procs/curl_procs.tcl
-source ../procs/shared_procs.tcl
-
 spawn $env(SHELL)
 
 send "cd ../fixtures/projectA\r"
@@ -153,5 +150,3 @@ set timeout $::_default_timeout
 verify_service_exists deploy3 ui1
 verify_service_exists deploy3 ui2
 delete_project deploy3
-
-print_msg "Finished!"

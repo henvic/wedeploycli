@@ -1,10 +1,8 @@
 #! /usr/bin/expect
 
-source ../procs/shared_procs.tcl
-
 package require TclCurl
 
-set base_url https://api.wedeploy.xyz
+set base_url "https://api.$::_remote"
 set auth $::_tester(email):$::_tester(pw)
 set auth_header {"Authorization: Bearer token"}
 set content_type_header {"Content-Type: application/json; charset=utf-8"}
@@ -63,7 +61,7 @@ proc create_project {project} {
 
   if { $response_code != 200 } {
     set message "Project $project could not be created"
-    add_to_report $message
+    add_to_report "  $message"
     print_msg $message red
   }
 }
@@ -79,7 +77,7 @@ proc create_service {project service {image wedeploy/hosting}} {
 
   if { $response_code != 200 } {
     set message "Service $service could not be created"
-    add_to_report $message
+    add_to_report "  $message"
     print_msg $message red
   }
 }
@@ -135,7 +133,7 @@ proc delete_project {project} {
 
   if { $code != 204 } {
     set message "Could not delete project $project"
-    add_to_report $message
+    add_to_report "  $message"
     print_msg $message red
   }
 }
@@ -148,7 +146,7 @@ proc verify_service_exists {project service} {
 
   if { $response_code != 200 } {
     set message "Project $project with service $service doesn't exist"
-    add_to_report $message
+    add_to_report "  $message"
     print_msg $message red
   }
 }

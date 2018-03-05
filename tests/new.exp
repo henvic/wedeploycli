@@ -1,8 +1,5 @@
 #! /usr/bin/expect
 
-source ../procs/curl_procs.tcl
-source ../procs/shared_procs.tcl
-
 spawn $env(SHELL)
 
 #####################################################
@@ -90,5 +87,3 @@ while {1} {
 
 verify_service_exists new1 hosting1
 delete_project new1
-
-print_msg "Finished!"
