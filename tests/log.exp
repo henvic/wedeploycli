@@ -96,11 +96,11 @@ while {1} {
   }
   expect {
     timeout { handle_timeout; break }
-    -re "ui1qa.*HOSTING will now listen on 0.0.0.0:80."
+    -re "ui.qa.*HOSTING will now listen on 0.0.0.0:80."
   }
   expect {
     timeout { handle_timeout; break }
-    -re "ui2qa.*HOSTING will now listen on 0.0.0.0:80."
+    -re "ui.qa.*HOSTING will now listen on 0.0.0.0:80."
   }
   control_c
   send "we log -p log2\r"
