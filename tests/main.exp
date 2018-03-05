@@ -25,7 +25,7 @@ source ../procs/curl_procs.tcl
 # if env(TESTER_EMAIL) has a value, assume tester already exists
 # otherwise, default tester needs to be created
 if { ![info exists ::env(TESTER_EMAIL)] } {
-  create_user $_tester(email)
+  catch { create_user $_tester(email) }
 }
 
 puts "TESTER_EMAIL: $_tester(email)"
