@@ -1,0 +1,104 @@
+#! /usr/bin/expect
+
+spawn $env(SHELL)
+
+#####################################################
+print_msg "SCENARIO: Cannot `we domain` without signing in"
+#####################################################
+
+logout $_tester(email)
+
+while {1} {
+  send "we domain\r"
+  expect {
+    timeout { handle_timeout; break }
+    "You need to log in before using \"we domain\"."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Open your browser and authenticate?"
+  }
+  send "n\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Login canceled."
+  }
+  break
+}
+
+#####################################################
+print_msg "SCENARIO: Add and delete a custom domain"
+#####################################################
+
+if { $::_remote == "wedeploy.com" } {
+  set domain qadomain1.wedeploy.io
+} else {
+  set domain qadomain1.wedeploy.sh
+}
+
+login $_tester(email) $_tester(pw)
+
+create_project domain1
+create_service domain1 hosting1
+
+while {1} {
+  send "we domain show\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Please select a service from the list below."
+  }
+  send "1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "No custom domains found."
+  }
+  send "we domain add $domain\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Type a service ID or #"
+  }
+  send "hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Custom domain \"$domain\" added."
+  }
+  send "we domain show -p domain1 -s hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "1*$domain"
+  }
+  send "we curl /projects/domain1/services/hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "\"customDomains\":*\"qadomain1.wedeploy.*\""
+  }
+  send "we domain delete -p domain1 -s hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Select a custom domain # or address to delete"
+  }
+  send "$domain\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Custom domain \"$domain\" deleted."
+  }
+  send "we domain show -p domain1 -s hosting1\r"
+  expect {
+    timeout {}
+    $domain {
+      expectation_not_met "Should not have custom domain $domain"
+      break
+    }
+  }
+  send "we curl /projects/domain1/services/hosting1\r"
+  expect {
+    timeout {}
+    -gl "\"customDomains\":*\"qadomain1.wedeploy.*\"" {
+      expectation_not_met "Should not have custom domain $domain"
+      break
+    }
+  }
+  break
+}
+
+delete_project domain1
