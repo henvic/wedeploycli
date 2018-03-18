@@ -1,8 +1,5 @@
 #! /usr/bin/expect
 
-source ../procs/curl_procs.tcl
-source ../procs/shared_procs.tcl
-
 spawn $env(SHELL)
 
 send "cd ../fixtures/projectA\r"
@@ -33,8 +30,9 @@ while {1} {
   send "n\r"
   expect {
     timeout { handle_timeout; break }
-    "Login canceled." {break}
+    "Login canceled."
   }
+  break
 }
 
 #####################################################
@@ -63,8 +61,9 @@ while {1} {
   set timeout 30
   expect {
     timeout { handle_timeout; break }
-    "Deployment succeeded" { break }
+    "Deployment succeeded"
   }
+  break
 }
 
 set timeout $::_default_timeout
@@ -94,8 +93,9 @@ while {1} {
   expect {
     timeout {
       handle_timeout; break }
-    "Deployment succeeded" { break }
+    "Deployment succeeded"
   }
+  break
 }
 
 set timeout $::_default_timeout
@@ -141,13 +141,12 @@ while {1} {
   }
   expect {
     timeout { handle_timeout; break }
-    "Deployment succeeded" {break}
+    "Deployment succeeded"
   }
+  break
 }
 
 set timeout $::_default_timeout
 verify_service_exists deploy3 ui1
 verify_service_exists deploy3 ui2
 delete_project deploy3
-
-print_msg "Finished!"

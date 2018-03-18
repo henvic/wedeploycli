@@ -1,15 +1,5 @@
 #! /usr/bin/expect
 
-# set globals here
-set _default_timeout 5
-set _test_report "../test-results/report.txt"
-set _tester(email) cli-tester@test.com
-set _tester(pw) test
-
-if { [info exists env(TESTER_EMAIL)] } {
-  set _tester(email) $::env(TESTER_EMAIL)
-}
-
 proc add_to_report {text} {
   set file [open $::_test_report a+]
   puts $file $text
@@ -27,7 +17,7 @@ proc control_c {} {
 proc expectation_not_met {message} {
   print_msg "Expectation not met: $message" red
   set stack [print_stack]
-  add_to_report "Expectation Not Met Error:\n$stack"
+  add_to_report "Expectation Not Met Error: $message\n$stack"
   set timeout $::_default_timeout
 }
 
@@ -35,7 +25,7 @@ proc handle_timeout {{message ""}} {
   print_msg "Timeout Error: $message" red
   set stack [print_stack]
 
-  add_to_report "Timeout Error:\n$stack"
+  add_to_report "Timeout Error: $message\n$stack"
 
   set timeout $::_default_timeout
   control_c

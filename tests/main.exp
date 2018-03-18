@@ -1,32 +1,65 @@
 #! /usr/bin/expect
 
-source ../procs/curl_procs.tcl
+# set globals here
+set _default_timeout 5
+set _test_report "../test-results/report.txt"
+set _tester(email) cli-tester@test.com
+set _tester(pw) test
+set _remote wedeploy.xyz
+
+if { [info exists env(TESTER_EMAIL)] } {
+  set _tester(email) $::env(TESTER_EMAIL)
+}
+
+if { [info exists env(TESTER_PW)] } {
+  set _tester(pw) $::env(TESTER_PW)
+}
+
+if { [info exists env(REMOTE)] } {
+  set _remote $::env(REMOTE)
+}
+
 source ../procs/shared_procs.tcl
+source ../procs/curl_procs.tcl
 
 # if env(TESTER_EMAIL) has a value, assume tester already exists
 # otherwise, default tester needs to be created
 if { ![info exists ::env(TESTER_EMAIL)] } {
-  print_msg "TESTER_EMAIL: $_tester(email)"
-  create_user $_tester(email)
-} else {
-  print_msg "TESTER_EMAIL: $::env(TESTER_EMAIL)"
+  catch { create_user $_tester(email) }
 }
+
+puts "TESTER_EMAIL: $_tester(email)"
+puts "REMOTE: $_remote"
 
 # initialize test report file
 set report_file [open $_test_report w]
 close $report_file
 
-# list of test files to run
-set test_files {
-  login.exp \
-  list.exp \
-  deploy.exp \
-  log.exp \
-  restart.exp
+exec we curl enable
+exec we remote set qa-remote $_remote
+exec we remote default qa-remote
+
+set test_files {}
+
+if { $::argc > 1 } {
+  foreach arg $::argv {
+    if { $arg == "-tclargs" } { continue }
+    lappend test_files $arg
+  }
+} else {
+  # list of test files to run
+  lappend test_files \
+    login.exp \
+    list.exp \
+    deploy.exp \
+    log.exp \
+    restart.exp \
+    new.exp \
+    delete.exp
 }
 
 # run tests
-foreach {test_file} $test_files {
+foreach test_file $test_files {
   source $test_file
 }
 

@@ -1,8 +1,5 @@
 #! /usr/bin/expect
 
-source ../procs/shared_procs.tcl
-source ../procs/curl_procs.tcl
-
 set timeout $::_default_timeout
 
 spawn $env(SHELL)
@@ -26,8 +23,9 @@ while {1} {
   send "n\r"
   expect {
     timeout { handle_timeout; break }
-    "Login canceled." {break}
+    "Login canceled."
   }
+  break
 }
 
 #####################################################
@@ -72,5 +70,3 @@ expect {
 }
 
 delete_project "list2"
-
-print_msg Finished! green

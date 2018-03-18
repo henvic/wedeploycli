@@ -21,17 +21,35 @@
         ```
 
 ## Running tests
-* [Run xyz infra locally](https://github.com/wedeploy/training#development)
+* [If running the infra locally](https://github.com/wedeploy/training#development), add these lines to /etc/hosts.
+```
+127.0.0.1 api.wedeploy.xyz
+127.0.0.1 git.wedeploy.xyz
+```
 * To run all tests
 ```
 cd tests
-TESTER_EMAIL={useremail} ./main.exp
+TESTER_EMAIL={useremail} \
+TESTER_PW={userpw} \
+REMOTE=wedeploy.xyz \
+./main.exp
 ```
 * To run one test script, i.e. list.exp
 ```
 cd tests
-TESTER_EMAIL={useremail} ./list.exp
+TESTER_EMAIL={useremail} \
+TESTER_PW={userpw} \
+REMOTE=wedeploy.xyz \
+./main.exp -tclargs list.exp
 ```
+* User with TESTER_EMAIL is assumed to exist, and should have at least a standard plan.  If the environment variables are not provided, following default values are used:
+
+| Variable      | Default value       |
+| ------------- | ------------------- |
+| TESTER_EMAIL  | cli-tester@test.com |
+| TESTER_PW     | test                |
+| REMOTE        | wedeploy.xyz        |
+
 
 ## Test results
 Results are reported in test-results/report.txt.  This contains a list of all scenarios from latest test run.  Any errors encountered are listed below the respective scenario name.
