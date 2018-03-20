@@ -198,7 +198,7 @@ func notify(c *config.Config) {
 	}
 
 	println(color.Format(color.FgBlue,
-		`INFO: New version available. Please run "%v".`,
+		`INFO: New version of WeDeploy CLI is available. Please run "%v".`,
 		cmd))
 }
 
