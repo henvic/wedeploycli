@@ -44,9 +44,6 @@ func (p *Project) CreatedAtTime() time.Time {
 }
 
 var (
-	// ErrProjectNotFound happens when a project.json is not found
-	ErrProjectNotFound = errors.New("Project not found")
-
 	// ErrProjectAlreadyExists happens when a Project ID already exists
 	ErrProjectAlreadyExists = errors.New("Project already exists")
 
