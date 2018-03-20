@@ -268,7 +268,9 @@ func (d *Deploy) Do(ctx context.Context) error {
 		return err
 	}
 
-	d.watchDeployment()
+	if err := d.watchDeployment(); err != nil {
+		return err
+	}
 
 	states, err := d.verifyFinalState()
 

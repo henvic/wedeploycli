@@ -11,8 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/henvic/browser"
 	"github.com/wedeploy/cli/activities"
+	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/fancy"
@@ -296,7 +298,7 @@ func (d *Deploy) markDeploymentTransition(serviceID, activityType string) {
 	}
 }
 
-func (d *Deploy) checkActivities() (end bool, err error) {
+func (d *Deploy) updateActivitiesStates() (end bool, err error) {
 	var as activities.Activities
 	var ctx, cancel = context.WithTimeout(d.ctx, 5*time.Second)
 	defer cancel()
@@ -310,7 +312,7 @@ func (d *Deploy) checkActivities() (end bool, err error) {
 	as = as.Reverse()
 
 	if err != nil {
-		return false, err
+		return isNotFoundError(err), err
 	}
 
 	for _, a := range as {
@@ -356,7 +358,19 @@ func clearMessageErrorStringCounter(input string) (output string) {
 	return r.ReplaceAllString(input, "")
 }
 
-func (d *Deploy) watchDeployment() {
+func isNotFoundError(err error) bool {
+	var aft = errwrap.GetType(err, &apihelper.APIFault{})
+
+	if aft == nil {
+		return false
+	}
+
+	af := aft.(*apihelper.APIFault)
+
+	return af != nil && af.Status == 404
+}
+
+func (d *Deploy) watchDeployment() error {
 	d.reorderDeployments()
 
 	rate := rate.NewLimiter(rate.Every(time.Second), 1)
@@ -366,21 +380,24 @@ func (d *Deploy) watchDeployment() {
 			verbose.Debug(er)
 		}
 
-		var end, err = d.checkActivities()
-		var stepText = d.stepMessage.GetText()
+		var end, err = d.updateActivitiesStates()
 
 		if err != nil {
-			d.stepMessage.StopText(updateMessageErrorStringCounter(stepText))
 			verbose.Debug(err)
-			continue
 		}
+
+		if err != nil && end {
+			return errors.New("deployment not found")
+		}
+
+		var stepText = d.stepMessage.GetText()
 
 		if strings.Contains(stepText, "retrying to get status #") {
 			d.stepMessage.StopText(clearMessageErrorStringCounter(stepText))
 		}
 
 		if end {
-			return
+			return nil
 		}
 	}
 }
