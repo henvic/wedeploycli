@@ -4,6 +4,7 @@ package require TclCurl
 
 set base_url "https://api.$::_remote"
 set auth $::_tester(email):$::_tester(pw)
+set team_auth $::_teamuser(email):$::_teamuser(pw)
 set auth_header {"Authorization: Bearer token"}
 set content_type_header {"Content-Type: application/json; charset=utf-8"}
 
@@ -38,7 +39,8 @@ proc http_post {url userpw data} {
     -userpwd $userpw \
     -httpheader $::content_type_header \
     -post 1 \
-    -postfields $data
+    -postfields $data \
+    -bodyvar body
 
   if { [catch {$curl_handle perform} curl_error_number] } {
     error [curl::easystrerror $curl_error_number]
@@ -47,7 +49,7 @@ proc http_post {url userpw data} {
   set code [$curl_handle getinfo httpcode]
   $curl_handle cleanup
 
-  return $code
+  return [list $code $body]
 }
 
 proc create_project {project} {
@@ -56,7 +58,7 @@ proc create_project {project} {
   set timeout 30
   set url $::base_url/projects
   set data "\{\"projectId\":\"$project\"\}"
-  set response_code [http_post $url $::auth $data]
+  set response_code [lindex [http_post $url $::auth $data] 0]
   set timeout $::_default_timeout
 
   if { $response_code != 200 } {
@@ -72,7 +74,7 @@ proc create_service {project service {image wedeploy/hosting}} {
   set timeout 30
   set url $::base_url/projects/$project/services
   set data "\{\"serviceId\":\"$service\",\"image\":\"$image\"\}"
-  set response_code [http_post $url $::auth $data]
+  set response_code [lindex [http_post $url $::auth $data] 0]
   set timeout $::_default_timeout
 
   if { $response_code != 200 } {
@@ -85,31 +87,28 @@ proc create_service {project service {image wedeploy/hosting}} {
 proc create_user {email {pw test} {name Tester} {plan standard}} {
   print_msg "Creating user $email"
 
-  set url localhost:8082/users
   set data "\{\
-        \"confirmed\": null,\
-        \"email\": \"$email\",\
-        \"password\": \"$pw\",\
-        \"name\": \"$name\",\
-        \"planId\": \"$plan\"\}"
+      \"email\": \"$email\",\
+      \"password\": \"$pw\",\
+      \"name\": \"$name\",\
+      \"planId\": \"$plan\"\}"
+  set url $::base_url/user/create
+  set response [http_post $url $::team_auth $data]
+  set response_code [lindex $response 0]
+  set body [lindex $response 1]
 
-  set curl_handle [curl::init]
-  $curl_handle configure \
-    -url $url \
-    -httpheader $::auth_header \
-    -httpheader $::content_type_header \
-    -post 1 \
-    -postfields $data
-
-  if { [catch {$curl_handle perform} curl_error_number] } {
-    error [curl::easystrerror $curl_error_number]
+  if { $response_code != 200 } {
+    error "Could not create user $email"
   }
 
-  set code [$curl_handle getinfo httpcode]
-  $curl_handle cleanup
+  # get token and confirm user
+  regexp {"confirmed":"(.*)","email"} $body matched confirm_token
 
-  if { $code != 200 } {
-    error "Could not create user $email"
+  set params "email $email confirmationToken $confirm_token"
+  set response_code [http_get $::base_url/confirm {*}$params]
+
+  if { $response_code != 302 } {
+    error "Could not confirm user $email"
   }
 }
 
