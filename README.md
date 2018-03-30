@@ -31,6 +31,8 @@
 cd tests
 TESTER_EMAIL={useremail} \
 TESTER_PW={userpw} \
+TEAMUSER_EMAIL={teamemail} \
+TEAMUSER_PW={teampw} \
 REMOTE=wedeploy.xyz \
 ./main.exp
 ```
@@ -39,6 +41,8 @@ REMOTE=wedeploy.xyz \
 cd tests
 TESTER_EMAIL={useremail} \
 TESTER_PW={userpw} \
+TEAMUSER_EMAIL={teamemail} \
+TEAMUSER_PW={teampw} \
 REMOTE=wedeploy.xyz \
 ./main.exp -tclargs list.exp
 ```
