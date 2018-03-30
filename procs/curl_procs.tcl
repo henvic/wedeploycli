@@ -163,6 +163,8 @@ proc get_user_id {} {
 
 # update plan of logged in user
 proc set_user_plan {plan} {
+  print_msg "Setting user plan to $plan"
+
   set data "\{\"planId\": \"$plan\"\}"
   set user_id [get_user_id]
   set url $::base_url/admin/users/$user_id

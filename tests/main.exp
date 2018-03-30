@@ -67,7 +67,8 @@ if { $::argc > 1 } {
     new.exp \
     delete.exp \
     domain.exp \
-    env.exp
+    env.exp \
+    quota.exp
 }
 
 # run tests
