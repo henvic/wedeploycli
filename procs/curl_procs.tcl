@@ -107,7 +107,7 @@ proc create_user {email {pw test} {name Tester} {plan standard}} {
   }
 
   # get token and confirm user
-  regexp {"confirmed":"(.*)","email"} $body matched confirm_token
+  regexp {"confirmed":"(.*?)"} $body matched confirm_token
 
   set params "email $email confirmationToken $confirm_token"
   set response [http_get $::base_url/confirm {*}$params]
@@ -157,7 +157,7 @@ proc get_user_id {} {
     print_msg $message red
   }
 
-  regexp {"id":"(.*)","confirmed"} $body matched user_id
+  regexp {"id":"(.*?)"} $body matched user_id
   return $user_id
 }
 
