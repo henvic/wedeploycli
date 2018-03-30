@@ -59,11 +59,13 @@ proc create_project {project} {
   set timeout 30
   set url $::base_url/projects
   set data "\{\"projectId\":\"$project\"\}"
-  set response_code [lindex [http_post $url $::auth $data] 0]
+  set response [http_post $url $::auth $data]
+  set response_code [lindex $response 0]
   set timeout $::_default_timeout
 
   if { $response_code != 200 } {
     set message "Project $project could not be created"
+    append message "\n[lindex $response 1]"
     add_to_report "  $message"
     print_msg $message red
   }
@@ -75,11 +77,13 @@ proc create_service {project service {image wedeploy/hosting}} {
   set timeout 30
   set url $::base_url/projects/$project/services
   set data "\{\"serviceId\":\"$service\",\"image\":\"$image\"\}"
-  set response_code [lindex [http_post $url $::auth $data] 0]
+  set response [http_post $url $::auth $data]
+  set response_code [lindex $response 0]
   set timeout $::_default_timeout
 
   if { $response_code != 200 } {
     set message "Service $service could not be created"
+    append message "\n[lindex $response 1]"
     add_to_report "  $message"
     print_msg $message red
   }
@@ -148,6 +152,7 @@ proc get_user_id {} {
 
   if { $response_code != 200 } {
     set message "Could not get user id"
+    append message "\n$body"
     add_to_report "  $message"
     print_msg $message red
   }
@@ -168,7 +173,8 @@ proc set_user_plan {plan} {
     -url $url \
     -userpwd $::team_auth \
     -httpheader $::content_type_header \
-    -postfields $data
+    -postfields $data \
+    -bodyvar body
 
   if { [catch {$curl_handle perform} curl_error_number] } {
     error [curl::easystrerror $curl_error_number]
@@ -178,7 +184,10 @@ proc set_user_plan {plan} {
   $curl_handle cleanup
 
   if { $response_code != 200 } {
-    error "Could not update user plan"
+    set message "Could not update user plan"
+    append message "\n$body"
+    add_to_report "  $message"
+    print_msg $message red
   }
 }
 
