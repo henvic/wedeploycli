@@ -20,7 +20,8 @@ proc http_get {url {args}} {
   set curl_handle [curl::init]
   $curl_handle configure \
     -url $url \
-    -userpwd $::auth
+    -userpwd $::auth \
+    -bodyvar body
 
   if { [catch {$curl_handle perform} curl_error_number] } {
     error [curl::easystrerror $curl_error_number]
@@ -29,7 +30,7 @@ proc http_get {url {args}} {
   set code [$curl_handle getinfo httpcode]
   $curl_handle cleanup
 
-  return $code
+  return [list $code $body]
 }
 
 proc http_post {url userpw data} {
@@ -105,7 +106,8 @@ proc create_user {email {pw test} {name Tester} {plan standard}} {
   regexp {"confirmed":"(.*)","email"} $body matched confirm_token
 
   set params "email $email confirmationToken $confirm_token"
-  set response_code [http_get $::base_url/confirm {*}$params]
+  set response [http_get $::base_url/confirm {*}$params]
+  set response_code [lindex $response 0]
 
   if { $response_code != 302 } {
     error "Could not confirm user $email"
@@ -137,11 +139,55 @@ proc delete_project {project} {
   }
 }
 
+# get user id  of currently logged in user, presumed to be $_tester(email)
+proc get_user_id {} {
+  set url $::base_url/user
+  set response [http_get $url]
+  set response_code [lindex $response 0]
+  set body [lindex $response 1]
+
+  if { $response_code != 200 } {
+    set message "Could not get user id"
+    add_to_report "  $message"
+    print_msg $message red
+  }
+
+  regexp {"id":"(.*)","confirmed"} $body matched user_id
+  return $user_id
+}
+
+# update plan of logged in user
+proc set_user_plan {plan} {
+  set data "\{\"planId\": \"$plan\"\}"
+  set user_id [get_user_id]
+  set url $::base_url/admin/users/$user_id
+
+  set curl_handle [curl::init]
+  $curl_handle configure \
+    -customrequest PATCH \
+    -url $url \
+    -userpwd $::team_auth \
+    -httpheader $::content_type_header \
+    -postfields $data
+
+  if { [catch {$curl_handle perform} curl_error_number] } {
+    error [curl::easystrerror $curl_error_number]
+  }
+
+  set response_code [$curl_handle getinfo httpcode]
+  $curl_handle cleanup
+
+  if { $response_code != 200 } {
+    error "Could not update user plan"
+  }
+}
+
 proc verify_service_exists {project service} {
   print_msg "Verifying service $service-$project"
 
   set url $::base_url/projects/$project/services/$service
-  set response_code [http_get $url]
+  set response [http_get $url]
+  set response_code [lindex $response 0]
 
   if { $response_code != 200 } {
     set message "Project $project with service $service doesn't exist"
