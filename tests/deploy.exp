@@ -74,8 +74,6 @@ delete_project deploy1
 print_msg "SCENARIO: Deploy to an existing project"
 #####################################################
 
-login $_tester(email) $_tester(pw)
-
 create_project deploy2
 
 while {1} {
@@ -106,15 +104,13 @@ delete_project deploy2
 print_msg "SCENARIO: Deploy project with two services"
 #####################################################
 
-login $_tester(email) $_tester(pw)
-
 send "cd ../projectB\r"
 expect {
   timeout {
     handle_timeout
     error "Had problem changing to project directory"
    }
-  "fixtures/projectA"
+  "fixtures/projectB"
 }
 
 create_project deploy3
@@ -150,3 +146,49 @@ set timeout $::_default_timeout
 verify_service_exists deploy3 ui1
 verify_service_exists deploy3 ui2
 delete_project deploy3
+
+#####################################################
+print_msg "SCENARIO: Deploy project with bad wedeploy.json"
+#####################################################
+
+send "cd ../projectC\r"
+expect {
+  timeout {
+    handle_timeout
+    error "Had problem changing to project directory"
+   }
+  "fixtures/projectC"
+}
+
+create_project deploy4
+
+while {1} {
+  set timeout 30
+  send "we deploy -p deploy4\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Deployment failed"
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Error building service \"md\""
+  }
+  set timeout $::_default_timeout
+  expect {
+    timeout { handle_timeout; break }
+    "Open browser to check the logs?"
+  }
+  send "n\r"
+  expect {
+    timeout { handle_timeout; break }
+    "fixtures/projectC"
+  }
+  send "we log -p deploy4\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Something went wrong, most likely caused by an incorrect Dockerfile."
+  }
+  break
+}
+
+delete_project deploy4
