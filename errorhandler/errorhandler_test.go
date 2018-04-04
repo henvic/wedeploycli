@@ -2,6 +2,7 @@ package errorhandler
 
 import (
 	"errors"
+	"net/http"
 	"reflect"
 	"testing"
 
@@ -407,6 +408,83 @@ func TestHandleAPIFaultCommandOverridesErrorMessage(t *testing.T) {
 
 	if want != got.Error() {
 		t.Errorf("Wanted %v, got %v instead", want, got)
+	}
+}
+
+func TestHandleInvalidParameter(t *testing.T) {
+	CommandName = "payment credit"
+
+	var err = errwrap.Wrapf("Wrapped error: {{err}}", &apihelper.APIFault{
+		Method:  "GET",
+		URL:     "http://example.com/",
+		Status:  http.StatusBadRequest,
+		Message: "Payment Not Found",
+		Errors: apihelper.APIFaultErrors{
+			apihelper.APIFaultError{
+				Reason: "invalidParameter",
+				Context: apihelper.APIFaultErrorContext{
+					"param": "creditcard",
+					"value": "@",
+				},
+			},
+		},
+	})
+
+	var got = Handle(err)
+
+	var want = `Invalid value "@" for parameter "creditcard"`
+
+	if want != got.Error() {
+		t.Errorf("Wanted %v, got %v instead", want, got)
+	}
+
+	if reflect.TypeOf(got).String() != "*errwrap.wrappedError" {
+		t.Errorf("Expected error to be wrapped")
+	}
+
+	var af = errwrap.GetType(got, &apihelper.APIFault{})
+
+	if af == nil {
+		t.Errorf("Expected error to be of apihelper.APIFault{} time")
+	}
+}
+
+func TestHandleInvalidParameterContextPriority(t *testing.T) {
+	CommandName = "payment credit"
+
+	var err = errwrap.Wrapf("Wrapped error: {{err}}", &apihelper.APIFault{
+		Method:  "GET",
+		URL:     "http://example.com/",
+		Status:  http.StatusBadRequest,
+		Message: "Payment Not Found",
+		Errors: apihelper.APIFaultErrors{
+			apihelper.APIFaultError{
+				Reason: "invalidParameter",
+				Context: apihelper.APIFaultErrorContext{
+					"param":   "creditcard",
+					"value":   "@",
+					"message": "Credit card parameter is not valid",
+				},
+			},
+		},
+	})
+
+	var got = Handle(err)
+
+	var want = "Credit card parameter is not valid"
+
+	if want != got.Error() {
+		t.Errorf("Wanted %v, got %v instead", want, got)
+	}
+
+	if reflect.TypeOf(got).String() != "*errwrap.wrappedError" {
+		t.Errorf("Expected error to be wrapped")
+	}
+
+	var af = errwrap.GetType(got, &apihelper.APIFault{})
+
+	if af == nil {
+		t.Errorf("Expected error to be of apihelper.APIFault{} time")
 	}
 }
 

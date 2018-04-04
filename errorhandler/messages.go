@@ -12,7 +12,6 @@ var errorReasonMessage = messages{
 	"internalError":                  "The request failed due to an internal error",
 	"projectQuotaExceeded":           "Project quota exceeded",
 	"exceededProjectMaximum":         "Project quota exceeded",
-	"invalidParameter":               `Invalid parameter "{{.param}}" for "{{.value}}"`,
 	"invalidService":                 "Invalid service",
 	"invalidProject":                 "Invalid project",
 	"invalidAccountEmail":            "Invalid email account",
@@ -25,6 +24,9 @@ var errorReasonMessage = messages{
 	"invalidProjectId":               "Invalid project ID",
 	"projectAlreadyExists":           "Project already exists",
 	"environmentVariableNotFound":    "Environment variable not found",
+
+	// special case: invalidParameter always uses the message from the context unless it is not set
+	"invalidParameter": `{{if .message}}{{.message}}{{else}}Invalid value "{{.value}}" for parameter "{{.param}}"{{end}}`,
 }
 
 var errorReasonCommandMessageOverrides = map[string]messages{
