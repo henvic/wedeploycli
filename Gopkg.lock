@@ -22,7 +22,14 @@
 [[projects]]
   branch = "master"
   name = "github.com/equinox-io/equinox"
-  packages = [".","internal/go-update","internal/go-update/internal/binarydist","internal/go-update/internal/osext","internal/osext","proto"]
+  packages = [
+    ".",
+    "internal/go-update",
+    "internal/go-update/internal/binarydist",
+    "internal/go-update/internal/osext",
+    "internal/osext",
+    "proto"
+  ]
   revision = "f24972fa72facf59d05c91c848b65eac38815915"
 
 [[projects]]
@@ -58,7 +65,10 @@
 [[projects]]
   branch = "master"
   name = "github.com/kylelemons/godebug"
-  packages = ["diff","pretty"]
+  packages = [
+    "diff",
+    "pretty"
+  ]
   revision = "eadb3ce320cbab8393bea5ca17bebac3f78a021b"
 
 [[projects]]
@@ -86,7 +96,10 @@
 [[projects]]
   branch = "master"
   name = "github.com/spf13/cobra"
-  packages = [".","doc"]
+  packages = [
+    ".",
+    "doc"
+  ]
   revision = "b95ab734e27d33e0d8fbabf71ca990568d4e2020"
 
 [[projects]]
@@ -97,7 +110,16 @@
 
 [[projects]]
   name = "github.com/wedeploy/wedeploy-sdk-go"
-  packages = [".","aggregation","filter","geo","jsonlib","qrange","query","urilib"]
+  packages = [
+    ".",
+    "aggregation",
+    "filter",
+    "geo",
+    "jsonlib",
+    "qrange",
+    "query",
+    "urilib"
+  ]
   revision = "2f3913a2ca0488384c312ac8e3273c39f331f79f"
   version = "v2.1.1"
 
