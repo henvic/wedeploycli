@@ -62,7 +62,7 @@ func (c *Client) get(ctx context.Context) (s Status, err error) {
 	// whenever status = "down", while the error structure
 	// expects status to be a number and to have other info,
 	// therefore I am not exposing it as it might cause problems later on
-	var request = c.Client.URL(ctx, "/?options=verbose")
+	var request = c.Client.URL(ctx, "/")
 	if err = apihelper.Validate(request, request.Get()); err != nil {
 		return s, err
 	}
