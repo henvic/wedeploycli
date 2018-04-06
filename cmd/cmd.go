@@ -26,6 +26,7 @@ import (
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/metrics"
+	"github.com/wedeploy/cli/shell"
 	"github.com/wedeploy/cli/update"
 	"github.com/wedeploy/cli/userhome"
 	"github.com/wedeploy/cli/verbose"
@@ -124,6 +125,17 @@ func (m *mainProgram) executeCommand() {
 	m.cmd, m.cmdErr = root.Cmd.ExecuteC()
 	m.cmdFriendlyErr = errorhandler.Handle(m.cmdErr)
 
+	m.maybePrintCommandError()
+	m.reportCommand()
+
+	if m.cmdErr != nil {
+		m.commandErrorConditionalUsage()
+		m.handleErrorExitCode()
+	}
+}
+
+func (m *mainProgram) maybePrintCommandError() {
+	// maybe should use errwrap.GetType instead
 	switch m.cmdErr.(type) {
 	case canceled.Command:
 		cc := m.cmdErr.(canceled.Command)
@@ -133,29 +145,32 @@ func (m *mainProgram) executeCommand() {
 		}
 
 		m.cmdErr = nil
-	case *exec.ExitError: // don't print error message
+	case *exec.ExitError, *shell.ExitError: // don't print error message
 	default:
 		if m.cmdErr != nil {
 			printError(m.cmdFriendlyErr)
 		}
 	}
+}
 
-	m.reportCommand()
+func (m *mainProgram) handleErrorExitCode() {
+	errorhandler.RunAfterError()
+	verbose.PrintDeferred()
 
-	if m.cmdErr != nil {
-		m.commandErrorConditionalUsage()
-		errorhandler.RunAfterError()
-		verbose.PrintDeferred()
+	var maybeExitErr = errwrap.GetType(m.cmdErr, &exec.ExitError{})
 
-		var maybeExitErr = errwrap.GetType(m.cmdErr, &exec.ExitError{})
-
-		if ee, ok := maybeExitErr.(*exec.ExitError); ok {
-			ws := ee.Sys().(syscall.WaitStatus)
-			os.Exit(ws.ExitStatus())
-		}
-
-		os.Exit(1)
+	if ee, ok := maybeExitErr.(*exec.ExitError); ok {
+		ws := ee.Sys().(syscall.WaitStatus)
+		os.Exit(ws.ExitStatus())
 	}
+
+	var maybeSSHExitErr = errwrap.GetType(m.cmdErr, &shell.ExitError{})
+
+	if sshE, ok := maybeSSHExitErr.(*shell.ExitError); ok {
+		os.Exit(sshE.ExitCode)
+	}
+
+	os.Exit(1)
 }
 
 func (m *mainProgram) getCommandFlags() []string {

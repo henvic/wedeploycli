@@ -11,6 +11,8 @@
   restart          Restart services
   delete           Delete project or services
                        
+  exec             Execute command remotely
+  shell            Opens a shell on a container of your service
   login            Login into your account
   logout           Logout from your account
                        
