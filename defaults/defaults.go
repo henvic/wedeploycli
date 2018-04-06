@@ -20,6 +20,9 @@ var (
 	// DashboardURLPrefix for a given remote
 	DashboardURLPrefix = "https://" + DashboardAddressPrefix
 
+	// PlanUpgradeURL to show or open (mostly due to the exceededPlanMaximum error)
+	PlanUpgradeURL = "https://console.wedeploy.com/account/billing"
+
 	// DiagnosticsEndpoint is the endpoint to where the diagnostics should be sent
 	DiagnosticsEndpoint = "https://diagnostics.wedeploy.com/report/cli"
 
