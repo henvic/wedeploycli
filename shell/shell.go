@@ -81,8 +81,6 @@ func getCmdWithArgs(cmd string, args []string) string {
 		args = append([]string{cmd}, args...)
 	}
 
-	args = append([]string{cmd}, args...)
-
 	b, err := json.Marshal(args)
 
 	if err != nil {
