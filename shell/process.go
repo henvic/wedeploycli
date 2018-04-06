@@ -2,6 +2,7 @@ package shell
 
 import (
 	"context"
+	"errors"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/henvic/socketio"
@@ -39,11 +40,15 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 		return err
 	}
 
-	verbose.Debug("Connected to shell.")
-
 	p.conn = conn
 	p.shell = shell
 	p.err = make(chan error, 1)
+
+	if err := p.authenticate(); err != nil {
+		return err
+	}
+
+	verbose.Debug("Connected to shell.")
 
 	p.handleConnections()
 
@@ -77,4 +82,25 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 	}
 
 	return <-p.err
+}
+
+type authMap struct {
+	Success bool
+}
+
+func (p *Process) authenticate() error {
+	var cerr = make(chan error, 1)
+
+	if err := p.shell.On("authentication", func(a authMap) {
+		if !a.Success {
+			cerr <- errors.New("server authentication failure")
+			return
+		}
+
+		cerr <- nil
+	}); err != nil {
+		return err
+	}
+
+	return <-cerr
 }
