@@ -12,7 +12,7 @@ import (
 
 // ExecuteCommand contains the information about what process to swap
 type ExecuteCommand struct {
-	Cmd []string `json:"cmd"`
+	Cmd []string `json:"cmd,omitempty"`
 }
 
 // Fork the process
