@@ -13,7 +13,8 @@ import (
 // Fork the process
 func (p *Process) Fork() error {
 	verbose.Debug("Forking process!")
-	return p.shell.Emit("fork")
+	cmdWithArgs := append([]string{p.Cmd}, p.Args...)
+	return p.shell.Emit("fork", cmdWithArgs)
 }
 
 // Streams (stdin, stderr, stdout, end channel) from/to UNIX socket/websocket
