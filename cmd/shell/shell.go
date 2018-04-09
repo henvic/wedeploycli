@@ -30,7 +30,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 var ShellCmd = &cobra.Command{
 	Use:     "shell",
 	Aliases: []string{"ssh"},
-	Short:   "Opens a shell on a container of your service",
+	Short:   "Opens a shell on a container of your service\n\t\t",
 	PreRunE: shellPreRun,
 	RunE:    shellRun,
 	Args:    cobra.NoArgs,
