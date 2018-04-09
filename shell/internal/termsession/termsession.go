@@ -99,13 +99,5 @@ func (t *TermSession) Restore() error {
 
 	t.restore()
 
-	err := terminal.Restore(t.fd, t.state)
-
-	// not sure why this errno 0 keeps happening.
-	// see https://github.com/golang/go/issues/24718
-	if err == nil || err.Error() == "errno 0" {
-		return nil
-	}
-
-	return err
+	return terminal.Restore(t.fd, t.state)
 }
