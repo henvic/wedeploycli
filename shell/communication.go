@@ -13,7 +13,12 @@ import (
 // Fork the process
 func (p *Process) Fork() error {
 	verbose.Debug("Forking process!")
-	cmdWithArgs := append([]string{p.Cmd}, p.Args...)
+	var cmdWithArgs = []string{}
+
+	if p.Cmd != "" {
+		cmdWithArgs = append([]string{p.Cmd}, p.Args...)
+	}
+
 	return p.shell.Emit("fork", cmdWithArgs)
 }
 
