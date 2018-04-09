@@ -39,7 +39,7 @@ func main() {
 		Host:   "localhost:3000",
 	}
 
-	c, err := socketio.Dial(u, websocket.NewTransport())
+	c, err := socketio.Connect(u, websocket.NewTransport())
 
 	if err != nil {
 		panic(err)

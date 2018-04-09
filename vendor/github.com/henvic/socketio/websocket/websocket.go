@@ -119,7 +119,7 @@ func NewTransport() *Transport {
 		RequestHeader: http.Header{},
 	}
 
-	t.RequestHeader.Add("User-Agent", "henvic:socketio/alpha")
+	t.RequestHeader.Add("User-Agent", "socketio client; (+https://github.com/henvic/socket.io)")
 
 	return t
 }

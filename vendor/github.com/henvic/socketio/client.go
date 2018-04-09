@@ -2,7 +2,6 @@ package socketio
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -27,6 +26,38 @@ const (
 	// default namespace is always empty
 	defaultNamespace = ""
 )
+
+// Connect dials and waits for the "connection" event.
+// It blocks for the timeout duration. If the connection is not established in time,
+// it closes the connection and returns an error.
+func Connect(u url.URL, tr *websocket.Transport) (c *Client, err error) {
+	c, err = Dial(u, tr)
+
+	if err != nil {
+		return nil, err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), tr.PingTimeout)
+	handshake := make(chan struct{}, 1)
+
+	if err := c.On(OnConnection, func() {
+		handshake <- struct{}{}
+	}); err != nil {
+		cancel()
+		return nil, err
+	}
+
+	select {
+	case <-handshake:
+		c.Off(OnConnection)
+	case <-ctx.Done():
+		c = nil
+		err = fmt.Errorf("socket.io connection timeout (%v)", tr.PingTimeout)
+	}
+
+	cancel()
+	return c, err
+}
 
 // Dial connects to the host and initializes the socket.io protocol
 func Dial(u url.URL, tr *websocket.Transport) (c *Client, err error) {
@@ -55,9 +86,6 @@ func Dial(u url.URL, tr *websocket.Transport) (c *Client, err error) {
 
 	return c, nil
 }
-
-// ErrorWrongHeader is used when an unrecognized header is received
-var ErrorWrongHeader = errors.New("wrong header")
 
 // Header of engine.io to send and receive packets
 type Header struct {
@@ -415,7 +443,9 @@ func (c *Client) incomingHandler(msg *protocol.Message) {
 	case protocol.MessageTypeAckResponse:
 		c.handleIncomingAckResponse(msg)
 	case protocol.MessageTypeEmpty:
-		c.handleIncomingNamespaceConnection(msg)
+		if msg.Namespace != defaultNamespace {
+			c.handleIncomingNamespaceConnection(msg)
+		}
 	default:
 		err := fmt.Errorf("message type %s is not implemented", msg.Type)
 		c.callLoopEvent(msg.Namespace, OnError, err)

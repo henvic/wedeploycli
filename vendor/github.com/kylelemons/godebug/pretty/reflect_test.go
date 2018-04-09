@@ -15,12 +15,17 @@
 package pretty
 
 import (
+	"fmt"
+	"net"
 	"reflect"
 	"testing"
 	"time"
 )
 
 func TestVal2nodeDefault(t *testing.T) {
+	err := fmt.Errorf("err")
+	var errNil error
+
 	tests := []struct {
 		desc string
 		raw  interface{}
@@ -93,6 +98,26 @@ func TestVal2nodeDefault(t *testing.T) {
 			raw:  3,
 			want: rawVal("3"),
 		},
+		{
+			desc: "time.Time",
+			raw:  time.Unix(1257894000, 0).UTC(),
+			want: rawVal("2009-11-10 23:00:00 +0000 UTC"),
+		},
+		{
+			desc: "net.IP",
+			raw:  net.IPv4(127, 0, 0, 1),
+			want: rawVal("127.0.0.1"),
+		},
+		{
+			desc: "error",
+			raw:  &err,
+			want: rawVal("err"),
+		},
+		{
+			desc: "nil error",
+			raw:  &errNil,
+			want: rawVal("<nil>"),
+		},
 	}
 
 	for _, test := range tests {
@@ -135,6 +160,19 @@ func TestVal2node(t *testing.T) {
 			raw:  struct{ Date time.Time }{time.Unix(1234567890, 0).UTC()},
 			cfg:  DefaultConfig,
 			want: keyvals{
+				{"Date", rawVal("2009-02-13 23:31:30 +0000 UTC")},
+			},
+		},
+		{
+			desc: "time w/ nil Formatter",
+			raw:  struct{ Date time.Time }{time.Unix(1234567890, 0).UTC()},
+			cfg: &Config{
+				PrintStringers: true,
+				Formatter: map[reflect.Type]interface{}{
+					reflect.TypeOf(time.Time{}): nil,
+				},
+			},
+			want: keyvals{
 				{"Date", keyvals{}},
 			},
 		},
@@ -164,5 +202,35 @@ func TestVal2node(t *testing.T) {
 		if got, want := test.cfg.val2node(reflect.ValueOf(test.raw)), test.want; !reflect.DeepEqual(got, want) {
 			t.Errorf("%s: got %#v, want %#v", test.desc, got, want)
 		}
+	}
+}
+
+func BenchmarkVal2node(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		cfg  *Config
+		raw  interface{}
+	}{
+		{
+			desc: "struct",
+			cfg:  DefaultConfig,
+			raw:  struct{ Zaphod, Ford string }{"beeblebrox", "prefect"}},
+		{
+			desc: "map",
+			cfg:  DefaultConfig,
+			raw: map[[2]int]string{
+				[2]int{-1, 2}: "school",
+				[2]int{0, 0}:  "origin",
+				[2]int{1, 3}:  "home",
+			},
+		},
+	}
+
+	for _, bench := range benchmarks {
+		b.Run(bench.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bench.cfg.val2node(reflect.ValueOf(bench.raw))
+			}
+		})
 	}
 }
