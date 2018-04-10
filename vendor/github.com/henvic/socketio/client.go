@@ -14,16 +14,16 @@ import (
 )
 
 const (
-	// OnConnection for "connection" messages
+	// OnConnection for "connection" messages.
 	OnConnection = protocol.OnConnection
 
-	// OnDisconnect for "disconnect" messages
+	// OnDisconnect for "disconnect" messages.
 	OnDisconnect = protocol.OnDisconnect
 
-	// OnError for "error" messages
+	// OnError for "error" messages.
 	OnError = protocol.OnError
 
-	// default namespace is always empty
+	// default namespace is always empty.
 	defaultNamespace = ""
 )
 
@@ -31,14 +31,17 @@ const (
 // It blocks for the timeout duration. If the connection is not established in time,
 // it closes the connection and returns an error.
 func Connect(u url.URL, tr *websocket.Transport) (c *Client, err error) {
-	c, err = Dial(u, tr)
+	c, err = dial(u, tr)
 
 	if err != nil {
 		return nil, err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), tr.PingTimeout)
+	defer cancel()
+
 	handshake := make(chan struct{}, 1)
+	ec := make(chan error, 1)
 
 	if err := c.On(OnConnection, func() {
 		handshake <- struct{}{}
@@ -47,9 +50,22 @@ func Connect(u url.URL, tr *websocket.Transport) (c *Client, err error) {
 		return nil, err
 	}
 
+	if err := c.On(OnError, func(err error) {
+		ec <- err
+	}); err != nil {
+		cancel()
+		return nil, err
+	}
+
 	select {
 	case <-handshake:
 		c.Off(OnConnection)
+		c.Off(OnError)
+	case e := <-ec:
+		c = nil
+		err = e
+		c.Off(OnConnection)
+		c.Off(OnError)
 	case <-ctx.Done():
 		c = nil
 		err = fmt.Errorf("socket.io connection timeout (%v)", tr.PingTimeout)
@@ -59,8 +75,14 @@ func Connect(u url.URL, tr *websocket.Transport) (c *Client, err error) {
 	return c, err
 }
 
-// Dial connects to the host and initializes the socket.io protocol
-func Dial(u url.URL, tr *websocket.Transport) (c *Client, err error) {
+// DialOnly connects to the host and initializes the socket.io protocol.
+// It doesn't wait for socket.io connection handshake.
+// You probably want to use Connect instead. Only exposed for debugging.
+func DialOnly(u url.URL, tr *websocket.Transport) (c *Client, err error) {
+	return dial(u, tr)
+}
+
+func dial(u url.URL, tr *websocket.Transport) (c *Client, err error) {
 	c = &Client{}
 	c.init()
 
@@ -427,6 +449,9 @@ func (c *Client) incomingHandler(msg *protocol.Message) {
 			return
 		}
 
+		def, _ := c.Of(defaultNamespace)
+		def.setReady()
+
 		c.callLoopEvent(msg.Namespace, protocol.OnConnection)
 	case protocol.MessageTypePing:
 		if err := c.writeMessage(protocol.PongMessage); err != nil {
@@ -444,6 +469,8 @@ func (c *Client) incomingHandler(msg *protocol.Message) {
 		c.handleIncomingAckResponse(msg)
 	case protocol.MessageTypeEmpty:
 		if msg.Namespace != defaultNamespace {
+			def, _ := c.Of(msg.Namespace)
+			def.setReady()
 			c.handleIncomingNamespaceConnection(msg)
 		}
 	default:

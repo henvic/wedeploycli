@@ -42,7 +42,7 @@ func main() {
 	c, err := socketio.Connect(u, websocket.NewTransport())
 
 	if err != nil {
-		panic(err)
+		panic(err) // you should prefer returning errors than panicking
 	}
 
 	if err := c.On(socketio.OnError, errorHandler); err != nil {
