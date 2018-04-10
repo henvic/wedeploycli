@@ -64,8 +64,8 @@
     "internal/protocol",
     "websocket"
   ]
-  revision = "db91a301d0eec9adc4e727ea31dc221def05952a"
-  version = "0.0.2-beta"
+  revision = "9ddc2e4f558d22135739b2296fdaf4973699e4ac"
+  version = "0.0.3-beta"
 
 [[projects]]
   branch = "master"
@@ -178,6 +178,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7cae579bf56cd1dfaaa9e9d8e6335083d8fd573851c56032ddb4e15d2c034347"
+  inputs-digest = "8e38be313a58604815b8918df09ac1e162a180cea39fbba3a14af7a3b8726ebd"
   solver-name = "gps-cdcl"
   solver-version = 1
