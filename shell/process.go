@@ -48,6 +48,14 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 		return err
 	}
 
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-p.shell.Ready():
+		verbose.Debug("Connection to the shell namespace is ready.")
+		break
+	}
+
 	verbose.Debug("Connected to shell.")
 
 	p.handleConnections()
