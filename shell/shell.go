@@ -60,7 +60,7 @@ func Run(ctx context.Context, params Params, cmd string, args ...string) error {
 		RawQuery: query.Encode(),
 	}
 
-	conn, err := socketio.Dial(u, websocket.NewTransport())
+	conn, err := socketio.Connect(u, websocket.NewTransport())
 
 	if err != nil {
 		return err
