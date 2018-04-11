@@ -12,7 +12,7 @@ import (
 	"github.com/wedeploy/cli/cmd/diagnostics"
 	"github.com/wedeploy/cli/cmd/docs"
 	"github.com/wedeploy/cli/cmd/domain"
-	"github.com/wedeploy/cli/cmd/env"
+	"github.com/wedeploy/cli/cmd/env-var"
 	"github.com/wedeploy/cli/cmd/exec"
 	"github.com/wedeploy/cli/cmd/inspect"
 	"github.com/wedeploy/cli/cmd/list"
