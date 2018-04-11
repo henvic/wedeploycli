@@ -48,6 +48,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 }
 
 func (ie *interativeEnvCmd) preRun(cmd *cobra.Command, args []string) error {
+	commands.EnvIsDeprecatedWarning(cmd, args)
 	ie.ctx = context.Background()
 
 	if _, _, err := cmd.Find(args); err != nil {

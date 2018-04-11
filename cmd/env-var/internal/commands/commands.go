@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/color"
@@ -258,4 +259,12 @@ func filterEmptyEnvValues(envKeys []string) []string {
 	}
 
 	return filtered
+}
+
+// EnvIsDeprecatedWarning is used to print a warning when the deprecated "we env" command is used
+func EnvIsDeprecatedWarning(cmd *cobra.Command, args []string) {
+	if os.Args[1:][0] == "env" {
+		fmt.Fprintln(os.Stderr, color.Format(color.FgHiRed,
+			`"we env" is deprecated: use "%s" next time.`, cmd.UseLine()))
+	}
 }

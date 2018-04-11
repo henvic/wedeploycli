@@ -37,6 +37,7 @@ func init() {
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
+	commands.EnvIsDeprecatedWarning(cmd, args)
 	return setupHost.Process(context.Background(), we.Context())
 }
 
