@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmd/env/internal/commands"
+	"github.com/wedeploy/cli/cmd/env-var/internal/commands"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/services"
@@ -15,7 +15,7 @@ var Cmd = &cobra.Command{
 	Use:     "rm",
 	Aliases: []string{"unset", "del", "delete"},
 	Short:   "Remove an environment variable for a given service",
-	Example: "  we env rm foo",
+	Example: "  we env-var rm foo",
 	PreRunE: preRun,
 	RunE:    run,
 }

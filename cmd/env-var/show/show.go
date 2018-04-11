@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmd/env/internal/commands"
+	"github.com/wedeploy/cli/cmd/env-var/internal/commands"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/services"
@@ -15,8 +15,8 @@ var Cmd = &cobra.Command{
 	Use:     "show",
 	Aliases: []string{"list"},
 	Short:   "Show your environment variable values for a given service",
-	Example: `  we env show
-  we env show key`,
+	Example: `  we env-var show
+  we env-var show key`,
 	PreRunE: preRun,
 	RunE:    run,
 }

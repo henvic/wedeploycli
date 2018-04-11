@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmd/env/internal/commands"
-	cmdenvset "github.com/wedeploy/cli/cmd/env/set"
-	cmdenvshow "github.com/wedeploy/cli/cmd/env/show"
-	cmdenvunset "github.com/wedeploy/cli/cmd/env/unset"
+	"github.com/wedeploy/cli/cmd/env-var/internal/commands"
+	cmdenvset "github.com/wedeploy/cli/cmd/env-var/set"
+	cmdenvshow "github.com/wedeploy/cli/cmd/env-var/show"
+	cmdenvunset "github.com/wedeploy/cli/cmd/env-var/unset"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/fancy"
@@ -23,12 +23,13 @@ var ie = &interativeEnvCmd{}
 
 // EnvCmd controls the envs for a given project
 var EnvCmd = &cobra.Command{
-	Use:   "env",
-	Short: "Show and configure environment variables for services",
-	Long:  `Show and configure environment variables for services. You must restart the service afterwards.`,
-	Example: `  we env (to list and change your environment variables values)
-  we env set foo bar
-  we env rm foo`,
+	Use:     "env-var",
+	Aliases: []string{"env"},
+	Short:   "Show and configure environment variables for services",
+	Long:    `Show and configure environment variables for services. You must restart the service afterwards.`,
+	Example: `  we env-var (to list and change your environment variables values)
+  we env-var set foo bar
+  we env-var rm foo`,
 	Args:    cobra.NoArgs,
 	PreRunE: ie.preRun,
 	RunE:    ie.run,

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmd/env/internal/commands"
+	"github.com/wedeploy/cli/cmd/env-var/internal/commands"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/services"
@@ -23,8 +23,8 @@ var Cmd = &cobra.Command{
 	Use:     "set",
 	Aliases: []string{"add"},
 	Short:   "Set an environment variable for a given service",
-	Example: `  we env set key value
-  we env set key=value`,
+	Example: `  we env-var set key value
+  we env-var set key=value`,
 	Args:    checkFileAndArgs,
 	PreRunE: preRun,
 	RunE:    run,
