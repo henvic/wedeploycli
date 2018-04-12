@@ -33,6 +33,7 @@ type Process struct {
 // Run connection
 func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 	p.ctx, p.ctxCancel = context.WithCancel(ctx)
+	defer p.ctxCancel()
 
 	shell, err := conn.Of("/subscribe/project/service/container")
 
