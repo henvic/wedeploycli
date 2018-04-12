@@ -152,6 +152,7 @@ func checkLongHelp(cmd *cobra.Command) error {
 }
 
 func persistentPreRun(cmd *cobra.Command, args []string) error {
+	// it's problematic to use checkLongHelp here, see https://github.com/wedeploy/cli/issues/418
 	if err := checkLongHelp(cmd); err != nil {
 		return err
 	}
