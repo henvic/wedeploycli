@@ -60,7 +60,7 @@ func (p *Process) pipeStdinGoroutine() {
 	select {
 	case <-p.ctx.Done():
 		return
-	case <-p.forked:
+	case <-p.execStarted:
 	}
 
 readStdin:

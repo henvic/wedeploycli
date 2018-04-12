@@ -27,7 +27,7 @@ type Process struct {
 	conn  *socketio.Client
 	shell *socketio.Namespace
 
-	forked chan struct{}
+	execStarted chan struct{}
 
 	err chan error
 }
@@ -45,7 +45,7 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 
 	p.conn = conn
 	p.shell = shell
-	p.forked = make(chan struct{}, 1)
+	p.execStarted = make(chan struct{}, 1)
 	p.err = make(chan error, 1)
 
 	if err := p.authenticate(); err != nil {
@@ -107,7 +107,9 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 		return err
 	}
 
-	p.forked <- struct{}{}
+	if err := p.waitExecStarted(); err != nil {
+		return err
+	}
 
 	return <-p.err
 }
@@ -126,6 +128,19 @@ func (p *Process) authenticate() error {
 		}
 
 		cerr <- nil
+	}); err != nil {
+		return err
+	}
+
+	return <-cerr
+}
+
+func (p *Process) waitExecStarted() error {
+	var cerr = make(chan error, 1)
+
+	if err := p.shell.On("execStarted", func() {
+		cerr <- nil
+		p.execStarted <- struct{}{}
 	}); err != nil {
 		return err
 	}
