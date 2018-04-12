@@ -70,9 +70,11 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 
 	canFork := make(chan struct{}, 1)
 
-	p.shell.On("readyToStartExec", func() {
+	if err := p.shell.On("readyToStartExec", func() {
 		canFork <- struct{}{}
-	})
+	}); err != nil {
+		return err
+	}
 
 	ts := termsession.New(shell)
 
