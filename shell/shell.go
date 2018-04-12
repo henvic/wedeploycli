@@ -28,18 +28,17 @@ type Params struct {
 	ProjectID string
 	ServiceID string
 
-	TTY     bool
-	Detach  bool
-	NoStdin bool
+	AttachStdin bool
+	TTY         bool
 }
 
 // Run shell command.
 func Run(ctx context.Context, params Params, cmd string, args ...string) error {
 	var process = &Process{
-		Cmd:     cmd,
-		Args:    args,
-		TTY:     params.TTY,
-		NoStdin: params.NoStdin,
+		Cmd:         cmd,
+		Args:        args,
+		TTY:         params.TTY,
+		AttachStdin: params.AttachStdin,
 	}
 
 	var query = url.Values{}
@@ -47,8 +46,8 @@ func Run(ctx context.Context, params Params, cmd string, args ...string) error {
 	query.Add("accessToken", params.Token)
 	query.Add("projectId", params.ProjectID)
 	query.Add("serviceId", params.ServiceID)
+	query.Add("attachStdin", fmt.Sprint(params.AttachStdin))
 	query.Add("tty", fmt.Sprint(params.TTY))
-	query.Add("detach", fmt.Sprint(params.Detach))
 
 	if cmd != "" {
 		query.Add("cmd", getCmdWithArgs(cmd, args))

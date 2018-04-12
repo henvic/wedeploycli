@@ -4,9 +4,12 @@ import (
 	"context"
 	"strings"
 
+	"github.com/wedeploy/cli/verbose"
+
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
+	"github.com/wedeploy/cli/isterm"
 	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/shell"
 )
@@ -66,7 +69,16 @@ func execRun(cmd *cobra.Command, args []string) error {
 		ProjectID: setupHost.Project(),
 		ServiceID: setupHost.Service(),
 
-		TTY: true,
+		AttachStdin: true,
+		TTY:         isterm.Check(),
+	}
+
+
+	switch params.TTY {
+	case true:
+		verbose.Debug("Attaching tty")
+	default:
+		verbose.Debug("Not attaching tty")
 	}
 
 	return shell.Run(context.Background(), params, args[0], childArgs...)

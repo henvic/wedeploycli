@@ -10,22 +10,10 @@ import (
 	"github.com/wedeploy/cli/verbose"
 )
 
-// ExecuteCommand contains the information about what process to swap
-type ExecuteCommand struct {
-	Cmd []string `json:"cmd,omitempty"`
-}
-
 // Fork the process
 func (p *Process) Fork() error {
 	verbose.Debug("Forking process!")
-
-	ec := ExecuteCommand{}
-
-	if p.Cmd != "" {
-		ec.Cmd = append([]string{p.Cmd}, p.Args...)
-	}
-
-	return p.shell.Emit("fork", ec)
+	return p.shell.Emit("startExec", map[string]interface{}{})
 }
 
 // Streams (stdin, stderr, stdout, end channel) from/to UNIX socket/websocket
@@ -49,7 +37,7 @@ func (p *Process) Streams() error {
 
 // MaybePipeStdin from websocket to UNIX socket
 func (p *Process) MaybePipeStdin() error {
-	if p.NoStdin {
+	if !p.AttachStdin {
 		return nil
 	}
 
@@ -68,6 +56,12 @@ func (p *Process) pipeStdinGoroutine() {
 	defer func() {
 		_ = inStream.Close()
 	}()
+
+	select {
+	case <-p.ctx.Done():
+		return
+	case <-p.forked:
+	}
 
 readStdin:
 	if p.ctx.Err() != nil {

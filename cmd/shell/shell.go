@@ -82,7 +82,8 @@ func shellRun(cmd *cobra.Command, args []string) error {
 		ProjectID: setupHost.Project(),
 		ServiceID: setupHost.Service(),
 
-		TTY: true,
+		AttachStdin: true,
+		TTY:         true,
 	}
 
 	return shell.Run(context.Background(), params, "")

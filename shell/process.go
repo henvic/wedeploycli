@@ -18,14 +18,16 @@ type Process struct {
 	Cmd  string
 	Args []string
 
-	TTY     bool
-	NoStdin bool
+	TTY         bool
+	AttachStdin bool
 
 	PID      int
 	ExitCode int
 
 	conn  *socketio.Client
 	shell *socketio.Namespace
+
+	forked chan struct{}
 
 	err chan error
 }
@@ -43,6 +45,7 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 
 	p.conn = conn
 	p.shell = shell
+	p.forked = make(chan struct{}, 1)
 	p.err = make(chan error, 1)
 
 	if err := p.authenticate(); err != nil {
@@ -65,6 +68,12 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 		return err
 	}
 
+	canFork := make(chan struct{}, 1)
+
+	p.shell.On("readyToStartExec", func() {
+		canFork <- struct{}{}
+	})
+
 	ts := termsession.New(shell)
 
 	defer func() {
@@ -86,9 +95,19 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 		return errwrap.Wrapf("can't initialize terminal: {{err}}", err)
 	}
 
+	verbose.Debug("Waiting for 'readyToStartExec' signal")
+
+	select {
+	case <-canFork:
+	case <-p.ctx.Done():
+		return p.ctx.Err()
+	}
+
 	if err := p.Fork(); err != nil {
 		return err
 	}
+
+	p.forked <- struct{}{}
 
 	return <-p.err
 }
