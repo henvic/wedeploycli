@@ -68,10 +68,10 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 		return err
 	}
 
-	canFork := make(chan struct{}, 1)
+	readyToStartExec := make(chan struct{}, 1)
 
 	if err := p.shell.On("readyToStartExec", func() {
-		canFork <- struct{}{}
+		readyToStartExec <- struct{}{}
 	}); err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 	verbose.Debug("Waiting for 'readyToStartExec' signal")
 
 	select {
-	case <-canFork:
+	case <-readyToStartExec:
 	case <-p.ctx.Done():
 		return p.ctx.Err()
 	}
