@@ -99,5 +99,9 @@ func (t *TermSession) Restore() error {
 
 	t.restore()
 
+	if t.state == nil {
+		return nil
+	}
+
 	return terminal.Restore(t.fd, t.state)
 }
