@@ -66,6 +66,7 @@ func (p *Process) pipeStdinGoroutine() {
 		return
 	case <-p.execStarted:
 	}
+	// probably want to listen for SIGTERM
 
 readStdin:
 	if p.ctx.Err() != nil {
@@ -77,7 +78,7 @@ readStdin:
 	if err == io.EOF {
 		verbose.Debug("Closing stdin: reading byte returned io.EOF")
 
-		if err := p.shell.Emit("stdinDone"); err != nil {
+		if err := p.shell.Emit("stdinDone", map[string]string{}); err != nil {
 			verbose.Debug("error sending stdinEOF signal:", err)
 		}
 		return
