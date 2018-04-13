@@ -13,7 +13,11 @@ import (
 // Fork the process
 func (p *Process) Fork() error {
 	verbose.Debug("Forking process!")
-	return p.shell.Emit("startExec", map[string]interface{}{})
+
+	// for some reason the server seems to require tty to be passed here as well
+	return p.shell.Emit("startExec", map[string]bool{
+		"tty": p.TTY,
+	})
 }
 
 // Streams (stdin, stderr, stdout, end channel) from/to UNIX socket/websocket
