@@ -232,7 +232,7 @@ func (c CommandFlagFromHost) parseWithHost(host, remoteFromFlag string) (*FlagsF
 }
 
 func splitHyphenedHostPart(s string) []string {
-	var p = strings.LastIndex(s, "-")
+	var p = strings.Index(s, "-")
 
 	if p == -1 {
 		return []string{s}

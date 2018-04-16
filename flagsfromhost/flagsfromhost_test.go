@@ -385,28 +385,28 @@ var parseMocks = []parseMock{
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:    "projector-10-cinema.example.com",
+			Host:    "projector-smart-cinema.example.com",
 			Project: "",
 			Service: "",
 			Remote:  "",
 		},
 		Want: parsed{
-			Project:          "cinema",
-			Service:          "projector-10",
+			Project:          "smart-cinema",
+			Service:          "projector",
 			Remote:           "foo",
 			IsRemoteFromHost: true,
 		},
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:    "projector-10-b-cinema.example.com",
+			Host:    "projector-laser-3d-cinema.example.com",
 			Project: "",
 			Service: "",
 			Remote:  "",
 		},
 		Want: parsed{
-			Project:          "cinema",
-			Service:          "projector-10-b",
+			Project:          "laser-3d-cinema",
+			Service:          "projector",
 			Remote:           "foo",
 			IsRemoteFromHost: true,
 		},
