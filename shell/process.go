@@ -52,12 +52,8 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 		return err
 	}
 
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-p.shell.Ready():
-		verbose.Debug("Connection to the shell namespace is ready.")
-		break
+	if err := p.waitReady(); err != nil {
+		return err
 	}
 
 	verbose.Debug("Connected to shell.")
@@ -76,33 +72,10 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 		return err
 	}
 
-	ts := termsession.New(shell)
-
-	defer func() {
-		e := ts.Restore()
-
-		if e != nil {
-			e = errwrap.Wrapf("error trying to restore terminal: {{err}}", e)
-		}
-
-		if err != nil {
-			verbose.Debug(e)
-			return
-		}
-
-		err = e
-	}()
-
-	if err := ts.Start(p.ctx, p.TTY); err != nil {
-		return errwrap.Wrapf("can't initialize terminal: {{err}}", err)
-	}
-
 	verbose.Debug("Waiting for 'readyToStartExec' signal")
 
-	select {
-	case <-readyToStartExec:
-	case <-p.ctx.Done():
-		return p.ctx.Err()
+	if err := p.waitReadyToStartExec(readyToStartExec); err != nil {
+		return err
 	}
 
 	if err := p.Fork(); err != nil {
@@ -111,6 +84,14 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 
 	if err := p.waitExecStarted(); err != nil {
 		return err
+	}
+
+	ts := termsession.New(shell)
+
+	defer stopTermSession(ts)
+
+	if err := ts.Start(p.ctx, p.TTY); err != nil {
+		return errwrap.Wrapf("can't initialize terminal: {{err}}", err)
 	}
 
 	return <-p.err
@@ -148,4 +129,33 @@ func (p *Process) waitExecStarted() error {
 	}
 
 	return <-cerr
+}
+
+func (p *Process) waitReady() error {
+	select {
+	case <-p.ctx.Done():
+		return p.ctx.Err()
+	case <-p.shell.Ready():
+		verbose.Debug("Connection to the shell namespace is ready.")
+		return nil
+	}
+}
+
+func (p *Process) waitReadyToStartExec(readyToStartExec chan struct{}) error {
+	select {
+	case <-readyToStartExec:
+		return nil
+	case <-p.ctx.Done():
+		return p.ctx.Err()
+	}
+}
+
+func stopTermSession(ts termsession.TermSession) {
+	err := ts.Restore()
+
+	if err != nil {
+		err = errwrap.Wrapf("error trying to restore terminal: {{err}}", err)
+	}
+
+	verbose.Debug(err)
 }
