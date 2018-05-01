@@ -3,6 +3,8 @@ package shell
 import (
 	"context"
 	"errors"
+	"fmt"
+	"os"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/henvic/socketio"
@@ -78,6 +80,8 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 		return err
 	}
 
+	t := termsession.New(shell)
+
 	if err := p.Fork(); err != nil {
 		return err
 	}
@@ -86,15 +90,22 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 		return err
 	}
 
-	t := termsession.New(shell)
-
 	defer stopTermSession(t)
 
 	if err := t.Start(p.ctx, p.TTY); err != nil {
 		return errwrap.Wrapf("can't initialize terminal: {{err}}", err)
 	}
 
-	return <-p.err
+	err = <-p.err
+
+	if err != nil {
+		stopTermSession(t)
+
+		// add a line break to separate connection errors from other messages
+		fmt.Fprintln(os.Stderr)
+	}
+
+	return err
 }
 
 type authMap struct {
