@@ -46,8 +46,14 @@ func Run(ctx context.Context, params Params, cmd string, args ...string) error {
 	query.Add("accessToken", params.Token)
 	query.Add("projectId", params.ProjectID)
 	query.Add("serviceId", params.ServiceID)
-	query.Add("attachStdin", fmt.Sprint(params.AttachStdin))
-	query.Add("tty", fmt.Sprint(params.TTY))
+
+	if !params.AttachStdin {
+		query.Add("attachStdin", fmt.Sprint(params.AttachStdin))
+	}
+
+	if !params.TTY {
+		query.Add("tty", fmt.Sprint(params.TTY))
+	}
 
 	if cmd != "" {
 		query.Add("cmd", getCmdWithArgs(cmd, args))

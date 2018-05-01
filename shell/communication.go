@@ -15,9 +15,9 @@ func (p *Process) Fork() error {
 	verbose.Debug("Forking process!")
 
 	// for some reason the server seems to require tty to be passed here as well
-	return p.shell.Emit("startExec", map[string]bool{
-		"tty": p.TTY,
-	})
+	startExecOptions := map[string]bool{}
+
+	return p.shell.Emit("startExec", startExecOptions)
 }
 
 // Streams (stdin, stderr, stdout, end channel) from/to UNIX socket/websocket
