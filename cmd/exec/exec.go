@@ -32,6 +32,7 @@ var ExecCmd = &cobra.Command{
 	PreRunE: execPreRun,
 	RunE:    execRun,
 	Args:    cobra.MinimumNArgs(1),
+	Hidden:  true,
 }
 
 func init() {
