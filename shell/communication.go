@@ -73,10 +73,10 @@ readStdin:
 		return
 	}
 
-	b, err := reader.ReadByte()
+	b, _, err := reader.ReadRune()
 
 	if err == io.EOF {
-		verbose.Debug("Closing stdin: reading byte returned io.EOF")
+		verbose.Debug("Closing stdin: reading rune returned io.EOF")
 
 		if err := p.shell.Emit("stdinDone", map[string]string{}); err != nil {
 			verbose.Debug("error sending stdinEOF signal:", err)
@@ -90,7 +90,33 @@ readStdin:
 		return
 	}
 
-	if err := p.shell.Emit("stdin", string(b)); err != nil {
+	var bg = []byte(string(b))
+	bfed := reader.Buffered()
+
+	if bfed != 0 {
+		if err := reader.UnreadRune(); err != nil {
+			p.err <- errwrap.Wrapf("stdin unread rune issue: {{err}}", err)
+			p.ctxCancel()
+			return
+		}
+
+		// peeking the whole stdin at once, but maybe choosing a chunk size to slice it is wiser
+		bg, err = reader.Peek(bfed)
+
+		if err != nil {
+			p.err <- errwrap.Wrapf("stdin peeking issue: {{err}}", err)
+			p.ctxCancel()
+			return
+		}
+
+		if _, err := reader.Discard(len(bg)); err != nil {
+			p.err <- errwrap.Wrapf("stdin discarding issue: {{err}}", err)
+			p.ctxCancel()
+			return
+		}
+	}
+
+	if err := p.shell.Emit("stdin", string(bg)); err != nil {
 		p.err <- errwrap.Wrapf("stdin pipe broken: {{err}}", err)
 		p.ctxCancel()
 		return
