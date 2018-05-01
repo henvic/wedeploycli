@@ -26,8 +26,8 @@ type TermSession struct {
 }
 
 // New terminal session.
-func New(shell *socketio.Namespace) TermSession {
-	return TermSession{
+func New(shell *socketio.Namespace) *TermSession {
+	return &TermSession{
 		fd:     int(os.Stdin.Fd()),
 		socket: shell,
 	}

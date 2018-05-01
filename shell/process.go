@@ -86,11 +86,11 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 		return err
 	}
 
-	ts := termsession.New(shell)
+	t := termsession.New(shell)
 
-	defer stopTermSession(ts)
+	defer stopTermSession(t)
 
-	if err := ts.Start(p.ctx, p.TTY); err != nil {
+	if err := t.Start(p.ctx, p.TTY); err != nil {
 		return errwrap.Wrapf("can't initialize terminal: {{err}}", err)
 	}
 
@@ -150,8 +150,8 @@ func (p *Process) waitReadyToStartExec(readyToStartExec chan struct{}) error {
 	}
 }
 
-func stopTermSession(ts termsession.TermSession) {
-	err := ts.Restore()
+func stopTermSession(t *termsession.TermSession) {
+	err := t.Restore()
 
 	if err != nil {
 		err = errwrap.Wrapf("error trying to restore terminal: {{err}}", err)
