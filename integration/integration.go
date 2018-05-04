@@ -16,6 +16,7 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+	"time"
 
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
@@ -56,6 +57,17 @@ var (
 
 func init() {
 	flag.BoolVar(&update, "update", false, "update golden files")
+	setAnywhereOnEarthTimezone()
+}
+
+func setAnywhereOnEarthTimezone() {
+	l, err := time.LoadLocation("Etc/GMT-12")
+
+	if err != nil {
+		panic(err)
+	}
+
+	time.Local = l
 }
 
 // GetExitCode tries to retrieve the exit code from an exit error

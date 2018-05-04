@@ -25,6 +25,17 @@ var update bool
 
 func init() {
 	flag.BoolVar(&update, "update", false, "update golden files")
+	setAnywhereOnEarthTimezone()
+}
+
+func setAnywhereOnEarthTimezone() {
+	l, err := time.LoadLocation("Etc/GMT-12")
+
+	if err != nil {
+		panic(err)
+	}
+
+	time.Local = l
 }
 
 var wectx config.Context
