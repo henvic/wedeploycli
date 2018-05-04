@@ -78,6 +78,6 @@ var ReleaseNotes = []ReleaseNote{
 	ReleaseNote{
 		Version:     "1.4.4",
 		Date:        "Mar 30th, 2018",
-		Description: `Adding "we shell" command.`,
+		Description: `Added "we shell" command.`,
 	},
 }
