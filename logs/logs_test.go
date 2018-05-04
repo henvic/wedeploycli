@@ -3,6 +3,7 @@ package logs
 import (
 	"bytes"
 	"context"
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -19,6 +20,12 @@ import (
 	"github.com/wedeploy/cli/tdata"
 	"github.com/wedeploy/wedeploy-sdk-go/jsonlib"
 )
+
+var update bool
+
+func init() {
+	flag.BoolVar(&update, "update", false, "update golden files")
+}
 
 var wectx config.Context
 
@@ -135,10 +142,15 @@ func TestList(t *testing.T) {
 		t.Errorf("Unexpected error %v", err)
 	}
 
-	var want = tdata.FromFile("mocks/logs_response_print")
 	outStreamMutex.Lock()
 	var got = bufOutStream.String()
 	outStreamMutex.Unlock()
+
+	if update {
+		tdata.ToFile("mocks/logs_response_print", got)
+	}
+
+	var want = tdata.FromFile("mocks/logs_response_print")
 
 	stringlib.AssertSimilar(t, want, got)
 
@@ -176,10 +188,15 @@ func TestListProject(t *testing.T) {
 		t.Errorf("Unexpected error %v", err)
 	}
 
-	var want = tdata.FromFile("mocks/logs_response_project_print")
 	outStreamMutex.Lock()
 	var got = bufOutStream.String()
 	outStreamMutex.Unlock()
+
+	if update {
+		tdata.ToFile("mocks/logs_response_project_print", got)
+	}
+
+	var want = tdata.FromFile("mocks/logs_response_project_print")
 
 	stringlib.AssertSimilar(t, want, got)
 
@@ -245,10 +262,15 @@ func TestWatch(t *testing.T) {
 
 	wg.Wait()
 
-	var want = tdata.FromFile("mocks/logs_watch_syscall")
 	outStreamMutex.Lock()
 	var got = bufOutStream.String()
 	outStreamMutex.Unlock()
+
+	if update {
+		tdata.ToFile("mocks/logs_watch_syscall", got)
+	}
+
+	var want = tdata.FromFile("mocks/logs_watch_syscall")
 
 	stringlib.AssertSimilar(t, want, got)
 
@@ -310,10 +332,15 @@ func TestWatcherStart(t *testing.T) {
 
 	<-done
 
-	var want = tdata.FromFile("mocks/logs_watch")
 	outStreamMutex.Lock()
 	var got = bufOutStream.String()
 	outStreamMutex.Unlock()
+
+	if update {
+		tdata.ToFile("mocks/logs_watch", got)
+	}
+
+	var want = tdata.FromFile("mocks/logs_watch")
 
 	stringlib.AssertSimilar(t, want, got)
 

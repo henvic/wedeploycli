@@ -1,9 +1,9 @@
-bar[foo_nod] [2016-03-29 18:55:51,234] INFO  [main] com.liferay.wedeploy.server.AppServer#start:125 - Server started
-bar[foo_nod] [2016-03-29 18:55:51,237] INFO  [main] com.liferay.wedeploy.WeDeploy#startServer:163 - Server is up and running
-bar[foo_nod] [2016-03-29 18:55:51,240] INFO  [main] com.liferay.wedeploy.WeDeploy#start:69 - WeDeploy is ready
-bar[foo_nod] 	Member [172.21.0.2]:5701
-bar[foo_nod] Mar 29, 2016 7:43:30 PM com.hazelcast.core.LifecycleService
-bar[foo_nod] Mar 29, 2016 7:43:30 PM com.hazelcast.client.connection.nio.ClientConnectionManagerImpl
-bar[foo_nod] INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_CONNECTED
-bar[foo_nod] INFO: 
-bar[foo_nod] INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_DISCONNECTED
+Dec 31 21:24:19.277 bar[foo_nod] [2016-03-29 18:55:51,234] INFO  [main] com.liferay.wedeploy.server.AppServer#start:125 - Server started
+Dec 31 21:24:19.277 bar[foo_nod] [2016-03-29 18:55:51,237] INFO  [main] com.liferay.wedeploy.WeDeploy#startServer:163 - Server is up and running
+Dec 31 21:24:19.277 bar[foo_nod] [2016-03-29 18:55:51,240] INFO  [main] com.liferay.wedeploy.WeDeploy#start:69 - WeDeploy is ready
+Dec 31 21:24:19.280 bar[foo_nod] 	Member [172.21.0.2]:5701
+Dec 31 21:24:19.280 bar[foo_nod] Mar 29, 2016 7:43:30 PM com.hazelcast.core.LifecycleService
+Dec 31 21:24:19.280 bar[foo_nod] Mar 29, 2016 7:43:30 PM com.hazelcast.client.connection.nio.ClientConnectionManagerImpl
+Dec 31 21:24:19.280 bar[foo_nod] INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_CONNECTED
+Dec 31 21:24:19.280 bar[foo_nod] INFO: 
+Dec 31 21:24:19.280 bar[foo_nod] INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_DISCONNECTED
