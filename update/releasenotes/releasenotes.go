@@ -80,4 +80,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "Mar 30th, 2018",
 		Description: `Added "we shell" command.`,
 	},
+	ReleaseNote{
+		Version:     "1.4.5",
+		Date:        "May 4th, 2018",
+		Description: `Added release notes. Added timestamsp to "we log".`,
+	},
 }
