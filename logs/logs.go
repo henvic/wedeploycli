@@ -251,10 +251,24 @@ func printList(list []Log) {
 	for _, log := range list {
 		iw := instancesWheel.Get(log.ProjectID + "-" + log.ContainerUID)
 		fd := color.Format(iw, addHeader(log))
+		ts := color.Format(color.FgWhite, getTimestamp(log.Timestamp))
+
 		outStreamMutex.Lock()
-		fmt.Fprintf(outStream, "%v %v\n", fd, log.Message)
+		fmt.Fprintf(outStream, "%v %v %v\n", ts, fd, log.Message)
 		outStreamMutex.Unlock()
 	}
+}
+
+func getTimestamp(timestamp string) string {
+	i, err := strconv.ParseInt(timestamp, 10, 64)
+
+	if err != nil {
+		verbose.Debug("can't decode timestamp", err)
+		return "unknown"
+	}
+
+	t := time.Unix(0, i)
+	return t.Format("Jan 02 15:04:05.000")
 }
 
 func (w *Watcher) pool() {

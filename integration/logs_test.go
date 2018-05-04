@@ -103,12 +103,17 @@ func TestLogs(t *testing.T) {
 		Dir: "mocks/home/",
 	}
 
+	cmd.Run()
+
+	if update {
+		tdata.ToFile("mocks/logs/logs_response_print", cmd.Stdout.String())
+	}
+
 	var e = &Expect{
 		Stdout:   tdata.FromFile("mocks/logs/logs_response_print"),
 		ExitCode: 0,
 	}
 
-	cmd.Run()
 	e.Assert(t, cmd)
 }
 
@@ -139,12 +144,17 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContext(t *testing.T) {
 		Dir: "mocks/home/bucket/foo",
 	}
 
+	cmd.Run()
+
+	if update {
+		tdata.ToFile("mocks/logs/logs_response_print", cmd.Stdout.String())
+	}
+
 	var e = &Expect{
 		Stdout:   tdata.FromFile("mocks/logs/logs_response_print"),
 		ExitCode: 0,
 	}
 
-	cmd.Run()
 	e.Assert(t, cmd)
 }
 
@@ -173,12 +183,17 @@ func TestLogsWithLocalhostAddress(t *testing.T) {
 		Dir: "mocks/home/",
 	}
 
+	cmd.Run()
+
+	if update {
+		tdata.ToFile("mocks/logs/logs_response_print", cmd.Stdout.String())
+	}
+
 	var e = &Expect{
 		Stdout:   tdata.FromFile("mocks/logs/logs_response_print"),
 		ExitCode: 0,
 	}
 
-	cmd.Run()
 	e.Assert(t, cmd)
 }
 
