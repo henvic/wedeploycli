@@ -1,5 +1,5 @@
-.SILENT: main development-environment get-dependencies list-packages build fast-test test build-integration-tests tag release promote check-go check-cli-release-config-path
-.PHONY: development-environment get-dependencies list-packages build fast-test test build-integration-tests tag release promote
+.SILENT: main development-environment get-dependencies list-packages build fast-test test build-integration-tests tag release promote release-notes-page check-go check-cli-release-config-path
+.PHONY: development-environment get-dependencies list-packages build fast-test test build-integration-tests tag release promote release-notes-page
 main:
 	echo "WeDeploy CLI build tool commands:"
 	echo "development-environment, get-dependencies, list-packages, build, fast-test, test, tag, release, promote"
@@ -27,6 +27,8 @@ release: check-cli-release-config-path
 	./scripts/release.sh --config $$WEDEPLOY_CLI_RELEASE_CONFIG_PATH
 promote: check-cli-release-config-path
 	./scripts/promote.sh --config $$WEDEPLOY_CLI_RELEASE_CONFIG_PATH
+release-notes-page:
+	go run update/releasenotes/page/page.go
 check-go:
 	if ! which go &> /dev/null; \
 	then >&2 echo "Missing dependency: Go is required https://golang.org/"; \

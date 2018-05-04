@@ -3,6 +3,7 @@ package update
 import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
+	"github.com/wedeploy/cli/cmd/update/releasenotes"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/update"
 )
@@ -30,4 +31,5 @@ func updateRun(cmd *cobra.Command, args []string) error {
 
 func init() {
 	UpdateCmd.Flags().StringVar(&channel, "channel", defaults.StableReleaseChannel, "Release channel")
+	UpdateCmd.AddCommand(releasenotes.Cmd)
 }

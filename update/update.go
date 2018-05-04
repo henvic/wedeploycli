@@ -1,9 +1,12 @@
 package update
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"net/url"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -139,7 +142,31 @@ func Update(c *config.Config, channel string) error {
 	}
 
 	fmt.Printf("Updated to version %s\n", resp.ReleaseVersion)
-	return err
+	runUpdateNotices()
+	return nil
+}
+
+func runUpdateNotices() {
+	var params = []string{"update", "release-notes", "--from", defaults.Version, "--exclusive"}
+	verbose.Debug(fmt.Sprintf("Running %v %v", os.Args[0], strings.Join(params, " ")))
+	cmd := exec.CommandContext(context.Background(), os.Args[0], params...)
+
+	buf := new(bytes.Buffer)
+
+	if verbose.Enabled {
+		cmd.Stderr = os.Stderr
+	}
+
+	cmd.Stdout = buf
+
+	if err := cmd.Run(); err != nil {
+		verbose.Debug("we update release-notes error:", err)
+		return
+	}
+
+	if buf.Len() != 0 {
+		fmt.Print(buf)
+	}
 }
 
 func check(channel string) (*equinox.Response, error) {

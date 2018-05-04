@@ -212,7 +212,7 @@ function pretag() {
   echo ""
 }
 
-function release() {
+function tagging() {
   echo Release announcements should use semantic versioning.
 
   if [ $LAST_TAG != "" ] ; then
@@ -223,6 +223,9 @@ function release() {
   # normalize by removing leading v (i.e., v0.0.1)
   NEW_TAG_VERSION=$(echo $NEW_TAG_VERSION | sed 's/^v//')
 
+  go run update/releasenotes/check/check.go $NEW_TAG_VERSION
+}
+function release() {
   runTestsOnDrone
   checkPublishedTag
   checkUnusedTag
@@ -236,6 +239,7 @@ function run() {
   if [ $dryrun == true ]; then
     pretag
   else
+    tagging
     pretag
     echo
     release
