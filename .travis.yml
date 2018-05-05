@@ -14,5 +14,5 @@ after_success:
 notifications:
   slack:
     rooms:
-      - wedeploy:uYPuakDDBwOqCog3bR8atIHz#ci
+      - wedeploy-team:FV024dTryw7D7SW7HYmZsWyB#ci
     on_success: change
