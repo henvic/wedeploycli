@@ -61,13 +61,18 @@ func init() {
 }
 
 func setAnywhereOnEarthTimezone() {
-	l, err := time.LoadLocation("Etc/GMT-12")
+	timezone := "Etc/GMT-12"
+	l, err := time.LoadLocation(timezone)
 
 	if err != nil {
 		panic(err)
 	}
 
 	time.Local = l
+
+	if err := os.Setenv("TZ", timezone); err != nil {
+		panic(err)
+	}
 }
 
 // GetExitCode tries to retrieve the exit code from an exit error
