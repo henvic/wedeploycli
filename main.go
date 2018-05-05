@@ -15,9 +15,29 @@ import (
 
 	"github.com/wedeploy/cli/cmd"
 	"github.com/wedeploy/cli/cmd/gitcredentialhelper"
+	"github.com/wedeploy/cli/envs"
 )
 
+func maybeSetCustomTimezone() {
+	timezone := os.Getenv(envs.TZ)
+
+	if timezone == "" {
+		return
+	}
+
+	l, err := time.LoadLocation(timezone)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failure setting a custom timezone: %+v\n", err)
+		return
+	}
+
+	time.Local = l
+}
+
 func main() {
+	maybeSetCustomTimezone()
+
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	var args = os.Args

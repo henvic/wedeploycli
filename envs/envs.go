@@ -1,6 +1,9 @@
 package envs
 
 const (
+	// TZ is used to change the timezone for the program
+	TZ = "TZ"
+
 	// CustomHome to use instead of $HOME
 	CustomHome = "WEDEPLOY_CUSTOM_HOME"
 
