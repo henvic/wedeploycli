@@ -1,4 +1,4 @@
-package deployment
+package feedback
 
 import (
 	"bytes"
@@ -13,19 +13,145 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/henvic/browser"
+	"github.com/henvic/uilive"
 	"github.com/wedeploy/cli/activities"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
+	"github.com/wedeploy/cli/errorhandler"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/timehelper"
 	"github.com/wedeploy/cli/verbose"
 	"github.com/wedeploy/cli/waitlivemsg"
 	"golang.org/x/time/rate"
 )
 
-type finalActivitiesStates struct {
+// Watch deployment feedback.
+type Watch struct {
+	ConfigContext config.Context
+
+	ProjectID string
+	GroupUID  string
+
+	Services services.ServiceInfoList
+
+	Quiet bool
+
+	ctx context.Context
+
+	IsUpload bool
+
+	wlm           waitlivemsg.WaitLiveMsg
+	stepMessage   *waitlivemsg.Message
+	uploadMessage *waitlivemsg.Message
+
+	sActivities servicesMap
+
+	states finalStates
+}
+
+// Start watching deployment feedback.
+func (w *Watch) Start(ctx context.Context) {
+	w.ctx = ctx
+
+	w.stepMessage = &waitlivemsg.Message{}
+	w.wlm = waitlivemsg.WaitLiveMsg{}
+	w.prepare()
+	w.createStatusMessages()
+	w.createServicesActivitiesMap()
+}
+
+// NotifyDeploymentSucceeded is used when the deployment works correctly.
+func (w *Watch) NotifyDeploymentSucceeded() {
+	var timeElapsed = timehelper.RoundDuration(w.wlm.Duration(), time.Second)
+
+	w.stepMessage.StopText(w.getDeployingMessage() +
+		fmt.Sprintf("\nDeployment succeeded in %s", timeElapsed))
+}
+
+// NotifyDeploymentFailed tells that the deployment failed.
+func (w *Watch) NotifyDeploymentFailed() {
+	var timeElapsed = timehelper.RoundDuration(w.wlm.Duration(), time.Second)
+
+	w.stepMessage.StopText(w.getDeployingMessage() +
+		fmt.Sprintf("\nDeployment failed in %s", timeElapsed))
+}
+
+// PrintQuietDeployment prints a message telling that the deployment
+// is happening on background when the deployment is not interactive.
+func (w *Watch) PrintQuietDeployment() {
+	fmt.Printf("Deployment %v is in progress on remote %v\n",
+		color.Format(color.FgBlue, w.GroupUID),
+		color.Format(color.FgBlue, w.ConfigContext.InfrastructureDomain()))
+}
+
+// StopFailedUpload stops the deployment due to a failed upload error.
+func (w *Watch) StopFailedUpload() {
+	if !w.IsUpload {
+		return
+	}
+
+	w.NotifyDeploymentFailed()
+
+	if w.IsUpload {
+		w.wlm.RemoveMessage(w.uploadMessage)
+	}
+
+	for serviceID, s := range w.sActivities {
+		s.msgWLM.PlayText(fancy.Error(w.makeServiceStatusMessage(serviceID, "Upload failed")))
+	}
+
+	w.wlm.Stop()
+}
+
+// NotifyPreparing notifies that a package is being prepared for deployment.
+func (w *Watch) NotifyPreparing() {
+	w.stepMessage.StopText(
+		fmt.Sprintf("Preparing deployment for project %v in %v...",
+			color.Format(color.FgBlue, w.ProjectID),
+			color.Format(w.ConfigContext.Remote())),
+	)
+}
+
+// NotifyDeploying notifies that the deployment started.
+func (w *Watch) NotifyDeploying() {
+	w.stepMessage.StopText(w.getDeployingMessage())
+}
+
+// UploadEnd ends the live status update message.
+func (w *Watch) UploadEnd() {
+	if !w.IsUpload {
+		return
+	}
+
+	w.uploadMessage.End()
+}
+
+// NotifyUploadComplete notifies that the upload has been completed.
+func (w *Watch) NotifyUploadComplete(t time.Duration) {
+	if !w.IsUpload {
+		return
+	}
+
+	w.uploadMessage.StopText(fmt.Sprintf("Upload completed in %v",
+		timehelper.RoundDuration(t, time.Second)))
+	w.uploadMessage.End()
+}
+
+// NotifyUploadFailed notifies that the upload has failed.
+func (w *Watch) NotifyUploadFailed() {
+	if !w.IsUpload {
+		return
+	}
+
+	w.uploadMessage.StopText(fancy.Error("Upload failed"))
+
+}
+
+type finalStates struct {
 	BuildFailed    []string
 	DeployFailed   []string
 	DeployCanceled []string
@@ -33,89 +159,96 @@ type finalActivitiesStates struct {
 	DeployRollback []string
 }
 
-func (d *Deploy) createStatusMessages() {
-	d.stepMessage.PlayText("Initializing deployment process")
-	d.wlm.AddMessage(d.stepMessage)
+func (w *Watch) prepareQuiet() {
+	p := &bytes.Buffer{}
 
-	const udpm = "Uploading deployment package..."
+	p.WriteString(w.getDeployingMessage())
+	p.WriteString("\n")
 
-	if d.Quiet {
-		fmt.Println("\n" + udpm)
+	if len(w.Services) > 0 {
+		p.WriteString(fmt.Sprintf("\nList of services:\n"))
 	}
 
-	d.uploadMessage = waitlivemsg.NewMessage(udpm)
-	d.wlm.AddMessage(d.uploadMessage)
+	for _, s := range w.Services {
+		p.WriteString(w.coloredServiceAddress(s.ServiceID))
+		p.WriteString("\n")
+	}
+
+	fmt.Print(p)
 }
 
-func (d *Deploy) createServicesActivitiesMap() {
-	d.sActivities = servicesMap{}
-	for _, s := range d.Services {
-		var m = &waitlivemsg.Message{}
-		m.StopText(d.makeServiceStatusMessage(s.ServiceID, "⠂"))
-
-		d.sActivities[s.ServiceID] = &serviceWatch{
-			msgWLM: m,
-		}
-		d.wlm.AddMessage(m)
-	}
+func (w *Watch) prepareNoisy() {
+	var us = uilive.New()
+	w.wlm.SetStream(us)
+	go w.wlm.Wait()
 }
 
-func (d *Deploy) reorderDeployments() {
-	projectsClient := projects.New(d.ConfigContext)
-	order, _ := projectsClient.GetDeploymentOrder(d.ctx, d.ProjectID, d.groupUID)
-
-	for _, do := range order {
-		if a, ok := d.sActivities[do]; ok {
-			d.wlm.RemoveMessage(a.msgWLM)
-		}
-	}
-
-	for _, do := range order {
-		if a, ok := d.sActivities[do]; ok {
-			d.wlm.AddMessage(a.msgWLM)
-		}
-	}
-}
-
-func (d *Deploy) updateDeploymentEndStep(err error) {
-	var timeElapsed = timehelper.RoundDuration(d.wlm.Duration(), time.Second)
-
-	switch err {
-	case nil:
-		d.stepMessage.StopText(d.getDeployingMessage() +
-			fmt.Sprintf("\nDeployment succeeded in %s", timeElapsed))
-	default:
-		d.stepMessage.StopText(d.getDeployingMessage() +
-			fmt.Sprintf("\nDeployment failed in %s", timeElapsed))
-	}
-}
-
-func (d *Deploy) notifyDeploymentOnQuiet(err error) {
-	if err != nil {
+func (w *Watch) prepare() {
+	if w.Quiet {
+		w.prepareQuiet()
 		return
 	}
 
-	fmt.Printf("Deployment %v is in progress on remote %v\n",
-		color.Format(color.FgBlue, d.GetGroupUID()),
-		color.Format(color.FgBlue, d.ConfigContext.InfrastructureDomain()))
+	w.prepareNoisy()
 }
 
-func (d *Deploy) notifyFailedUpload() {
-	d.wlm.RemoveMessage(d.uploadMessage)
-	for serviceID, s := range d.sActivities {
-		s.msgWLM.PlayText(fancy.Error(d.makeServiceStatusMessage(serviceID, "Upload failed")))
+func (w *Watch) createStatusMessages() {
+	w.stepMessage.PlayText("Initializing deployment process")
+	w.wlm.AddMessage(w.stepMessage)
+
+	const udpm = "Uploading deployment package..."
+
+	if w.Quiet {
+		fmt.Println("\n" + udpm)
+	}
+
+	if w.IsUpload {
+		w.uploadMessage = waitlivemsg.NewMessage(udpm)
+		w.wlm.AddMessage(w.uploadMessage)
+	} else {
+		w.stepMessage.PlayText(w.getDeployingMessage())
 	}
 }
 
-func (d *Deploy) getDeployingMessage() string {
+func (w *Watch) createServicesActivitiesMap() {
+	w.sActivities = servicesMap{}
+	for _, s := range w.Services {
+		var m = &waitlivemsg.Message{}
+		m.StopText(w.makeServiceStatusMessage(s.ServiceID, "⠂"))
+
+		w.sActivities[s.ServiceID] = &serviceWatch{
+			msgWLM: m,
+		}
+		w.wlm.AddMessage(m)
+	}
+}
+
+func (w *Watch) reorderDeployments() {
+	projectsClient := projects.New(w.ConfigContext)
+	order, _ := projectsClient.GetDeploymentOrder(w.ctx, w.ProjectID, w.GroupUID)
+
+	for _, do := range order {
+		if a, ok := w.sActivities[do]; ok {
+			w.wlm.RemoveMessage(a.msgWLM)
+		}
+	}
+
+	for _, do := range order {
+		if a, ok := w.sActivities[do]; ok {
+			w.wlm.AddMessage(a.msgWLM)
+		}
+	}
+}
+
+func (w *Watch) getDeployingMessage() string {
 	return fmt.Sprintf("Deploying services on project %v in %v...",
-		color.Format(color.FgBlue, d.ProjectID),
-		color.Format(color.FgBlue, d.ConfigContext.InfrastructureDomain()),
+		color.Format(color.FgBlue, w.ProjectID),
+		color.Format(color.FgBlue, w.ConfigContext.InfrastructureDomain()),
 	)
 }
 
-func (d *Deploy) printServiceAddress(service string) string {
-	var address = d.ProjectID + "." + d.ConfigContext.ServiceDomain()
+func (w *Watch) printServiceAddress(service string) string {
+	var address = w.ProjectID + "." + w.ConfigContext.ServiceDomain()
 
 	if service != "" {
 		address = service + "-" + address
@@ -124,13 +257,13 @@ func (d *Deploy) printServiceAddress(service string) string {
 	return address
 }
 
-func (d *Deploy) coloredServiceAddress(serviceID string) string {
+func (w *Watch) coloredServiceAddress(serviceID string) string {
 	return color.Format(
 		color.Bold,
-		d.printServiceAddress(serviceID))
+		w.printServiceAddress(serviceID))
 }
 
-func (d *Deploy) makeServiceStatusMessage(serviceID, pre string) string {
+func (w *Watch) makeServiceStatusMessage(serviceID, pre string) string {
 	var buff bytes.Buffer
 
 	if pre != "" {
@@ -138,20 +271,21 @@ func (d *Deploy) makeServiceStatusMessage(serviceID, pre string) string {
 		buff.WriteString(" ")
 	}
 
-	buff.WriteString(d.coloredServiceAddress(serviceID))
+	buff.WriteString(w.coloredServiceAddress(serviceID))
 
 	return buff.String()
 }
 
-func (d *Deploy) verifyFinalState() (states finalActivitiesStates, err error) {
-	states = d.sActivities.getFinalActivitiesStates()
+func (w *Watch) setFinalStates() (err error) {
+	var states = w.sActivities.getFinalActivitiesStates()
+	w.states = states
 
 	if len(states.BuildFailed) == 0 &&
 		len(states.DeployFailed) == 0 &&
 		len(states.DeployCanceled) == 0 &&
 		len(states.DeployTimeout) == 0 &&
 		len(states.DeployRollback) == 0 {
-		return states, nil
+		return nil
 	}
 
 	var emsgs []string
@@ -176,10 +310,10 @@ func (d *Deploy) verifyFinalState() (states finalActivitiesStates, err error) {
 		emsgs = append(emsgs, fmt.Sprintf(`rolling back service "%s"`, s))
 	}
 
-	return states, errors.New(strings.Join(emsgs, "\n"))
+	return errors.New(strings.Join(emsgs, "\n"))
 }
 
-func (d *Deploy) updateActivityState(a activities.Activity) {
+func (w *Watch) updateActivityState(a activities.Activity) {
 	var serviceID, ok = a.Metadata["serviceId"].(string)
 
 	// stop processing if service is not any of the watched deployment cycle types,
@@ -188,15 +322,15 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 		return
 	}
 
-	if _, exists := d.sActivities[serviceID]; !exists {
+	if _, exists := w.sActivities[serviceID]; !exists {
 		// skip activity
 		// we want to avoid problems (read: nil pointer panics)
 		// if the server sends back a response with an ID we don't have already locally
 		return
 	}
 
-	d.markDeploymentTransition(serviceID, a.Type)
-	var m = d.sActivities[serviceID].msgWLM
+	w.markDeploymentTransition(serviceID, a.Type)
+	var m = w.sActivities[serviceID].msgWLM
 	var pre string
 
 	if pre, ok = activities.FriendlyActivities[a.Type]; !ok {
@@ -210,19 +344,19 @@ func (d *Deploy) updateActivityState(a activities.Activity) {
 		activities.DeployCreated,
 		activities.DeployPending,
 		activities.DeployStarted:
-		m.PlayText(d.makeServiceStatusMessage(serviceID, pre))
+		m.PlayText(w.makeServiceStatusMessage(serviceID, pre))
 	case
 		activities.BuildFailed,
 		activities.DeployFailed,
 		activities.DeployCanceled,
 		activities.DeployTimeout,
 		activities.DeployRollback:
-		m.StopText(fancy.Error(d.makeServiceStatusMessage(serviceID, pre)))
+		m.StopText(fancy.Error(w.makeServiceStatusMessage(serviceID, pre)))
 	case
 		activities.DeploySucceeded:
-		m.StopText(d.makeServiceStatusMessage(serviceID, pre))
+		m.StopText(w.makeServiceStatusMessage(serviceID, pre))
 	default:
-		m.StopText(d.makeServiceStatusMessage(serviceID, pre))
+		m.StopText(w.makeServiceStatusMessage(serviceID, pre))
 	}
 }
 
@@ -279,34 +413,34 @@ var ValidTransitions = map[string][]string{
 	activities.DeploySucceeded: []string{},
 }
 
-func (d *Deploy) markDeploymentTransition(serviceID, activityType string) {
-	var old = d.sActivities[serviceID].state
+func (w *Watch) markDeploymentTransition(serviceID, activityType string) {
+	var old = w.sActivities[serviceID].state
 
 	var validFrom, ok = ValidTransitions[old]
 
 	if !ok {
-		d.sActivities[serviceID].state = activityType
+		w.sActivities[serviceID].state = activityType
 		verbose.Debug("Unexpected Transition: from: ", old, "to: ", activityType)
 		return
 	}
 
 	for _, eachValid := range validFrom {
 		if activityType == eachValid {
-			d.sActivities[serviceID].state = activityType
+			w.sActivities[serviceID].state = activityType
 			return
 		}
 	}
 }
 
-func (d *Deploy) updateActivitiesStates() (end bool, err error) {
+func (w *Watch) updateActivitiesStates() (end bool, err error) {
 	var as activities.Activities
-	var ctx, cancel = context.WithTimeout(d.ctx, 5*time.Second)
+	var ctx, cancel = context.WithTimeout(w.ctx, 5*time.Second)
 	defer cancel()
 
-	activitiesClient := activities.New(d.ConfigContext)
+	activitiesClient := activities.New(w.ConfigContext)
 
-	as, err = activitiesClient.List(ctx, d.ProjectID, activities.Filter{
-		GroupUID: d.groupUID,
+	as, err = activitiesClient.List(ctx, w.ProjectID, activities.Filter{
+		GroupUID: w.GroupUID,
 	})
 	cancel()
 	as = as.Reverse()
@@ -316,11 +450,11 @@ func (d *Deploy) updateActivitiesStates() (end bool, err error) {
 	}
 
 	for _, a := range as {
-		d.updateActivityState(a)
+		w.updateActivityState(a)
 	}
 
-	for id := range d.sActivities {
-		if !d.sActivities.isFinalState(id) {
+	for id := range w.sActivities {
+		if !w.sActivities.isFinalState(id) {
 			return false, nil
 		}
 	}
@@ -370,17 +504,35 @@ func isNotFoundError(err error) bool {
 	return af != nil && af.Status == 404
 }
 
-func (d *Deploy) watchDeployment() error {
-	d.reorderDeployments()
+// Wait for deployment to finish.
+func (w *Watch) Wait() error {
+	defer w.maybeSetOpenLogsFunc()
+	w.reorderDeployments()
 
+	if err := w.waitFor(); err != nil {
+		return err
+	}
+
+	switch err := w.setFinalStates(); err {
+	case nil:
+		w.NotifyDeploymentSucceeded()
+	default:
+		w.NotifyDeploymentFailed()
+	}
+
+	w.wlm.Stop()
+	return nil
+}
+
+func (w *Watch) waitFor() error {
 	rate := rate.NewLimiter(rate.Every(time.Second), 1)
 
 	for {
-		if er := rate.Wait(d.ctx); er != nil {
+		if er := rate.Wait(w.ctx); er != nil {
 			verbose.Debug(er)
 		}
 
-		var end, err = d.updateActivitiesStates()
+		var end, err = w.updateActivitiesStates()
 
 		if err != nil {
 			verbose.Debug(err)
@@ -390,10 +542,10 @@ func (d *Deploy) watchDeployment() error {
 			return errors.New("deployment not found")
 		}
 
-		var stepText = d.stepMessage.GetText()
+		var stepText = w.stepMessage.GetText()
 
 		if strings.Contains(stepText, "retrying to get status #") {
-			d.stepMessage.StopText(clearMessageErrorStringCounter(stepText))
+			w.stepMessage.StopText(clearMessageErrorStringCounter(stepText))
 		}
 
 		if end {
@@ -402,7 +554,19 @@ func (d *Deploy) watchDeployment() error {
 	}
 }
 
-func (d *Deploy) maybeOpenLogs(states finalActivitiesStates) {
+func (w *Watch) maybeSetOpenLogsFunc() {
+	states := w.states
+	askLogs := (len(states.BuildFailed) != 0 || len(states.DeployFailed) != 0)
+
+	if askLogs {
+		errorhandler.SetAfterError(func() {
+			w.maybeOpenLogs()
+		})
+	}
+}
+
+func (w *Watch) maybeOpenLogs() {
+	var states = w.states
 	var failedBuilds = states.BuildFailed
 	var failedDeploys = states.DeployFailed
 
@@ -416,8 +580,8 @@ func (d *Deploy) maybeOpenLogs(states finalActivitiesStates) {
 
 	var logsURL = fmt.Sprintf("https://%v%v/projects/%v/logs",
 		defaults.DashboardAddressPrefix,
-		d.ConfigContext.InfrastructureDomain(),
-		d.ProjectID)
+		w.ConfigContext.InfrastructureDomain(),
+		w.ProjectID)
 
 	switch {
 	case len(failedBuilds) == 1 && len(failedDeploys) == 0:
@@ -441,8 +605,8 @@ type serviceWatch struct {
 
 type servicesMap map[string]*serviceWatch
 
-func (s servicesMap) getFinalActivitiesStates() finalActivitiesStates {
-	var states = finalActivitiesStates{}
+func (s servicesMap) getFinalActivitiesStates() finalStates {
+	var states = finalStates{}
 
 	for k, service := range s {
 		switch service.state {

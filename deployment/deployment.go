@@ -18,17 +18,12 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/henvic/uilive"
 	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/deployment/internal/feedback"
 	"github.com/wedeploy/cli/envs"
-	"github.com/wedeploy/cli/errorhandler"
-	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/services"
-	"github.com/wedeploy/cli/timehelper"
 	"github.com/wedeploy/cli/verbose"
-	"github.com/wedeploy/cli/waitlivemsg"
 )
 
 var (
@@ -52,10 +47,7 @@ type Deploy struct {
 	pushStartTime time.Time
 	pushEndTime   time.Time
 
-	sActivities   servicesMap
-	wlm           waitlivemsg.WaitLiveMsg
-	stepMessage   *waitlivemsg.Message
-	uploadMessage *waitlivemsg.Message
+	watch *feedback.Watch
 
 	ctx       context.Context
 	ctxCancel context.CancelFunc
@@ -214,85 +206,46 @@ func (d *Deploy) listenCleanupOnCancel() {
 	}()
 }
 
-func (d *Deploy) prepareQuiet() {
-	p := &bytes.Buffer{}
-
-	p.WriteString(d.getDeployingMessage())
-	p.WriteString("\n")
-
-	if len(d.Services) > 0 {
-		p.WriteString(fmt.Sprintf("\nList of services:\n"))
-	}
-
-	for _, s := range d.Services {
-		p.WriteString(d.coloredServiceAddress(s.ServiceID))
-		p.WriteString("\n")
-	}
-
-	fmt.Print(p)
-}
-
-func (d *Deploy) prepareNoisy() {
-	var us = uilive.New()
-	d.wlm.SetStream(us)
-	go d.wlm.Wait()
-}
-
-func (d *Deploy) prepare() {
-	if d.Quiet {
-		d.prepareQuiet()
-		return
-	}
-
-	d.prepareNoisy()
-}
-
 // Do deployment
 func (d *Deploy) Do(ctx context.Context) error {
 	d.ctx, d.ctxCancel = context.WithCancel(ctx)
-	d.stepMessage = &waitlivemsg.Message{}
-	d.wlm = waitlivemsg.WaitLiveMsg{}
-	d.prepare()
+
+	d.watch = &feedback.Watch{
+		ConfigContext: d.ConfigContext,
+
+		ProjectID: d.ProjectID,
+
+		Services: d.Services,
+
+		Quiet: d.Quiet,
+
+		IsUpload: true,
+	}
+
+	d.watch.Start(d.ctx)
 
 	var err = d.do()
 
-	if d.Quiet {
-		d.notifyDeploymentOnQuiet(err)
+	d.watch.GroupUID = d.GetGroupUID()
+
+	if d.Quiet && err != nil {
 		return err
+	}
+
+	if d.Quiet {
+		d.watch.PrintQuietDeployment()
+		return nil
 	}
 
 	if err != nil {
-		d.updateDeploymentEndStep(err)
-		d.notifyFailedUpload()
-		d.wlm.Stop()
+		d.watch.StopFailedUpload()
 		return err
 	}
 
-	if err := d.watchDeployment(); err != nil {
-		return err
-	}
-
-	states, err := d.verifyFinalState()
-
-	d.updateDeploymentEndStep(err)
-
-	d.wlm.Stop()
-
-	var askLogs = (len(states.BuildFailed) != 0 || len(states.DeployFailed) != 0)
-
-	if askLogs {
-		errorhandler.SetAfterError(func() {
-			d.maybeOpenLogs(states)
-		})
-	}
-
-	return err
+	return d.watch.Wait()
 }
 
 func (d *Deploy) do() (err error) {
-	d.createStatusMessages()
-	d.createServicesActivitiesMap()
-
 	d.listenCleanupOnCancel()
 
 	defer func() {
@@ -324,7 +277,7 @@ func (d *Deploy) do() (err error) {
 		return err
 	}
 
-	d.stepMessage.StopText(d.getDeployingMessage())
+	d.watch.NotifyDeploying()
 
 	if err = d.uploadPackage(); err != nil {
 		return err
@@ -335,11 +288,7 @@ func (d *Deploy) do() (err error) {
 }
 
 func (d *Deploy) preparePackage() (err error) {
-	d.stepMessage.StopText(
-		fmt.Sprintf("Preparing deployment for project %v in %v...",
-			color.Format(color.FgBlue, d.ProjectID),
-			color.Format(d.ConfigContext.Remote())),
-	)
+	d.watch.NotifyPreparing()
 
 	if hasGit := existsDependency("git"); !hasGit {
 		return errors.New("git was not found on your system: please visit https://git-scm.com/")
@@ -377,9 +326,9 @@ func getWeExecutable() (string, error) {
 }
 
 func (d *Deploy) uploadPackage() (err error) {
-	defer d.uploadMessage.End()
+	defer d.watch.UploadEnd()
 	if d.groupUID, err = d.Push(); err != nil {
-		d.uploadMessage.StopText(fancy.Error("Upload failed"))
+		d.watch.NotifyUploadFailed()
 		if _, ok := err.(*exec.ExitError); ok {
 			return errwrap.Wrapf("deployment push failed", err)
 		}
@@ -388,8 +337,7 @@ func (d *Deploy) uploadPackage() (err error) {
 		return err
 	}
 
-	d.uploadMessage.StopText(fmt.Sprintf("Upload completed in %v",
-		timehelper.RoundDuration(d.UploadDuration(), time.Second)))
+	d.watch.NotifyUploadComplete(d.UploadDuration())
 	return nil
 }
 

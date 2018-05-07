@@ -5,21 +5,18 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"net/http"
 	"path/filepath"
 	"regexp"
 	"strings"
 
-	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/cmd/canceled"
+	"github.com/wedeploy/cli/cmd/deploy/internal/getproject"
 	"github.com/wedeploy/cli/cmd/internal/we"
-	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/deployment"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/inspector"
 	"github.com/wedeploy/cli/isterm"
 	"github.com/wedeploy/cli/namesgenerator"
-	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/verbose"
 )
@@ -39,50 +36,6 @@ type RemoteDeployment struct {
 	ctx      context.Context
 }
 
-func (rd *RemoteDeployment) getProjectID() (err error) {
-	projectsClient := projects.New(we.Context())
-
-	if rd.ProjectID == "" {
-		if !isterm.Check() {
-			return errors.New("project ID is missing")
-		}
-
-		fmt.Println(fancy.Question("Choose a project ID") + " " + fancy.Tip("default: random"))
-		rd.ProjectID, err = fancy.Prompt()
-
-		if err != nil {
-			return err
-		}
-	}
-
-	if rd.ProjectID != "" {
-		userProject, err := projectsClient.Get(context.Background(), rd.ProjectID)
-
-		if err == nil {
-			return nil
-		}
-
-		if epf, ok := err.(*apihelper.APIFault); !ok || epf.Status != http.StatusNotFound {
-			return err
-		}
-
-		if err := rd.confirmation(userProject); err != nil {
-			return err
-		}
-	}
-
-	var p, ep = projectsClient.Create(context.Background(), projects.Project{
-		ProjectID: rd.ProjectID,
-	})
-
-	if ep != nil {
-		return ep
-	}
-
-	rd.ProjectID = p.ProjectID
-	return nil
-}
-
 // Run does the remote deployment procedures
 func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error) {
 	rd.ctx = ctx
@@ -92,7 +45,9 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 		return "", err
 	}
 
-	if err = rd.getProjectID(); err != nil {
+	rd.ProjectID, err = getproject.MaybeID(rd.ProjectID)
+
+	if err != nil {
 		return "", err
 	}
 
@@ -260,24 +215,4 @@ func (rd *RemoteDeployment) loadServicesListFromPath() (err error) {
 	}
 
 	return nil
-}
-
-func (rd *RemoteDeployment) confirmation(userProject projects.Project) error {
-	if userProject.ProjectID != "" {
-		return nil
-	}
-
-	fmt.Println(color.Format(color.FgHiBlack, "Project does not exist."))
-
-	var question = fmt.Sprintf("Do you want to create project \"%s\"?", rd.ProjectID)
-
-	switch ok, askErr := fancy.Boolean(question); {
-	case askErr != nil:
-		return askErr
-	case ok:
-		fmt.Println("")
-		return nil
-	}
-
-	return canceled.CancelCommand("Deployment canceled.")
 }
