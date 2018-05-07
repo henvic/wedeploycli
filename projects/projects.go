@@ -8,6 +8,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/services"
@@ -164,6 +165,41 @@ func (c *Client) CreateOrUpdate(ctx context.Context, project Project) (pRec Proj
 	}
 
 	return pRec, created, err
+}
+
+// BuildRequestBody structure
+type BuildRequestBody struct {
+	Repository string `json:"repository,omitempty"`
+}
+
+// BuildResponseBody structure
+type BuildResponseBody struct {
+	ServiceID string `json:"serviceID"`
+	GroupUID  string `json:"groupUid"`
+}
+
+// Build project
+func (c *Client) Build(ctx context.Context, projectID string, build BuildRequestBody) (groupUID string, builds []BuildResponseBody, err error) {
+	var req = c.Client.URL(ctx, "/projects", projectID, "/build")
+	c.Client.Auth(req)
+
+	if err := apihelper.SetBody(req, build); err != nil {
+		return "", builds, errwrap.Wrapf("can't set body for build: {{err}}", err)
+	}
+
+	if err := apihelper.Validate(req, req.Post()); err != nil {
+		return "", builds, err
+	}
+
+	if err = apihelper.DecodeJSON(req, &builds); err != nil {
+		return "", builds, err
+	}
+
+	if len(builds) > 0 {
+		groupUID = builds[0].GroupUID
+	}
+
+	return groupUID, builds, err
 }
 
 // GetDeploymentOrder gets the order of a given deployment

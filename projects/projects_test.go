@@ -2,6 +2,9 @@ package projects
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"reflect"
@@ -246,6 +249,85 @@ func TestDelete(t *testing.T) {
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	servertest.Teardown()
+}
+
+func TestBuild(t *testing.T) {
+	servertest.Setup()
+
+	servertest.Mux.HandleFunc("/projects/foo/build",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodPost {
+				t.Errorf("Expected method to be %v, got %v instead", http.MethodPost, r.Method)
+			}
+
+			var body, err = ioutil.ReadAll(r.Body)
+
+			if err != nil {
+				t.Errorf("Error parsing request: %v", err)
+			}
+
+			var data BuildRequestBody
+
+			if err = json.Unmarshal(body, &data); err != nil {
+				t.Errorf("Error unmarshaling parsed request: %v", err)
+			}
+
+			wantRepo := "fake/repo"
+
+			if data.Repository != wantRepo {
+				t.Errorf("Expected repo to be %v, got %v instead", wantRepo, data.Repository)
+			}
+
+			br, err := json.Marshal([]BuildResponseBody{
+				BuildResponseBody{
+					ServiceID: "ac",
+					GroupUID:  "1ba",
+				},
+				BuildResponseBody{
+					ServiceID: "bc",
+					GroupUID:  "2bc",
+				},
+			})
+
+			if err != nil {
+				panic(err)
+			}
+
+			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+			w.WriteHeader(200)
+			fmt.Fprintf(w, string(br))
+		})
+
+	b := BuildRequestBody{
+		Repository: "fake/repo",
+	}
+
+	var groupUID, builds, err = client.Build(context.Background(), "foo", b)
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	if groupUID != "1ba" {
+		t.Errorf("Wrong group UID, got %v", groupUID)
+	}
+
+	gotBuilds := []BuildResponseBody{
+		BuildResponseBody{
+			ServiceID: "ac",
+			GroupUID:  "1ba",
+		},
+		BuildResponseBody{
+			ServiceID: "bc",
+			GroupUID:  "2bc",
+		},
+	}
+
+	if !reflect.DeepEqual(builds, gotBuilds) {
+		t.Errorf("Wanted order to be %v, got %v instead", builds, gotBuilds)
 	}
 
 	servertest.Teardown()
