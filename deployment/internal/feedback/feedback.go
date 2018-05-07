@@ -533,8 +533,10 @@ func (w *Watch) waitFor() error {
 		}
 
 		var end, err = w.updateActivitiesStates()
+		var stepText = w.stepMessage.GetText()
 
 		if err != nil {
+			w.stepMessage.StopText(updateMessageErrorStringCounter(stepText))
 			verbose.Debug(err)
 		}
 
@@ -542,9 +544,7 @@ func (w *Watch) waitFor() error {
 			return errors.New("deployment not found")
 		}
 
-		var stepText = w.stepMessage.GetText()
-
-		if strings.Contains(stepText, "retrying to get status #") {
+		if err == nil && strings.Contains(stepText, "retrying to get status #") {
 			w.stepMessage.StopText(clearMessageErrorStringCounter(stepText))
 		}
 
