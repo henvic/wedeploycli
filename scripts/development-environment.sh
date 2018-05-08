@@ -92,7 +92,7 @@ function installGoVisualCodeExtension() {
   fi
 
   echo "Installing Go extension for Visual Studio Code."
-  code --install-extension lukehoban.Go
+  code --install-extension ms-vscode.Go
   # don't ask for doing 'Go: Install/Update Tools' on VS because the user is probably going to be prompted soon
 
   if [ $ec -eq 0 ] ; then
