@@ -85,4 +85,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "May 4th, 2018",
 		Description: `Added release notes. Added timestamsp to "we log".`,
 	},
+	ReleaseNote{
+		Version:     "1.4.6",
+		Date:        "May 8th, 2018",
+		Description: `Adding support for using custom timezones (with environment variable TZ). Adding support for deploying Git repositories. Fixing missing "error counter". Minor improvements.`,
+	},
 }
