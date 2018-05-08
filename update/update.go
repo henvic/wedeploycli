@@ -141,7 +141,7 @@ func Update(c *config.Config, channel string) error {
 		return err
 	}
 
-	fmt.Printf("Updated to version %s\n", resp.ReleaseVersion)
+	fmt.Printf("\nUpdated to version %s\n", resp.ReleaseVersion)
 	runUpdateNotices()
 	return nil
 }
@@ -165,6 +165,7 @@ func runUpdateNotices() {
 	}
 
 	if buf.Len() != 0 {
+		fmt.Print("\n\nChanges (release notes)\n")
 		fmt.Print(buf)
 	}
 }
