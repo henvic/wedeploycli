@@ -7,7 +7,7 @@ import (
 )
 
 var header = `---
-title: "CLI Updates"
+title: "CLI"
 description: "Check out the latest releases of the WeDeploy"
 layout: "updates"
 updates:

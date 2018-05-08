@@ -22,7 +22,7 @@ var ReleaseNotes = []ReleaseNote{
 	ReleaseNote{
 		Version:     "1.2.8",
 		Date:        "Jan 5th, 2018",
-		Description: "Adding protection to avoid deploying content in sensitive directories such as the home directory. Minor improvements.",
+		Description: "Added protection to avoid deploying content in sensitive directories such as the home directory. Minor improvements.",
 	},
 	ReleaseNote{
 		Version:     "1.2.9",
@@ -88,6 +88,6 @@ var ReleaseNotes = []ReleaseNote{
 	ReleaseNote{
 		Version:     "1.4.6",
 		Date:        "May 8th, 2018",
-		Description: `Adding support for using custom timezones (with environment variable TZ). Adding support for deploying Git repositories. Fixing missing "error counter". Minor improvements.`,
+		Description: `Added support for using custom timezones (with environment variable TZ). Added support for deploying Git repositories. Fixing missing "error counter". Minor improvements.`,
 	},
 }
