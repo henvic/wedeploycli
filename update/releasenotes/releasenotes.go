@@ -90,4 +90,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "May 8th, 2018",
 		Description: `Added support for using custom timezones (with environment variable TZ). Added support for deploying Git repositories. Fixing missing "error counter". Minor improvements.`,
 	},
+	ReleaseNote{
+		Version:     "1.4.7",
+		Date:        "May 13th, 2018",
+		Description: `Improved user experience when running "we deploy". Minor improvements.`,
+	},
 }
