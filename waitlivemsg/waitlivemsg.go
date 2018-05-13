@@ -247,6 +247,12 @@ func (w *WaitLiveMsg) print() {
 	w.msgsMutex.RUnlock()
 
 	for _, m := range msgs {
+		var txt = m.getText()
+
+		if len(txt) == 0 {
+			continue
+		}
+
 		var s = m.getSymbol()
 
 		if len(s) != 0 {
@@ -254,7 +260,7 @@ func (w *WaitLiveMsg) print() {
 			buf.WriteString(" ")
 		}
 
-		buf.WriteString(m.getText())
+		buf.WriteString(txt)
 		buf.WriteString("\n")
 	}
 
