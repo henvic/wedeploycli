@@ -213,6 +213,7 @@ function pretag() {
 }
 
 function tagging() {
+  echo ""
   echo Release announcements should use semantic versioning.
 
   if [ $LAST_TAG != "" ] ; then
@@ -239,8 +240,8 @@ function run() {
   if [ $dryrun == true ]; then
     pretag
   else
-    tagging
     pretag
+    tagging
     echo
     release
   fi
