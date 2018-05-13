@@ -133,8 +133,8 @@
     "query",
     "urilib"
   ]
-  revision = "2f3913a2ca0488384c312ac8e3273c39f331f79f"
-  version = "v2.1.1"
+  revision = "f7580b9b20e0777894eb3f620aa3d3bda9d76d64"
+  version = "v2.1.2"
 
 [[projects]]
   branch = "master"
@@ -178,6 +178,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8e38be313a58604815b8918df09ac1e162a180cea39fbba3a14af7a3b8726ebd"
+  inputs-digest = "4d5222e0f0dc823e231526877759fbd2a2c4bc855e808a5352372083ef1d0845"
   solver-name = "gps-cdcl"
   solver-version = 1
