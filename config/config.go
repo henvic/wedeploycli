@@ -275,6 +275,10 @@ func (c *Config) read() error {
 }
 
 func (c *Config) checkNextVersionCacheIsNewer() {
+	if defaults.Version == "master" {
+		return
+	}
+
 	vThis, err := version.NewVersion(defaults.Version)
 
 	if err != nil {
