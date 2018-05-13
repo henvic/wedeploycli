@@ -2,6 +2,7 @@ package verbosereq
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -87,6 +88,38 @@ func TestRequestVerboseFeedback(t *testing.T) {
 
 	if assertionError {
 		t.Errorf("Response is:\n%v", got)
+	}
+
+	servertest.Teardown()
+}
+
+func TestRequestVerboseFeedbackContextNoVerbose(t *testing.T) {
+	bufErrStream.Reset()
+	servertest.Setup()
+
+	servertest.Mux.HandleFunc("/foo", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("X-Test-Multiple", "a")
+		w.Header().Add("X-Test-Multiple", "b")
+		fmt.Fprintf(w, "Hello")
+	})
+
+	var request = wedeploy.URL("http://www.example.com/foo")
+
+	request.SetContext(ContextNoVerbose(context.Background()))
+
+	request.Headers.Add("Accept", "application/json")
+	request.Headers.Add("Accept", "text/plain")
+
+	if err := request.Get(); err != nil {
+		panic(err)
+	}
+
+	Feedback(request)
+
+	got := bufErrStream.String()
+
+	if got != "" {
+		t.Errorf("Expected no output, got %v instead", got)
 	}
 
 	servertest.Teardown()

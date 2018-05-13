@@ -2,6 +2,7 @@ package verbosereq
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/envs"
 	"github.com/wedeploy/cli/verbose"
 	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
@@ -115,6 +117,12 @@ func Feedback(request *wedeploy.WeDeploy) {
 		return
 	}
 
+	if ctx := request.Context(); ctx != nil && ctx.Value(contextNoVerbose{}) != nil {
+		if unsafe, _ := os.LookupEnv(envs.UnsafeVerbose); unsafe != "true" {
+			return
+		}
+	}
+
 	if request.Request == nil {
 		log(">", color.Format(color.FgRed, "(wait)"), request.URL)
 		return
@@ -122,6 +130,14 @@ func Feedback(request *wedeploy.WeDeploy) {
 
 	requestVerboseFeedback(request)
 }
+
+// ContextNoVerbose overrides the verbose.
+// The WEDEPLOY_UNSAFE_VERBOSE environment variable overrides this as well.
+func ContextNoVerbose(ctx context.Context) context.Context {
+	return context.WithValue(ctx, contextNoVerbose{}, true)
+}
+
+type contextNoVerbose struct{}
 
 func requestVerboseFeedback(request *wedeploy.WeDeploy) {
 	log(">",
