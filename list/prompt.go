@@ -29,7 +29,7 @@ func (l *List) PromptProject(ctx context.Context, wectx config.Context) (*Select
 	}
 
 	fmt.Println("")
-	fmt.Println(fancy.Question("Type a project ID or #:"))
+	fmt.Println(fancy.Question("Type project ID or #:"))
 
 	option, err := fancy.Prompt()
 
@@ -74,7 +74,7 @@ func (l *List) PromptProjectOrService(ctx context.Context, wectx config.Context)
 	}
 
 	fmt.Println("")
-	fmt.Println(fancy.Question("Type a project/service ID or a service #:"))
+	fmt.Println(fancy.Question("Type project/service ID or service #:"))
 
 	var option, err = fancy.Prompt()
 
@@ -167,7 +167,7 @@ func (l *List) PromptService(ctx context.Context, wectx config.Context) (*Select
 	}
 
 	fmt.Println("")
-	fmt.Println(fancy.Question("Type a service ID or #:"))
+	fmt.Println(fancy.Question("Type service ID or #:"))
 
 	var option, err = fancy.Prompt()
 
