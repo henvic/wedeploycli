@@ -33,4 +33,12 @@ var Licenses = []License{
 		// Files:
 		// github.com/wedeploy/cli/color
 	},
+	License{
+		Name:        "figures",
+		Package:     "github.com/sindresorhus/figures",
+		Notes:       "heavily simplified",
+		LicensePath: "extra/licenses/FIGURES_LICENSE", // MIT
+		// Files:
+		// github.com/wedeploy/cli/figures
+	},
 }
