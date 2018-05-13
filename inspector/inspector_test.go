@@ -166,7 +166,7 @@ func TestInspectServiceCorrupted(t *testing.T) {
 func TestInspectProjectWithCorruptedServiceOnContextOverview(t *testing.T) {
 	var _, err = InspectContext("", "./mocks/project-with-corrupted-service")
 	var wantErr = fmt.Sprintf(
-		`can't list services: error parsing wedeploy.json on %v: unexpected end of JSON input`,
+		`error parsing wedeploy.json on %v: unexpected end of JSON input`,
 		abs("mocks/project-with-corrupted-service/corrupted-service"))
 
 	if err == nil || err.Error() != wantErr {
@@ -180,7 +180,7 @@ func TestInspectContextOverviewWithDuplicatedServices(t *testing.T) {
 
 	if err == nil || strings.Contains(err.Error(),
 		"Error while trying to read list of services on project:\n"+
-			`can't list services: ID "other" was found duplicated on services`) {
+			`ID "other" was found duplicated on services`) {
 		t.Errorf("Expected error to contain duplicated information, got %v instead", err)
 	}
 }

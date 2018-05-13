@@ -282,7 +282,7 @@ func (l *listFromDirectoryGetter) readFunc(dir string) error {
 	case errRead == ErrServiceNotFound:
 		return nil
 	default:
-		return errwrap.Wrapf("can't list services: {{err}}", errRead)
+		return errRead
 	}
 }
 
