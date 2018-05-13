@@ -21,10 +21,12 @@ import (
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/errorhandler"
 	"github.com/wedeploy/cli/fancy"
+	"github.com/wedeploy/cli/figures"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/timehelper"
 	"github.com/wedeploy/cli/verbose"
+	"github.com/wedeploy/cli/verbosereq"
 	"github.com/wedeploy/cli/waitlivemsg"
 	"golang.org/x/time/rate"
 )
@@ -42,11 +44,12 @@ type Watch struct {
 
 	ctx context.Context
 
-	IsUpload bool
+	IsUpload        bool
+	uploadCompleted time.Duration
 
-	wlm           waitlivemsg.WaitLiveMsg
-	stepMessage   *waitlivemsg.Message
-	uploadMessage *waitlivemsg.Message
+	wlm         waitlivemsg.WaitLiveMsg
+	header      *waitlivemsg.Message
+	stepMessage *waitlivemsg.Message
 
 	sActivities servicesMap
 
@@ -57,48 +60,69 @@ type Watch struct {
 func (w *Watch) Start(ctx context.Context) {
 	w.ctx = ctx
 
-	w.stepMessage = &waitlivemsg.Message{}
-	w.wlm = waitlivemsg.WaitLiveMsg{}
-	w.prepare()
-	w.createStatusMessages()
+	if w.Quiet && w.IsUpload {
+		w.prepareQuiet()
+		fmt.Println("Uploading.")
+	}
+
+	if !w.Quiet {
+		w.prepareNoisy()
+		w.header.PlayText(w.getDeployingMessage())
+		w.stepMessage.StopText("")
+		w.wlm.AddMessage(w.header)
+		w.wlm.AddMessage(w.stepMessage)
+	}
+
 	w.createServicesActivitiesMap()
 }
 
-// NotifyDeploymentSucceeded is used when the deployment works correctly.
-func (w *Watch) NotifyDeploymentSucceeded() {
+func (w *Watch) notifyDeploymentSucceeded() {
 	var timeElapsed = timehelper.RoundDuration(w.wlm.Duration(), time.Second)
 
-	w.stepMessage.StopText(w.getDeployingMessage() +
-		fmt.Sprintf("\nDeployment succeeded in %s", timeElapsed))
+	w.header.StopText(figures.Tick + " " + w.getDeployingMessage())
+
+	msg := fmt.Sprintf("%s Deployment succeeded in %s", figures.Tick, timeElapsed)
+
+	if w.IsUpload && w.uploadCompleted != 0 {
+		msg = fmt.Sprintf("%s. Upload completed in %v.",
+			msg,
+			timehelper.RoundDuration(w.uploadCompleted, time.Second))
+	}
+
+	w.stepMessage.StopText(msg)
 }
 
-// NotifyDeploymentFailed tells that the deployment failed.
-func (w *Watch) NotifyDeploymentFailed() {
+func (w *Watch) notifyDeploymentFailed() {
 	var timeElapsed = timehelper.RoundDuration(w.wlm.Duration(), time.Second)
 
-	w.stepMessage.StopText(w.getDeployingMessage() +
-		fmt.Sprintf("\nDeployment failed in %s", timeElapsed))
+	w.header.StopText(figures.Cross + " " + w.getDeployingMessage())
+
+	msg := fmt.Sprintf("%s Deployment failed in %s", figures.Cross, timeElapsed)
+
+	if w.IsUpload && w.uploadCompleted != 0 {
+		msg = fmt.Sprintf("%s. Upload completed in %v.",
+			msg,
+			timehelper.RoundDuration(w.uploadCompleted, time.Second))
+	}
+
+	w.stepMessage.StopText(msg)
 }
 
 // PrintQuietDeployment prints a message telling that the deployment
 // is happening on background when the deployment is not interactive.
 func (w *Watch) PrintQuietDeployment() {
 	fmt.Printf("Deployment %v is in progress on remote %v\n",
-		color.Format(color.FgBlue, w.GroupUID),
-		color.Format(color.FgBlue, w.ConfigContext.InfrastructureDomain()))
+		color.Format(color.FgMagenta, color.Bold, w.GroupUID),
+		color.Format(color.FgMagenta, color.Bold, w.ConfigContext.InfrastructureDomain()))
 }
 
-// StopFailedUpload stops the deployment due to a failed upload error.
+// StopFailedUpload stops the deployment messages due to a failed upload error.
 func (w *Watch) StopFailedUpload() {
-	if !w.IsUpload {
+	if !w.Quiet {
 		return
 	}
 
-	w.NotifyDeploymentFailed()
-
-	if w.IsUpload {
-		w.wlm.RemoveMessage(w.uploadMessage)
-	}
+	w.notifyDeploymentFailed()
 
 	for serviceID, s := range w.sActivities {
 		s.msgWLM.PlayText(fancy.Error(w.makeServiceStatusMessage(serviceID, "Upload failed")))
@@ -107,27 +131,18 @@ func (w *Watch) StopFailedUpload() {
 	w.wlm.Stop()
 }
 
-// NotifyPreparing notifies that a package is being prepared for deployment.
-func (w *Watch) NotifyPreparing() {
-	w.stepMessage.StopText(
+// NotifyPacking notifies that a package is being prepared for deployment.
+func (w *Watch) NotifyPacking() {
+	w.header.PlayText(
 		fmt.Sprintf("Preparing deployment for project %v in %v...",
-			color.Format(color.FgBlue, w.ProjectID),
+			color.Format(color.FgMagenta, color.Bold, w.ProjectID),
 			color.Format(w.ConfigContext.Remote())),
 	)
 }
 
 // NotifyDeploying notifies that the deployment started.
 func (w *Watch) NotifyDeploying() {
-	w.stepMessage.StopText(w.getDeployingMessage())
-}
-
-// UploadEnd ends the live status update message.
-func (w *Watch) UploadEnd() {
-	if !w.IsUpload {
-		return
-	}
-
-	w.uploadMessage.End()
+	w.header.PlayText(w.getDeployingMessage())
 }
 
 // NotifyUploadComplete notifies that the upload has been completed.
@@ -136,19 +151,16 @@ func (w *Watch) NotifyUploadComplete(t time.Duration) {
 		return
 	}
 
-	w.uploadMessage.StopText(fmt.Sprintf("Upload completed in %v",
-		timehelper.RoundDuration(t, time.Second)))
-	w.uploadMessage.End()
-}
+	w.uploadCompleted = t
 
-// NotifyUploadFailed notifies that the upload has failed.
-func (w *Watch) NotifyUploadFailed() {
-	if !w.IsUpload {
-		return
+	uploadCompletedFeedback := fmt.Sprintf("Upload completed in %v.",
+		timehelper.RoundDuration(t, time.Second))
+
+	if w.Quiet {
+		fmt.Fprintln(os.Stderr, uploadCompletedFeedback)
+	} else {
+		w.stepMessage.PlayText(uploadCompletedFeedback)
 	}
-
-	w.uploadMessage.StopText(fancy.Error("Upload failed"))
-
 }
 
 type finalStates struct {
@@ -178,43 +190,25 @@ func (w *Watch) prepareQuiet() {
 }
 
 func (w *Watch) prepareNoisy() {
+	w.stepMessage = &waitlivemsg.Message{}
+	w.header = &waitlivemsg.Message{}
+	w.wlm = waitlivemsg.WaitLiveMsg{}
 	var us = uilive.New()
 	w.wlm.SetStream(us)
 	go w.wlm.Wait()
-}
-
-func (w *Watch) prepare() {
-	if w.Quiet {
-		w.prepareQuiet()
-		return
-	}
-
-	w.prepareNoisy()
-}
-
-func (w *Watch) createStatusMessages() {
-	w.stepMessage.PlayText("Initializing deployment process")
-	w.wlm.AddMessage(w.stepMessage)
-
-	const udpm = "Uploading deployment package..."
-
-	if w.Quiet {
-		fmt.Println("\n" + udpm)
-	}
-
-	if w.IsUpload {
-		w.uploadMessage = waitlivemsg.NewMessage(udpm)
-		w.wlm.AddMessage(w.uploadMessage)
-	} else {
-		w.stepMessage.PlayText(w.getDeployingMessage())
-	}
 }
 
 func (w *Watch) createServicesActivitiesMap() {
 	w.sActivities = servicesMap{}
 	for _, s := range w.Services {
 		var m = &waitlivemsg.Message{}
-		m.StopText(w.makeServiceStatusMessage(s.ServiceID, "⠂"))
+		msg := "Waiting"
+
+		if w.IsUpload {
+			msg = "Uploading"
+		}
+
+		m.PlayText(w.makeServiceStatusMessage(s.ServiceID, msg))
 
 		w.sActivities[s.ServiceID] = &serviceWatch{
 			msgWLM: m,
@@ -241,9 +235,9 @@ func (w *Watch) reorderDeployments() {
 }
 
 func (w *Watch) getDeployingMessage() string {
-	return fmt.Sprintf("Deploying services on project %v in %v...",
-		color.Format(color.FgBlue, w.ProjectID),
-		color.Format(color.FgBlue, w.ConfigContext.InfrastructureDomain()),
+	return fmt.Sprintf("Deploying services to project %v on %v",
+		color.Format(color.FgMagenta, color.Bold, w.ProjectID),
+		color.Format(color.FgMagenta, color.Bold, w.ConfigContext.InfrastructureDomain()),
 	)
 }
 
@@ -420,7 +414,11 @@ func (w *Watch) markDeploymentTransition(serviceID, activityType string) {
 
 	if !ok {
 		w.sActivities[serviceID].state = activityType
-		verbose.Debug("Unexpected Transition: from: ", old, "to: ", activityType)
+
+		if old != "" {
+			verbose.Debug("Unexpected Transition: from:", old, "to:", activityType)
+		}
+
 		return
 	}
 
@@ -439,7 +437,7 @@ func (w *Watch) updateActivitiesStates() (end bool, err error) {
 
 	activitiesClient := activities.New(w.ConfigContext)
 
-	as, err = activitiesClient.List(ctx, w.ProjectID, activities.Filter{
+	as, err = activitiesClient.List(verbosereq.ContextNoVerbose(ctx), w.ProjectID, activities.Filter{
 		GroupUID: w.GroupUID,
 	})
 	cancel()
@@ -515,9 +513,9 @@ func (w *Watch) Wait() error {
 
 	switch err := w.setFinalStates(); err {
 	case nil:
-		w.NotifyDeploymentSucceeded()
+		w.notifyDeploymentSucceeded()
 	default:
-		w.NotifyDeploymentFailed()
+		w.notifyDeploymentFailed()
 	}
 
 	w.wlm.Stop()
@@ -533,10 +531,10 @@ func (w *Watch) waitFor() error {
 		}
 
 		var end, err = w.updateActivitiesStates()
-		var stepText = w.stepMessage.GetText()
+		var stepText = w.header.GetText()
 
 		if err != nil {
-			w.stepMessage.StopText(updateMessageErrorStringCounter(stepText))
+			w.header.PlayText(updateMessageErrorStringCounter(stepText))
 			verbose.Debug(err)
 		}
 
@@ -545,7 +543,7 @@ func (w *Watch) waitFor() error {
 		}
 
 		if err == nil && strings.Contains(stepText, "retrying to get status #") {
-			w.stepMessage.StopText(clearMessageErrorStringCounter(stepText))
+			w.header.PlayText(clearMessageErrorStringCounter(stepText))
 		}
 
 		if end {

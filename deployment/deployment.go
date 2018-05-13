@@ -288,7 +288,7 @@ func (d *Deploy) do() (err error) {
 }
 
 func (d *Deploy) preparePackage() (err error) {
-	d.watch.NotifyPreparing()
+	d.watch.NotifyPacking()
 
 	if hasGit := existsDependency("git"); !hasGit {
 		return errors.New("git was not found on your system: please visit https://git-scm.com/")
@@ -326,9 +326,7 @@ func getWeExecutable() (string, error) {
 }
 
 func (d *Deploy) uploadPackage() (err error) {
-	defer d.watch.UploadEnd()
 	if d.groupUID, err = d.Push(); err != nil {
-		d.watch.NotifyUploadFailed()
 		if _, ok := err.(*exec.ExitError); ok {
 			return errwrap.Wrapf("deployment push failed", err)
 		}
