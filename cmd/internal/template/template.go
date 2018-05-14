@@ -65,13 +65,11 @@ func printCommandsAndFlags(cmd *cobra.Command) string {
 
 	up.buf = new(bytes.Buffer)
 	up.tw = formatter.NewTabWriter(up.buf)
-	up.printCommands()
-	up.printFlags()
-	_ = up.tw.Flush()
+	up.printAll()
 	return up.buf.String()
 }
 
-func (up *usagePrinter) printCommands() {
+func (up *usagePrinter) printAll() {
 	var cmdPart = " [command]"
 
 	if len(up.cs) == 0 {
@@ -89,14 +87,25 @@ func (up *usagePrinter) printCommands() {
 
 	fmt.Fprintf(up.buf, "%s%s\n", color.Format(color.Reset, "!"), color.Format(color.FgHiBlack, usage))
 
-	if up.cmd.Example != "" {
-		fmt.Fprintf(up.buf,
-			"%s%s\n\n",
-			color.Format(color.FgHiYellow, "  Examples:\n"),
-			up.cmd.Example,
-		)
+	up.printCommands()
+	up.printFlags()
+	_ = up.tw.Flush()
+	up.printExamples()
+}
+
+func (up *usagePrinter) printExamples() {
+	if up.cmd.Example == "" {
+		return
 	}
 
+	fmt.Fprintf(up.buf,
+		"\n%s%s\n\n",
+		color.Format(color.FgHiBlack, "  Examples\n"),
+		up.cmd.Example,
+	)
+}
+
+func (up *usagePrinter) printCommands() {
 	if len(up.cs) == 0 {
 		return
 	}
