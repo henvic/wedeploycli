@@ -18,6 +18,7 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/fancy"
+	"github.com/wedeploy/cli/figures"
 	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/loginserver"
 	"github.com/wedeploy/cli/status"
@@ -265,7 +266,7 @@ func (a *Authentication) success(username string) {
 	var remote = conf.Remotes[a.wectx.Remote()]
 
 	var buf = &bytes.Buffer{}
-	fmt.Fprintf(buf, "Authentication completed in %s [2/2]\n", timehelper.RoundDuration(duration, time.Second))
+	fmt.Fprintf(buf, "%s Authentication completed in %s [2/2]\n", figures.Tick, timehelper.RoundDuration(duration, time.Second))
 	fmt.Fprintf(buf, "You're logged in as \"%s\" on \"%s\".\n",
 		color.Format(color.Reset, color.Bold, username),
 		color.Format(color.Reset, color.Bold, remote.Infrastructure))
