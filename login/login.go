@@ -65,14 +65,7 @@ type Authentication struct {
 }
 
 func (a *Authentication) basicAuthLogin(ctx context.Context) error {
-	var (
-		username string
-		password string
-		token    string
-		err      error
-
-		remoteAddress = a.wectx.InfrastructureDomain()
-	)
+	var remoteAddress = a.wectx.InfrastructureDomain()
 
 	fmt.Println(fancy.Info("Alert     You need a WeDeploy password for authenticating without opening your browser." +
 		"\n          If you created your WeDeploy account by connecting to your Google or GitHub account," +
@@ -82,7 +75,10 @@ func (a *Authentication) basicAuthLogin(ctx context.Context) error {
 
 	fmt.Println(fancy.Question("Type your credentials for logging in. Your email: ") + color.Format(color.FgHiBlack, "[ex: user@domain.com]"))
 promptForUsername:
-	if username, err = fancy.Prompt(); err != nil {
+
+	username, err := fancy.Prompt()
+
+	if err != nil {
 		return err
 	}
 
@@ -93,7 +89,9 @@ promptForUsername:
 
 	fmt.Print(fancy.Question("Great! Now, your password:\n"))
 promptForPassword:
-	if password, err = fancy.HiddenPrompt(); err != nil {
+	password, err := fancy.HiddenPrompt()
+
+	if err != nil {
 		return err
 	}
 
@@ -103,6 +101,10 @@ promptForPassword:
 		goto promptForPassword
 	}
 
+	return a.loginWithCredentials(ctx, username, password)
+}
+
+func (a *Authentication) loginWithCredentials(ctx context.Context, username, password string) error {
 	a.wlm = waitlivemsg.New(nil)
 	a.msg = waitlivemsg.NewMessage("Authenticating [1/2]")
 	a.wlm.AddMessage(a.msg)
@@ -115,7 +117,7 @@ promptForPassword:
 		Context:  a.wectx,
 	}
 
-	token, err = ba.GetOAuthToken(ctx)
+	var token, err = ba.GetOAuthToken(ctx)
 	a.maybePrintReceivedToken(token)
 
 	if err != nil {
@@ -153,10 +155,20 @@ skipToStdin:
 		return false, nil
 	}
 
-	token, err := usertoken.ParseUnsignedJSONWebToken(maybe)
+	maybe = strings.TrimSuffix(maybe, "\n")
+
+	if sep := strings.Index(maybe, " "); sep != -1 {
+		return true, a.loginWithCredentials(context.Background(), maybe[:sep], maybe[sep+1:])
+	}
+
+	return true, a.loginWithToken(maybe)
+}
+
+func (a *Authentication) loginWithToken(token string) error {
+	wt, err := usertoken.ParseUnsignedJSONWebToken(token)
 
 	if err != nil {
-		return true, err
+		return err
 	}
 
 	a.wlm = waitlivemsg.New(nil)
@@ -164,7 +176,7 @@ skipToStdin:
 	a.wlm.AddMessage(a.msg)
 	go a.wlm.Wait()
 	defer a.wlm.Stop()
-	return true, a.saveUser(token.Email, maybe)
+	return a.saveUser(wt.Email, token)
 }
 
 // Run authentication process
