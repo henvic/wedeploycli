@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/url"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -20,6 +21,7 @@ import (
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/figures"
 	"github.com/wedeploy/cli/formatter"
+	"github.com/wedeploy/cli/isterm"
 	"github.com/wedeploy/cli/loginserver"
 	"github.com/wedeploy/cli/status"
 	"github.com/wedeploy/cli/timehelper"
@@ -129,6 +131,20 @@ func (a *Authentication) loginWithCredentials(ctx context.Context, username, pas
 }
 
 func (a *Authentication) tryStdinToken() (bool, error) {
+	// trade-off: --no-tty is required for piping tokens on some Windows """shell subsystems"""
+	// see issue https://github.com/wedeploy/cli/issues/435
+	// error first appeared in commit 4d217d2324825714bf6fa35d988502692f0d7925
+	if runtime.GOOS == "windows" &&
+		(os.Getenv("OSTYPE") == "cygwin" ||
+			strings.Contains(os.Getenv("MSYSTEM_CHOST"), "mingw") ||
+			strings.Contains(os.Getenv("MINGW_CHOST"), "mingw")) {
+		verbose.Debug("INFO: --no-tty is required to pipe credentials values such as tokens using STDIN on some Windows environments")
+
+		if !isterm.NoTTY {
+			return false, nil
+		}
+	}
+
 	file := os.Stdin
 	fi, err := file.Stat()
 
