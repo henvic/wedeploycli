@@ -100,4 +100,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "May 18th, 2018",
 		Description: `Added support for piping username and password for "we login". Minor improvements.`,
 	},
+	ReleaseNote{
+		Version:     "1.4.9",
+		Date:        "May 30th, 2018",
+		Description: `Fixing panic when using "we deploy --quiet". Fixing "we login" when using Git bash for Windows.`,
+	},
 }
