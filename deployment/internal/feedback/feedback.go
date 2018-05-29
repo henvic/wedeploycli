@@ -161,7 +161,7 @@ func (w *Watch) NotifyUploadComplete(t time.Duration) {
 		timehelper.RoundDuration(t, time.Second))
 
 	if w.Quiet {
-		fmt.Fprintln(os.Stderr, uploadCompletedFeedback)
+		_, _ = fmt.Fprintln(os.Stderr, uploadCompletedFeedback)
 	} else {
 		w.stepMessage.PlayText(uploadCompletedFeedback)
 	}
@@ -571,7 +571,7 @@ func (w *Watch) maybeOpenLogs() {
 
 	switch yes, err := fancy.Boolean("Open browser to check the logs?"); {
 	case err != nil:
-		fmt.Fprintf(os.Stderr, "%v", err)
+		_, _ = fmt.Fprintf(os.Stderr, "%v", err)
 		fallthrough
 	case !yes:
 		return

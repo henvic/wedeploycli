@@ -169,7 +169,7 @@ func Info() {
 		version += "\nbuild:" + defaults.Build
 	}
 
-	fmt.Fprintln(os.Stderr, color.Format(color.FgRed, panicTemplate,
+	_, _ = fmt.Fprintln(os.Stderr, color.Format(color.FgRed, panicTemplate,
 		version,
 		time.Now().Format(time.RubyDate), systemInfo()))
 }

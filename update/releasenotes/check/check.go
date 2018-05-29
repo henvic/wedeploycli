@@ -9,7 +9,7 @@ import (
 
 func main() {
 	if len(os.Args) != 2 {
-		fmt.Fprint(os.Stderr, "syntax: check <version>\n")
+		_, _ = fmt.Fprint(os.Stderr, "syntax: check <version>\n")
 		os.Exit(2)
 	}
 
@@ -21,6 +21,6 @@ func main() {
 		}
 	}
 
-	fmt.Fprintf(os.Stderr, "update release note not found for version %v\n", v)
+	_, _ = fmt.Fprintf(os.Stderr, "update release note not found for version %v\n", v)
 	os.Exit(1)
 }

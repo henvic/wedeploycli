@@ -49,7 +49,7 @@ func (c *Command) Show(ctx context.Context) error {
 	c.Domains = service.CustomDomains
 
 	if len(c.Domains) == 0 {
-		fmt.Fprintf(os.Stderr, "No custom domains found.\n")
+		_, _ = fmt.Fprintf(os.Stderr, "No custom domains found.\n")
 		return nil
 	}
 

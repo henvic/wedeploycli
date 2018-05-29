@@ -46,7 +46,7 @@ func verifyAlreadyLoggedIn(wectx config.Context) error {
 	af, ok := err.(*apihelper.APIFault)
 
 	if ok && af.Status == http.StatusUnauthorized {
-		fmt.Fprintln(os.Stderr, fancy.Error(
+		_, _ = fmt.Fprintln(os.Stderr, fancy.Error(
 			fmt.Sprintf(
 				`Validating current token for %v on %v (%v) failed`,
 				wectx.Username(),

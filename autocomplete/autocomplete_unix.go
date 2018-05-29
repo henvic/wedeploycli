@@ -63,17 +63,17 @@ func autoInstall() {
 	case os.IsNotExist(err):
 		install()
 	case err != nil:
-		fmt.Fprintf(os.Stderr, "Autocomplete autoinstall error: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Autocomplete autoinstall error: %v\n", err)
 	}
 }
 
 func install() {
 	if err := ioutil.WriteFile(scriptPath, []byte(script), 0644); err != nil {
-		fmt.Fprintf(os.Stderr, "Saving autocomplete script error: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Saving autocomplete script error: %v\n", err)
 	}
 
 	if err := run(add); err != nil {
-		fmt.Fprintf(os.Stderr, "Error copying autocomplete scripts: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Error copying autocomplete scripts: %v\n", err)
 	}
 }
 

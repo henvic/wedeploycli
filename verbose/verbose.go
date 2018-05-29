@@ -71,7 +71,7 @@ func Debug(a ...interface{}) {
 	}
 
 	if !Deferred {
-		fmt.Fprintln(ErrStream, a...)
+		_, _ = fmt.Fprintln(ErrStream, a...)
 		return
 	}
 
@@ -88,7 +88,7 @@ func PrintDeferred() {
 
 	bufDeferredVerboseMutex.Lock()
 	if bufDeferredVerbose.Len() != 0 {
-		fmt.Fprintf(ErrStream, "\n%v\n", color.Format(color.BgHiBlue, " Deferred verbose messages below "))
+		_, _ = fmt.Fprintf(ErrStream, "\n%v\n", color.Format(color.BgHiBlue, " Deferred verbose messages below "))
 		_, _ = bufDeferredVerbose.WriteTo(ErrStream)
 	}
 	bufDeferredVerboseMutex.Unlock()

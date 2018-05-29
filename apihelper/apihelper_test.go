@@ -75,7 +75,7 @@ func TestAuthGet(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/posts/1", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		fmt.Fprintf(w, `{
+		_, _ = fmt.Fprintf(w, `{
     "id": "1234",
     "title": "once upon a time",
     "body": "to be written",
@@ -266,7 +266,7 @@ func TestDecodeJSON(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/posts/1", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		fmt.Fprintf(w, `{
+		_, _ = fmt.Fprintf(w, `{
     "id": "1234",
     "title": "once upon a time",
     "body": "to be written",
@@ -321,7 +321,7 @@ func TestDecodeJSONInvalidContentType(t *testing.T) {
 	defer servertest.Teardown()
 
 	servertest.Mux.HandleFunc("/posts/1", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, `{
+		_, _ = fmt.Fprintf(w, `{
     "id": "1234",
     "title": "once upon a time",
     "body": "to be written",
@@ -362,7 +362,7 @@ func TestDecodeJSONFailure(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/posts/1/comments", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		fmt.Fprintf(w, `[1234, 2010]`)
+		_, _ = fmt.Fprintf(w, `[1234, 2010]`)
 	})
 
 	var post postMock
@@ -528,7 +528,7 @@ func TestRequestVerboseFeedback(t *testing.T) {
 	servertest.Mux.HandleFunc("/foo", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("X-Test-Multiple", "a")
 		w.Header().Add("X-Test-Multiple", "b")
-		fmt.Fprintf(w, "Hello")
+		_, _ = fmt.Fprintf(w, "Hello")
 	})
 
 	var request = (&Client{conf}).URL(context.Background(), "/foo")
@@ -789,7 +789,7 @@ func TestRequestVerboseFeedbackJSONResponse(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/foo", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"Hello": "World"}`)
+		_, _ = fmt.Fprintf(w, `{"Hello": "World"}`)
 	})
 
 	var request = (&Client{conf}).URL(context.Background(), "/foo")
@@ -1002,7 +1002,7 @@ func TestValidateUnexpectedResponse(t *testing.T) {
 	servertest.Mux.HandleFunc("/foo/bah", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(403)
-		fmt.Fprintf(w, `{
+		_, _ = fmt.Fprintf(w, `{
     "status": 403,
     "message": "Forbidden",
     "errors": [
@@ -1043,7 +1043,7 @@ func TestValidateUnexpectedNonJSONResponse(t *testing.T) {
 	servertest.Mux.HandleFunc("/foo/bah", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(403)
-		fmt.Fprintf(w, `x`)
+		_, _ = fmt.Fprintf(w, `x`)
 	})
 
 	bufErrStream.Reset()
@@ -1079,7 +1079,7 @@ func TestValidateUnexpectedResponseCustom(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/foo/bah", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(403)
-		fmt.Fprintf(w, `Error message.`)
+		_, _ = fmt.Fprintf(w, `Error message.`)
 	})
 
 	var want = tdata.FromFile("mocks/unexpected_response_error")

@@ -80,7 +80,7 @@ func (c *Command) Show(ctx context.Context, filterEnvKeys ...string) error {
 	}
 
 	if len(c.Envs) == 0 {
-		fmt.Fprintf(os.Stderr, "No environment variable found.\n")
+		_, _ = fmt.Fprintf(os.Stderr, "No environment variable found.\n")
 		return nil
 	}
 
@@ -264,7 +264,7 @@ func filterEmptyEnvValues(envKeys []string) []string {
 // EnvIsDeprecatedWarning is used to print a warning when the deprecated "we env" command is used
 func EnvIsDeprecatedWarning(cmd *cobra.Command, args []string) {
 	if os.Args[1:][0] == "env" {
-		fmt.Fprintln(os.Stderr, color.Format(color.FgHiRed,
+		_, _ = fmt.Fprintln(os.Stderr, color.Format(color.FgHiRed,
 			`"we env" is deprecated: use "%s" next time.`, cmd.UseLine()))
 	}
 }

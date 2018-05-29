@@ -37,7 +37,7 @@ func ToFile(filename string, content string) {
 // ServerHandler serves string content
 func ServerHandler(content string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "%v", content)
+		_, _ = fmt.Fprintf(w, "%v", content)
 	}
 }
 
@@ -45,14 +45,14 @@ func ServerHandler(content string) func(w http.ResponseWriter, r *http.Request) 
 func ServerJSONHandler(content string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		fmt.Fprintf(w, "%v", content)
+		_, _ = fmt.Fprintf(w, "%v", content)
 	}
 }
 
 // ServerFileHandler serves static content from a file
 func ServerFileHandler(filename string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "%v", FromFile(filename))
+		_, _ = fmt.Fprintf(w, "%v", FromFile(filename))
 	}
 }
 
@@ -60,6 +60,6 @@ func ServerFileHandler(filename string) func(w http.ResponseWriter, r *http.Requ
 func ServerJSONFileHandler(filename string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		fmt.Fprintf(w, "%v", FromFile(filename))
+		_, _ = fmt.Fprintf(w, "%v", FromFile(filename))
 	}
 }

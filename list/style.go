@@ -13,7 +13,7 @@ import (
 
 // Printf list
 func (l *List) Printf(format string, a ...interface{}) {
-	fmt.Fprintf(l.w, format, a...)
+	_, _ = fmt.Fprintf(l.w, format, a...)
 }
 
 var projectsHeaders = []string{

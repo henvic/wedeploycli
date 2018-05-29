@@ -87,7 +87,7 @@ func GetExitCode(err error) int {
 		}
 	}
 
-	fmt.Fprintln(errStream, err.Error())
+	_, _ = fmt.Fprintln(errStream, err.Error())
 	panic(ErrExitCodeNotAvailable)
 }
 

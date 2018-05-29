@@ -85,7 +85,7 @@ promptForUsername:
 	}
 
 	if validEmailAddress, invalidEmailAddressMsg := validateEmail(username); !validEmailAddress {
-		fmt.Fprintf(os.Stderr, "%s\n", fancy.Error(invalidEmailAddressMsg))
+		_, _ = fmt.Fprintf(os.Stderr, "%s\n", fancy.Error(invalidEmailAddressMsg))
 		goto promptForUsername
 	}
 
@@ -99,7 +99,7 @@ promptForPassword:
 
 	fmt.Println(color.Format(color.FgHiBlack, "●●●●●●●●●●"))
 	if validPassword, invalidPasswordMsg := validatePassword(password); !validPassword {
-		fmt.Fprintf(os.Stderr, "%s\n", fancy.Error(invalidPasswordMsg))
+		_, _ = fmt.Fprintf(os.Stderr, "%s\n", fancy.Error(invalidPasswordMsg))
 		goto promptForPassword
 	}
 
@@ -294,8 +294,8 @@ func (a *Authentication) success(username string) {
 	var remote = conf.Remotes[a.wectx.Remote()]
 
 	var buf = &bytes.Buffer{}
-	fmt.Fprintf(buf, "%s Authentication completed in %s [2/2]\n", figures.Tick, timehelper.RoundDuration(duration, time.Second))
-	fmt.Fprintf(buf, "You're logged in as \"%s\" on \"%s\".\n",
+	_, _ = fmt.Fprintf(buf, "%s Authentication completed in %s [2/2]\n", figures.Tick, timehelper.RoundDuration(duration, time.Second))
+	_, _ = fmt.Fprintf(buf, "You're logged in as \"%s\" on \"%s\".\n",
 		color.Format(color.Reset, color.Bold, username),
 		color.Format(color.Reset, color.Bold, remote.Infrastructure))
 
@@ -306,14 +306,14 @@ func (a *Authentication) success(username string) {
 }
 
 func (a *Authentication) printTipCommands(buf *bytes.Buffer) {
-	fmt.Fprintln(buf, fancy.Info("See some of the useful commands you can start using on the WeDeploy CLI.\n"))
+	_, _ = fmt.Fprintln(buf, fancy.Info("See some of the useful commands you can start using on the WeDeploy CLI.\n"))
 	tw := formatter.NewTabWriter(buf)
-	fmt.Fprintln(tw, color.Format(color.FgHiBlack, "  Command\t     Description"))
-	fmt.Fprintln(tw, "  we\tShow list of all commands available in WeDeploy CLI")
-	fmt.Fprintln(tw, "  we deploy\tDeploy your services")
-	fmt.Fprintln(tw, "  we docs\tOpen docs on your browser")
+	_, _ = fmt.Fprintln(tw, color.Format(color.FgHiBlack, "  Command\t     Description"))
+	_, _ = fmt.Fprintln(tw, "  we\tShow list of all commands available in WeDeploy CLI")
+	_, _ = fmt.Fprintln(tw, "  we deploy\tDeploy your services")
+	_, _ = fmt.Fprintln(tw, "  we docs\tOpen docs on your browser")
 	_ = tw.Flush()
-	fmt.Fprint(buf, fancy.Info("\nType a command and press Enter to execute it."))
+	_, _ = fmt.Fprint(buf, fancy.Info("\nType a command and press Enter to execute it."))
 }
 
 func (a *Authentication) saveUser(username, token string) (err error) {

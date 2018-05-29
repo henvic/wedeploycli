@@ -50,9 +50,9 @@ func TestRoundDurationText(t *testing.T) {
 	var b bytes.Buffer
 	samples := []time.Duration{9.63e6, 1.23456789e9, 1.5e9, 1.4e9, -1.4e9, -1.5e9, 8.91234e9, 34.56789e9, 12345.6789e9}
 	format := "% 13s % 13s % 13s % 13s % 13s % 13s % 13s\n"
-	fmt.Fprintf(&b, format, "duration", "ms", "0.5s", "s", "10s", "m", "h")
+	_, _ = fmt.Fprintf(&b, format, "duration", "ms", "0.5s", "s", "10s", "m", "h")
 	for _, d := range samples {
-		fmt.Fprintf(
+		_, _ = fmt.Fprintf(
 			&b,
 			format,
 			d,

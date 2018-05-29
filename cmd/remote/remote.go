@@ -72,13 +72,13 @@ func remoteRun(cmd *cobra.Command, args []string) error {
 		var key, _ = remotes[k]
 		var infrastructure = key.Infrastructure
 
-		fmt.Fprintf(w, "%s\t%s", k, infrastructure)
+		_, _ = fmt.Fprintf(w, "%s\t%s", k, infrastructure)
 
 		if k == conf.DefaultRemote {
-			fmt.Fprintf(w, " (default)")
+			_, _ = fmt.Fprintf(w, " (default)")
 		}
 
-		fmt.Fprintf(w, "\n")
+		_, _ = fmt.Fprintf(w, "\n")
 	}
 
 	_ = w.Flush()
@@ -138,12 +138,12 @@ func removeRun(cmd *cobra.Command, args []string) error {
 	remotes.Del(name)
 
 	if name == defaults.CloudRemote {
-		fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Removed default cloud remote "wedeploy" will be recreated with its default value`))
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Removed default cloud remote "wedeploy" will be recreated with its default value`))
 	}
 
 	if name == conf.DefaultRemote && name != defaults.CloudRemote {
 		conf.DefaultRemote = defaults.CloudRemote
-		fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Default remote reset to "wedeploy"`))
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Default remote reset to "wedeploy"`))
 	}
 
 	return conf.Save()

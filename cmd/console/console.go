@@ -37,7 +37,7 @@ func consoleRun(cmd *cobra.Command, args []string) error {
 	err := browser.OpenURL(link)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to open %v", link)
+		_, _ = fmt.Fprintf(os.Stderr, "Failed to open %v", link)
 		return err
 	}
 

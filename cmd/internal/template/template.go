@@ -85,7 +85,7 @@ func (up *usagePrinter) printAll() {
 		usage += " [<args>]"
 	}
 
-	fmt.Fprintf(up.buf, "%s%s\n", color.Format(color.Reset, "!"), color.Format(color.FgHiBlack, usage))
+	_, _ = fmt.Fprintf(up.buf, "%s%s\n", color.Format(color.Reset, "!"), color.Format(color.FgHiBlack, usage))
 
 	up.printCommands()
 	up.printFlags()
@@ -98,7 +98,7 @@ func (up *usagePrinter) printExamples() {
 		return
 	}
 
-	fmt.Fprintf(up.buf,
+	_, _ = fmt.Fprintf(up.buf,
 		"\n%s%s\n\n",
 		color.Format(color.FgHiBlack, "  Examples\n"),
 		up.cmd.Example,
@@ -110,15 +110,15 @@ func (up *usagePrinter) printCommands() {
 		return
 	}
 
-	fmt.Fprint(up.tw, color.Format(color.FgHiBlack, "  Command\t"+colorSpacingOffset()+"Description")+"\n")
+	_, _ = fmt.Fprint(up.tw, color.Format(color.FgHiBlack, "  Command\t"+colorSpacingOffset()+"Description")+"\n")
 
 	for _, c := range up.cs {
 		if up.longHelp || c.IsAvailableCommand() {
-			fmt.Fprintf(up.tw, "  %v\t%v\n", c.Name(), c.Short)
+			_, _ = fmt.Fprintf(up.tw, "  %v\t%v\n", c.Name(), c.Short)
 		}
 	}
 
-	fmt.Fprintln(up.tw, "\t") // \t here keeps the alignment between commands and flags
+	_, _ = fmt.Fprintln(up.tw, "\t") // \t here keeps the alignment between commands and flags
 }
 
 func (up *usagePrinter) printFlags() {
@@ -129,11 +129,11 @@ func (up *usagePrinter) printFlags() {
 	})
 
 	if up.showFlagsParamField {
-		fmt.Fprintf(up.tw, "%s\n",
+		_, _ = fmt.Fprintf(up.tw, "%s\n",
 			color.Format(color.FgHiBlack,
 				"  Flag\t"+colorSpacingOffset()+"Parameter\t"+colorSpacingOffset()+"Description"))
 	} else {
-		fmt.Fprintf(up.tw, "%s\n",
+		_, _ = fmt.Fprintf(up.tw, "%s\n",
 			color.Format(color.FgHiBlack,
 				"  Flag\t"+colorSpacingOffset()+"Description"))
 	}
@@ -159,7 +159,7 @@ func (up *usagePrinter) printFlags() {
 	})
 
 	var middle = up.useFlagsHelpDescription()
-	fmt.Fprintf(up.tw, "%s%s%s", string(begin), string(middle), string(end))
+	_, _ = fmt.Fprintf(up.tw, "%s%s%s", string(begin), string(middle), string(end))
 }
 
 func (up *usagePrinter) useFlagsHelpDescriptionFiltered(list []string) []byte {

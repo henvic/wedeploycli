@@ -28,7 +28,7 @@ func maybeSetCustomTimezone() {
 	l, err := time.LoadLocation(timezone)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failure setting a custom timezone: %+v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "failure setting a custom timezone: %+v\n", err)
 		return
 	}
 
@@ -46,7 +46,7 @@ func main() {
 		var err = gitcredentialhelper.Run(args)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
 			os.Exit(1)
 		}
 

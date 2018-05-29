@@ -62,7 +62,7 @@ func ApplyTransitions(pastVersion string) {
 				description,
 				pastVersion))
 			if err := t.Apply(); err != nil {
-				fmt.Fprintf(os.Stderr, "Error trying to apply transition \"%v\" for past version %v: %v\n",
+				_, _ = fmt.Fprintf(os.Stderr, "Error trying to apply transition \"%v\" for past version %v: %v\n",
 					description,
 					pastVersion,
 					err)

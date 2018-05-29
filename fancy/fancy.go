@@ -17,10 +17,10 @@ func Question(a interface{}) string {
 	var parts = strings.Split(fmt.Sprintf("%v", a), "\n")
 	var buf = &bytes.Buffer{}
 	for i, p := range parts {
-		fmt.Fprint(buf, q+color.Format(color.Reset, p))
+		_, _ = fmt.Fprint(buf, q+color.Format(color.Reset, p))
 
 		if i < len(parts)-1 {
-			fmt.Fprintln(buf, "")
+			_, _ = fmt.Fprintln(buf, "")
 		}
 	}
 
@@ -85,9 +85,9 @@ func Boolean(question string) (yes bool, err error) {
 		case "n", "no", "nah", "nope":
 			return false, nil
 		case "":
-			fmt.Fprintln(os.Stderr, Error("Select an option."))
+			_, _ = fmt.Fprintln(os.Stderr, Error("Select an option."))
 		default:
-			fmt.Fprintln(os.Stderr,
+			_, _ = fmt.Fprintln(os.Stderr,
 				Error(`No valid answer was found for "`+
 					color.Escape(choice)+
 					`"`))
@@ -115,7 +115,7 @@ func (o *Options) Add(name, description string) {
 func (o *Options) List() string {
 	var buf = &bytes.Buffer{}
 	for _, option := range o.list {
-		fmt.Fprintf(buf, "%s %s\n", color.Format(color.FgHiBlack, color.Bold, strings.ToLower(option.name)), option.description)
+		_, _ = fmt.Fprintf(buf, "%s %s\n", color.Format(color.FgHiBlack, color.Bold, strings.ToLower(option.name)), option.description)
 	}
 
 	return buf.String()
@@ -153,9 +153,9 @@ func (o *Options) Ask(q string) (string, error) {
 
 		switch len(choice) {
 		case 0:
-			fmt.Fprintln(os.Stderr, Error("Select an option."))
+			_, _ = fmt.Fprintln(os.Stderr, Error("Select an option."))
 		default:
-			fmt.Fprintln(os.Stderr,
+			_, _ = fmt.Fprintln(os.Stderr,
 				Error(`No valid answer was found for "`+
 					color.Escape(choice)+
 					`"`))

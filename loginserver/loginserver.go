@@ -147,7 +147,7 @@ func safeErrorHandler(w http.ResponseWriter, body string, code int) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 
 	w.WriteHeader(code)
-	fmt.Fprintf(w, safeErrorPageTemplate, body)
+	_, _ = fmt.Fprintf(w, safeErrorPageTemplate, body)
 }
 
 func (s *Service) homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -162,7 +162,7 @@ func (s *Service) homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintln(w, redirectPage)
+	_, _ = fmt.Fprintln(w, redirectPage)
 }
 
 // ErrSignUpEmailConfirmation tells that sign up was canceled because user is signing up

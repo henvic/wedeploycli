@@ -136,7 +136,7 @@ func (p *Process) PipeStdout() error {
 // PipeStderr from UNIX socket to websocket
 func (p *Process) PipeStderr() error {
 	return p.shell.On("stderr", func(content string) {
-		fmt.Fprint(os.Stderr, content)
+		_, _ = fmt.Fprint(os.Stderr, content)
 	})
 }
 

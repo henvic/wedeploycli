@@ -47,26 +47,26 @@ func main() {
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = buf
 	if err := cmd.Run(); err != nil {
-		fmt.Fprintf(os.Stderr, "%+v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "%+v\n", err)
 		os.Exit(1)
 	}
 
 	buf.WriteString("\n\n")
 
 	if err := readExtraLicenses(buf); err != nil {
-		fmt.Fprintf(os.Stderr, "%+v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "%+v\n", err)
 		os.Exit(1)
 	}
 
 	var text = buf.String()
 
 	if err := saveCode(text); err != nil {
-		fmt.Fprintf(os.Stderr, "%+v", err)
+		_, _ = fmt.Fprintf(os.Stderr, "%+v", err)
 		os.Exit(1)
 	}
 
 	if err := saveThirdPartyFile(text); err != nil {
-		fmt.Fprintf(os.Stderr, "%+v", err)
+		_, _ = fmt.Fprintf(os.Stderr, "%+v", err)
 		os.Exit(1)
 	}
 }

@@ -228,11 +228,11 @@ func PrettyPrintList(activities []Activity) {
 		var msg, err = getActivityMessage(a, activityTemplates)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%+v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "%+v\n", err)
 			continue
 		}
 
-		fmt.Fprintf(os.Stdout, "%v\n", msg)
+		fmt.Printf("%v\n", msg)
 	}
 }
 

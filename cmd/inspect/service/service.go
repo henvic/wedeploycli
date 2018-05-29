@@ -3,7 +3,6 @@ package inspectservice
 import (
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -58,6 +57,6 @@ func runE(cmd *cobra.Command, args []string) (err error) {
 		return inspectErr
 	}
 
-	fmt.Fprintf(os.Stdout, "%v\n", inspectMsg)
+	fmt.Printf("%v\n", inspectMsg)
 	return nil
 }

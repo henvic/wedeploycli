@@ -197,7 +197,7 @@ func Watch(ctx context.Context, wectx config.Context, watcher *Watcher) {
 	go func() {
 		<-sigs
 		outStreamMutex.Lock()
-		fmt.Fprintln(outStream, "")
+		_, _ = fmt.Fprintln(outStream, "")
 		outStreamMutex.Unlock()
 		watcher.Stop()
 		done <- true
@@ -254,7 +254,7 @@ func printList(list []Log) {
 		ts := color.Format(color.FgWhite, getTimestamp(log.Timestamp))
 
 		outStreamMutex.Lock()
-		fmt.Fprintf(outStream, "%v %v %v\n", ts, fd, log.Message)
+		_, _ = fmt.Fprintf(outStream, "%v %v %v\n", ts, fd, log.Message)
 		outStreamMutex.Unlock()
 	}
 }
@@ -279,7 +279,7 @@ func (w *Watcher) pool() {
 
 	if err != nil {
 		errStreamMutex.Lock()
-		fmt.Fprintf(errStream, "%v\n", errorhandler.Handle(err))
+		_, _ = fmt.Fprintf(errStream, "%v\n", errorhandler.Handle(err))
 		errStreamMutex.Unlock()
 		return
 	}
@@ -297,7 +297,7 @@ func (w *Watcher) pool() {
 
 	if err := w.incSinceArgument(list); err != nil {
 		errStreamMutex.Lock()
-		fmt.Fprintf(errStream, "%v\n", errorhandler.Handle(err))
+		_, _ = fmt.Fprintf(errStream, "%v\n", errorhandler.Handle(err))
 		errStreamMutex.Unlock()
 		return
 	}

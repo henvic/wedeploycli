@@ -53,7 +53,7 @@ func TestRequestVerboseFeedback(t *testing.T) {
 	servertest.Mux.HandleFunc("/foo", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("X-Test-Multiple", "a")
 		w.Header().Add("X-Test-Multiple", "b")
-		fmt.Fprintf(w, "Hello")
+		_, _ = fmt.Fprintf(w, "Hello")
 	})
 
 	var request = wedeploy.URL("http://www.example.com/foo")
@@ -100,7 +100,7 @@ func TestRequestVerboseFeedbackContextNoVerbose(t *testing.T) {
 	servertest.Mux.HandleFunc("/foo", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("X-Test-Multiple", "a")
 		w.Header().Add("X-Test-Multiple", "b")
-		fmt.Fprintf(w, "Hello")
+		_, _ = fmt.Fprintf(w, "Hello")
 	})
 
 	var request = wedeploy.URL("http://www.example.com/foo")
@@ -331,7 +331,7 @@ func TestRequestVerboseFeedbackJSONResponse(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/foo", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"Hello": "World"}`)
+		_, _ = fmt.Fprintf(w, `{"Hello": "World"}`)
 	})
 
 	var request = wedeploy.URL("http://www.example.com/foo")
@@ -391,7 +391,7 @@ func TestRequestVerboseFeedbackJSONResponseWithBlacklistedHeaders(t *testing.T) 
 		w.Header().Add("Cookie", "foo2=bar2")
 		w.Header().Set("Proxy-Authorization", "foo")
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"Hello": "World"}`)
+		_, _ = fmt.Fprintf(w, `{"Hello": "World"}`)
 	})
 
 	var request = wedeploy.URL("http://www.example.com/foo")
@@ -461,7 +461,7 @@ func TestRequestVerboseFeedbackJSONResponseWithBlacklistedHeadersUnsafe(t *testi
 		w.Header().Add("Cookie", "foo2=bar2")
 		w.Header().Set("Proxy-Authorization", "foo")
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"Hello": "World"}`)
+		_, _ = fmt.Fprintf(w, `{"Hello": "World"}`)
 	})
 
 	var request = wedeploy.URL("http://www.example.com/foo")
@@ -520,7 +520,7 @@ func TestRequestVerboseFeedbackInvalidJSONResponse(t *testing.T) {
 
 	servertest.Mux.HandleFunc("/foo", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"Hello": "World!"`)
+		_, _ = fmt.Fprintf(w, `{"Hello": "World!"`)
 	})
 
 	var request = wedeploy.URL("http://www.example.com/foo")

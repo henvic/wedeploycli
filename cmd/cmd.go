@@ -103,7 +103,7 @@ func (m *mainProgram) setupMetrics() {
 }
 
 func printError(e error) {
-	fmt.Fprintf(os.Stderr, "%v\n", fancy.Error(e))
+	_, _ = fmt.Fprintf(os.Stderr, "%v\n", fancy.Error(e))
 
 	var aft = errwrap.GetType(e, &apihelper.APIFault{})
 
@@ -117,7 +117,7 @@ func printError(e error) {
 		return
 	}
 
-	fmt.Fprintf(os.Stderr, "%v\n",
+	_, _ = fmt.Fprintf(os.Stderr, "%v\n",
 		fancy.Error("Contact us: "+defaults.SupportEmail))
 }
 
@@ -141,7 +141,7 @@ func (m *mainProgram) maybePrintCommandError() {
 		cc := m.cmdErr.(canceled.Command)
 
 		if !cc.Quiet() {
-			fmt.Fprintln(os.Stderr, m.cmdErr)
+			_, _ = fmt.Fprintln(os.Stderr, m.cmdErr)
 		}
 
 		m.cmdErr = nil
@@ -222,7 +222,7 @@ func (m *mainProgram) reportCommand() {
 func (m *mainProgram) maybeSubmitAnalyticsReport() {
 	if !isCommand("metrics") && !isCommand("uninstall") {
 		if err := metrics.SubmitEventuallyOnBackground(m.config); err != nil {
-			fmt.Fprintf(os.Stderr,
+			_, _ = fmt.Fprintf(os.Stderr,
 				"Error trying to submit analytics on background: %v\n",
 				errorhandler.Handle(err))
 		}
@@ -276,7 +276,7 @@ func (cl *configLoader) applyChanges() {
 	}
 
 	if err := cl.wectx.Config().Save(); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", errorhandler.Handle(err))
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", errorhandler.Handle(err))
 		verbose.PrintDeferred()
 		os.Exit(1)
 	}

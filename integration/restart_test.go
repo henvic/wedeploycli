@@ -19,7 +19,7 @@ func TestRestartInternalServerError(t *testing.T) {
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, `{
+			_, _ = fmt.Fprintf(w, `{
     "status": 500,
     "message": "Internal Server Error",
     "errors": [

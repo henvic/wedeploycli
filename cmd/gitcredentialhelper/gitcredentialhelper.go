@@ -26,6 +26,6 @@ func Run(args []string) error {
 		return errors.New("internal command: missing credentials")
 	}
 
-	fmt.Fprintf(os.Stdout, "username=%s\npassword=\n", token)
+	fmt.Printf("username=%s\npassword=\n", token)
 	return nil
 }

@@ -109,7 +109,7 @@ func TestGetList(t *testing.T) {
 			}
 
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-			fmt.Fprintf(w, tdata.FromFile("mocks/logs_response.json"))
+			_, _ = fmt.Fprintf(w, tdata.FromFile("mocks/logs_response.json"))
 		})
 
 	var filter = &Filter{
@@ -243,10 +243,10 @@ func TestWatch(t *testing.T) {
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			switch missing {
 			case true:
-				fmt.Fprintln(w, tdata.FromFile("mocks/logs_watch_response_syscall.json"))
+				_, _ = fmt.Fprintln(w, tdata.FromFile("mocks/logs_watch_response_syscall.json"))
 				missing = false
 			default:
-				fmt.Fprintln(w, "[]")
+				_, _ = fmt.Fprintln(w, "[]")
 			}
 		})
 
@@ -320,9 +320,9 @@ func TestWatcherStart(t *testing.T) {
 			if fileNum < 4 {
 				fileNum++
 				log := fmt.Sprintf("%s%d%s", "mocks/logs_watch_response_", fileNum, ".json")
-				fmt.Fprintln(w, tdata.FromFile(log))
+				_, _ = fmt.Fprintln(w, tdata.FromFile(log))
 			} else {
-				fmt.Fprintln(w, "[]")
+				_, _ = fmt.Fprintln(w, "[]")
 			}
 		})
 

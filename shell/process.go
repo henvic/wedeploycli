@@ -102,7 +102,7 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 		stopTermSession(t)
 
 		// add a line break to separate connection errors from other messages
-		fmt.Fprintln(os.Stderr)
+		_, _ = fmt.Fprintln(os.Stderr)
 	}
 
 	return err

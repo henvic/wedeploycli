@@ -176,7 +176,7 @@ func (d *Diagnostics) Collect() Report {
 // Write report
 func Write(w io.Writer, r Report) {
 	for k, v := range r {
-		fmt.Fprintf(os.Stderr,
+		_, _ = fmt.Fprintf(os.Stderr,
 			"%v\n%s",
 			color.Format(color.Bold, " %v ", k),
 			v)

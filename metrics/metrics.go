@@ -84,7 +84,7 @@ type event struct {
 // Rec event if analytics is enabled
 func Rec(conf *config.Config, e Event) {
 	if _, err := RecOrFail(conf, e); err != nil {
-		fmt.Fprintf(errStream, "%v\n", err)
+		_, _ = fmt.Fprintf(errStream, "%v\n", err)
 	}
 }
 
