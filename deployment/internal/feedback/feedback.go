@@ -60,6 +60,10 @@ type Watch struct {
 func (w *Watch) Start(ctx context.Context) {
 	w.ctx = ctx
 
+	w.stepMessage = &waitlivemsg.Message{}
+	w.header = &waitlivemsg.Message{}
+	w.wlm = waitlivemsg.WaitLiveMsg{}
+
 	if w.Quiet && w.IsUpload {
 		w.prepareQuiet()
 		fmt.Println("Uploading.")
@@ -190,9 +194,6 @@ func (w *Watch) prepareQuiet() {
 }
 
 func (w *Watch) prepareNoisy() {
-	w.stepMessage = &waitlivemsg.Message{}
-	w.header = &waitlivemsg.Message{}
-	w.wlm = waitlivemsg.WaitLiveMsg{}
 	var us = uilive.New()
 	w.wlm.SetStream(us)
 	go w.wlm.Wait()
