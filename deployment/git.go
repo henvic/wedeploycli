@@ -461,7 +461,7 @@ func (d *Deploy) Push() (groupUID string, err error) {
 		switch {
 		case strings.Contains(bs, "fatal: Authentication failed for"),
 			strings.Contains(bs, "could not read Username"):
-			return "", errors.New("Invalid credentials")
+			return "", errors.New("invalid credentials when pushing deployment")
 		case strings.Contains(bs, "error: "):
 			return "", getGitErrors(bs)
 		default:
