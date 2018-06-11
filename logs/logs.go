@@ -239,7 +239,7 @@ func addHeader(log Log) (m string) {
 	case log.ServiceID == "":
 		m += "[" + log.ProjectID + "]"
 	case log.ContainerUID != "":
-		m += "[" + trim(log.ContainerUID, 7) + "]"
+		m += "[" + trim(log.ContainerUID, 12) + "]"
 	case log.Build:
 		m += "[build]"
 	}
