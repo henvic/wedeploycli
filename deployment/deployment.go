@@ -82,8 +82,8 @@ func (d *Deploy) prepareAndModifyServicePackage(s services.ServiceInfo) error {
 		return err
 	}
 
-	return d.overwriteServicePackage(bin, filepath.Join(filepath.Base(s.Location),
-		"wedeploy.json"))
+	// see Windows os.PathSeparator related issue #449
+	return d.overwriteServicePackage(bin, fmt.Sprintf("%s/wedeploy.json", filepath.Base(s.Location)))
 }
 
 func getPreparedServicePackage(serviceID string, path string) ([]byte, error) {
