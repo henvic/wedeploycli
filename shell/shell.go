@@ -28,6 +28,8 @@ type Params struct {
 	ProjectID string
 	ServiceID string
 
+	Instance string
+
 	AttachStdin bool
 	TTY         bool
 }
@@ -46,6 +48,10 @@ func Run(ctx context.Context, params Params, cmd string, args ...string) error {
 	query.Add("accessToken", params.Token)
 	query.Add("projectId", params.ProjectID)
 	query.Add("serviceId", params.ServiceID)
+
+	if params.Instance != "" {
+		query.Add("containerId", params.Instance)
+	}
 
 	if !params.AttachStdin {
 		query.Add("attachStdin", fmt.Sprint(params.AttachStdin))

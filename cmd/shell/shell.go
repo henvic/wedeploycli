@@ -36,6 +36,8 @@ var ShellCmd = &cobra.Command{
 	Args:    cobra.NoArgs,
 }
 
+var instanceArg string
+
 func init() {
 	setupHost.Init(ShellCmd)
 }
@@ -87,4 +89,8 @@ func shellRun(cmd *cobra.Command, args []string) error {
 	}
 
 	return shell.Run(context.Background(), params, "")
+}
+
+func init() {
+	ShellCmd.Flags().StringVar(&instanceArg, "instance", "", `Instance (node) UID`)
 }

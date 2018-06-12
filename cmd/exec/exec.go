@@ -25,6 +25,8 @@ var setupHost = cmdflagsfromhost.SetupHost{
 	PromptMissingService: true,
 }
 
+var instanceArg string
+
 // ExecCmd executes a process (command) remotely
 var ExecCmd = &cobra.Command{
 	Use:     "exec",
@@ -70,10 +72,11 @@ func execRun(cmd *cobra.Command, args []string) error {
 		ProjectID: setupHost.Project(),
 		ServiceID: setupHost.Service(),
 
+		Instance: instanceArg,
+
 		AttachStdin: true,
 		TTY:         isterm.Check(),
 	}
-
 
 	switch params.TTY {
 	case true:
@@ -83,4 +86,8 @@ func execRun(cmd *cobra.Command, args []string) error {
 	}
 
 	return shell.Run(context.Background(), params, args[0], childArgs...)
+}
+
+func init() {
+	ExecCmd.Flags().StringVar(&instanceArg, "instance", "", `Instance (node) UID`)
 }
