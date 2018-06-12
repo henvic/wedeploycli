@@ -105,4 +105,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "May 30th, 2018",
 		Description: `Fixing panic when using "we deploy --quiet". Fixing "we login" when using Git bash for Windows.`,
 	},
+	ReleaseNote{
+		Version:     "1.4.10",
+		Date:        "June 12th, 2018",
+		Description: `Fix "we deploy" for Windows users whose usernames contains spaces. Minor improvements.`,
+	},
 }
