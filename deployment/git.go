@@ -523,12 +523,14 @@ func (d *Deploy) addCredentialHelper() (err error) {
 		return err
 	}
 
-	var credentialHelper = bin + " git-credential-helper"
-
 	// Windows... Really? Really? Really? Really.
+	// See issue #323
 	if runtime.GOOS == "windows" {
-		credentialHelper = strings.Replace(credentialHelper, `\`, `\\`, -1)
+		bin = strings.Replace(bin, `\`, `/`, -1)
+		bin = strings.Replace(bin, ` `, `\ `, -1)
 	}
+
+	var credentialHelper = bin + " git-credential-helper"
 
 	var params = []string{"config", "--add", "credential.helper", credentialHelper}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
