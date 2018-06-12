@@ -26,6 +26,8 @@ var setupHost = cmdflagsfromhost.SetupHost{
 	PromptMissingService: true,
 }
 
+var instance string
+
 // ShellCmd opens a shell remotely
 var ShellCmd = &cobra.Command{
 	Use:     "shell",
@@ -36,9 +38,11 @@ var ShellCmd = &cobra.Command{
 	Args:    cobra.NoArgs,
 }
 
-var instanceArg string
-
 func init() {
+	ShellCmd.Flags().StringVar(
+		&instance,
+		"instance", "", "Connect to a specific instance")
+
 	setupHost.Init(ShellCmd)
 }
 
@@ -61,8 +65,10 @@ func shellPreRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Printf("You are accessing one instance of %s (total: %d)\n",
-		color.Format(color.Bold, setupHost.Host()), service.Scale)
+	if instance != "" {
+		fmt.Printf("You are accessing one instance of %s (total: %d)\n",
+			color.Format(color.Bold, setupHost.Host()), service.Scale)
+	}
 
 	fmt.Printf("%s\n\n", color.Format(color.FgYellow,
 		"Warning: don't use this shell to make changes on your services. Only changes inside volumes persist."))
@@ -83,14 +89,11 @@ func shellRun(cmd *cobra.Command, args []string) error {
 
 		ProjectID: setupHost.Project(),
 		ServiceID: setupHost.Service(),
+		Instance:  instance,
 
 		AttachStdin: true,
 		TTY:         true,
 	}
 
 	return shell.Run(context.Background(), params, "")
-}
-
-func init() {
-	ShellCmd.Flags().StringVar(&instanceArg, "instance", "", `Instance (node) UID`)
 }
