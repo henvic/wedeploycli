@@ -35,7 +35,7 @@ func Print() {
 		fmt.Printf("Build time: %v\n", defaults.BuildTime)
 	}
 
-	verbose.Debug("Go version: %v\n", runtime.Version())
+	verbose.Debug("Go version:", runtime.Version())
 }
 
 func versionRun(cmd *cobra.Command, args []string) {
