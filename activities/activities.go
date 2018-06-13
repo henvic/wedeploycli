@@ -155,8 +155,8 @@ const (
 	ServiceRestarted = "SERVICE_RESTARTED"
 )
 
-// FriendlyActivities related to project
-var FriendlyActivities = map[string]string{
+// Friendly activities names
+var Friendly = map[string]string{
 	BuildFailed:     "Build failed",
 	BuildStarted:    "Build started",
 	BuildPushed:     "Build pushed",

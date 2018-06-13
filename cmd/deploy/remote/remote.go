@@ -28,7 +28,9 @@ type RemoteDeployment struct {
 	Remote    string
 
 	CopyPackage string
-	Quiet       bool
+
+	SkipProgress bool
+	Quiet        bool
 
 	path     string
 	services services.ServiceInfoList
@@ -69,7 +71,9 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 		Services:      rd.services,
 
 		CopyPackage: rd.CopyPackage,
-		Quiet:       rd.Quiet,
+
+		SkipProgress: rd.SkipProgress,
+		Quiet:        rd.Quiet,
 	}
 
 	err = deploy.Do(ctx)

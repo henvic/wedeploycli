@@ -40,7 +40,9 @@ type Deploy struct {
 	Services      services.ServiceInfoList
 
 	CopyPackage string
-	Quiet       bool
+
+	SkipProgress bool
+	Quiet        bool
 
 	gitVersion    string
 	groupUID      string
@@ -217,7 +219,8 @@ func (d *Deploy) Do(ctx context.Context) error {
 
 		Services: d.Services,
 
-		Quiet: d.Quiet,
+		SkipProgress: d.SkipProgress,
+		Quiet:        d.Quiet,
 
 		IsUpload: true,
 	}
@@ -228,12 +231,12 @@ func (d *Deploy) Do(ctx context.Context) error {
 
 	d.watch.GroupUID = d.GetGroupUID()
 
-	if d.Quiet && err != nil {
+	if d.SkipProgress && err != nil {
 		return err
 	}
 
-	if d.Quiet {
-		d.watch.PrintQuietDeployment()
+	if d.SkipProgress {
+		d.watch.PrintSkipProgress()
 		return nil
 	}
 

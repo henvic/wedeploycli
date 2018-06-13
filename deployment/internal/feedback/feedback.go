@@ -40,12 +40,15 @@ type Watch struct {
 
 	Services services.ServiceInfoList
 
-	Quiet bool
+	SkipProgress bool
+	Quiet        bool
 
 	ctx context.Context
 
 	IsUpload        bool
 	uploadCompleted time.Duration
+
+	start time.Time
 
 	wlm         waitlivemsg.WaitLiveMsg
 	header      *waitlivemsg.Message
@@ -59,6 +62,7 @@ type Watch struct {
 // Start watching deployment feedback.
 func (w *Watch) Start(ctx context.Context) {
 	w.ctx = ctx
+	w.start = time.Now()
 
 	w.stepMessage = &waitlivemsg.Message{}
 	w.header = &waitlivemsg.Message{}
@@ -69,35 +73,36 @@ func (w *Watch) Start(ctx context.Context) {
 		fmt.Println("Uploading.")
 	}
 
-	if !w.Quiet {
-		w.prepareNoisy()
-		w.header.PlayText(w.getDeployingMessage())
-		w.stepMessage.StopText("")
-		w.wlm.AddMessage(w.header)
-		w.wlm.AddMessage(w.stepMessage)
+	if !w.SkipProgress {
+		w.prepareProgress()
 	}
 
 	w.createServicesActivitiesMap()
 }
 
 func (w *Watch) notifyDeploymentSucceeded() {
-	var timeElapsed = timehelper.RoundDuration(w.wlm.Duration(), time.Second)
+	var timeElapsed = timehelper.RoundDuration(time.Since(w.start), time.Second)
 
 	w.header.StopText(figures.Tick + " " + w.getDeployingMessage())
 
 	msg := fmt.Sprintf("%s Deployment succeeded in %s", figures.Tick, timeElapsed)
+	msgWithUploadTime := msg
 
 	if w.IsUpload && w.uploadCompleted != 0 {
-		msg = fmt.Sprintf("%s. Upload completed in %v.",
+		msgWithUploadTime = fmt.Sprintf("%s. Upload completed in %v.",
 			msg,
 			timehelper.RoundDuration(w.uploadCompleted, time.Second))
 	}
 
-	w.stepMessage.StopText(msg)
+	w.stepMessage.StopText(msgWithUploadTime)
+
+	if w.Quiet {
+		fmt.Printf("\n%s\n", msg)
+	}
 }
 
 func (w *Watch) notifyDeploymentFailed() {
-	var timeElapsed = timehelper.RoundDuration(w.wlm.Duration(), time.Second)
+	var timeElapsed = timehelper.RoundDuration(time.Since(w.start), time.Second)
 
 	w.header.StopText(figures.Cross + " " + w.getDeployingMessage())
 
@@ -110,11 +115,15 @@ func (w *Watch) notifyDeploymentFailed() {
 	}
 
 	w.stepMessage.StopText(msg)
+
+	if w.Quiet {
+		_, _ = fmt.Fprintf(os.Stderr, "\n%s\n", msg)
+	}
 }
 
-// PrintQuietDeployment prints a message telling that the deployment
+// PrintSkipProgress prints a message telling that the deployment
 // is happening on background when the deployment is not interactive.
-func (w *Watch) PrintQuietDeployment() {
+func (w *Watch) PrintSkipProgress() {
 	fmt.Printf("Deployment %v is in progress on remote %v\n",
 		color.Format(color.FgMagenta, color.Bold, w.GroupUID),
 		color.Format(color.FgMagenta, color.Bold, w.ConfigContext.InfrastructureDomain()))
@@ -137,11 +146,9 @@ func (w *Watch) StopFailedUpload() {
 
 // NotifyPacking notifies that a package is being prepared for deployment.
 func (w *Watch) NotifyPacking() {
-	w.header.PlayText(
-		fmt.Sprintf("Preparing deployment for project %v in %v...",
-			color.Format(color.FgMagenta, color.Bold, w.ProjectID),
-			color.Format(w.ConfigContext.Remote())),
-	)
+	w.header.PlayText(fmt.Sprintf("Preparing deployment for project %v in %v...",
+		color.Format(color.FgMagenta, color.Bold, w.ProjectID),
+		color.Format(w.ConfigContext.Remote())))
 }
 
 // NotifyDeploying notifies that the deployment started.
@@ -157,13 +164,14 @@ func (w *Watch) NotifyUploadComplete(t time.Duration) {
 
 	w.uploadCompleted = t
 
-	uploadCompletedFeedback := fmt.Sprintf("Upload completed in %v.",
+	uploadCompletedFeedback := fmt.Sprintf("%s Upload completed in %v.",
+		figures.Tick,
 		timehelper.RoundDuration(t, time.Second))
 
+	w.stepMessage.StopText(uploadCompletedFeedback)
+
 	if w.Quiet {
-		_, _ = fmt.Fprintln(os.Stderr, uploadCompletedFeedback)
-	} else {
-		w.stepMessage.PlayText(uploadCompletedFeedback)
+		_, _ = fmt.Fprintf(os.Stderr, "%s\n\n", uploadCompletedFeedback)
 	}
 }
 
@@ -176,27 +184,31 @@ type finalStates struct {
 }
 
 func (w *Watch) prepareQuiet() {
-	p := &bytes.Buffer{}
-
-	p.WriteString(w.getDeployingMessage())
-	p.WriteString("\n")
+	fmt.Println(w.getDeployingMessage())
 
 	if len(w.Services) > 0 {
-		p.WriteString(fmt.Sprintf("\nList of services:\n"))
+		fmt.Print("\nList of services:\n")
 	}
 
 	for _, s := range w.Services {
-		p.WriteString(w.coloredServiceAddress(s.ServiceID))
-		p.WriteString("\n")
+		fmt.Print(w.coloredServiceAddress(s.ServiceID))
+		fmt.Println()
 	}
 
-	fmt.Print(p)
+	fmt.Println()
 }
 
-func (w *Watch) prepareNoisy() {
+func (w *Watch) prepareProgress() {
 	var us = uilive.New()
 	w.wlm.SetStream(us)
-	go w.wlm.Wait()
+
+	if !w.Quiet {
+		go w.wlm.Wait()
+		w.header.PlayText(w.getDeployingMessage())
+		w.stepMessage.StopText("")
+		w.wlm.AddMessage(w.header)
+		w.wlm.AddMessage(w.stepMessage)
+	}
 }
 
 func (w *Watch) createServicesActivitiesMap() {
@@ -212,7 +224,8 @@ func (w *Watch) createServicesActivitiesMap() {
 		m.PlayText(w.makeServiceStatusMessage(s.ServiceID, msg))
 
 		w.sActivities[s.ServiceID] = &serviceWatch{
-			msgWLM: m,
+			msgWLM:  m,
+			visited: map[string]bool{},
 		}
 		w.wlm.AddMessage(m)
 	}
@@ -325,10 +338,11 @@ func (w *Watch) updateActivityState(a activities.Activity) {
 	}
 
 	w.markDeploymentTransition(serviceID, a.Type)
-	var m = w.sActivities[serviceID].msgWLM
+	var serviceActivities = w.sActivities[serviceID]
+	var m = serviceActivities.msgWLM
 	var pre string
 
-	if pre, ok = activities.FriendlyActivities[a.Type]; !ok {
+	if pre, ok = activities.Friendly[a.Type]; !ok {
 		pre = a.Type
 	}
 
@@ -339,19 +353,35 @@ func (w *Watch) updateActivityState(a activities.Activity) {
 		activities.DeployCreated,
 		activities.DeployPending,
 		activities.DeployStarted:
-		m.PlayText(w.makeServiceStatusMessage(serviceID, pre))
+		ssm := w.makeServiceStatusMessage(serviceID, pre)
+		m.PlayText(ssm)
+		w.maybePrintQuietActivity(serviceActivities, a.Type, ssm)
 	case
 		activities.BuildFailed,
 		activities.DeployFailed,
 		activities.DeployCanceled,
 		activities.DeployTimeout,
 		activities.DeployRollback:
-		m.StopText(fancy.Error(w.makeServiceStatusMessage(serviceID, pre)))
+		ssm := fancy.Error(w.makeServiceStatusMessage(serviceID, pre))
+		m.StopText(ssm)
+		w.maybePrintQuietActivity(serviceActivities, a.Type, ssm)
 	case
 		activities.DeploySucceeded:
-		m.StopText(w.makeServiceStatusMessage(serviceID, pre))
+		ssm := w.makeServiceStatusMessage(serviceID, pre)
+		m.StopText(ssm)
+		w.maybePrintQuietActivity(serviceActivities, a.Type, ssm)
 	default:
-		m.StopText(w.makeServiceStatusMessage(serviceID, pre))
+		ssm := w.makeServiceStatusMessage(serviceID, pre)
+		m.StopText(ssm)
+		w.maybePrintQuietActivity(serviceActivities, a.Type, ssm)
+	}
+
+	serviceActivities.visited[a.Type] = true
+}
+
+func (w *Watch) maybePrintQuietActivity(sw *serviceWatch, aType, text string) {
+	if w.Quiet && !sw.visited[aType] {
+		fmt.Println(text)
 	}
 }
 
@@ -519,7 +549,10 @@ func (w *Watch) Wait() error {
 		w.notifyDeploymentFailed()
 	}
 
-	w.wlm.Stop()
+	if !w.Quiet {
+		w.wlm.Stop()
+	}
+
 	return nil
 }
 
@@ -535,7 +568,14 @@ func (w *Watch) waitFor() error {
 		var stepText = w.header.GetText()
 
 		if err != nil {
-			w.header.PlayText(updateMessageErrorStringCounter(stepText))
+			umerr := updateMessageErrorStringCounter(stepText)
+
+			w.header.PlayText(umerr)
+
+			if w.Quiet {
+				_, _ = fmt.Fprintln(os.Stderr, umerr)
+			}
+
 			verbose.Debug(err)
 		}
 
@@ -598,7 +638,9 @@ func (w *Watch) maybeOpenLogs() {
 }
 
 type serviceWatch struct {
-	state  string
+	state   string
+	visited map[string]bool // deployment transitions that already happened
+
 	msgWLM *waitlivemsg.Message
 }
 

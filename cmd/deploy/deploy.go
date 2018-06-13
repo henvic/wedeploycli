@@ -29,8 +29,11 @@ var setupHost = cmdflagsfromhost.SetupHost{
 	AllowCreateProjectOnPrompt: true,
 }
 
-var quiet bool
-var copyPackage string
+var (
+	skipProgress bool
+	quiet        bool
+	copyPackage  string
+)
 
 // DeployCmd runs services
 var DeployCmd = &cobra.Command{
@@ -46,6 +49,8 @@ var DeployCmd = &cobra.Command{
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
+	quiet = quiet || skipProgress // --quiet on skip progress; it also leads to a quieter output
+
 	if err := maybePreRunDeployFromGitRepo(cmd, args); err != nil {
 		return err
 	}
@@ -69,8 +74,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		ServiceID: setupHost.Service(),
 		Remote:    setupHost.Remote(),
 
-		CopyPackage: copyPackage,
-		Quiet:       quiet,
+		CopyPackage:  copyPackage,
+		SkipProgress: skipProgress,
+		Quiet:        quiet,
 	}
 
 	_, err = rd.Run(context.Background())
@@ -103,15 +109,19 @@ func deployFromGitRepo(repo string) error {
 	params := deployment.ParamsFromRepository{
 		ProjectID:  projectID,
 		Repository: repo,
-		Quiet:      quiet,
+
+		SkipProgress: skipProgress,
+		Quiet:        quiet,
 	}
 
 	return deployment.DeployFromGitRepository(context.Background(), we.Context(), params)
 }
 
 func init() {
+	DeployCmd.Flags().BoolVar(&skipProgress, "skip-progress", false,
+		"Skip watching deployment progress, quiet")
 	DeployCmd.Flags().BoolVarP(&quiet, "quiet", "q", false,
-		"Deploy without watching status")
+		"Suppress progress animations")
 	DeployCmd.Flags().StringVar(&copyPackage, "copy-pkg", "",
 		"Path to copy the deployment package to (for debugging)")
 	_ = DeployCmd.Flags().MarkHidden("copy-pkg")

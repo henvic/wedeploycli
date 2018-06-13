@@ -17,7 +17,8 @@ type ParamsFromRepository struct {
 
 	ProjectID string
 
-	Quiet bool
+	SkipProgress bool
+	Quiet        bool
 }
 
 // DeployFromGitRepository deploys from a repository on the web.
@@ -52,13 +53,14 @@ func DeployFromGitRepository(ctx context.Context, wectx config.Context, params P
 
 		Services: sil,
 
-		Quiet: params.Quiet,
+		SkipProgress: params.SkipProgress,
+		Quiet:        params.Quiet,
 	}
 
 	watch.Start(ctx)
 
-	if params.Quiet {
-		watch.PrintQuietDeployment()
+	if params.SkipProgress {
+		watch.PrintSkipProgress()
 		return nil
 	}
 
