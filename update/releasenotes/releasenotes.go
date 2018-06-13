@@ -110,4 +110,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "June 12th, 2018",
 		Description: `Fix "we deploy" for Windows users whose usernames contains spaces. Minor improvements.`,
 	},
+	ReleaseNote{
+		Version:     "1.5.0",
+		Date:        "June 13th, 2018",
+		Description: `Added the --skip-progress flag to "we deploy" and changed --quiet behavior to make it wait until deployment is finished.`,
+	},
 }
