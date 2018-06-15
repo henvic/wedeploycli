@@ -120,4 +120,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "June 15th, 2018",
 		Description: `Improved output colors for requests when using --verbose. Minor improvements.`,
 	},
+	ReleaseNote{
+		Version:     "1.5.2",
+		Date:        "June 15th, 2018",
+		Description: "Print friendly status text errors on API errors.",
+	},
 }
