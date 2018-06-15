@@ -63,6 +63,7 @@ func init() {
 
 	if isCommand("--no-color") || turnColorsOffOnWindows() {
 		color.NoColorFlag = true
+		color.NoColor = true
 	}
 }
 
