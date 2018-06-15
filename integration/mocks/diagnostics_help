@@ -1,5 +1,7 @@
 ! Run system diagnostics and show report
-! Usage: we diagnostics [flag]
+
+  Usage: we diagnostics [flag]
+
   Flag                  Description
       --print      Print diagnostics
       --send       Send to WeDeploy

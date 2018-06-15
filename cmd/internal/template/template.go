@@ -76,8 +76,10 @@ func (up *usagePrinter) printAll() {
 		cmdPart = ""
 	}
 
-	usage := fmt.Sprintf(" Usage: %s%s [flag]",
-		strings.TrimSuffix(up.cmd.UseLine(), " [flags]"),
+	useLine := strings.TrimSuffix(up.cmd.UseLine(), " [flags]")
+
+	usage := fmt.Sprintf("\n  Usage: %s%s [flag]",
+		useLine,
 		cmdPart)
 
 	if up.cmd.Args == nil || runtime.FuncForPC(reflect.ValueOf(up.cmd.Args).Pointer()).Name() !=
@@ -85,7 +87,7 @@ func (up *usagePrinter) printAll() {
 		usage += " [<args>]"
 	}
 
-	_, _ = fmt.Fprintf(up.buf, "%s%s\n", color.Format(color.Reset, "!"), color.Format(color.FgHiBlack, usage))
+	_, _ = fmt.Fprintf(up.buf, "%s\n\n", usage)
 
 	up.printCommands()
 	up.printFlags()

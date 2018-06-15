@@ -1,4 +1,6 @@
-! Usage: we [command] [flag]
+
+  Usage: we [command] [flag]
+
   Command               Description
   deploy           Deploy your services
   list             Show list of projects and services
