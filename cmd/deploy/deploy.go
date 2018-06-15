@@ -40,9 +40,8 @@ var DeployCmd = &cobra.Command{
 	Use:   "deploy",
 	Short: "Deploy your services",
 	Example: `  we deploy
-  we deploy <git repository address>
-  we deploy wedeploy-examples/wordpress-example (on GitHub)
-  we deploy https://github.com/wedeploy-examples/supermarket-web-example`,
+  we deploy https://gitlab.com/user/repo
+  we deploy user/repo#branch`,
 	Args:    cobra.MaximumNArgs(1),
 	PreRunE: preRun,
 	RunE:    run,
