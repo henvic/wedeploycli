@@ -61,9 +61,10 @@ func confirmation(projectID string, userProject projects.Project) error {
 		return nil
 	}
 
-	fmt.Println(color.Format(color.FgHiBlack, "Project does not exist."))
-
-	var question = fmt.Sprintf("Do you want to create project \"%s\"?", projectID)
+	var question = fmt.Sprintf("No project found. %s project \"%s\" and %s the deployment?",
+		color.Format(color.FgMagenta, color.Bold, "Create"),
+		color.Format(color.FgHiBlack, projectID),
+		color.Format(color.FgMagenta, color.Bold, "continue"))
 
 	switch ok, askErr := fancy.Boolean(question); {
 	case askErr != nil:

@@ -12,6 +12,7 @@ import (
 	"github.com/wedeploy/cli/cmd/canceled"
 	"github.com/wedeploy/cli/cmd/deploy/internal/getproject"
 	"github.com/wedeploy/cli/cmd/internal/we"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/deployment"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/inspector"
@@ -159,7 +160,10 @@ func (rd *RemoteDeployment) checkEmptyIDOnMultipleDeployment() error {
 
 	fmt.Println("")
 
-	switch ok, askErr := fancy.Boolean("Do you want to continue?"); {
+	q := fmt.Sprintf("Do you want to %s?",
+		color.Format(color.FgMagenta, color.Bold, "continue"))
+
+	switch ok, askErr := fancy.Boolean(q); {
 	case askErr != nil:
 		return askErr
 	case ok:

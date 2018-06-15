@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/projects"
@@ -16,9 +17,11 @@ import (
 func (l *List) PromptProject(ctx context.Context, wectx config.Context) (*Selection, error) {
 	switch l.AllowCreateProjectOnPrompt {
 	case true:
-		fmt.Print("Please select a project from the list below or create a new one.\n")
+		fmt.Printf("Please %s a project from the list below or create a new one.\n",
+			color.Format(color.FgMagenta, color.Bold, "select"))
 	default:
-		fmt.Print("Please select a project from the list below.\n")
+		fmt.Printf("Please %s a project from the list below.\n",
+			color.Format(color.FgMagenta, color.Bold, "select"))
 	}
 
 	l.SelectNumber = true
@@ -66,7 +69,8 @@ func (l *List) PromptProject(ctx context.Context, wectx config.Context) (*Select
 
 // PromptProjectOrService from the list selection
 func (l *List) PromptProjectOrService(ctx context.Context, wectx config.Context) (*Selection, error) {
-	fmt.Print("Please select a project or a service from the list below.\n")
+	fmt.Printf("Please %s a project or a service from the list below.\n",
+		color.Format(color.FgHiMagenta, "select"))
 	l.SelectNumber = true
 
 	if err := l.Once(ctx, wectx); err != nil {
@@ -159,7 +163,8 @@ func dedupPromptProjectOrService(projectCandidate, serviceCandidate *Selection) 
 
 // PromptService from the list selection
 func (l *List) PromptService(ctx context.Context, wectx config.Context) (*Selection, error) {
-	fmt.Print("Please select a service from the list below.\n")
+	fmt.Printf("Please %s a service from the list below.\n",
+		color.Format(color.FgHiMagenta, "select"))
 	l.SelectNumber = true
 
 	if err := l.Once(ctx, wectx); err != nil {
