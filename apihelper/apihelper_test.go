@@ -158,7 +158,7 @@ func TestAPIError(t *testing.T) {
 		Message: "Resource Not Found",
 	}
 
-	if fmt.Sprintf("%v", e) != "404 Resource Not Found" {
+	if fmt.Sprintf("%v", e) != "404 Not Found: Resource Not Found" {
 		t.Errorf("APIFault error, got %v", e)
 	}
 }

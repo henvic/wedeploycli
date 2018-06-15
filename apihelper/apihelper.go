@@ -74,11 +74,11 @@ func (a APIFault) getErrorMessage() string {
 	}
 
 	if a.Status != 0 {
-		s += fmt.Sprintf("%v", a.Status)
+		s += fmt.Sprintf("%v %v", a.Status, http.StatusText(a.Status))
 	}
 
-	if len(s) != 0 {
-		s += " "
+	if s != "" && a.Message != "" {
+		s += ": "
 	}
 
 	if a.Message != "" {
