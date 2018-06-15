@@ -28,6 +28,7 @@ func (p *Process) Streams() error {
 		p.PipeStdout,
 		p.WatchEnd,
 		p.WatchErrors,
+		p.WatchErrorContainerExec,
 	}
 
 	for _, s := range streams {
@@ -160,5 +161,13 @@ func (p *Process) WatchEnd() error {
 func (p *Process) WatchErrors() error {
 	return p.shell.On("error", func(err error) {
 		verbose.Debug("shell socket error:", err)
+	})
+}
+
+// WatchErrorContainerExec listens to execute errors
+func (p *Process) WatchErrorContainerExec() error {
+	return p.shell.On("errorContainerExec", func(err error) {
+		p.err <- err
+		p.ctxCancel()
 	})
 }
