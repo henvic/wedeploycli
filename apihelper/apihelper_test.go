@@ -1058,7 +1058,7 @@ func TestValidateUnexpectedNonJSONResponse(t *testing.T) {
 	var bes = bufErrStream.String()
 
 	if !strings.Contains(bes,
-		"Response not JSON (as expected by Content-Type)") {
+		"Invalid JSON response body:") {
 		t.Errorf("Missing wrong response error")
 	}
 

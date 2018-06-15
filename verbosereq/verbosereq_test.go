@@ -550,7 +550,7 @@ func TestRequestVerboseFeedbackInvalidJSONResponse(t *testing.T) {
 	var find = []string{
 		"> POST http://www.example.com/foo HTTP/1.1",
 		`{"bar":"one"}`,
-		"Response not JSON (as expected by Content-Type)",
+		"Invalid JSON response body:",
 		"unexpected end of JSON input",
 		`{"Hello": "World!"`,
 	}

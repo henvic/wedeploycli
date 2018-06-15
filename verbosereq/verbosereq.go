@@ -14,6 +14,7 @@ import (
 
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/envs"
+	"github.com/wedeploy/cli/prettyjson"
 	"github.com/wedeploy/cli/verbose"
 	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
@@ -180,30 +181,24 @@ func feedbackResponseBody(response *http.Response) {
 	feedbackResponseBodyAll(response, body)
 }
 
-func feedbackResponseBodyReadJSON(response *http.Response, body []byte) (
-	out bytes.Buffer) {
-	if strings.Contains(
-		response.Header.Get("Content-Type"), "application/json") {
-		if err := json.Indent(&out, body, "", "    "); err != nil {
-			log("Response not JSON (as expected by Content-Type)")
-			log(err)
-		}
-	}
-
-	return out
-}
-
 func feedbackResponseBodyAll(response *http.Response, body []byte) {
 	response.Body = ioutil.NopCloser(bytes.NewReader(body))
-	var out = feedbackResponseBodyReadJSON(response, body)
 
-	if out.Len() == 0 {
-		if _, err := out.Write(body); err != nil {
-			panic(err)
+	jsonContentType := strings.Contains(response.Header.Get("Content-Type"), "application/json")
+
+	if jsonContentType {
+		err := json.Unmarshal(body, &json.RawMessage{})
+
+		if err == nil {
+			log(string(prettyjson.Pretty(body)))
+			return
 		}
+
+		log("Invalid JSON response body:")
+		log(err)
 	}
 
-	log(color.Format(color.FgMagenta, out.String()) + "\n")
+	log(color.Format(color.FgMagenta, string(body)+"\n"))
 }
 
 func getHeaderValue(key string, values []string) string {
