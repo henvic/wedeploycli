@@ -122,6 +122,12 @@
   version = "v1.0.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/tidwall/pretty"
+  packages = ["."]
+  revision = "65a9db5fad5105a89e17f38adcc9878685be6d78"
+
+[[projects]]
   name = "github.com/wedeploy/wedeploy-sdk-go"
   packages = [
     ".",
@@ -178,6 +184,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4d5222e0f0dc823e231526877759fbd2a2c4bc855e808a5352372083ef1d0845"
+  inputs-digest = "b36ae244e7996aa0756225bb56b1906956b3ed72340b67451b4486cdb6ad0f4b"
   solver-name = "gps-cdcl"
   solver-version = 1
