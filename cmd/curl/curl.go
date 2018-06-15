@@ -5,8 +5,10 @@ package curl
 // for the sake of completion [and if things change].
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
 	"os/exec"
@@ -19,6 +21,7 @@ import (
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/prettyjson"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -34,6 +37,7 @@ Use "curl --help" to see curl usage options.
 	Example: `  we curl /projects
   we curl /plans/user
   we curl https://api.wedeploy.com/projects`,
+	// maybe --pretty=false to disable pipe, should add example
 	RunE:               (&curlRunner{}).run,
 	Hidden:             true,
 	DisableFlagParsing: true,
@@ -60,6 +64,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 }
 
 var print bool
+var noPretty bool
 
 func init() {
 	CurlCmd.AddCommand(EnableCmd)
@@ -70,7 +75,11 @@ func init() {
 		"print",
 		false,
 		"Print command instead of invoking")
-
+	CurlCmd.Flags().BoolVar(
+		&noPretty,
+		"no-pretty",
+		false,
+		"Don't pretty print JSON")
 	setupHost.Init(CurlCmd)
 }
 
@@ -394,24 +403,59 @@ Using it might make you inadvertently expose private data. Continue at your own 
 		curlArgs = append(curlArgs, fmt.Sprintf("Authorization: Bearer %s", token))
 	}
 
+	curlArgs = append([]string{"-sS"}, curlArgs...)
+
 	if print {
 		printCURLCommand(curlArgs)
 		return nil
+	}
+
+	if !noPretty {
+		return curlPretty(context.Background(), curlArgs)
 	}
 
 	return curl(context.Background(), curlArgs)
 }
 
 func curl(ctx context.Context, params []string) error {
-	if verbose.Enabled {
-		verbose.Debug(fmt.Sprintf("Running curl %v", strings.Join(params, " ")))
-	}
+	verbose.Debug(fmt.Sprintf("Running curl %v", strings.Join(params, " ")))
 
 	var cmd = exec.CommandContext(ctx, "curl", params...)
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	return cmd.Run()
+}
+
+func curlPretty(ctx context.Context, params []string) error {
+	verbose.Debug(fmt.Sprintf("Running curl %v", strings.Join(params, " ")))
+
+	var (
+		buf    bytes.Buffer
+		bufErr bytes.Buffer
+	)
+
+	var cmd = exec.CommandContext(ctx, "curl", params...)
+	cmd.Stdin = os.Stdin
+
+	cmd.Stderr = io.MultiWriter(&bufErr, os.Stderr)
+	cmd.Stdout = &buf
+
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	maybePrettyPrintJSON(bufErr.Bytes(), buf.Bytes())
+	return nil
+}
+
+func maybePrettyPrintJSON(headersOrErr, body []byte) {
+	if !bytes.Contains(bytes.ToLower(headersOrErr), []byte("\n< content-type: application/json")) {
+		fmt.Println(string(body))
+		return
+	}
+
+	fmt.Print(string(prettyjson.Pretty(body)))
 }
 
 func printCURLCommand(args []string) {
