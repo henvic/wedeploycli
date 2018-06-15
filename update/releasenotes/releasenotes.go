@@ -115,4 +115,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "June 13th, 2018",
 		Description: `Added the --skip-progress flag to "we deploy" and changed --quiet behavior to make it wait until deployment is finished.`,
 	},
+	ReleaseNote{
+		Version:     "1.5.1",
+		Date:        "June 15th, 2018",
+		Description: `Improved output colors for requests when using --verbose. Minor improvements.`,
+	},
 }
