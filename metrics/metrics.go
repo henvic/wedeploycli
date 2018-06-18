@@ -294,7 +294,7 @@ func (s *Sender) maybeSubmitOnBackground() error {
 		return nil
 	}
 
-	if !s.isOld() && rand.Float32() > 0.8 {
+	if !s.isOld() && rand.Float32() > 0.2 {
 		return nil
 	}
 
