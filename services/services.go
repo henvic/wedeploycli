@@ -107,8 +107,8 @@ func (s *Service) Type() string {
 	return s.Image
 }
 
-// ServicePackage is the structure for wedeploy.json
-type ServicePackage struct {
+// Package is the structure for wedeploy.json
+type Package struct {
 	ID            string            `json:"id,omitempty"`
 	ProjectID     string            `json:"projectId,omitempty"`
 	Scale         int               `json:"scale,omitempty"`
@@ -121,12 +121,12 @@ type ServicePackage struct {
 }
 
 // Service returns a Service type created taking wedeploy.json as base
-func (sp ServicePackage) Service() *Service {
+func (p Package) Service() *Service {
 	return &Service{
-		ServiceID:     sp.ID,
-		Scale:         sp.Scale,
-		Image:         sp.Image,
-		CustomDomains: sp.CustomDomains,
+		ServiceID:     p.ID,
+		Scale:         p.Scale,
+		Image:         p.Image,
+		CustomDomains: p.CustomDomains,
 	}
 }
 
@@ -286,29 +286,29 @@ func (l *listFromDirectoryGetter) readFunc(dir string) error {
 	}
 }
 
-func (l *listFromDirectoryGetter) checkExisting(sp *ServicePackage, dir string) error {
+func (l *listFromDirectoryGetter) checkExisting(p *Package, dir string) error {
 	const errCheck = `found services with duplicated ID "%v" on %v and %v`
-	if sp.ID == "" {
+	if p.ID == "" {
 		return nil
 	}
 
 	for _, existing := range l.list {
-		if sp.ID == existing.ServiceID {
-			return fmt.Errorf(errCheck, sp.ID, existing.Location, dir)
+		if p.ID == existing.ServiceID {
+			return fmt.Errorf(errCheck, p.ID, existing.Location, dir)
 		}
 	}
 
 	return nil
 }
 
-func (l *listFromDirectoryGetter) addFunc(sp *ServicePackage, dir string) error {
-	if err := l.checkExisting(sp, dir); err != nil {
+func (l *listFromDirectoryGetter) addFunc(p *Package, dir string) error {
+	if err := l.checkExisting(p, dir); err != nil {
 		return err
 	}
 
 	l.list = append(l.list, ServiceInfo{
-		ProjectID: sp.ProjectID,
-		ServiceID: sp.ID,
+		ProjectID: p.ProjectID,
+		ServiceID: p.ID,
 		Location:  dir,
 	})
 
@@ -474,11 +474,9 @@ func (c *Client) Delete(ctx context.Context, projectID, serviceID string) error 
 }
 
 // Read a service directory properties (defined by a wedeploy.json and/or Dockerfile on it)
-func Read(path string) (*ServicePackage, error) {
-	var (
-		data          = ServicePackage{}
-		hasDockerfile bool
-	)
+func Read(path string) (*Package, error) {
+	var p = Package{}
+	var hasDockerfile bool
 
 	dockerfile, err := ioutil.ReadFile(filepath.Join(path, "Dockerfile"))
 
@@ -493,7 +491,7 @@ func Read(path string) (*ServicePackage, error) {
 
 	switch {
 	case err == nil:
-		if err = json.Unmarshal(wedeployJSON, &data); err != nil {
+		if err = json.Unmarshal(wedeployJSON, &p); err != nil {
 			return nil, errwrap.Wrapf("error parsing wedeploy.json on "+path+": {{err}}", err)
 		}
 	case os.IsNotExist(err):
@@ -505,10 +503,10 @@ func Read(path string) (*ServicePackage, error) {
 	}
 
 	if hasDockerfile {
-		data.dockerfile = string(dockerfile)
+		p.dockerfile = string(dockerfile)
 	}
 
-	return &data, nil
+	return &p, nil
 }
 
 type requestBodySetEnv struct {

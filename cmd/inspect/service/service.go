@@ -46,8 +46,8 @@ func runE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	if showTypeFields {
-		var i = services.ServicePackage{}
-		fmt.Println(strings.Join(inspector.GetSpec(i), "\n"))
+		var p = services.Package{}
+		fmt.Println(strings.Join(inspector.GetSpec(p), "\n"))
 		return nil
 	}
 

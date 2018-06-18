@@ -48,7 +48,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestPrintServiceSpec(t *testing.T) {
-	var got = GetSpec(services.ServicePackage{})
+	var got = GetSpec(services.Package{})
 	var want = []string{
 		`ID string`,
 		`ProjectID string`,

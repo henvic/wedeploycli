@@ -126,20 +126,20 @@ func InspectContext(format, directory string) (string, error) {
 	return templates.ExecuteOrList(format, overview)
 }
 
-func getServicePackage(directory string) (path string, cp *services.ServicePackage, err error) {
+func getServicePackage(directory string) (path string, p *services.Package, err error) {
 	var servicePath, cerr = getServiceRootDirectory(directory)
 
 	if cerr != nil {
 		return "", nil, cerr
 	}
 
-	cp, err = services.Read(servicePath)
+	p, err = services.Read(servicePath)
 
 	if err != nil {
 		return servicePath, nil, err
 	}
 
-	return servicePath, cp, nil
+	return servicePath, p, nil
 }
 
 // InspectService on a given directory, filtering by format
