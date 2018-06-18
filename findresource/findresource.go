@@ -32,13 +32,13 @@ func GetRootDirectory(dir, delimiter, file string) (string, error) {
 	case os.IsNotExist(err) || !stat.IsDir():
 		return "", os.ErrNotExist
 	case err != nil:
-		return "", errwrap.Wrapf("Can not read delimiter "+delimiter+"directory: {{err}}", err)
+		return "", errwrap.Wrapf("can't read delimiter "+delimiter+"directory: {{err}}", err)
 	}
 
 	return walkToRootDirectory(dir, delimiter, file)
 }
 
-var errReachedDirectoryTreeRoot = errors.New("Reached directory tree root")
+var errReachedDirectoryTreeRoot = errors.New("reached directory tree root")
 
 func walkToRootDirectory(dir, delimiter, file string) (string, error) {
 	var err error
@@ -55,7 +55,7 @@ func walkToRootDirectory(dir, delimiter, file string) (string, error) {
 		case os.IsNotExist(err) || !stat.IsDir():
 			return "", os.ErrNotExist
 		case err != nil:
-			return "", errwrap.Wrapf("Error reading directory "+dir+": {{err}}", err)
+			return "", errwrap.Wrapf("can't read directory "+dir+": {{err}}", err)
 		}
 
 		switch _, err := os.Stat(filepath.Join(dir, file)); {
@@ -78,7 +78,7 @@ func walkToRootDirectory(dir, delimiter, file string) (string, error) {
 
 			return "", os.ErrNotExist
 		case err != nil:
-			return "", errwrap.Wrapf("Error walking filesystem trying to find resouce "+file+": {{err}}", err)
+			return "", errwrap.Wrapf("can't walk filesystem to find "+file+": {{err}}", err)
 		}
 
 		return dir, err
