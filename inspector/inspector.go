@@ -127,7 +127,10 @@ func InspectContext(format, directory string) (string, error) {
 }
 
 func getServicePackage(directory string) (path string, p *services.Package, err error) {
-	var servicePath, cerr = getServiceRootDirectory(directory)
+	var servicePath, cerr = findresource.GetRootDirectory(
+		directory,
+		findresource.GetSysRoot(),
+		"wedeploy.json")
 
 	if cerr != nil {
 		return "", nil, cerr
@@ -155,12 +158,4 @@ func InspectService(format, directory string) (string, error) {
 
 	verbose.Debug("Reading service at " + servicePath)
 	return templates.ExecuteOrList(format, service)
-}
-
-func getServiceRootDirectory(dir string) (string, error) {
-	return getRootDirectory(dir, "wedeploy.json")
-}
-
-func getRootDirectory(dir, file string) (string, error) {
-	return findresource.GetRootDirectory(dir, findresource.GetSysRoot(), file)
 }
