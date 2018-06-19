@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/errwrap"
@@ -56,14 +57,17 @@ var (
 )
 
 type createRequestBody struct {
-	ProjectID string `json:"projectId,omitempty"`
+	ProjectID   string `json:"projectId,omitempty"`
+	Environment bool   `json:"environment,omitempty"`
 }
 
 // Create on the backend
 func (c *Client) Create(ctx context.Context, project Project) (p Project, err error) {
+
 	var req = c.Client.URL(ctx, "/projects")
 	var reqBody = createRequestBody{
-		ProjectID: project.ProjectID,
+		ProjectID:   project.ProjectID,
+		Environment: strings.Contains(project.ProjectID, "-"),
 	}
 
 	c.Client.Auth(req)
