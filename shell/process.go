@@ -144,6 +144,8 @@ func (p *Process) waitExecStarted() error {
 
 func (p *Process) waitReady() error {
 	select {
+	case err := <-p.err:
+		return err
 	case <-p.ctx.Done():
 		return p.ctx.Err()
 	case <-p.shell.Ready():
@@ -154,6 +156,8 @@ func (p *Process) waitReady() error {
 
 func (p *Process) waitReadyToStartExec(readyToStartExec chan struct{}) error {
 	select {
+	case err := <-p.err:
+		return err
 	case <-readyToStartExec:
 		return nil
 	case <-p.ctx.Done():

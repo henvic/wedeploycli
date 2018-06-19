@@ -2,6 +2,7 @@ package shell
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -164,10 +165,14 @@ func (p *Process) WatchErrors() error {
 	})
 }
 
+type errorContainerExec struct {
+	Error string `json:"error"`
+}
+
 // WatchErrorContainerExec listens to execute errors
 func (p *Process) WatchErrorContainerExec() error {
-	return p.shell.On("errorContainerExec", func(err error) {
-		p.err <- err
+	return p.shell.On("errorContainerExec", func(e errorContainerExec) {
+		p.err <- errors.New(e.Error)
 		p.ctxCancel()
 	})
 }
