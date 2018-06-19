@@ -46,13 +46,13 @@ func (p *Project) CreatedAtTime() time.Time {
 
 var (
 	// ErrProjectAlreadyExists happens when a Project ID already exists
-	ErrProjectAlreadyExists = errors.New("Project already exists")
+	ErrProjectAlreadyExists = errors.New("project already exists")
 
 	// ErrInvalidProjectID happens when a Project ID is invalid
-	ErrInvalidProjectID = errors.New("Invalid project ID")
+	ErrInvalidProjectID = errors.New("invalid project ID")
 
 	// ErrEmptyProjectID happens when trying to access a project, but providing an empty ID
-	ErrEmptyProjectID = errors.New("Can not get project: ID is empty")
+	ErrEmptyProjectID = errors.New("can't get project: ID is empty")
 )
 
 type createRequestBody struct {

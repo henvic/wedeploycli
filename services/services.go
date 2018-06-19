@@ -149,13 +149,13 @@ var (
 	ErrInvalidServiceID = errors.New("Invalid service ID")
 
 	// ErrEmptyProjectID happens when trying to access a project, but providing an empty ID
-	ErrEmptyProjectID = errors.New("Can not get project: Project ID is empty")
+	ErrEmptyProjectID = errors.New("Can't get project: Project ID is empty")
 
 	// ErrEmptyServiceID happens when trying to access a service, but providing an empty ID
-	ErrEmptyServiceID = errors.New("Can not get service: Service ID is empty")
+	ErrEmptyServiceID = errors.New("Can't get service: Service ID is empty")
 
 	// ErrEmptyProjectAndServiceID happens when trying to access a service, but providing empty IDs
-	ErrEmptyProjectAndServiceID = errors.New("Can not get service: Project and Service ID is empty")
+	ErrEmptyProjectAndServiceID = errors.New("Can't get service: Project and Service ID is empty")
 )
 
 // ServiceInfo is for a tuple of service ID and Location.
@@ -378,7 +378,7 @@ func (c *Client) AddDomain(ctx context.Context, projectID, serviceID string, dom
 	var service, perr = c.Get(ctx, projectID, serviceID)
 
 	if perr != nil {
-		return errwrap.Wrapf("Can not get current domains: {{err}}", perr)
+		return errwrap.Wrapf("can't get current domains: {{err}}", perr)
 	}
 
 	var customDomains = maybeAppendDomain(service.CustomDomains, domain)
@@ -401,7 +401,7 @@ func (c *Client) RemoveDomain(ctx context.Context, projectID string, serviceID, 
 	var service, perr = c.Get(ctx, projectID, serviceID)
 
 	if perr != nil {
-		return errwrap.Wrapf("Can not get current domains: {{err}}", perr)
+		return errwrap.Wrapf("can't get current domains: {{err}}", perr)
 	}
 
 	var customDomains = []string{}
@@ -429,7 +429,7 @@ func (c *Client) updateDomains(ctx context.Context, projectID, serviceID string,
 	c.Client.Auth(req)
 
 	if err := apihelper.SetBody(req, updateDomainsReq{domains}); err != nil {
-		return errwrap.Wrapf("Can not set body for domain: {{err}}", err)
+		return errwrap.Wrapf("can't set body for domain: {{err}}", err)
 	}
 	return apihelper.Validate(req, req.Put())
 }
@@ -537,7 +537,7 @@ func (c *Client) SetEnvironmentVariables(ctx context.Context, projectID, service
 	}
 
 	if err := apihelper.SetBody(req, m); err != nil {
-		return errwrap.Wrapf("Can not set body for setting environment variable: {{err}}", err)
+		return errwrap.Wrapf("can't set body for setting environment variable: {{err}}", err)
 	}
 
 	return apihelper.Validate(req, req.Put())
@@ -560,7 +560,7 @@ func (c *Client) SetEnvironmentVariable(ctx context.Context, projectID, serviceI
 	}
 
 	if err := apihelper.SetBody(req, b); err != nil {
-		return errwrap.Wrapf("Can not set body for setting environment variable: {{err}}", err)
+		return errwrap.Wrapf("can't set body for setting environment variable: {{err}}", err)
 	}
 
 	return apihelper.Validate(req, req.Put())

@@ -261,7 +261,7 @@ func testTrySubmitError(t *testing.T) {
 
 	lines, err := s.TrySubmit(context.Background(), conf)
 
-	if err == nil || !strings.HasPrefix(err.Error(), "Can not submit analytics:") {
+	if err == nil || !strings.HasPrefix(err.Error(), "can't submit analytics:") {
 		t.Errorf("Expected error for TrySubmit() on invalid port not found, got %v instead", err)
 	}
 

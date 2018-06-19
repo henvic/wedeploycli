@@ -12,28 +12,28 @@ import (
 type ErrorRemoteFlagAndHost struct{}
 
 func (ErrorRemoteFlagAndHost) Error() string {
-	return "Incompatible use: --remote flag can not be used along host format with remote address"
+	return "incompatible use: --remote flag can not be used along host format with remote address"
 }
 
 // ErrorMultiMode happens when --project and --service are used with host URL flag
 type ErrorMultiMode struct{}
 
 func (ErrorMultiMode) Error() string {
-	return "Incompatible use: --project and --service are not allowed with host URL flag"
+	return "incompatible use: --project and --service are not allowed with host URL flag"
 }
 
 // ErrorServiceWithNoProject hapens when --service is used without --project
 type ErrorServiceWithNoProject struct{}
 
 func (ErrorServiceWithNoProject) Error() string {
-	return "Incompatible use: --service requires --project"
+	return "incompatible use: --service requires --project"
 }
 
 // ErrorLoadingRemoteList happens when the remote list is needed, but not found
 type ErrorLoadingRemoteList struct{}
 
 func (ErrorLoadingRemoteList) Error() string {
-	return "Error loading remotes list"
+	return "error loading remotes list"
 }
 
 // ErrorFoundNoRemote happens when a remote isn't found for a given host address
@@ -42,7 +42,7 @@ type ErrorFoundNoRemote struct {
 }
 
 func (e ErrorFoundNoRemote) Error() string {
-	return fmt.Sprintf("Found no remote for address %v", e.Host)
+	return fmt.Sprintf("found no remote for address %v", e.Host)
 }
 
 // ErrorNotFound happens when a remote isn't found
@@ -51,7 +51,7 @@ type ErrorNotFound struct {
 }
 
 func (e ErrorNotFound) Error() string {
-	return fmt.Sprintf("Remote %v not found", e.Remote)
+	return fmt.Sprintf("remote %v not found", e.Remote)
 }
 
 // ErrorFoundMultipleRemote happens when multiple resolutions are found for a given host address
@@ -61,7 +61,7 @@ type ErrorFoundMultipleRemote struct {
 }
 
 func (e ErrorFoundMultipleRemote) Error() string {
-	return fmt.Sprintf("Found multiple remotes for address %v: %v",
+	return fmt.Sprintf("found multiple remotes for address %v: %v",
 		e.Host,
 		strings.Join(e.Remotes, ", "))
 }

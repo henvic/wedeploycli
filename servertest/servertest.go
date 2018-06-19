@@ -42,7 +42,7 @@ func Setup() {
 	mockServerURL, err = url.Parse(server.URL)
 
 	if err != nil {
-		panic(errwrap.Wrapf("Can not route to mock server: {{err}}", err))
+		panic(errwrap.Wrapf("can't route to mock server: {{err}}", err))
 	}
 
 	client := wedeploy.Client()

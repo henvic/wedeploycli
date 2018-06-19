@@ -74,11 +74,11 @@ func execute(format string, data interface{}) (string, error) {
 	)
 
 	if err != nil {
-		return "", errwrap.Wrapf("Template parsing error: {{err}}", err)
+		return "", errwrap.Wrapf("template parsing error: {{err}}", err)
 	}
 
 	if err := tmpl.Execute(wr, data); err != nil {
-		return "", errwrap.Wrapf("Can not execute template: {{err}}", err)
+		return "", errwrap.Wrapf("can't execute template: {{err}}", err)
 	}
 
 	return buf.String(), nil

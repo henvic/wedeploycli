@@ -131,7 +131,7 @@ func TestInspectServiceImage(t *testing.T) {
 
 func TestInspectServiceFormatError(t *testing.T) {
 	var got, err = InspectService("{{.", "./mocks/my-project/email")
-	var wantErr = `Template parsing error: template: :1: illegal number syntax: "."`
+	var wantErr = `template parsing error: template: :1: illegal number syntax: "."`
 
 	if err == nil || err.Error() != wantErr {
 		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
@@ -146,7 +146,7 @@ func TestInspectServiceFormatError(t *testing.T) {
 
 func TestInspectServiceNotFound(t *testing.T) {
 	var _, err = InspectService("", "./mocks/my-project/service-not-found")
-	var wantErr = `Inspection failure: can not find service`
+	var wantErr = `inspection failure: can't find service`
 
 	if err == nil || err.Error() != wantErr {
 		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)

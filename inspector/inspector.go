@@ -151,7 +151,7 @@ func InspectService(format, directory string) (string, error) {
 
 	switch {
 	case os.IsNotExist(cerr):
-		return "", errwrap.Wrapf("Inspection failure: can not find service", cerr)
+		return "", errwrap.Wrapf("inspection failure: can't find service", cerr)
 	case cerr != nil:
 		return "", cerr
 	}

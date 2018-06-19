@@ -201,7 +201,7 @@ func handleUpdateCheckError(c *config.Config, channel string, err error) error {
 	case strings.Contains(err.Error(), fmt.Sprintf("No channel with the name '%s' can be found.", channel)):
 		return errwrap.Wrapf(fmt.Sprintf(`channel "%s" was not found`, channel), err)
 	default:
-		return errwrap.Wrapf("Update failed: {{err}}", err)
+		return errwrap.Wrapf("update failed: {{err}}", err)
 	}
 }
 

@@ -203,7 +203,7 @@ func (d *Deploy) GetCurrentBranch() (branch string, err error) {
 	err = cmd.Run()
 
 	if err != nil {
-		return "", errwrap.Wrapf("Can not get current branch: {{err}}", err)
+		return "", errwrap.Wrapf("can't get current branch: {{err}}", err)
 	}
 
 	branch = strings.TrimPrefix(strings.TrimSpace(buf.String()), "refs/heads/")
@@ -393,7 +393,7 @@ func (d *Deploy) Commit() (commit string, err error) {
 	err = cmd.Run()
 
 	if err != nil {
-		return "", errwrap.Wrapf("Can not commit: {{err}}", err)
+		return "", errwrap.Wrapf("can't commit: {{err}}", err)
 	}
 
 	commit, err = d.getLastCommit()

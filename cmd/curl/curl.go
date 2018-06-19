@@ -450,7 +450,8 @@ func curlPretty(ctx context.Context, params []string) error {
 }
 
 func maybePrettyPrintJSON(headersOrErr, body []byte) {
-	if !bytes.Contains(bytes.ToLower(headersOrErr), []byte("\n< content-type: application/json")) {
+	if verbose.Enabled &&
+		!bytes.Contains(bytes.ToLower(headersOrErr), []byte("\n< content-type: application/json")) {
 		fmt.Println(string(body))
 		return
 	}

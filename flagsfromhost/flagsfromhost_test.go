@@ -21,7 +21,7 @@ func TestParseNoRemoteList(t *testing.T) {
 		t.Errorf("Expected error to be due to loading remote list, got %v instead", err)
 	}
 
-	if err.Error() != "Error loading remotes list" {
+	if err.Error() != "error loading remotes list" {
 		t.Errorf("Wrong error message for parsing when no remote list is loaded")
 	}
 }
@@ -40,7 +40,7 @@ func TestParseRemoteAddressNotFoundForAddress(t *testing.T) {
 		t.Errorf("Expected error to be due to remote not found for address, got %v instead", err)
 	}
 
-	if err.Error() != "Found no remote for address foo-bar.wedeploy.me" {
+	if err.Error() != "found no remote for address foo-bar.wedeploy.me" {
 		t.Errorf("Wrong error message for parsing when no remote list is loaded")
 	}
 }
@@ -67,7 +67,7 @@ func TestParseRemoteAddressMultipleRemote(t *testing.T) {
 		t.Errorf("Expected error to be due to multiple remotes found, got %v instead", err)
 	}
 
-	if err.Error() != "Found multiple remotes for address foo-bar.wedeploy.me: bar, foo" {
+	if err.Error() != "found multiple remotes for address foo-bar.wedeploy.me: bar, foo" {
 		t.Errorf("Wrong error message for parsing when no remote list is loaded")
 	}
 }
@@ -96,7 +96,7 @@ func TestParseMultipleRemoteHostMultipleRemote(t *testing.T) {
 		t.Errorf("Expected error to be due to multiple remotes found, got %v instead", err)
 	}
 
-	if err != nil && err.Error() != "Found multiple remotes for address wedeploy.me: bar, foo" {
+	if err != nil && err.Error() != "found multiple remotes for address wedeploy.me: bar, foo" {
 		t.Errorf("Wrong error message for parsing when no remote list is loaded, got %v instead", err)
 	}
 }
@@ -209,7 +209,7 @@ func TestServiceWithMissingProject(t *testing.T) {
 		t.Errorf("Expected error type ErrorServiceWithNoProject, got error %v instead", err)
 	}
 
-	if err == nil || err.Error() != "Incompatible use: --service requires --project" {
+	if err == nil || err.Error() != "incompatible use: --service requires --project" {
 		t.Errorf("Expected no error on parsing, got %v instead", err)
 	}
 }
@@ -249,7 +249,7 @@ func TestParseErrorMultiModeService(t *testing.T) {
 		t.Errorf("Expected err to be of type ErrorMultiMode, got %v instead", err)
 	}
 
-	if err.Error() != "Incompatible use: --project and --service are not allowed with host URL flag" {
+	if err.Error() != "incompatible use: --project and --service are not allowed with host URL flag" {
 		t.Errorf("Expected incompatible use message, got %v instead", err)
 	}
 }
@@ -276,7 +276,7 @@ func TestParseHostWithErrorRemoteFlagAndHost(t *testing.T) {
 		t.Errorf("Expected err to be of type ErrorRemoteFlagAndHost, got %v instead", err)
 	}
 
-	if err.Error() != "Incompatible use: --remote flag can not be used along host format with remote address" {
+	if err.Error() != "incompatible use: --remote flag can not be used along host format with remote address" {
 		t.Errorf("Expected incompatible use message, got %v instead", err)
 	}
 }
@@ -302,7 +302,7 @@ func TestParseNoMatchFromExternalHost(t *testing.T) {
 		t.Errorf("Expected error to be due to remote not found for address, got %v instead", err)
 	}
 
-	if err.Error() != "Found no remote for address x.example.com" {
+	if err.Error() != "found no remote for address x.example.com" {
 		t.Errorf("Wrong error message for parsing when no remote list is loaded")
 	}
 }
@@ -875,7 +875,7 @@ func TestParseUnknownRemoteFlagOnly(t *testing.T) {
 		t.Errorf("Expected parsed value to be nil, got %v instead", parsed)
 	}
 
-	var wantErr = "Remote cloud not found"
+	var wantErr = "remote cloud not found"
 
 	if err == nil || err.Error() != wantErr {
 		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
@@ -896,7 +896,7 @@ func TestParseUnknownRemoteFlag(t *testing.T) {
 		t.Errorf(`Expected error "%v" doesn't match expected type`, err)
 	}
 
-	var wantErr = "Remote not-found not found"
+	var wantErr = "remote not-found not found"
 
 	if err.Error() != wantErr {
 		t.Errorf("Expected error to be %v on parsing, got %v instead", wantErr, err)

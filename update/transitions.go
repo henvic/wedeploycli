@@ -34,7 +34,7 @@ var autocompleteTransition = Transition{
 		oldAutocomplete := filepath.Join(userhome.GetHomeDir(), "/.we_autocomplete")
 
 		if err := os.Remove(oldAutocomplete); err != nil {
-			return errwrap.Wrapf("Can not remove old autocomplete script: {{err}}", err)
+			return errwrap.Wrapf("can't remove old autocomplete script: {{err}}", err)
 		}
 
 		return nil

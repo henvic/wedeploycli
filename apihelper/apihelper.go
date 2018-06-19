@@ -190,13 +190,13 @@ func DecodeJSON(request *wedeploy.WeDeploy, data interface{}) error {
 	body, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
-		return errwrap.Wrapf("DecodeJSON error: {{err}}", err)
+		return errwrap.Wrapf("error on DecodeJSON: {{err}}", err)
 	}
 
 	err = json.Unmarshal(body, &data)
 
 	if err != nil {
-		err = errwrap.Wrapf("Error while decoding JSON: {{err}}", err)
+		err = errwrap.Wrapf("error while decoding JSON: {{err}}", err)
 	}
 
 	return err

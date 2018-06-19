@@ -57,7 +57,7 @@ func (s *Service) Listen(ctx context.Context) (address string, err error) {
 	s.netListener, err = net.Listen("tcp", "127.0.0.1:0")
 
 	if err != nil {
-		return "", errwrap.Wrapf("Can not start authentication service: {{err}}", err)
+		return "", errwrap.Wrapf("can't start authentication service: {{err}}", err)
 	}
 
 	s.serverAddress = fmt.Sprintf("http://localhost:%v",
@@ -72,7 +72,7 @@ func (s *Service) waitServer(w *sync.WaitGroup) {
 	<-s.ctx.Done()
 	var err = s.httpServer.Shutdown(s.ctx)
 	if err != nil && err != context.Canceled {
-		s.err = errwrap.Wrapf("Can not shutdown login service properly: {{err}}", err)
+		s.err = errwrap.Wrapf("can't shutdown login service properly: {{err}}", err)
 	}
 	w.Done()
 }
@@ -181,7 +181,7 @@ func (s *Service) authenticateHandler(w http.ResponseWriter, r *http.Request) {
 	var pferr = r.ParseForm()
 
 	if pferr != nil {
-		s.err = errwrap.Wrapf("Can not parse authentication form: {{err}}", pferr)
+		s.err = errwrap.Wrapf("can't parse authentication form: {{err}}", pferr)
 		safeErrorHandler(w, "400 Bad Request", http.StatusBadRequest)
 		s.ctxCancel()
 		return

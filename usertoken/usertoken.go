@@ -37,5 +37,5 @@ func filterInvalidSignatureError(err error) error {
 		return nil
 	}
 
-	return errwrap.Wrapf("Error parsing token: {{err}}", err)
+	return errwrap.Wrapf("error parsing token: {{err}}", err)
 }

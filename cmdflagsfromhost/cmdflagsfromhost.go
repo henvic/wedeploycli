@@ -256,7 +256,7 @@ func (s *SetupHost) getServiceFromCurrentWorkingDirectory() (service string, err
 
 	switch {
 	case err != nil && err != services.ErrServiceNotFound:
-		return "", errwrap.Wrapf("Error reading current service: {{err}}", err)
+		return "", errwrap.Wrapf("error reading current service: {{err}}", err)
 	case err == services.ErrServiceNotFound:
 		return "", nil
 	}

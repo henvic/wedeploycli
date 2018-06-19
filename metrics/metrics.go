@@ -109,7 +109,7 @@ func RecOrFail(conf *config.Config, e Event) (saved bool, err error) {
 	}
 
 	if err = (&eventRecorder{}).rec(ie); err != nil {
-		return false, errwrap.Wrapf("Error trying to record analytics report: {{err}}", err)
+		return false, errwrap.Wrapf("error trying to record analytics report: {{err}}", err)
 	}
 
 	return true, nil
@@ -154,7 +154,7 @@ type eventRecorder struct {
 
 func (e *eventRecorder) jsonMarshal() (err error) {
 	if e.jsonMarshaled, err = json.Marshal(e.event); err != nil {
-		return errwrap.Wrapf("Can not JSON marshal metrics event: {{err}}", err)
+		return errwrap.Wrapf("can't JSON marshal metrics event: {{err}}", err)
 	}
 
 	return nil
@@ -173,7 +173,7 @@ func (e *eventRecorder) appendEvent() error {
 	}
 
 	if _, err = file.Write(append(e.jsonMarshaled, []byte("\n")...)); err != nil {
-		return errwrap.Wrapf("Error trying to write to metrics file: {{err}}", err)
+		return errwrap.Wrapf("error trying to write to metrics file: {{err}}", err)
 	}
 
 	return nil
@@ -199,7 +199,7 @@ func (s *Sender) TrySubmit(ctx context.Context, conf *config.Config) (int, error
 	var lines, err = s.trySend(ctx)
 
 	if err != nil {
-		return 0, errwrap.Wrapf("Can not submit analytics: {{err}}", err)
+		return 0, errwrap.Wrapf("can't submit analytics: {{err}}", err)
 	}
 
 	if s.Purge {
@@ -207,7 +207,7 @@ func (s *Sender) TrySubmit(ctx context.Context, conf *config.Config) (int, error
 	}
 
 	if err != nil {
-		return lines, errwrap.Wrapf("Error trying to purge analytics file: {{err}}", err)
+		return lines, errwrap.Wrapf("error trying to purge analytics file: {{err}}", err)
 	}
 
 	return lines, nil
@@ -257,7 +257,7 @@ func isConnectedToIPv4() bool {
 
 	if err != nil {
 		verbose.Debug(
-			errwrap.Wrapf("Error trying to verify if it is connected to the Internet (ignoring): {{err}}", err))
+			errwrap.Wrapf("error trying to verify if it is connected to the Internet (ignoring): {{err}}", err))
 		return true
 	}
 
@@ -307,7 +307,7 @@ func (s *Sender) submitOnBackground() error {
 	cmd.Stdout = pw
 
 	if err := cmd.Start(); err != nil {
-		return errwrap.Wrapf("Error trying to submit metrics on background: {{err}}", err)
+		return errwrap.Wrapf("error trying to submit metrics on background: {{err}}", err)
 	}
 
 	verbose.Debug(fmt.Sprintf(
@@ -339,7 +339,7 @@ func (s *Sender) read() (err error) {
 	case os.IsNotExist(err):
 		return nil
 	case err != nil:
-		return errwrap.Wrapf("Can not read metrics file: {{err}}", err)
+		return errwrap.Wrapf("can't read metrics file: {{err}}", err)
 	default:
 		s.countLines()
 		return nil

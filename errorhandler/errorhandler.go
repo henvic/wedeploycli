@@ -93,7 +93,7 @@ getMessage:
 	personalizedMsg, err := templates.Execute(msg, context)
 
 	if err != nil {
-		verbose.Debug(errwrap.Wrapf("Error getting personalized message: {{err}}", err))
+		verbose.Debug(errwrap.Wrapf("error getting personalized message: {{err}}", err))
 		return msg, ok
 	}
 

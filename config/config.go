@@ -174,7 +174,7 @@ func (c *Config) Save() error {
 	var err = cfg.ReflectFrom(c)
 
 	if err != nil {
-		return errwrap.Wrapf("Can not load configuration: {{err}}", err)
+		return errwrap.Wrapf("can't load configuration: {{err}}", err)
 	}
 
 	c.updateRemotes()
@@ -183,7 +183,7 @@ func (c *Config) Save() error {
 	err = cfg.SaveToIndent(c.Path, "    ")
 
 	if err != nil {
-		return errwrap.Wrapf("Can not save configuration: {{err}}", err)
+		return errwrap.Wrapf("can't save configuration: {{err}}", err)
 	}
 
 	return nil
@@ -264,7 +264,7 @@ func (c *Config) read() error {
 	c.file, err = ini.Load(c.Path)
 
 	if err != nil {
-		return errwrap.Wrapf("Error reading configuration file: {{err}}\n"+
+		return errwrap.Wrapf("error reading configuration file: {{err}}\n"+
 			"Fix "+c.Path+" by hand or erase it.", err)
 	}
 
