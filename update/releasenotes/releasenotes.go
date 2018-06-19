@@ -130,4 +130,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "June 19th, 2018",
 		Description: "Minor improvements.",
 	},
+	ReleaseNote{
+		Version:     "1.5.4",
+		Date:        "June 19th, 2018",
+		Description: "Improving error messages. Minor improvements.",
+	},
 }
