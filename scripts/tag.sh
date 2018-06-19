@@ -207,9 +207,6 @@ function pretag() {
   runTests
   echo "All tests and checks necessary for release passed."
   echo ""
-  echo "Changes:"
-  git --no-pager log $LAST_TAG..HEAD --pretty="format:%h %s" --abbrev=10 || true
-  echo ""
 }
 
 function tagging() {
@@ -224,8 +221,16 @@ function tagging() {
   # normalize by removing leading v (i.e., v0.0.1)
   NEW_TAG_VERSION=$(echo $NEW_TAG_VERSION | sed 's/^v//')
 
-  go run update/releasenotes/check/check.go $NEW_TAG_VERSION
+  # check if the version is tagged
+  go run update/releasenotes/check/check.go $NEW_TAG_VERSION && ec=$? || ec=$?
+
+  if [ ! $ec -eq 0 ] ; then
+    >&2 echo "Add a release note to update/releasenotes/releasenotes.go and try again."
+  fi
+
+  return $ec
 }
+
 function release() {
   runTestsOnDrone
   checkPublishedTag
@@ -240,8 +245,12 @@ function run() {
   if [ $dryrun == true ]; then
     pretag
   else
-    pretag
+    echo "Changes:"
+    git --no-pager log $LAST_TAG..HEAD --pretty="format:%h %s" --abbrev=10 || true
+    echo ""
+    echo ""
     tagging
+    pretag
     echo
     release
   fi
