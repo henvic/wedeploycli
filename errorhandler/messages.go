@@ -8,8 +8,6 @@ var errorReasonMessage = messages{
 	"invalidCredentials":             "Access is denied due to invalid credentials",
 	"documentNotFound":               "Not found",
 	"notFound":                       "Not found",
-	"projectNotFound":                "Not found",
-	"serviceNotFound":                "Not found",
 	"badRequest":                     "The API request is invalid or improperly formed",
 	"internalError":                  "The request failed due to an internal error",
 	"projectQuotaExceeded":           "Project quota exceeded",
