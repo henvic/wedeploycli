@@ -135,4 +135,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "June 19th, 2018",
 		Description: "Improving error messages. Minor improvements.",
 	},
+	ReleaseNote{
+		Version:     "1.5.5",
+		Date:        "June 20th, 2018",
+		Description: `Show current number of deployed instances on "we scale" and ask for service before prompting for number of instances on change.`,
+	},
 }
