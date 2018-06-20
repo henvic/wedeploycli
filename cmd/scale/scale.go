@@ -10,6 +10,7 @@ import (
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/isterm"
+	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/services"
 )
 
@@ -34,6 +35,8 @@ var setupHost = cmdflagsfromhost.SetupHost{
 
 	PromptMissingProject: true,
 	PromptMissingService: true,
+
+	ListExtraDetails: list.Instances,
 }
 
 func init() {
@@ -90,6 +93,10 @@ func isValidNumberOfInstances(instances string) bool {
 }
 
 func scaleRun(cmd *cobra.Command, args []string) error {
+	if err := setupHost.Process(context.Background(), we.Context()); err != nil {
+		return err
+	}
+
 	sscale, err := getInstancesNumber(cmd, args)
 
 	if err != nil {
@@ -98,10 +105,6 @@ func scaleRun(cmd *cobra.Command, args []string) error {
 
 	if !isValidNumberOfInstances(sscale) {
 		return fmt.Errorf(`"%v" isn't a valid number for instances`, sscale)
-	}
-
-	if err := setupHost.Process(context.Background(), we.Context()); err != nil {
-		return err
 	}
 
 	current, err := strconv.Atoi(sscale)
