@@ -58,11 +58,6 @@ type List struct {
 	AllowCreateProjectOnPrompt bool
 	SelectNumber               bool
 
-	ProjectHeader func(projectID string) string
-	ServiceHeader func(serviceID, projectID string) string
-	ProjectFooter func(projectID string) string
-	ServiceFooter func(serviceID, projectID string) string
-
 	livew     *uilive.Writer
 	outStream io.Writer
 
