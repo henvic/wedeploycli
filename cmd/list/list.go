@@ -82,7 +82,9 @@ func listRun(cmd *cobra.Command, args []string) error {
 
 	var l = list.New(filter)
 
-	l.Detailed = detailed
+	if detailed {
+		l.Details = list.Detailed
+	}
 
 	if !watch {
 		return l.Once(context.Background(), we.Context())

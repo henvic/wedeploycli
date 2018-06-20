@@ -25,9 +25,27 @@ type Filter struct {
 	HideServices bool
 }
 
+// Pattern for detailed listing
+type Pattern uint
+
+const (
+	// Instances info
+	Instances Pattern = 1 << iota
+	// CPU info
+	CPU
+	// Memory info
+	Memory
+	// CreatedAt info
+	CreatedAt
+	// Detailed prints all details
+	Detailed = Instances | CPU | Memory | CreatedAt
+)
+
+var details = []Pattern{Instances, CPU, Memory, CreatedAt}
+
 // List services object
 type List struct {
-	Detailed bool
+	Details Pattern
 
 	Filter          Filter
 	PoolingInterval time.Duration

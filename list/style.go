@@ -2,6 +2,7 @@ package list
 
 import (
 	"fmt"
+	"math/bits"
 	"strings"
 	"time"
 
@@ -21,22 +22,11 @@ var projectsHeaders = []string{
 	"Status",
 }
 
-var detailedProjectsHeaders = []string{
-	"Created at",
-}
-
 var servicesHeaders = []string{
 	"Project",
 	"Service",
 	"Image",
 	"Status",
-}
-
-var detailedServicesHeaders = []string{
-	"Instances",
-	"CPU",
-	"Memory",
-	"Created at",
 }
 
 func (l *List) printServicesHeaders() {
@@ -56,43 +46,63 @@ func (l *List) printServicesHeaders() {
 		return
 	}
 
-	var servicesHeader string
+	var header string
 
 	if l.SelectNumber {
-		servicesHeader = "#\t"
+		header = "#\t"
 	}
 
-	servicesHeader += strings.Join(servicesHeaders, "\t")
+	header += strings.Join(servicesHeaders, "\t")
 
-	if l.Detailed {
-		servicesHeader += "\t" + strings.Join(detailedServicesHeaders, "\t")
+	if bits.OnesCount(uint(l.Details)) != 0 {
+		header += "\t"
+	}
+
+	if l.Details&Instances != 0 {
+		header += "Instances\t"
+	}
+
+	if l.Details&CPU != 0 {
+		header += "CPU\t"
+	}
+
+	if l.Details&Memory != 0 {
+		header += "Memory\t"
+	}
+
+	if l.Details&CreatedAt != 0 {
+		header += "Created at\t"
 	}
 
 	if formatter.Human {
-		servicesHeader = strings.Replace(servicesHeader, "\t", "\t     ", -1)
+		header = strings.Replace(header, "\t", "\t     ", -1)
 	}
 
-	l.Printf("%s\n", color.Format(color.FgHiBlack, servicesHeader))
+	l.Printf("%s\n", color.Format(color.FgHiBlack, header))
 }
 
 func (l *List) printProjectsOnlyHeaders() {
-	var projectsHeader string
+	var header string
 
 	if l.Filter.HideServices && l.SelectNumber {
-		projectsHeader = "#\t"
+		header = "#\t"
 	}
 
-	projectsHeader += strings.Join(projectsHeaders, "\t")
+	header += strings.Join(projectsHeaders, "\t")
 
-	if l.Detailed {
-		projectsHeader += "\t" + strings.Join(detailedProjectsHeaders, "\t")
+	if bits.OnesCount(uint(l.Details)) != 0 {
+		header += "\t"
+	}
+
+	if l.Details&CreatedAt != 0 {
+		header += "Created at"
 	}
 
 	if formatter.Human {
-		projectsHeader = strings.Replace(projectsHeader, "\t", "\t     ", -1)
+		header = strings.Replace(header, "\t", "\t     ", -1)
 	}
 
-	l.Printf("%s\n", color.Format(color.FgHiBlack, projectsHeader))
+	l.Printf("%s\n", color.Format(color.FgHiBlack, header))
 }
 
 func (l *List) printProjects() {
@@ -137,13 +147,15 @@ func (l *List) printProject(p projects.Project) {
 }
 
 func (l *List) printProjectOnly(p projects.Project) {
-	l.Printf("%v    \t%v", p.ProjectID, p.Health)
+	var s = fmt.Sprintf("%s\t%s", p.ProjectID, p.Health)
 
-	if l.Detailed {
-		l.Printf("    %v\t", p.CreatedAtTime().Format(time.RFC822))
+	if l.Details&CreatedAt != 0 {
+		s += fmt.Sprintf("\t%v", p.CreatedAtTime().Format(time.RFC822))
 	}
 
-	l.Printf("\n")
+	s += "\n"
+
+	l.Printf(s)
 }
 
 func (l *List) printProjectServices(p projects.Project) {
@@ -157,10 +169,12 @@ func (l *List) printProjectServices(p projects.Project) {
 		l.printService(p.ProjectID, service)
 	}
 
-	var tabs = strings.Repeat("\t", len(servicesHeaders)-1)
+	var tabs = len(servicesHeaders) - 1
 
-	if l.Detailed {
-		tabs = strings.Repeat("\t", len(detailedServicesHeaders)+1)
+	for _, d := range details {
+		if l.Details&d != 0 {
+			tabs++
+		}
 	}
 
 	if len(cs) == 0 {
@@ -170,7 +184,9 @@ func (l *List) printProjectServices(p projects.Project) {
 
 		l.Printf("%v    \t%v",
 			p.ProjectID,
-			color.Format(color.FgYellow, "zero services deployed")+tabs+"\n")
+			color.Format(color.FgYellow, "zero services deployed")+
+				strings.Repeat("\t", tabs)+
+				"\n")
 		return
 	}
 }
@@ -188,21 +204,26 @@ func (l *List) printService(projectID string, s services.Service) {
 	l.Printf("%v\t%v\t", projectID, l.getServiceDomain(projectID, s.ServiceID))
 	l.Printf("%v\t", s.Type())
 	l.Printf("%v\t", s.Health)
-	l.printInstances(s.Scale)
 
-	if l.Detailed {
-		l.Printf("%.6v\t%.6v MB\t%s", s.CPU, s.Memory, s.CreatedAtTime().Format(time.RFC822))
+	var ds []string
+
+	if l.Details&Instances != 0 {
+		ds = append(ds, fmt.Sprintf("%d", s.Scale))
 	}
 
-	l.Printf("\n")
-}
-
-func (l *List) printInstances(instances int) {
-	if !l.Detailed {
-		return
+	if l.Details&CPU != 0 {
+		ds = append(ds, fmt.Sprintf("%.6v", s.CPU))
 	}
 
-	l.Printf("%d\t", instances)
+	if l.Details&Memory != 0 {
+		ds = append(ds, fmt.Sprintf("%.6v MB", s.Memory))
+	}
+
+	if l.Details&CreatedAt != 0 {
+		ds = append(ds, s.CreatedAtTime().Format(time.RFC822))
+	}
+
+	l.Printf("%s\n", strings.Join(ds, "\t"))
 }
 
 func (l *List) getServiceDomain(projectID, serviceID string) string {
