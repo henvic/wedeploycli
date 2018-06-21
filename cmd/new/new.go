@@ -18,6 +18,10 @@ import (
 
 var setupHost = cmdflagsfromhost.SetupHost{
 	Pattern: cmdflagsfromhost.FullHostPattern,
+
+	Requires: cmdflagsfromhost.Requires{
+		Auth: true,
+	},
 }
 
 // NewCmd is used to create new projects/services
