@@ -13,7 +13,8 @@ import (
 	"github.com/wedeploy/cli/fancy"
 )
 
-var setupHost = cmdflagsfromhost.SetupHost{
+// Don't use this anywhere but on Cmd.RunE
+var sh = cmdflagsfromhost.SetupHost{
 	Pattern: cmdflagsfromhost.ProjectAndRemotePattern,
 
 	Requires: cmdflagsfromhost.Requires{
@@ -27,17 +28,16 @@ var Cmd = &cobra.Command{
 	Short: "Create new project",
 	// Don't use other run functions besides RunE here
 	// or fix NewCmd to call it correctly
-	RunE: projectRun,
+	RunE: runE,
 	Args: cobra.NoArgs,
 }
 
-func projectRun(cmd *cobra.Command, args []string) (err error) {
-	if err := setupHost.Process(context.Background(), we.Context()); err != nil {
-		return err
-	}
+func runE(cmd *cobra.Command, args []string) (err error) {
+	return Run(sh.Project())
+}
 
-	var projectID = setupHost.Project()
-
+// Run command for creating a project
+func Run(projectID string) (err error) {
 	if projectID != "" {
 		return createProject(projectID)
 	}
@@ -73,5 +73,5 @@ func createProject(projectID string) error {
 }
 
 func init() {
-	setupHost.Init(Cmd)
+	sh.Init(Cmd)
 }

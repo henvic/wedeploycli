@@ -17,7 +17,8 @@ import (
 
 var image string
 
-var setupHost = cmdflagsfromhost.SetupHost{
+// Don't use this anywhere but on Cmd.RunE
+var sh = cmdflagsfromhost.SetupHost{
 	Pattern: cmdflagsfromhost.FullHostPattern,
 
 	Requires: cmdflagsfromhost.Requires{
@@ -35,20 +36,33 @@ var Cmd = &cobra.Command{
 	Short: "Install new service",
 	// Don't use other run functions besides RunE here
 	// or fix NewCmd to call it correctly
-	RunE: (&newService{}).run,
+	RunE: runE,
 	Args: cobra.NoArgs,
+}
+
+func runE(cmd *cobra.Command, args []string) error {
+	if err := sh.Process(context.Background(), we.Context()); err != nil {
+		return err
+	}
+
+	return (&newService{}).run(sh.Project(), sh.Service(), sh.ServiceDomain())
+}
+
+// Run command for creating a service
+func Run(projectID, serviceID, serviceDomain string) error {
+	return (&newService{}).run(projectID, serviceID, serviceDomain)
 }
 
 type newService struct {
 	servicesClient *services.Client
 }
 
-func (ns *newService) getOrSelectImageType() (string, error) {
+func (n *newService) getOrSelectImageType() (string, error) {
 	if image != "" {
 		return image, nil
 	}
 
-	var catalog, err = ns.servicesClient.Catalog(context.Background())
+	var catalog, err = n.servicesClient.Catalog(context.Background())
 
 	var options = fancy.Options{
 		Hash: true,
@@ -76,20 +90,14 @@ func (ns *newService) getOrSelectImageType() (string, error) {
 	}
 }
 
-func (ns *newService) run(cmd *cobra.Command, args []string) error {
-	ns.servicesClient = services.New(we.Context())
+func (n *newService) run(projectID, serviceID, serviceDomain string) error {
+	n.servicesClient = services.New(we.Context())
 
-	if err := setupHost.Process(context.Background(), we.Context()); err != nil {
-		return err
-	}
-
-	var imageType, err = ns.getOrSelectImageType()
+	var imageType, err = n.getOrSelectImageType()
 
 	if err != nil {
 		return err
 	}
-
-	var serviceID = setupHost.Service()
 
 	if serviceID == "" {
 		fmt.Println(fancy.Question("Choose a Service ID") + " " + fancy.Tip("default: random"))
@@ -105,7 +113,7 @@ func (ns *newService) run(cmd *cobra.Command, args []string) error {
 		Image:     imageType,
 	}
 
-	s, err := ns.servicesClient.Create(context.Background(), setupHost.Project(), body)
+	s, err := n.servicesClient.Create(context.Background(), projectID, body)
 
 	if err != nil {
 		return err
@@ -115,8 +123,8 @@ func (ns *newService) run(cmd *cobra.Command, args []string) error {
 		"%s-%s.%s"+
 		color.Format(color.FgHiBlack, "\" created.")+"\n",
 		s.ServiceID,
-		setupHost.Project(),
-		setupHost.ServiceDomain())
+		projectID,
+		serviceDomain)
 
 	return nil
 }
@@ -124,5 +132,5 @@ func (ns *newService) run(cmd *cobra.Command, args []string) error {
 func init() {
 	Cmd.Flags().StringVar(&image, "image", "", "Image type")
 
-	setupHost.Init(Cmd)
+	sh.Init(Cmd)
 }

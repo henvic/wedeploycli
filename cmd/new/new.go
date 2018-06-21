@@ -34,12 +34,15 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func newRun(cmd *cobra.Command, args []string) error {
-	if setupHost.Service() != "" {
-		return service.Cmd.RunE(cmd, []string{})
+	var projectID = setupHost.Project()
+	var serviceID = setupHost.Service()
+
+	if serviceID != "" {
+		return service.Run(projectID, serviceID, setupHost.ServiceDomain())
 	}
 
-	if setupHost.Project() != "" {
-		return service.Cmd.RunE(cmd, []string{})
+	if projectID != "" {
+		return project.Run(projectID)
 	}
 
 	if !isterm.Check() {
