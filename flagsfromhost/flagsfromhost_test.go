@@ -276,7 +276,7 @@ func TestParseHostWithErrorRemoteFlagAndHost(t *testing.T) {
 		t.Errorf("Expected err to be of type ErrorRemoteFlagAndHost, got %v instead", err)
 	}
 
-	if err.Error() != "incompatible use: --remote flag can not be used along host format with remote address" {
+	if err.Error() != "incompatible use: --remote flag cannot be used along host format with remote address" {
 		t.Errorf("Expected incompatible use message, got %v instead", err)
 	}
 }

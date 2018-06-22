@@ -42,7 +42,7 @@ func runE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	if showTypeFields && format != "" {
-		return errors.New("incompatible use: --fields and --format can not be used together")
+		return errors.New("incompatible use: --fields and --format cannot be used together")
 	}
 
 	if showTypeFields {
