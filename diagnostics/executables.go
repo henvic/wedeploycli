@@ -20,4 +20,8 @@ var Executables = []*Executable{
 		Description: "Inspecting working directory context",
 		Command:     we + " inspect context",
 	},
+	&Executable{
+		Description: "Installed git version",
+		Command:     "git version",
+	},
 }
