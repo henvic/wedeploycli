@@ -50,9 +50,12 @@ type SetupHost struct {
 	project string
 	service string
 	remote  string
-	cmd     *cobra.Command
-	wectx   config.Context
-	parsed  *flagsfromhost.FlagsFromHost
+
+	cmd    *cobra.Command
+	wectx  config.Context
+	parsed *flagsfromhost.FlagsFromHost
+
+	tmpEnv string
 }
 
 // Pattern for the host and flags
@@ -76,6 +79,15 @@ const (
 
 // Project of the parsed flags or host
 func (s *SetupHost) Project() string {
+	return s.project
+}
+
+// Environment of the parsed flags or host
+func (s *SetupHost) Environment() string {
+	if i := strings.Index(s.project, "-"); i != -1 {
+		return s.project[i+1:]
+	}
+
 	return s.project
 }
 
@@ -163,6 +175,10 @@ func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 	var conf = s.wectx.Config()
 	var cffh = flagsfromhost.New(&conf.Remotes)
 
+	if err := s.injectEnvFlagInProject(); err != nil {
+		return nil, err
+	}
+
 	return cffh.ParseWithDefaultCustomRemote(
 		flagsfromhost.ParseFlagsWithDefaultCustomRemote{
 			Host:          s.url,
@@ -172,6 +188,23 @@ func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 			RemoteChanged: remoteFlagChanged,
 		},
 		s.wectx.Config().DefaultRemote)
+}
+
+func (s *SetupHost) injectEnvFlagInProject() error {
+	if s.tmpEnv == "" || s.project == "" && s.tmpEnv == "" {
+		return nil
+	}
+
+	if s.project == "" && s.tmpEnv != "" {
+		return errors.New("incompatible use: --environment requires --project")
+	}
+
+	if strings.Contains(s.project, "-") && s.tmpEnv != "" {
+		return errors.New("incompatible use: environment value cannot be passed both on --project and --environment")
+	}
+
+	s.project = s.project + "-" + s.tmpEnv
+	return nil
 }
 
 // Process flags
@@ -207,6 +240,7 @@ func (s *SetupHost) addRemoteFlag(cmd *cobra.Command) {
 
 func (s *SetupHost) addProjectFlag(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&s.project, "project", "p", "", "Perform the operation for a specific project")
+	cmd.Flags().StringVarP(&s.tmpEnv, "environment", "e", "", "Perform the operation for a specific environment")
 }
 
 func (s *SetupHost) addServiceFlag(cmd *cobra.Command) {

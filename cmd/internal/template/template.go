@@ -144,6 +144,7 @@ func (up *usagePrinter) printFlags() {
 
 	var begin = up.useFlagsHelpDescriptionFiltered([]string{
 		"service",
+		"environment",
 		"project",
 		"remote",
 		"url",
