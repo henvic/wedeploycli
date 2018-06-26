@@ -45,16 +45,16 @@ while {1} {
   send "we deploy\r"
   expect {
     timeout { handle_timeout; break }
-    "Type a project ID"
+    "Type project ID"
   }
   send "deploy1\r"
   expect {
     timeout { handle_timeout; break }
-    "Project does not exist."
+    "No project found."
   }
   expect {
     timeout { handle_timeout; break }
-    "Do you want to create project \"deploy1\""
+    "Create*project \"*deploy1*\""
   }
   send "y\r"
   expect "Deploying services on project"
@@ -80,12 +80,12 @@ while {1} {
   send "we deploy\r"
   expect {
     timeout { handle_timeout; break }
-    "Type a project ID or #"
+    "Type project ID or #"
   }
   send "deploy2\r"
   expect {
     timeout { handle_timeout; break }
-    "Deploying services on project"
+    "Deploying services to project"
   }
   set timeout 30
   expect {
@@ -121,7 +121,7 @@ while {1} {
   send "we deploy -p deploy3\r"
   expect {
     timeout { handle_timeout; break }
-    "Deploying services on project"
+    "Deploying services to project"
   }
   expect {
     timeout { handle_timeout; break }
@@ -171,14 +171,9 @@ while {1} {
   }
   expect {
     timeout { handle_timeout; break }
-    "Error building service \"md\""
+    "Build failed*md-deploy4"
   }
   set timeout $::_default_timeout
-  expect {
-    timeout { handle_timeout; break }
-    "Open browser to check the logs?"
-  }
-  send "n\r"
   expect {
     timeout { handle_timeout; break }
     "fixtures/projectC"
@@ -186,9 +181,49 @@ while {1} {
   send "we log -p deploy4\r"
   expect {
     timeout { handle_timeout; break }
-    "Something went wrong, most likely caused by an incorrect Dockerfile."
+    "Something went wrong and the entire build was interrupted"
   }
+  control_c
   break
 }
 
 delete_project deploy4
+
+#####################################################
+print_msg "SCENARIO: Deploy service to a new environment"
+#####################################################
+login $_tester(email) $_tester(pw)
+
+send "cd ../projectA\r"
+expect {
+  timeout {
+    handle_timeout
+    error "Had problem changing to project directory"
+   }
+  "fixtures/projectA"
+}
+
+create_project deploy5
+
+while {1} {
+  send "we deploy -p deploy5 -e dev\r"
+  expect {
+    timeout { handle_timeout; break }
+    "No project found."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Create*project \"*deploy5-dev*\""
+  }
+  send "y\r"
+  set timeout 30
+  expect {
+    timeout { handle_timeout; break }
+    "Deployment succeeded"
+  }
+  set timeout $::_default_timeout
+  break
+}
+
+verify_service_exists deploy5-dev ui
+delete_project deploy5
