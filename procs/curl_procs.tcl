@@ -95,15 +95,17 @@ proc create_user {email {pw test} {name Tester} {plan standard}} {
   set data "\{\
       \"email\": \"$email\",\
       \"password\": \"$pw\",\
-      \"name\": \"$name\",\
-      \"planId\": \"$plan\"\}"
+      \"name\": \"$name\"\}"
   set url $::base_url/user/create
   set response [http_post $url $::team_auth $data]
   set response_code [lindex $response 0]
   set body [lindex $response 1]
 
   if { $response_code != 200 } {
-    error "Could not create user $email"
+    set message "Could not create user $email"
+    append message "\n[lindex $response 1]"
+    add_to_report "  $message"
+    error $message
   }
 
   # get token and confirm user
@@ -116,6 +118,8 @@ proc create_user {email {pw test} {name Tester} {plan standard}} {
   if { $response_code != 302 } {
     error "Could not confirm user $email"
   }
+
+  set_user_plan $plan
 }
 
 proc delete_project {project} {
