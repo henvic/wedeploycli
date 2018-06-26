@@ -25,7 +25,7 @@ proc handle_timeout {{message ""}} {
   print_msg "Timeout Error: $message" red
   set stack [print_stack]
 
-  add_to_report "Timeout Error: $message\n$stack"
+  add_to_report "  Timeout Error: $message\n$stack"
 
   set timeout $::_default_timeout
   control_c
@@ -34,7 +34,7 @@ proc handle_timeout {{message ""}} {
 proc print_msg {text {color cyan}} {
   if { [string match {SCENARIO:*} $text] } {
     set color magenta
-    add_to_report "$text\n"
+    add_to_report "\n$text"
   }
 
   if { [string match {Finished!} $text] } { set color green }
