@@ -53,12 +53,13 @@ proc http_post {url userpw data} {
   return [list $code $body]
 }
 
-proc create_project {project} {
+proc create_project {project {env false}} {
   print_msg "Creating project $project"
 
   set timeout 30
   set url $::base_url/projects
-  set data "\{\"projectId\":\"$project\"\}"
+  set data "\{\"projectId\":\"$project\", \"environment\": $env\}"
+
   set response [http_post $url $::auth $data]
   set response_code [lindex $response 0]
   set timeout $::_default_timeout

@@ -38,11 +38,11 @@ while {1} {
   send "we delete\r"
   expect {
     timeout { handle_timeout; break }
-    "Please select a project or a service"
+    "Please*select*a project or a service"
   }
   expect {
     timeout { handle_timeout; break }
-    "Type a project/service ID or a service #"
+    "Type project/service ID or service #"
   }
   send "delete1\r"
   expect {
@@ -74,11 +74,11 @@ while {1} {
   send "we delete\r"
   expect {
     timeout { handle_timeout; break }
-    "Please select a project or a service"
+    "Please*select*a project or a service"
   }
   expect {
     timeout { handle_timeout; break }
-    "Type a project/service ID or a service #"
+    "Type project/service ID or service #"
   }
   send "hosting1\r"
   expect {
@@ -127,7 +127,7 @@ while {1} {
   send "we curl /projects/delete3\r"
   expect {
     timeout { handle_timeout; break }
-    "\{\"createdAt\":"
+    -gl "\"projectId\"*: *\"delete3\""
   }
   break
 }
@@ -163,3 +163,67 @@ while {1} {
 
 verify_service_exists delete5 hosting2
 delete_project delete5
+
+#####################################################
+print_msg "SCENARIO: Delete a project with -e flag"
+#####################################################
+
+create_project delete6
+create_project delete6-uat true
+
+while {1} {
+  send "we delete -p delete6 -e uat\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "Enter the project ID*delete6-uat*to delete it permanently"
+  }
+  send "delete6-uat\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "Deleting project*delete6-uat"
+  }
+  send "we curl /projects/delete6-uat\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Project does not exist."
+  }
+  send "we curl /projects/delete6\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "\"projectId\"*: *\"delete6\""
+  }
+  break
+}
+
+delete_project delete6
+
+#####################################################
+print_msg "SCENARIO: Delete a service with -e flag"
+#####################################################
+
+create_project delete7
+create_project delete7-dev true
+create_service delete7 hosting1
+create_service delete7-dev hosting2
+
+while {1} {
+  send "we delete -p delete7 -e dev -s hosting2\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "Enter the service ID*hosting2*to delete it permanently"
+  }
+  send "hosting2\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "Deleting service*hosting2*on project*delete7-dev"
+  }
+  send "we curl /projects/delete7-dev/services/hosting2\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Service delete7-dev/hosting2 does not exist."
+  }
+  break
+}
+
+verify_service_exists delete7 hosting1
+delete_project delete7
