@@ -33,6 +33,10 @@ var Cmd = &cobra.Command{
 }
 
 func runE(cmd *cobra.Command, args []string) (err error) {
+	if err := sh.Process(context.Background(), we.Context()); err != nil {
+		return err
+	}
+
 	return Run(sh.Project())
 }
 
