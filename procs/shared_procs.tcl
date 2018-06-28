@@ -24,9 +24,7 @@ proc expectation_not_met {message} {
 proc handle_timeout {{message ""}} {
   print_msg "Timeout Error: $message" red
   set stack [print_stack]
-
   add_to_report "  Timeout Error: $message\n$stack"
-
   set timeout $::_default_timeout
   control_c
 }
@@ -44,7 +42,7 @@ proc print_msg {text {color cyan}} {
     magenta { set color_code 35 }
     red { set color_code 31 }
     cyan -
-    default { set color_code 36}
+    default { set color_code 36 }
   }
 
   puts "\n\033\[01;$color_code;m$text \033\[0;m\n"
@@ -55,16 +53,16 @@ proc print_stack {} {
   set stack_payload_size [expr {$stack_size - 3}]
   set stack {}
 
-  for {set frame_index $stack_payload_size} {$frame_index >= 1} {incr frame_index -1} {
+  for { set frame_index $stack_payload_size } { $frame_index >= 1 } { incr frame_index -1 } {
     set frame [info frame $frame_index]
     set cmd [dict get $frame cmd]
     set file -
     set line -
-    if {[dict exists $frame file]} {set file [dict get $frame file]}
-    if {[dict exists $frame line]} {set line [dict get $frame line]}
+    if { [dict exists $frame file] } { set file [dict get $frame file] }
+    if { [dict exists $frame line] } { set line [dict get $frame line] }
 
     set max_string_size 30
-    if { [string length $cmd] > $max_string_size} {
+    if { [string length $cmd] > $max_string_size } {
       set cmd "[string range $cmd 0 $max_string_size]..."
     }
 
