@@ -33,7 +33,7 @@ func updateRun(cmd *cobra.Command, args []string) error {
 	}
 
 	switch from {
-	case "":
+	case "", "master":
 		notes = filterCurrentUpdate(notes)
 	default:
 		notes = filterUpdates(from, notes)
