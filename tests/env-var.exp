@@ -3,16 +3,16 @@
 spawn $env(SHELL)
 
 #####################################################
-print_msg "SCENARIO: Cannot `we env` without signing in"
+print_msg "SCENARIO: Cannot `we env-var` without signing in"
 #####################################################
 
 logout $_tester(email)
 
 while {1} {
-  send "we env\r"
+  send "we env-var\r"
   expect {
     timeout { handle_timeout; break }
-    "You need to log in before using \"we env\"."
+    "You need to log in before using \"we env-var\"."
   }
   expect {
     timeout { handle_timeout; break }
@@ -39,37 +39,37 @@ create_service env2 hosting1
 create_service env2 hosting2
 
 while {1} {
-  send "we env set var1 AAA\r"
+  send "we env-var set var1 AAA\r"
   expect {
     timeout { handle_timeout; break }
-    "Please select a service from the list below."
+    "Please*select*a service from the list below."
   }
   send "3\r"
   expect {
     timeout { handle_timeout; break }
     "Environment variable \"var1\" added."
   }
-  send "we env show\r"
+  send "we env-var show\r"
   expect {
     timeout { handle_timeout; break }
-    "Please select a service from the list below."
+    "Please*select*a service from the list below."
   }
   send "1\r"
   expect {
     timeout { handle_timeout; break }
     "No environment variable found."
   }
-  send "we env show\r"
+  send "we env-var show\r"
   expect {
     timeout { handle_timeout; break }
-    "Please select a service from the list below."
+    "Please*select*a service from the list below."
   }
   send "2\r"
   expect {
     timeout { handle_timeout; break }
     "No environment variable found."
   }
-  send "we env show -p env2 -s hosting2\r"
+  send "we env-var show -p env2 -s hosting2\r"
   expect {
     timeout { handle_timeout; break }
     -gl "var1*AAA"
@@ -88,22 +88,22 @@ create_project env3
 create_service env3 hosting1
 
 while {1} {
-  send "we env set var2 12345 -p env3 -s hosting1\r"
+  send "we env-var set var2 12345 -p env3 -s hosting1\r"
   expect {
     timeout { handle_timeout; break }
     "Environment variable \"var2\" added."
   }
-  send "we env show -p env3 -s hosting1\r"
+  send "we env-var show -p env3 -s hosting1\r"
   expect {
     timeout { handle_timeout; break }
     -gl "var2*12345"
   }
-  send "we env set var2 abcdef -p env3 -s hosting1\r"
+  send "we env-var set var2 abcdef -p env3 -s hosting1\r"
   expect {
     timeout { handle_timeout; break }
     "Environment variable \"var2\" added."
   }
-  send "we env show -p env3 -s hosting1\r"
+  send "we env-var show -p env3 -s hosting1\r"
   expect {
     timeout { handle_timeout; break }
     -gl "var2*abcdef"
@@ -121,20 +121,20 @@ create_project env4
 create_service env4 hosting1
 
 while {1} {
-  send "we env set var3 qa123xyz -p env4 -s hosting1\r"
+  send "we env-var set var3 qa123xyz -p env4 -s hosting1\r"
   expect {
     timeout { handle_timeout; break }
     "Environment variable \"var3\" added."
   }
-  send "we env show -p env4 -s hosting1\r"
+  send "we env-var show -p env4 -s hosting1\r"
   expect {
     timeout { handle_timeout; break }
     -gl "var3*qa123xyz"
   }
-  send "we env delete -p env4\r"
+  send "we env-var delete -p env4\r"
   expect {
     timeout { handle_timeout; break }
-    "Please select a service from the list below."
+    "Please*select*a service from the list below."
   }
   send "1\r"
   expect {
@@ -146,7 +146,7 @@ while {1} {
     timeout { handle_timeout; break }
     "Environment variable \"var3\" deleted."
   }
-  send "we env show -p env4 -s hosting1\r"
+  send "we env-var show -p env4 -s hosting1\r"
   expect {
     timeout {}
     "var3" { expectation_not_met "Should not have env var \"var3\""; break }
