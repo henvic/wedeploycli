@@ -145,4 +145,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "June 22nd, 2018",
 		Description: `Adding support to upcoming environment feature. Fixed flags on "we new". Minor improvements.`,
 	},
+	ReleaseNote{
+		Version:     "1.5.7",
+		Date:        "June 28th, 2018",
+		Description: `Fix processing flags on command "we new project". Minor improvements.`,
+	},
 }
