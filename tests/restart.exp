@@ -36,17 +36,11 @@ create_project restart1
 create_service restart1 ui1qa
 create_service restart1 ui2qa
 
-send "we curl enable\r"
-expect {
-  timeout { handle_timeout }
-  "cli-functional-tests/tests"
-}
-
 while {1} {
   send "we restart\r"
   expect {
     timeout { handle_timeout; break }
-    "Type a service ID or #"
+    "Type service ID or #"
   }
   send "ui2qa\r"
   expect {
@@ -56,13 +50,13 @@ while {1} {
   send "we curl /projects/restart1/activities\r"
   expect {
     timeout { handle_timeout; break }
-    -re "\"serviceId\":\"ui2qa\",\"projectId\":\"restart1\".*\"SERVICE_RESTARTED\""
+    -gl "\"serviceId\"*:*\"ui2qa\"*,*\"projectId\"*:*\"restart1\"*\"SERVICE_RESTARTED\""
   }
   expect /tests
   send "we curl /projects/restart1/activities\r"
   expect {
     timeout {}
-    -re "\"serviceId\":\"ui1qa\",\"projectId\":\"restart1\".*\"SERVICE_RESTARTED\"" {
+    -gl "\"serviceId\"*:*\"ui1qa\"*,*\"projectId\"*:*\"restart1\"*\"SERVICE_RESTARTED\"" {
       expectation_not_met "Should not have SERVICE_RESTARTED activity for ui1qa"
       break
     }
@@ -95,7 +89,7 @@ while {1} {
   }
   expect {
     timeout { handle_timeout; break }
-    "Type a service ID or #"
+    "Type service ID or #"
   }
   send "1\r"
   expect {
@@ -105,13 +99,13 @@ while {1} {
   send "we curl /projects/restart2/activities\r"
   expect {
     timeout { handle_timeout; break }
-    -re "\"serviceId\":\"hosting1a\",\"projectId\":\"restart2\".*\"SERVICE_RESTARTED\""
+    -gl "\"serviceId\"*:*\"hosting1a\"*,*\"projectId\"*:*\"restart2\"*\"SERVICE_RESTARTED\""
   }
   expect /tests
-  send "we curl /projects/restart2/activities\r"
+  send "we curl /projects/restart3/activities\r"
   expect {
     timeout {}
-    -re "\"serviceId\":\"hosting1b\",\"projectId\":\"restart3\".*\"SERVICE_RESTARTED\"" {
+   "SERVICE_RESTARTED" {
       expectation_not_met "Should not have SERVICE_RESTARTED activity for hosting1b"
       break
     }
@@ -130,7 +124,7 @@ create_project restart4
 create_project restart5
 create_service restart4 hosting1
 create_service restart5 hosting1
-create_service restart5 hosting2
+
 
 while {1} {
   send "we restart -p restart5 -s hosting1\r"
@@ -140,21 +134,14 @@ while {1} {
   }
   send "we curl /projects/restart5/activities\r"
   expect {
-    timeout {}
-    -re "\"serviceId\":\"hosting2\",\"projectId\":\"restart5\".*\"SERVICE_RESTARTED\"" {
-      expectation_not_met "Should not have SERVICE_RESTARTED activity for hosting2"
-      break
-    }
-  }
-  expect {
     timeout { handle_timeout; break }
-    -re "\"serviceId\":\"hosting1\",\"projectId\":\"restart5\".*\"SERVICE_RESTARTED\""
+    -gl "\"serviceId\"*:*\"hosting1\"*,*\"projectId\"*:*\"restart5\"*\"SERVICE_RESTARTED\""
   }
   expect /tests
   send "we curl /projects/restart4/activities\r"
   expect {
     timeout {}
-    -re "\"SERVICE_RESTARTED\"" {
+    "SERVICE_RESTARTED" {
       expectation_not_met "Should not have SERVICE_RESTARTED activity for restart4"
       break
     }

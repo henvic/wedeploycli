@@ -40,7 +40,7 @@ while {1} {
   send "we log\r"
   expect {
     timeout { handle_timeout; break }
-    "Type a project/service ID or a service #"
+    "Type project/service ID or service #"
   }
   send "ui2qa\r"
   expect {
@@ -62,7 +62,7 @@ while {1} {
   send "we log\r"
   expect {
     timeout { handle_timeout; break }
-    "Type a project/service ID or a service #"
+    "Type project/service ID or service #"
   }
   send "1\r"
   expect {
@@ -103,7 +103,7 @@ while {1} {
   send "we log -p log2\r"
   expect {
     timeout { handle_timeout; break }
-    "Not found"
+    "Project does not exist"
   }
   control_c
   break
