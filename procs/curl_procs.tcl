@@ -59,6 +59,20 @@ proc handle_response {message body} {
   print_msg $message red
 }
 
+proc assert_service_exists {project service} {
+  print_msg "Verifying service $service-$project"
+
+  set url $::base_url/projects/$project/services/$service
+  set response [http_get $url]
+  set response_code [lindex $response 0]
+  set body [lindex $response 1]
+
+  if { $response_code != 200 } {
+    incr ::_tests_failed 1
+    handle_response "Could not verify service $service-$project" $body
+  }
+}
+
 proc create_project {project {env false}} {
   print_msg "Creating project $project"
 
@@ -188,19 +202,5 @@ proc set_user_plan {plan} {
 
   if { $response_code != 200 } {
     handle_response "Could not update user plan" $body
-  }
-}
-
-proc verify_service_exists {project service} {
-  print_msg "Verifying service $service-$project"
-
-  set url $::base_url/projects/$project/services/$service
-  set response [http_get $url]
-  set response_code [lindex $response 0]
-  set body [lindex $response 1]
-
-  if { $response_code != 200 } {
-    incr ::_tests_failed 1
-    handle_response "Could not verify service $service-$project" $body
   }
 }

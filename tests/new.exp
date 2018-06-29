@@ -77,7 +77,7 @@ while {1} {
     timeout { handle_timeout; break }
     "Service*hosting1-new1.wedeploy.sh*created"
   }
-  verify_service_exists new1 hosting1
+  assert_service_exists new1 hosting1
   break
 }
 
