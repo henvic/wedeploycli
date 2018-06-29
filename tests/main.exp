@@ -8,6 +8,8 @@ set _teamuser(email) qa.team.user@wedeploy.com
 set _teamuser(pw) "L6P&ZExVXydC"
 set _tester(email) cli-tester@test.com
 set _tester(pw) test
+set _tests_failed 0
+set _tests_total 0
 
 if { [info exists env(REMOTE)] } {
   set _remote $::env(REMOTE)
@@ -67,7 +69,7 @@ if { $::argc > 1 } {
     new.exp \
     delete.exp \
     domain.exp \
-    env.exp \
+    env-var.exp \
     quota.exp
 }
 
@@ -76,4 +78,15 @@ foreach test_file $test_files {
   source $test_file
 }
 
+# report test counts
+set passed [expr {$_tests_total-$_tests_failed}]
+add_to_report "\nTotal number of tests: $_tests_total"
+add_to_report "Total passed: $passed"
+add_to_report "Total failed: $_tests_failed"
+
 print_msg "All done running tests!" green
+print_msg "Total number of tests: $_tests_total" green
+print_msg "Total passed: $passed" green
+print_msg "Total failed: $_tests_failed" red
+
+if { $_tests_failed > 0 } { exit 1 }

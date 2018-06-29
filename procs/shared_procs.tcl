@@ -1,8 +1,9 @@
 #! /usr/bin/expect
 
 proc Scenario: {name} {
-   print_msg "SCENARIO: $name" magenta
-   add_to_report "\nSCENARIO: $name"
+  incr ::_tests_total 1
+  print_msg "SCENARIO: $name" magenta
+  add_to_report "\nSCENARIO: $name"
 }
 
 proc add_to_report {text} {
@@ -20,6 +21,7 @@ proc control_c {} {
 }
 
 proc expectation_not_met {message} {
+  incr ::_tests_failed 1
   print_msg "Expectation not met: $message" red
   set stack [print_stack]
   add_to_report "Expectation Not Met Error: $message\n$stack"
@@ -27,6 +29,7 @@ proc expectation_not_met {message} {
 }
 
 proc handle_timeout {{message ""}} {
+  incr ::_tests_failed 1
   print_msg "Timeout Error: $message" red
   set stack [print_stack]
   add_to_report "  Timeout Error: $message\n$stack"
