@@ -1,5 +1,10 @@
 #! /usr/bin/expect
 
+proc Scenario: {name} {
+   print_msg "SCENARIO: $name" magenta
+   add_to_report "\nSCENARIO: $name"
+}
+
 proc add_to_report {text} {
   set file [open $::_test_report a+]
   puts $file $text
@@ -30,13 +35,6 @@ proc handle_timeout {{message ""}} {
 }
 
 proc print_msg {text {color cyan}} {
-  if { [string match {SCENARIO:*} $text] } {
-    set color magenta
-    add_to_report "\n$text"
-  }
-
-  if { [string match {Finished!} $text] } { set color green }
-
   switch $color {
     green { set color_code 32 }
     magenta { set color_code 35 }

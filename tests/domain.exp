@@ -3,7 +3,7 @@
 spawn $env(SHELL)
 
 #####################################################
-print_msg "SCENARIO: Cannot `we domain` without signing in"
+Scenario: "Cannot `we domain` without signing in"
 #####################################################
 
 logout $_tester(email)
@@ -27,7 +27,7 @@ while {1} {
 }
 
 #####################################################
-print_msg "SCENARIO: Add and delete a custom domain"
+Scenario: "Add and delete a custom domain"
 #####################################################
 
 if { $::_remote == "wedeploy.com" } {
