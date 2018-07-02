@@ -542,7 +542,9 @@ func (w *Watch) Wait() error {
 		return err
 	}
 
-	switch err := w.setFinalStates(); err {
+	err := w.setFinalStates()
+
+	switch err {
 	case nil:
 		w.notifyDeploymentSucceeded()
 	default:
@@ -553,7 +555,7 @@ func (w *Watch) Wait() error {
 		w.wlm.Stop()
 	}
 
-	return nil
+	return err
 }
 
 func (w *Watch) waitFor() error {
