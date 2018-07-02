@@ -8,7 +8,7 @@ set team_auth $::_teamuser(email):$::_teamuser(pw)
 set auth_header {"Authorization: Bearer token"}
 set content_type_header {"Content-Type: application/json; charset=utf-8"}
 
-proc http_get {url {args}} {
+proc http_get {url userpw {args}} {
   if { [llength $args] > 0 } {
     set pairs {}
     foreach {name value} $args {
@@ -20,7 +20,7 @@ proc http_get {url {args}} {
   set curl_handle [curl::init]
   $curl_handle configure \
     -url $url \
-    -userpwd $::auth \
+    -userpwd $userpw \
     -bodyvar body
 
   if { [catch {$curl_handle perform} curl_error_number] } {
@@ -63,7 +63,7 @@ proc assert_service_exists {project service} {
   print_msg "Verifying service $service-$project"
 
   set url $::base_url/projects/$project/services/$service
-  set response [http_get $url]
+  set response [http_get $url $::auth]
   set response_code [lindex $response 0]
   set body [lindex $response 1]
 
@@ -126,7 +126,7 @@ proc create_user {email {pw test} {name Tester} {plan standard}} {
   regexp {"confirmed":"(.*?)"} $body matched confirm_token
 
   set params "email $email confirmationToken $confirm_token"
-  set response [http_get $::base_url/confirm {*}$params]
+  set response [http_get $::base_url/confirm $::auth {*}$params]
   set response_code [lindex $response 0]
   set body [lindex $response 1]
 
@@ -164,7 +164,7 @@ proc delete_project {project} {
 # get user id  of currently logged in user, presumed to be $_tester(email)
 proc get_user_id {} {
   set url $::base_url/user
-  set response [http_get $url]
+  set response [http_get $url $::auth]
   set response_code [lindex $response 0]
   set body [lindex $response 1]
 
@@ -203,4 +203,18 @@ proc set_user_plan {plan} {
   if { $response_code != 200 } {
     handle_response "Could not update user plan" $body
   }
+}
+
+proc user_exists {email} {
+  set url $::base_url/admin/users
+  set response [http_get $url $::team_auth]
+  set response_code [lindex $response 0]
+  set body [lindex $response 1]
+
+  if { $response_code != 200 } {
+    handle_response "Could not get users" $body
+    error "Could not get users"
+  }
+
+  return [string match *$email* $body]
 }

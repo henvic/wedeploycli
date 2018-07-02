@@ -34,11 +34,8 @@ if { [info exists env(TESTER_PW)] } {
 source ../procs/shared_procs.tcl
 source ../procs/curl_procs.tcl
 
-# if env(TESTER_EMAIL) has a value, assume tester already exists
-# otherwise, default tester needs to be created
-if { ![info exists ::env(TESTER_EMAIL)] } {
-  create_user $_tester(email)
-}
+# create tester if user doesn't already exist
+if { ![user_exists $_tester(email)] } { create_user $_tester(email) }
 
 puts "TESTER_EMAIL: $_tester(email)"
 puts "REMOTE: $_remote"
@@ -75,7 +72,7 @@ if { $::argc > 1 } {
 
 # run tests
 foreach test_file $test_files {
-  source $test_file
+  catch { source $test_file }
 }
 
 # report test counts
@@ -84,9 +81,12 @@ add_to_report "\nTotal number of tests: $_tests_total"
 add_to_report "Total passed: $passed"
 add_to_report "Total failed: $_tests_failed"
 
-print_msg "All done running tests!" green
 print_msg "Total number of tests: $_tests_total" green
 print_msg "Total passed: $passed" green
-print_msg "Total failed: $_tests_failed" red
 
-if { $_tests_failed > 0 } { exit 1 }
+if { $_tests_failed > 0 } {
+  print_msg "Total failed: $_tests_failed" red
+  exit 1
+} else {
+  print_msg "All tests passed!" green
+}
