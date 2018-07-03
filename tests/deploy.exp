@@ -12,7 +12,7 @@ expect {
 }
 
 #####################################################
-print_msg "SCENARIO: Cannot deploy without logging in"
+Scenario: "Cannot deploy without logging in"
 #####################################################
 
 logout $_tester(email)
@@ -36,7 +36,7 @@ while {1} {
 }
 
 #####################################################
-print_msg "SCENARIO: Deploy to a new project"
+Scenario: "Deploy to a new project"
 #####################################################
 
 login $_tester(email) $_tester(pw)
@@ -63,15 +63,15 @@ while {1} {
     timeout { handle_timeout; break }
     "Deployment succeeded"
   }
+  set timeout $::_default_timeout
+  assert_service_exists deploy1 ui
   break
 }
 
-set timeout $::_default_timeout
-verify_service_exists deploy1 ui
 delete_project deploy1
 
 #####################################################
-print_msg "SCENARIO: Deploy to an existing project"
+Scenario: "Deploy to an existing project"
 #####################################################
 
 create_project deploy2
@@ -93,15 +93,15 @@ while {1} {
       handle_timeout; break }
     "Deployment succeeded"
   }
+  set timeout $::_default_timeout
+  assert_service_exists deploy2 ui
   break
 }
 
-set timeout $::_default_timeout
-verify_service_exists deploy2 ui
 delete_project deploy2
 
 #####################################################
-print_msg "SCENARIO: Deploy project with two services"
+Scenario: "Deploy project with two services"
 #####################################################
 
 send "cd ../projectB\r"
@@ -139,16 +139,16 @@ while {1} {
     timeout { handle_timeout; break }
     "Deployment succeeded"
   }
+  assert_service_exists deploy3 ui1
+  assert_service_exists deploy3 ui2
   break
 }
 
 set timeout $::_default_timeout
-verify_service_exists deploy3 ui1
-verify_service_exists deploy3 ui2
 delete_project deploy3
 
 #####################################################
-print_msg "SCENARIO: Deploy project with bad wedeploy.json"
+Scenario: "Deploy project with bad wedeploy.json"
 #####################################################
 
 send "cd ../projectC\r"
@@ -190,7 +190,7 @@ while {1} {
 delete_project deploy4
 
 #####################################################
-print_msg "SCENARIO: Deploy service to a new environment"
+Scenario: "Deploy service to a new environment"
 #####################################################
 login $_tester(email) $_tester(pw)
 
@@ -222,8 +222,8 @@ while {1} {
     "Deployment succeeded"
   }
   set timeout $::_default_timeout
+  assert_service_exists deploy5-dev ui
   break
 }
 
-verify_service_exists deploy5-dev ui
 delete_project deploy5

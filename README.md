@@ -46,13 +46,16 @@ TEAMUSER_PW={teampw} \
 REMOTE=wedeploy.xyz \
 ./main.exp -tclargs list.exp
 ```
-* User with TESTER_EMAIL is assumed to exist, and should have at least a standard plan.  If the environment variables are not provided, following default values are used:
+* TESTER_EMAIL should have at least a standard plan and user will be created if it doesn't already exist.
+* For any environment variable not provided, following default values are used:
 
-| Variable      | Default value       |
-| ------------- | ------------------- |
-| TESTER_EMAIL  | cli-tester@test.com |
-| TESTER_PW     | test                |
-| REMOTE        | wedeploy.xyz        |
+| Variable       | Default value             |
+| -------------  | ------------------------- |
+| TEAMUSER_EMAIL | qa.team.user@wedeploy.com |
+| TEAMUSER_PW    | L6P&ZExVXydC              |
+| TESTER_EMAIL   | cli-tester@test.com       |
+| TESTER_PW      | test                      |
+| REMOTE         | wedeploy.xyz              |
 
 
 ## Test results

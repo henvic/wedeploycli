@@ -3,7 +3,7 @@
 spawn $env(SHELL)
 
 #####################################################
-print_msg "SCENARIO: Login without browser"
+Scenario: "Login without browser"
 #####################################################
 
 logout $_tester(email)

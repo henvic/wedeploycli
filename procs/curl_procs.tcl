@@ -8,7 +8,7 @@ set team_auth $::_teamuser(email):$::_teamuser(pw)
 set auth_header {"Authorization: Bearer token"}
 set content_type_header {"Content-Type: application/json; charset=utf-8"}
 
-proc http_get {url {args}} {
+proc http_get {url userpw {args}} {
   if { [llength $args] > 0 } {
     set pairs {}
     foreach {name value} $args {
@@ -20,7 +20,7 @@ proc http_get {url {args}} {
   set curl_handle [curl::init]
   $curl_handle configure \
     -url $url \
-    -userpwd $::auth \
+    -userpwd $userpw \
     -bodyvar body
 
   if { [catch {$curl_handle perform} curl_error_number] } {
@@ -53,22 +53,39 @@ proc http_post {url userpw data} {
   return [list $code $body]
 }
 
+proc handle_response {message body} {
+  append message "\n  $body"
+  add_to_report "  $message"
+  print_msg $message red
+}
+
+proc assert_service_exists {project service} {
+  print_msg "Verifying service $service-$project"
+
+  set url $::base_url/projects/$project/services/$service
+  set response [http_get $url $::auth]
+  set response_code [lindex $response 0]
+  set body [lindex $response 1]
+
+  if { $response_code != 200 } {
+    incr ::_tests_failed 1
+    handle_response "Could not verify service $service-$project" $body
+  }
+}
+
 proc create_project {project {env false}} {
   print_msg "Creating project $project"
 
   set timeout 30
   set url $::base_url/projects
   set data "\{\"projectId\":\"$project\", \"environment\": $env\}"
-
   set response [http_post $url $::auth $data]
   set response_code [lindex $response 0]
+  set body [lindex $response 1]
   set timeout $::_default_timeout
 
   if { $response_code != 200 } {
-    set message "Project $project could not be created"
-    append message "\n[lindex $response 1]"
-    add_to_report "  $message"
-    print_msg $message red
+    handle_response "Project $project could not be created" $body
   }
 }
 
@@ -80,13 +97,11 @@ proc create_service {project service {image wedeploy/hosting}} {
   set data "\{\"serviceId\":\"$service\",\"image\":\"$image\"\}"
   set response [http_post $url $::auth $data]
   set response_code [lindex $response 0]
+  set body [lindex $response 1]
   set timeout $::_default_timeout
 
   if { $response_code != 200 } {
-    set message "Service $service could not be created"
-    append message "\n[lindex $response 1]"
-    add_to_report "  $message"
-    print_msg $message red
+    handle_response "Service $service could not be created" $body
   }
 }
 
@@ -103,21 +118,21 @@ proc create_user {email {pw test} {name Tester} {plan standard}} {
   set body [lindex $response 1]
 
   if { $response_code != 200 } {
-    set message "Could not create user $email"
-    append message "\n[lindex $response 1]"
-    add_to_report "  $message"
-    error $message
+    handle_response "Could not create user $email" $body
+    error "Error creating user"
   }
 
   # get token and confirm user
   regexp {"confirmed":"(.*?)"} $body matched confirm_token
 
   set params "email $email confirmationToken $confirm_token"
-  set response [http_get $::base_url/confirm {*}$params]
+  set response [http_get $::base_url/confirm $::auth {*}$params]
   set response_code [lindex $response 0]
+  set body [lindex $response 1]
 
   if { $response_code != 302 } {
-    error "Could not confirm user $email"
+    handle_response "Could not confirm user $email" $body
+    error "Error confirming email"
   }
 
   set_user_plan $plan
@@ -142,24 +157,19 @@ proc delete_project {project} {
   $curl_handle cleanup
 
   if { $code != 204 } {
-    set message "Could not delete project $project"
-    add_to_report "  $message"
-    print_msg $message red
+    handle_response "Could not delete project $project" ""
   }
 }
 
 # get user id  of currently logged in user, presumed to be $_tester(email)
 proc get_user_id {} {
   set url $::base_url/user
-  set response [http_get $url]
+  set response [http_get $url $::auth]
   set response_code [lindex $response 0]
   set body [lindex $response 1]
 
   if { $response_code != 200 } {
-    set message "Could not get user id"
-    append message "\n$body"
-    add_to_report "  $message"
-    print_msg $message red
+    handle_response "Could not get user id" $body
   }
 
   regexp {"id":"(.*?)"} $body matched user_id
@@ -191,23 +201,20 @@ proc set_user_plan {plan} {
   $curl_handle cleanup
 
   if { $response_code != 200 } {
-    set message "Could not update user plan"
-    append message "\n$body"
-    add_to_report "  $message"
-    print_msg $message red
+    handle_response "Could not update user plan" $body
   }
 }
 
-proc verify_service_exists {project service} {
-  print_msg "Verifying service $service-$project"
-
-  set url $::base_url/projects/$project/services/$service
-  set response [http_get $url]
+proc user_exists {email} {
+  set url $::base_url/admin/users
+  set response [http_get $url $::team_auth]
   set response_code [lindex $response 0]
+  set body [lindex $response 1]
 
   if { $response_code != 200 } {
-    set message "Project $project with service $service doesn't exist"
-    add_to_report "  $message"
-    print_msg $message red
+    handle_response "Could not get users" $body
+    error "Could not get users"
   }
+
+  return [string match *$email* $body]
 }

@@ -3,7 +3,7 @@
 spawn $env(SHELL)
 
 #####################################################
-print_msg "SCENARIO: Cannot exceed project quota"
+Scenario: "Cannot exceed project quota"
 #####################################################
 
 login $_tester(email) $_tester(pw)
@@ -19,7 +19,7 @@ while {1} {
   send "we new\r"
   expect {
     timeout { handle_timeout; break }
-    "Do you want to create a new project or install a new service?"
+    "Do you want to*create*a new project or install a new service?"
   }
   send "1\r"
   expect {
@@ -29,7 +29,7 @@ while {1} {
   send "quota4\r"
   expect {
     timeout { handle_timeout; break }
-    "The provided plan basic allows for a maximum of 3 projects."
+    "You've reached your plan limits"
   }
   send "we list\r"
   expect {
@@ -40,7 +40,7 @@ while {1} {
 }
 
 #####################################################
-print_msg "SCENARIO: Cannot exceed service quota"
+Scenario: "Cannot exceed service quota"
 #####################################################
 
 create_service quota1 hosting1
@@ -51,12 +51,12 @@ while {1} {
   send "we new\r"
   expect {
     timeout { handle_timeout; break }
-    "Do you want to create a new project or install a new service?"
+    "Do you want to*create*a new project or install a new service?"
   }
   send "2\r"
   expect {
     timeout { handle_timeout; break }
-    "Type a project ID or #"
+    "Type project ID or #"
   }
   send "2\r"
   expect {
@@ -71,7 +71,7 @@ while {1} {
   send "hosting3\r"
   expect {
     timeout { handle_timeout; break }
-    "The provided plan basic allows for a maximum of 3 services."
+    "You've reached your plan limits"
   }
   send "we list\r"
   expect {
@@ -85,7 +85,7 @@ while {1} {
 }
 
 #####################################################
-print_msg "SCENARIO: Cannot exceed custom domains quota"
+Scenario: "Cannot exceed custom domains quota"
 #####################################################
 
 if { $::_remote == "wedeploy.com" } {
@@ -118,7 +118,7 @@ while {1} {
   send "we domain add $qadomain4 -p quota1 -s hosting1\r"
   expect {
     timeout { handle_timeout; break }
-    "exceeded the max limit for provided plan basic. The max limit is 3."
+    "You've reached your plan limits"
   }
   send "we domain show -p quota1 -s hosting1\r"
   expect {
