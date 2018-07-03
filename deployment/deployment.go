@@ -331,7 +331,7 @@ func getWeExecutable() (string, error) {
 func (d *Deploy) uploadPackage() (err error) {
 	if d.groupUID, err = d.Push(); err != nil {
 		if _, ok := err.(*exec.ExitError); ok {
-			return errwrap.Wrapf("deployment upload failed: {{err}}", err)
+			return errwrap.Wrapf("upload failed: {{err}}", err)
 		}
 
 		// don't wrap: expect apihelper.APIFault
