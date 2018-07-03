@@ -219,7 +219,11 @@ func (w *WaitLiveMsg) Stop() {
 	}
 	w.msgsMutex.RUnlock()
 	w.tickerdMutex.Lock()
-	w.tickerd <- true
+
+	if w.tickerd != nil {
+		w.tickerd <- true
+	}
+
 	w.tickerdMutex.Unlock()
 	w.waitEnd.Wait()
 }

@@ -33,3 +33,21 @@ func TestWaitLiveMsg(t *testing.T) {
 	time.Sleep(2 * time.Second)
 	wlm.Stop()
 }
+
+func TestWaitLiveMsgStopNoTick(t *testing.T) {
+	var wlm = WaitLiveMsg{}
+
+	end := make(chan struct{}, 1)
+	timer := time.NewTimer(time.Second)
+
+	go func() {
+		wlm.Stop()
+		end <- struct{}{}
+	}()
+
+	select {
+	case <-timer.C:
+		t.Errorf("WaitLiveMsg didn't stop before tick")
+	case <-end:
+	}
+}
