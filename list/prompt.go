@@ -70,7 +70,7 @@ func (l *List) PromptProject(ctx context.Context, wectx config.Context) (*Select
 // PromptProjectOrService from the list selection
 func (l *List) PromptProjectOrService(ctx context.Context, wectx config.Context) (*Selection, error) {
 	fmt.Printf("Please %s a project or a service from the list below.\n",
-		color.Format(color.FgHiMagenta, "select"))
+		color.Format(color.FgMagenta, color.Bold, "select"))
 	l.SelectNumber = true
 
 	if err := l.Once(ctx, wectx); err != nil {
@@ -164,7 +164,7 @@ func dedupPromptProjectOrService(projectCandidate, serviceCandidate *Selection) 
 // PromptService from the list selection
 func (l *List) PromptService(ctx context.Context, wectx config.Context) (*Selection, error) {
 	fmt.Printf("Please %s a service from the list below.\n",
-		color.Format(color.FgHiMagenta, "select"))
+		color.Format(color.FgMagenta, color.Bold, "select"))
 	l.SelectNumber = true
 
 	if err := l.Once(ctx, wectx); err != nil {
