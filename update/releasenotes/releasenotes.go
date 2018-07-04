@@ -150,4 +150,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "June 28th, 2018",
 		Description: `Fix processing flags on command "we new project". Minor improvements.`,
 	},
+	ReleaseNote{
+		Version:     "1.5.8",
+		Date:        "July 4th, 2018",
+		Description: "Fixed deployment upload failure feedback. Minor improvements.",
+	},
 }
