@@ -91,7 +91,8 @@ func (n *newService) getOrSelectImageType() (string, error) {
 }
 
 func (n *newService) run(projectID, serviceID, serviceDomain string) error {
-	n.servicesClient = services.New(we.Context())
+	wectx := we.Context()
+	n.servicesClient = services.New(wectx)
 
 	var imageType, err = n.getOrSelectImageType()
 
@@ -121,7 +122,10 @@ func (n *newService) run(projectID, serviceID, serviceDomain string) error {
 
 	fmt.Printf(color.Format(color.FgHiBlack, "Service \"")+
 		"%s-%s.%s"+
-		color.Format(color.FgHiBlack, "\" created.")+"\n",
+		color.Format(color.FgHiBlack, "\" created on ")+
+		wectx.InfrastructureDomain()+
+		color.Format(color.FgHiBlack, ".")+
+		"\n",
 		s.ServiceID,
 		projectID,
 		serviceDomain)

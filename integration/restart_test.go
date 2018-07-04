@@ -3,6 +3,7 @@ package integration
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 	"testing"
 
@@ -83,9 +84,11 @@ func TestRestartService(t *testing.T) {
 
 	cmd.Run()
 
+	var server = "http://localhost:" + strings.TrimPrefix(servertest.IntegrationServer.URL, "http://127.0.0.1:")
+
 	var e = &Expect{
 		ExitCode: 0,
-		Stdout:   `Restarting service "bar" on project "foo".`,
+		Stdout:   `Restarting service "bar" on project "foo" on ` + server + `.`,
 	}
 
 	e.Assert(t, cmd)

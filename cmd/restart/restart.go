@@ -51,7 +51,8 @@ type restart struct {
 }
 
 func (r *restart) do() (err error) {
-	servicesClient := services.New(we.Context())
+	wectx := we.Context()
+	servicesClient := services.New(wectx)
 	err = servicesClient.Restart(r.ctx, r.project, r.service)
 
 	if err == nil {
@@ -60,7 +61,9 @@ func (r *restart) do() (err error) {
 			"%s"+color.Format(color.FgHiBlack,
 			"\" on project \"")+
 			"%s"+
-			color.Format(color.FgHiBlack, "\".")+
+			color.Format(color.FgHiBlack, "\" on ")+
+			wectx.InfrastructureDomain()+
+			color.Format(color.FgHiBlack, ".")+
 			"\n",
 			r.service,
 			r.project)

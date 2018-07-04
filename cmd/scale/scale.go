@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/isterm"
 	"github.com/wedeploy/cli/list"
@@ -69,13 +70,32 @@ type scale struct {
 }
 
 func (s *scale) do() (err error) {
-	servicesClient := services.New(we.Context())
+	wectx := we.Context()
+	servicesClient := services.New(wectx)
 	err = servicesClient.Scale(s.ctx, s.project, s.service, services.Scale{
 		Current: s.current,
 	})
 
 	if err == nil {
-		fmt.Printf("Setting the number of instances for \"%s\" to %d.\n", setupHost.Host(), s.current)
+		var maybePlural string
+
+		if s.current > 1 {
+			maybePlural = "s"
+		}
+
+		fmt.Printf(color.Format(color.FgHiBlack,
+			"Scaling service \"")+
+			"%s"+color.Format(color.FgHiBlack,
+			"\" on project \"")+
+			"%s"+
+			color.Format(color.FgHiBlack, "\" on ")+
+			wectx.InfrastructureDomain()+
+			color.Format(color.FgHiBlack, " to ")+
+			color.Format(color.FgMagenta, color.Bold, s.current)+
+			color.Format(color.FgHiBlack, " instance%s.", maybePlural)+
+			"\n",
+			s.service,
+			s.project)
 	}
 
 	return err

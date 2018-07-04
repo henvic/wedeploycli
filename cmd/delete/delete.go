@@ -134,7 +134,9 @@ func (u *undeployer) do() (err error) {
 		fmt.Printf(color.Format(
 			color.FgHiBlack, "Deleting project \"")+
 			"%s"+
-			color.Format(color.FgHiBlack, "\".")+
+			color.Format(color.FgHiBlack, "\" on ")+
+			u.infrastructureDomain+
+			color.Format(color.FgHiBlack, ".")+
 			"\n",
 			u.project)
 	default:
@@ -143,7 +145,9 @@ func (u *undeployer) do() (err error) {
 			"%v"+
 			color.Format(color.FgHiBlack, "\" on project \"")+
 			"%v"+
-			color.Format(color.FgHiBlack, "\".")+
+			color.Format(color.FgHiBlack, "\" on ")+
+			u.infrastructureDomain+
+			color.Format(color.FgHiBlack, ".")+
 			"\n",
 			u.service,
 			u.project)

@@ -57,7 +57,8 @@ func Run(projectID string) (err error) {
 }
 
 func createProject(projectID string) error {
-	projectsClient := projects.New(we.Context())
+	wectx := we.Context()
+	projectsClient := projects.New(wectx)
 
 	var project, err = projectsClient.Create(context.Background(), projects.Project{
 		ProjectID: projectID,
@@ -70,7 +71,9 @@ func createProject(projectID string) error {
 	fmt.Printf(color.Format(
 		color.FgHiBlack, "Project \"")+
 		"%v"+
-		color.Format(color.FgHiBlack, "\" created.")+
+		color.Format(color.FgHiBlack, "\" created on ")+
+		wectx.InfrastructureDomain()+
+		color.Format(color.FgHiBlack, ".")+
 		"\n",
 		project.ProjectID)
 	return nil
