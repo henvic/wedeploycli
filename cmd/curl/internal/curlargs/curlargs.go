@@ -4,8 +4,8 @@ import "strings"
 
 // See https://github.com/curl/curl/blob/master/src/tool_getparam.c
 // Last synchronization:
-// commit ee8016b3de0b0e3e9a352a1123c5e6272848aa55
-// date: 24, December 2017.
+// commit c45360d4633850839bb9c2d77dbf8a8285e9ad49
+// date: 11, June 2018.
 
 // curl uses three types of parameters:
 // stand-alone but not a boolean, bool (accepts a --no-[name] prefix), and string
@@ -69,6 +69,7 @@ var Aliases = []LongShort{
 	{"*d", "ciphers", String},
 	{"*D", "dns-interface", String},
 	{"*e", "disable-epsv", Bool},
+	{"*f", "disallow-username-in-url", Bool},
 	{"*E", "epsv", Bool},
 	/* 'epsv' made like this to make --no-epsv and --epsv to work
 	   although --disable-epsv is the documented option */
@@ -97,6 +98,7 @@ var Aliases = []LongShort{
 	{"*x", "krb", String},
 	{"*x", "krb4", String},
 	/* 'krb4' is the previous name */
+	{"*X", "haproxy-protocol", Bool},
 	{"*y", "max-filesize", String},
 	{"*z", "disable-eprt", Bool},
 	{"*Z", "eprt", Bool},
@@ -175,6 +177,7 @@ var Aliases = []LongShort{
 	{"$X", "tls-max", String},
 	{"$Y", "suppress-connect-headers", Bool},
 	{"$Z", "compressed-ssh", Bool},
+	{"$~", "happy-eyeballs-timeout-ms", String},
 	{"0", "http1.0", None},
 	{"01", "http1.1", None},
 	{"02", "http2", None},
@@ -184,6 +187,8 @@ var Aliases = []LongShort{
 	{"11", "tlsv1.1", None},
 	{"12", "tlsv1.2", None},
 	{"13", "tlsv1.3", None},
+	{"1A", "tls13-ciphers", String},
+	{"1B", "proxy-tls13-ciphers", String},
 	{"2", "sslv2", None},
 	{"3", "sslv3", None},
 	{"4", "ipv4", None},
@@ -218,6 +223,7 @@ var Aliases = []LongShort{
 	{"En", "ssl-allow-beast", Bool},
 	{"Eo", "login-options", String},
 	{"Ep", "pinnedpubkey", String},
+	{"EP", "proxy-pinnedpubkey", String},
 	{"Eq", "cert-status", Bool},
 	{"Er", "false-start", Bool},
 	{"Es", "ssl-no-revoke", Bool},
@@ -242,6 +248,7 @@ var Aliases = []LongShort{
 	{"EB", "socks5-gssapi", Bool},
 	{"f", "fail", Bool},
 	{"fa", "fail-early", Bool},
+	{"fb", "styled-output", Bool},
 	{"F", "form", String},
 	{"Fs", "form-string", String},
 	{"g", "globoff", Bool},
