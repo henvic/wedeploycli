@@ -142,7 +142,7 @@ type contextNoVerbose struct{}
 
 func requestVerboseFeedback(request *wedeploy.WeDeploy) {
 	log(">",
-		color.Format(color.FgBlue, request.Request.Method),
+		color.Format(color.FgBlue, color.Bold, request.Request.Method),
 		color.Format(color.FgYellow, request.URL),
 		color.Format(color.FgBlue, request.Request.Proto))
 
@@ -160,7 +160,7 @@ func feedbackResponse(response *http.Response) {
 	}
 
 	log("<",
-		color.Format(color.FgBlue, response.Proto),
+		color.Format(color.FgBlue, color.Bold, response.Proto),
 		color.Format(color.FgRed, response.Status))
 
 	verbosePrintHeaders(response.Header)
@@ -222,7 +222,7 @@ func getHeaderValue(key string, values []string) string {
 
 func verbosePrintHeaders(headers http.Header) {
 	for h, r := range headers {
-		log(color.Format(color.FgBlue, h)+
+		log(color.Format(color.FgBlue, color.Bold, h)+
 			color.Format(color.FgRed, ":"),
 			getHeaderValue(h, r))
 	}
