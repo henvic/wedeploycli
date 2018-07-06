@@ -94,11 +94,7 @@ func (n *newService) run(projectID, serviceID, serviceDomain string) error {
 	wectx := we.Context()
 	n.servicesClient = services.New(wectx)
 
-	var imageType, err = n.getOrSelectImageType()
-
-	if err != nil {
-		return err
-	}
+	var err error
 
 	if serviceID == "" {
 		fmt.Println(fancy.Question("Choose a Service ID") + " " + fancy.Tip("default: random"))
@@ -107,6 +103,14 @@ func (n *newService) run(projectID, serviceID, serviceDomain string) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	fmt.Println("")
+
+	imageType, err := n.getOrSelectImageType()
+
+	if err != nil {
+		return err
 	}
 
 	body := services.CreateBody{
