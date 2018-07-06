@@ -81,10 +81,10 @@ func (n *newService) getOrSelectImageType() (string, error) {
 	choice, err := strconv.Atoi(option)
 
 	switch {
-	case err == nil:
-		return catalog[choice-1].Image, nil
 	case choice < 1 || choice > len(catalog):
 		return "", errors.New("invalid option")
+	case err == nil:
+		return catalog[choice-1].Image, nil
 	default:
 		return option, nil
 	}
