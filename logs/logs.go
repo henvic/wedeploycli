@@ -119,11 +119,11 @@ func (c *Client) GetList(ctx context.Context, filter *Filter) ([]Log, error) {
 
 	var params = []string{
 		"/projects",
-		url.QueryEscape(filter.Project),
+		url.PathEscape(filter.Project),
 	}
 
 	if filter.Service != "" {
-		params = append(params, "/services", url.QueryEscape(filter.Service))
+		params = append(params, "/services", url.PathEscape(filter.Service))
 	}
 
 	params = append(params, "/logs")

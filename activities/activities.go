@@ -209,7 +209,7 @@ func (c *Client) List(ctx context.Context, projectID string, f Filter) (activiti
 		return activities, projects.ErrEmptyProjectID
 	}
 
-	var request = c.Client.URL(ctx, "/projects/"+url.QueryEscape(projectID)+"/activities")
+	var request = c.Client.URL(ctx, "/projects/"+url.PathEscape(projectID)+"/activities")
 	apihelper.ParamsFromJSON(request, f)
 
 	c.Client.Auth(request)

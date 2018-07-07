@@ -88,7 +88,7 @@ type updateRequestBody struct{}
 
 // Update project
 func (c *Client) Update(ctx context.Context, project Project) (p Project, err error) {
-	var req = c.Client.URL(ctx, "/projects", url.QueryEscape(project.ProjectID))
+	var req = c.Client.URL(ctx, "/projects", url.PathEscape(project.ProjectID))
 	var reqBody = updateRequestBody{}
 
 	c.Client.Auth(req)
@@ -111,7 +111,7 @@ func (c *Client) Get(ctx context.Context, id string) (project Project, err error
 		return project, ErrEmptyProjectID
 	}
 
-	err = c.Client.AuthGet(ctx, "/projects/"+url.QueryEscape(id), &project)
+	err = c.Client.AuthGet(ctx, "/projects/"+url.PathEscape(id), &project)
 	return project, err
 }
 
@@ -122,7 +122,7 @@ func (c *Client) GetWithServices(ctx context.Context, id string) (project Projec
 	}
 
 	err = c.Client.AuthGet(ctx,
-		fmt.Sprintf("/projects/%s?listServices=true", url.QueryEscape(id)),
+		fmt.Sprintf("/projects/%s?listServices=true", url.PathEscape(id)),
 		&project)
 	return project, err
 }
@@ -209,8 +209,8 @@ func (c *Client) Build(ctx context.Context, projectID string, build BuildRequest
 // GetDeploymentOrder gets the order of a given deployment
 func (c *Client) GetDeploymentOrder(ctx context.Context, projectID, groupUID string) (order []string, err error) {
 	var addr = fmt.Sprintf("/projects/%s/builds/order/%s",
-		url.QueryEscape(projectID),
-		url.QueryEscape(groupUID))
+		url.PathEscape(projectID),
+		url.PathEscape(groupUID))
 	err = c.Client.AuthGet(ctx, addr, &order)
 	return order, err
 }

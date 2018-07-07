@@ -348,7 +348,7 @@ func (c *Client) Catalog(ctx context.Context) (catalog Catalog, err error) {
 func (c *Client) List(ctx context.Context, projectID string) (Services, error) {
 	var cs Services
 
-	var err = c.Client.AuthGet(ctx, "/projects/"+url.QueryEscape(projectID)+"/services", &cs)
+	var err = c.Client.AuthGet(ctx, "/projects/"+url.PathEscape(projectID)+"/services", &cs)
 	sort.Slice(cs, func(i, j int) bool {
 		return cs[i].ServiceID < cs[j].ServiceID
 	})
@@ -367,9 +367,9 @@ func (c *Client) Get(ctx context.Context, projectID, serviceID string) (s Servic
 	}
 
 	err = c.Client.AuthGet(ctx, "/projects/"+
-		url.QueryEscape(projectID)+
+		url.PathEscape(projectID)+
 		"/services/"+
-		url.QueryEscape(serviceID), &s)
+		url.PathEscape(serviceID), &s)
 	return s, err
 }
 
@@ -421,9 +421,9 @@ type updateDomainsReq struct {
 
 func (c *Client) updateDomains(ctx context.Context, projectID, serviceID string, domains []string) (err error) {
 	var req = c.Client.URL(ctx, "/projects",
-		url.QueryEscape(projectID),
+		url.PathEscape(projectID),
 		"/services",
-		url.QueryEscape(serviceID),
+		url.PathEscape(serviceID),
 		"/custom-domains")
 
 	c.Client.Auth(req)
@@ -443,20 +443,20 @@ type EnvironmentVariable struct {
 // GetEnvironmentVariable gets a single environment variable of a service
 func (c *Client) GetEnvironmentVariable(ctx context.Context, projectID, serviceID, name string) (env EnvironmentVariable, err error) {
 	err = c.Client.AuthGet(ctx, "/projects/"+
-		url.QueryEscape(projectID)+
+		url.PathEscape(projectID)+
 		"/services/"+
-		url.QueryEscape(serviceID)+
+		url.PathEscape(serviceID)+
 		"/environment-variables/"+
-		url.QueryEscape(name), &env)
+		url.PathEscape(name), &env)
 	return env, err
 }
 
 // GetEnvironmentVariables of a service
 func (c *Client) GetEnvironmentVariables(ctx context.Context, projectID, serviceID string) (envs []EnvironmentVariable, err error) {
 	err = c.Client.AuthGet(ctx, "/projects/"+
-		url.QueryEscape(projectID)+
+		url.PathEscape(projectID)+
 		"/services/"+
-		url.QueryEscape(serviceID)+
+		url.PathEscape(serviceID)+
 		"/environment-variables", &envs)
 	return envs, err
 }
@@ -465,9 +465,9 @@ func (c *Client) GetEnvironmentVariables(ctx context.Context, projectID, service
 func (c *Client) Delete(ctx context.Context, projectID, serviceID string) error {
 	var req = c.Client.URL(ctx,
 		"/projects",
-		url.QueryEscape(projectID),
+		url.PathEscape(projectID),
 		"/services",
-		url.QueryEscape(serviceID))
+		url.PathEscape(serviceID))
 	c.Client.Auth(req)
 
 	return apihelper.Validate(req, req.Delete())
@@ -519,9 +519,9 @@ type envMap map[string]string
 func (c *Client) SetEnvironmentVariables(ctx context.Context, projectID, serviceID string, envs []EnvironmentVariable) error {
 	var req = c.Client.URL(ctx,
 		"/projects",
-		url.QueryEscape(projectID),
+		url.PathEscape(projectID),
 		"/services",
-		url.QueryEscape(serviceID),
+		url.PathEscape(serviceID),
 		"/environment-variables/")
 
 	c.Client.Auth(req)
@@ -547,11 +547,11 @@ func (c *Client) SetEnvironmentVariables(ctx context.Context, projectID, service
 func (c *Client) SetEnvironmentVariable(ctx context.Context, projectID, serviceID, key, value string) error {
 	var req = c.Client.URL(ctx,
 		"/projects",
-		url.QueryEscape(projectID),
+		url.PathEscape(projectID),
 		"/services",
-		url.QueryEscape(serviceID),
+		url.PathEscape(serviceID),
 		"/environment-variables/"+
-			url.QueryEscape(key))
+			url.PathEscape(key))
 
 	c.Client.Auth(req)
 
@@ -570,11 +570,11 @@ func (c *Client) SetEnvironmentVariable(ctx context.Context, projectID, serviceI
 func (c *Client) UnsetEnvironmentVariable(ctx context.Context, projectID, serviceID, key string) error {
 	var req = c.Client.URL(ctx,
 		"/projects",
-		url.QueryEscape(projectID),
+		url.PathEscape(projectID),
 		"/services",
-		url.QueryEscape(serviceID),
+		url.PathEscape(serviceID),
 		"/environment-variables/"+
-			url.QueryEscape(key))
+			url.PathEscape(key))
 
 	c.Client.Auth(req)
 
@@ -590,9 +590,9 @@ type Scale struct {
 func (c *Client) Scale(ctx context.Context, projectID, serviceID string, s Scale) (err error) {
 	var req = c.Client.URL(ctx,
 		"/projects",
-		url.QueryEscape(projectID),
+		url.PathEscape(projectID),
 		"/services",
-		url.QueryEscape(serviceID),
+		url.PathEscape(serviceID),
 		"/scale")
 	c.Client.Auth(req)
 
@@ -608,9 +608,9 @@ func (c *Client) Scale(ctx context.Context, projectID, serviceID string, s Scale
 // Restart restarts a service inside a project
 func (c *Client) Restart(ctx context.Context, projectID, serviceID string) error {
 	var req = c.Client.URL(ctx, "/projects/"+
-		url.QueryEscape(projectID)+
+		url.PathEscape(projectID)+
 		"/services/"+
-		url.QueryEscape(serviceID)+
+		url.PathEscape(serviceID)+
 		"/restart")
 
 	c.Client.Auth(req)
