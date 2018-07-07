@@ -76,7 +76,7 @@ func (cs Services) Get(id string) (c Service, err error) {
 		}
 	}
 
-	return c, errors.New("No service found")
+	return c, errors.New("no service found")
 }
 
 // Service structure

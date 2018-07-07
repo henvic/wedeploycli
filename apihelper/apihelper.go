@@ -45,7 +45,7 @@ type APIFault struct {
 	Errors  APIFaultErrors `json:"errors"`
 }
 
-var errMissingResponse = errors.New("Request is not fulfilled by a response")
+var errMissingResponse = errors.New("request is not fulfilled by a response")
 
 func (a APIFault) Error() string {
 	var s []string
@@ -148,10 +148,10 @@ func (c APIFaultErrorContext) Message() string {
 
 var (
 	// ErrInvalidContentType is used when the content-type is not application/json
-	ErrInvalidContentType = errors.New("Can only decode data for application/json")
+	ErrInvalidContentType = errors.New("can only decode data for application/json")
 
 	// ErrExtractingParams is used when query string params fail due to unrecognized type
-	ErrExtractingParams = errors.New("Can only extract query string params from flat objects")
+	ErrExtractingParams = errors.New("can only extract query string params from flat objects")
 
 	errStream io.Writer = os.Stderr
 )

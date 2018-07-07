@@ -80,7 +80,7 @@ func (s *Service) waitServer(w *sync.WaitGroup) {
 // Serve HTTP requests
 func (s *Service) Serve() error {
 	if s.netListener == nil {
-		return errors.New("Server is not open yet")
+		return errors.New("server is not open yet")
 	}
 
 	s.httpServer = &http.Server{

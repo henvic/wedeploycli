@@ -310,15 +310,15 @@ func (s *SetupHost) loadValues() (err error) {
 	}
 
 	if s.Pattern&RemotePattern == 0 {
-		return errors.New("Remote is not allowed for this command")
+		return errors.New("remote is not allowed for this command")
 	}
 
 	if s.Pattern&ProjectPattern == 0 && s.project != "" {
-		return errors.New("Project is not allowed for this command")
+		return errors.New("project is not allowed for this command")
 	}
 
 	if s.Pattern&ServicePattern == 0 && s.service != "" {
-		return errors.New("Service is not allowed for this command")
+		return errors.New("service is not allowed for this command")
 	}
 
 	if s.project == "" && s.UseProjectFromWorkingDirectory {
@@ -341,7 +341,7 @@ func (s *SetupHost) loadValues() (err error) {
 	}
 
 	if (s.Pattern&ProjectPattern == 0 && s.Pattern&ServicePattern == 0) && s.service != "" {
-		return errors.New("Service parameter is not allowed for this command")
+		return errors.New("service parameter is not allowed for this command")
 	}
 
 	if err = s.maybePromptMissing(); err != nil {
@@ -349,11 +349,11 @@ func (s *SetupHost) loadValues() (err error) {
 	}
 
 	if s.Requires.Service && s.service == "" {
-		return errors.New("Service and project are required")
+		return errors.New("service and project are required")
 	}
 
 	if s.Requires.Project && s.project == "" {
-		return errors.New("Project is required")
+		return errors.New("project is required")
 	}
 
 	return nil

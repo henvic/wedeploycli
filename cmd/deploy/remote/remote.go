@@ -186,7 +186,7 @@ func (rd *RemoteDeployment) checkServiceParameter() error {
 	}
 
 	if !isterm.Check() {
-		return errors.New("Service ID is missing (and a terminal was not found for typing one)")
+		return errors.New("service ID is missing (and a terminal was not found for typing one)")
 	}
 
 	var optionServiceID = rd.getServiceIDFromBaseDirOrRandom(rd.services[0])

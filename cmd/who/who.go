@@ -26,7 +26,7 @@ func whoRun(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	return errors.New("User is not available")
+	return errors.New("user is not available")
 }
 
 func init() {
