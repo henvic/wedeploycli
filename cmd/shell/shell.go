@@ -13,17 +13,17 @@ import (
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern: cmdflagsfromhost.FullHostPattern,
+	Pattern: cmdflagsfromhost.FullHostPattern | cmdflagsfromhost.InstancePattern,
 
 	Requires: cmdflagsfromhost.Requires{
-		Project: true,
-		Service: true,
+		Project:  true,
+		Service:  true,
+		Instance: true,
 	},
 
-	PromptMissingService: true,
+	PromptMissingService:  true,
+	PromptMissingInstance: true,
 }
-
-var instance string
 
 // ShellCmd opens a shell remotely
 var ShellCmd = &cobra.Command{
@@ -36,10 +36,6 @@ var ShellCmd = &cobra.Command{
 }
 
 func init() {
-	ShellCmd.Flags().StringVar(
-		&instance,
-		"instance", "", "Connect to a specific instance")
-
 	setupHost.Init(ShellCmd)
 }
 
@@ -64,7 +60,7 @@ func shellRun(cmd *cobra.Command, args []string) error {
 
 		ProjectID: setupHost.Project(),
 		ServiceID: setupHost.Service(),
-		Instance:  instance,
+		Instance:  setupHost.Instance(),
 
 		AttachStdin: true,
 		TTY:         true,

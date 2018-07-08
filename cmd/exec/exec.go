@@ -15,22 +15,25 @@ import (
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern: cmdflagsfromhost.FullHostPattern,
+	Pattern: cmdflagsfromhost.FullHostPattern | cmdflagsfromhost.InstancePattern,
 
 	Requires: cmdflagsfromhost.Requires{
-		Project: true,
-		Service: true,
+		Project:  true,
+		Service:  true,
+		Instance: true,
 	},
 
-	PromptMissingService: true,
+	PromptMissingService:  true,
+	PromptMissingInstance: true,
 }
-
-var instance string
 
 // ExecCmd executes a process (command) remotely
 var ExecCmd = &cobra.Command{
-	Use:     "exec",
-	Short:   "Execute command remotely",
+	Use:   "exec",
+	Short: "Execute command remotely",
+	Example: `  we exec -p demo -s web -- ls
+  we exec -p demo -s web --instance any -- uname -a (run command on any instance)
+  we exec -p demo -s web --instance ab123 -- backup-db`,
 	PreRunE: execPreRun,
 	RunE:    execRun,
 	Args:    cobra.MinimumNArgs(1),
@@ -38,10 +41,6 @@ var ExecCmd = &cobra.Command{
 }
 
 func init() {
-	ExecCmd.Flags().StringVar(
-		&instance,
-		"instance", "", "Connect to a specific instance")
-
 	setupHost.Init(ExecCmd)
 }
 
@@ -75,11 +74,10 @@ func execRun(cmd *cobra.Command, args []string) error {
 
 		ProjectID: setupHost.Project(),
 		ServiceID: setupHost.Service(),
-
-		Instance: instance,
+		Instance:  setupHost.Instance(),
 
 		AttachStdin: true,
-		TTY:         isterm.Check(),
+		TTY:         isterm.Stdin(),
 	}
 
 	switch params.TTY {

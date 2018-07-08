@@ -14,14 +14,13 @@ import (
 )
 
 var (
-	instanceArg string
 	severityArg string
 	sinceArg    string
 	watchArg    bool
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern: cmdflagsfromhost.FullHostPattern,
+	Pattern: cmdflagsfromhost.FullHostPattern | cmdflagsfromhost.InstancePattern,
 
 	Requires: cmdflagsfromhost.Requires{
 		Auth:    true,
@@ -56,6 +55,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 func logRun(cmd *cobra.Command, args []string) error {
 	var project = setupHost.Project()
 	var service = setupHost.Service()
+	var instance = setupHost.Instance()
 
 	level, levelErr := logs.GetLevel(severityArg)
 
@@ -76,7 +76,7 @@ func logRun(cmd *cobra.Command, args []string) error {
 	filter := &logs.Filter{
 		Project:  project,
 		Service:  service,
-		Instance: instanceArg,
+		Instance: instance,
 		Level:    level,
 		Since:    since,
 	}
@@ -117,7 +117,6 @@ func getSince() (string, error) {
 }
 
 func init() {
-	LogCmd.Flags().StringVar(&instanceArg, "instance", "", `Instance (node) UID`)
 	LogCmd.Flags().StringVar(&severityArg, "level", "0", `Severity (critical, error, warning, info (default), debug)`)
 	LogCmd.Flag("level").Hidden = true
 
