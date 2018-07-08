@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/wedeploy/cli/cmd/internal/we"
+	listinstances "github.com/wedeploy/cli/cmd/list/instances"
 	listprojects "github.com/wedeploy/cli/cmd/list/projects"
 	listservices "github.com/wedeploy/cli/cmd/list/services"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
@@ -107,4 +108,5 @@ func init() {
 	ListCmd.Flags().BoolVarP(&watch, "watch", "w", false, "Show and watch for changes")
 	ListCmd.AddCommand(listprojects.ListProjectsCmd)
 	ListCmd.AddCommand(listservices.ListServicesCmd)
+	ListCmd.AddCommand(listinstances.ListInstancesCmd)
 }
