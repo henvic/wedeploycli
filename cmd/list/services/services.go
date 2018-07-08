@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/services"
-
-	"github.com/spf13/cobra"
 )
 
 // ListServicesCmd is used for getting a list of projects and services
