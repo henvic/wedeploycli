@@ -3,15 +3,12 @@ package shell
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/isterm"
-	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/shell"
 )
 
@@ -47,33 +44,11 @@ func init() {
 }
 
 func shellPreRun(cmd *cobra.Command, args []string) error {
-	if !isterm.Check() {
+	if !isterm.Stdin() {
 		return errors.New("can't open terminal: tty wasn't found")
 	}
 
-	if err := setupHost.Process(context.Background(), we.Context()); err != nil {
-		return err
-	}
-
-	wectx := we.Context()
-
-	servicesClient := services.New(wectx)
-
-	service, err := servicesClient.Get(context.Background(), setupHost.Project(), setupHost.Service())
-
-	if err != nil {
-		return err
-	}
-
-	if instance != "" {
-		fmt.Printf("You are accessing one instance of %s (total: %d)\n",
-			color.Format(color.Bold, setupHost.Host()), service.Scale)
-	}
-
-	fmt.Printf("%s\n\n", color.Format(color.FgYellow,
-		"Warning: don't use this shell to make changes on your services. Only changes inside volumes persist."))
-
-	return nil
+	return setupHost.Process(context.Background(), we.Context())
 }
 
 func shellRun(cmd *cobra.Command, args []string) error {

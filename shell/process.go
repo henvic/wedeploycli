@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/henvic/socketio"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/shell/internal/termsession"
 	"github.com/wedeploy/cli/verbose"
 )
@@ -132,7 +133,8 @@ func (p *Process) authenticate() error {
 func (p *Process) waitExecStarted() error {
 	var cerr = make(chan error, 1)
 
-	if err := p.shell.On("execStarted", func() {
+	if err := p.shell.On("execStarted", func(es *execStarted) {
+		p.printInfo(es)
 		cerr <- nil
 		p.execStarted <- struct{}{}
 	}); err != nil {
@@ -173,4 +175,31 @@ func stopTermSession(t *termsession.TermSession) {
 	}
 
 	verbose.Debug(err)
+}
+
+type execStarted struct {
+	Instance string `json:"containerId,omitempty"`
+}
+
+func (p *Process) printInfo(es *execStarted) {
+	trimmed := es.Instance
+
+	if len(trimmed) >= 12 && !verbose.Enabled {
+		trimmed = trimmed[:12]
+	}
+
+	var info = fmt.Sprintf("You are now accessing instance %s.\n",
+		color.Format(color.FgMagenta, color.Bold, trimmed))
+
+	if p.Cmd == "" {
+		info += fmt.Sprintf("%s\n", color.Format(color.FgYellow,
+			"Warning: don't use this shell to make changes on your services. Only changes inside volumes persist."))
+	}
+
+	if verbose.Enabled {
+		verbose.Debug(info)
+		return
+	}
+
+	_, _ = fmt.Fprintln(os.Stderr, info)
 }
