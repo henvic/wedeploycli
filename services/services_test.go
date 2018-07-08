@@ -697,6 +697,25 @@ func TestDelete(t *testing.T) {
 	servertest.Teardown()
 }
 
+func TestInstances(t *testing.T) {
+	servertest.Setup()
+
+	servertest.Mux.HandleFunc("/projects/foo/services/bar/instances",
+		tdata.ServerJSONFileHandler("mocks/instances.json"))
+
+	var instances, err = client.Instances(context.Background(), "foo", "bar")
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	if len(instances) != 3 {
+		t.Errorf("Expected 3 instances")
+	}
+
+	servertest.Teardown()
+}
+
 func TestValidate(t *testing.T) {
 	servertest.Setup()
 

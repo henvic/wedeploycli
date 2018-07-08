@@ -92,6 +92,13 @@ type Service struct {
 	CreatedAt     int64       `json:"createdAt,omitempty"`
 }
 
+// Instance structure
+type Instance struct {
+	ContainerID string `json:"containerId,omitempty"`
+	State       string `json:"state,omitempty"`
+	TaskID      string `json:"taskId,omitempty"`
+}
+
 // CreatedAtTime extracts from the Unix timestamp format and returns the createdAt value
 func (s *Service) CreatedAtTime() time.Time {
 	var createdAt = s.CreatedAt / 1000
@@ -471,6 +478,19 @@ func (c *Client) Delete(ctx context.Context, projectID, serviceID string) error 
 	c.Client.Auth(req)
 
 	return apihelper.Validate(req, req.Delete())
+}
+
+// Instances of a given service
+func (c *Client) Instances(ctx context.Context, projectID, serviceID string) ([]Instance, error) {
+	var is []Instance
+
+	u := fmt.Sprintf("/projects/%s/services/%s/instances",
+		url.PathEscape(projectID),
+		url.PathEscape(serviceID))
+
+	var err = c.Client.AuthGet(ctx, u, &is)
+
+	return is, err
 }
 
 // Read a service directory properties (defined by a wedeploy.json and/or Dockerfile on it)
