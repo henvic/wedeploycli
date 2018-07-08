@@ -155,4 +155,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "July 4th, 2018",
 		Description: "Fixed deployment upload failure feedback. Minor improvements.",
 	},
+	ReleaseNote{
+		Version:     "1.5.9",
+		Date:        "July 8th, 2018",
+		Description: `Added "we list instances" command. Improved instance support. Minor improvements.`,
+	},
 }
