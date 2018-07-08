@@ -15,6 +15,7 @@ import (
 	"github.com/wedeploy/cli/inspector"
 	"github.com/wedeploy/cli/isterm"
 	"github.com/wedeploy/cli/list"
+	"github.com/wedeploy/cli/listinstances"
 	"github.com/wedeploy/cli/login"
 	"github.com/wedeploy/cli/metrics"
 	"github.com/wedeploy/cli/services"
@@ -22,10 +23,12 @@ import (
 
 // Requires configuration for the host and flags
 type Requires struct {
-	NoHost  bool
-	Auth    bool
-	Project bool
-	Service bool
+	NoHost bool
+	Auth   bool
+
+	Project  bool
+	Service  bool
+	Instance bool
 }
 
 // SetupHost is the structure for host and flags parsing
@@ -38,18 +41,22 @@ type SetupHost struct {
 	UseProjectFromWorkingDirectory bool
 	UseServiceDirectory            bool
 
-	PromptMissingProject       bool
-	PromptMissingService       bool
+	PromptMissingProject  bool
+	PromptMissingService  bool
+	PromptMissingInstance bool
+
 	AllowMissingProject        bool
 	AllowCreateProjectOnPrompt bool
-	HideServicesPrompt         bool
+
+	HideServicesPrompt bool
 
 	ListExtraDetails list.Pattern
 
-	url     string
-	project string
-	service string
-	remote  string
+	url      string
+	project  string
+	service  string
+	instance string
+	remote   string
 
 	cmd    *cobra.Command
 	wectx  config.Context
@@ -69,6 +76,8 @@ const (
 	ServicePattern
 	// ProjectPattern takes only --project
 	ProjectPattern
+	// InstancePattern takes only --instance
+	InstancePattern
 	// ProjectAndServicePattern takes only --project and --service
 	ProjectAndServicePattern = ProjectPattern | ServicePattern
 	// ProjectAndRemotePattern takes only --project, and --remote
@@ -94,6 +103,11 @@ func (s *SetupHost) Environment() string {
 // Service of the parsed flags or host
 func (s *SetupHost) Service() string {
 	return s.service
+}
+
+// Instance of the parsed flag
+func (s *SetupHost) Instance() string {
+	return s.instance
 }
 
 // Remote of the parsed flags or host
@@ -145,6 +159,14 @@ func (s *SetupHost) Init(cmd *cobra.Command) {
 		none = false
 	}
 
+	if s.Pattern&ServicePattern == 0 && s.Pattern&InstancePattern != 0 {
+		panic("Instance pattern requires service pattern")
+	}
+
+	if s.Pattern&InstancePattern != 0 {
+		s.addInstanceFlag(cmd)
+	}
+
 	if none || s.Pattern == missing {
 		panic("Missing or unsupported host pattern")
 	}
@@ -177,6 +199,12 @@ func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 
 	if err := s.injectEnvFlagInProject(); err != nil {
 		return nil, err
+	}
+
+	var instanceFlag = s.cmd.Flag("instance")
+
+	if instanceFlag != nil && instanceFlag.Changed {
+		s.instance = instanceFlag.Value.String()
 	}
 
 	return cffh.ParseWithDefaultCustomRemote(
@@ -245,6 +273,10 @@ func (s *SetupHost) addProjectFlag(cmd *cobra.Command) {
 
 func (s *SetupHost) addServiceFlag(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&s.service, "service", "s", "", "Perform the operation for a specific service")
+}
+
+func (s SetupHost) addInstanceFlag(cmd *cobra.Command) {
+	cmd.Flags().StringVar(&s.instance, "instance", "", "Perform the operation for a specific instance")
 }
 
 func (s *SetupHost) getProjectFromCurrentWorkingDirectory() (project string, err error) {
@@ -348,6 +380,14 @@ func (s *SetupHost) loadValues() (err error) {
 		return err
 	}
 
+	if s.Requires.Instance && s.instance == "" {
+		return errors.New(`instance, service, and project are required (try "--instance any")`)
+	}
+
+	if s.instance == "any" {
+		s.instance = ""
+	}
+
 	if s.Requires.Service && s.service == "" {
 		return errors.New("service and project are required")
 	}
@@ -373,6 +413,18 @@ func (s *SetupHost) maybePromptMissing() (err error) {
 		if err := s.promptMissingProjectOrService(); err != nil {
 			return err
 		}
+	}
+
+	if s.PromptMissingInstance && s.instance == "" {
+		var li = listinstances.New(s.project, s.service)
+
+		selection, err := li.Prompt(s.ctx, s.wectx)
+
+		if err != nil {
+			return err
+		}
+
+		s.instance = selection
 	}
 
 	return nil
