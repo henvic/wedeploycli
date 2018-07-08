@@ -13,7 +13,7 @@ func Pretty(b []byte) []byte {
 		Indent: "    ",
 	})
 
-	if !color.NoColor && isterm.Check() {
+	if !color.NoColor && isterm.Stderr() && isterm.Stdout() {
 		res = pretty.Color(res, nil)
 	}
 
