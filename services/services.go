@@ -34,7 +34,7 @@ func New(wectx config.Context) *Client {
 	}
 }
 
-// Services of services for helper functions
+// Services structure
 type Services []Service
 
 // CreateBody is the body for creating a service

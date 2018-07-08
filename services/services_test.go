@@ -678,7 +678,7 @@ func TestRestart(t *testing.T) {
 	servertest.Teardown()
 }
 
-func TestUnlink(t *testing.T) {
+func TestDelete(t *testing.T) {
 	servertest.Setup()
 
 	servertest.Mux.HandleFunc("/projects/foo/services/bar", func(w http.ResponseWriter, r *http.Request) {
