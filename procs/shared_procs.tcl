@@ -16,7 +16,7 @@ proc control_c {} {
   send \003
   expect {
     timeout { handle_timeout; error "^C failed" }
-    "cli-functional-tests/"
+    "$::_root_dir/"
   }
 }
 

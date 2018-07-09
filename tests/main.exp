@@ -31,6 +31,13 @@ if { [info exists env(TESTER_PW)] } {
   set _tester(pw) $::env(TESTER_PW)
 }
 
+# get project root directory
+cd ..
+set last_index [string last / [pwd]]
+set _root_dir [string range [pwd] [incr last_index] 100]
+cd tests
+puts "Project root dir: $_root_dir"
+
 source ../procs/shared_procs.tcl
 source ../procs/curl_procs.tcl
 

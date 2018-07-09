@@ -176,6 +176,11 @@ while {1} {
   set timeout $::_default_timeout
   expect {
     timeout { handle_timeout; break }
+    "Open browser to check the logs?"
+  }
+  send "n\r"
+  expect {
+    timeout { handle_timeout; break }
     "fixtures/projectC"
   }
   send "we log -p deploy4\r"
