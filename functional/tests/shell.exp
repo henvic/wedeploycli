@@ -31,6 +31,7 @@ Scenario: "Open a shell on a service container"
 #####################################################
 
 login $_tester(email) $_tester(pw)
+set_user_plan standard
 
 create_project shell1
 create_service shell1 hosting1
