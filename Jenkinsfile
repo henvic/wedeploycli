@@ -43,7 +43,9 @@ pipeline {
     stage('Tests') {
       steps {
         buildStep('Tests') {
-          sh './.jenkins/test.sh'
+          timeout(time: 10, unit: 'MINUTES') {
+            sh './.jenkins/test.sh'
+          }
         }
       }
     }
