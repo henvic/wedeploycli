@@ -4,12 +4,19 @@
 set _default_timeout 5
 set _remote wedeploy.xyz
 set _root_dir functional
+set _junit_features_content ""
+set _junit_report_content "<?xml version='1.0' encoding='utf-8'?>"
+set _junit_scenarios_content ""
+set _junit_test_report "../test-results/TEST-report.xml"
+set _scenarios_count 0
 set _test_report "../test-results/report.txt"
 set _teamuser(email) qa.team.user@wedeploy.com
 set _teamuser(pw) "L6P&ZExVXydC"
 set _tester(email) cli-tester@test.com
 set _tester(pw) test
+set _tests_errors 0
 set _tests_failed 0
+set _tests_failed_by_feature 0
 set _tests_total 0
 
 if { [info exists env(REMOTE)] } {
@@ -75,7 +82,7 @@ if { $::argc > 1 } {
 # run tests
 foreach test_file $test_files {
   if { [catch { source $test_file } errmsg] } {
-    incr ::_tests_failed 1
+    incr ::_tests_errors 1
     set message "\nUnexpected error occurred:\n"
     append message "ErrorMsg: $errmsg\n"
     append message "ErrorCode: $errorCode\n"
@@ -84,6 +91,13 @@ foreach test_file $test_files {
     add_to_report $message
   }
 }
+
+append _junit_report_content "<testsuites name='cli-functional-tests' tests='$_tests_total'"
+append _junit_report_content " failures='$_tests_failed'>"
+append _junit_report_content $_junit_features_content
+append _junit_report_content "</testsuites>"
+
+add_to_junit_report $_junit_report_content
 
 # report test counts
 set passed [expr {$_tests_total-$_tests_failed}]
