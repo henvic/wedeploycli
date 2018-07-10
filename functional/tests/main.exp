@@ -3,6 +3,7 @@
 # set globals here
 set _default_timeout 5
 set _remote wedeploy.xyz
+set _root_dir functional
 set _test_report "../test-results/report.txt"
 set _teamuser(email) qa.team.user@wedeploy.com
 set _teamuser(pw) "L6P&ZExVXydC"
@@ -30,13 +31,6 @@ if { [info exists env(TESTER_EMAIL)] } {
 if { [info exists env(TESTER_PW)] } {
   set _tester(pw) $::env(TESTER_PW)
 }
-
-# get project root directory
-cd ..
-set last_index [string last / [pwd]]
-set _root_dir [string range [pwd] [incr last_index] 100]
-cd tests
-puts "Project root dir: $_root_dir"
 
 source ../procs/shared_procs.tcl
 source ../procs/curl_procs.tcl
@@ -80,7 +74,15 @@ if { $::argc > 1 } {
 
 # run tests
 foreach test_file $test_files {
-  catch { source $test_file }
+  if { [catch { source $test_file } errmsg] } {
+    incr ::_tests_failed 1
+    set message "\nUnexpected error occurred:\n"
+    append message "ErrorMsg: $errmsg\n"
+    append message "ErrorCode: $errorCode\n"
+    append message "ErrorInfo:\n$errorInfo\n"
+    puts $message
+    add_to_report $message
+  }
 }
 
 # report test counts

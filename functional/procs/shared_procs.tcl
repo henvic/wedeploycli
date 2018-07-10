@@ -15,8 +15,8 @@ proc add_to_report {text} {
 proc control_c {} {
   send \003
   expect {
-    timeout { handle_timeout; error "^C failed" }
-    "$::_root_dir/"
+    timeout { error "^C failed" }
+    "$::_root_dir"
   }
 }
 
