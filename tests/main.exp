@@ -80,7 +80,15 @@ if { $::argc > 1 } {
 
 # run tests
 foreach test_file $test_files {
-  catch { source $test_file }
+  if { [catch { source $test_file } errmsg] } {
+    incr ::_tests_failed 1
+    set message "\nUnexpected error occurred:\n"
+    append message "ErrorMsg: $errmsg\n"
+    append message "ErrorCode: $errorCode\n"
+    append message "ErrorInfo:\n$errorInfo\n"
+    puts $message
+    add_to_report $message
+  }
 }
 
 # report test counts
