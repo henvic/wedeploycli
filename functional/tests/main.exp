@@ -43,7 +43,12 @@ source ../procs/shared_procs.tcl
 source ../procs/curl_procs.tcl
 
 # create tester if user doesn't already exist
-if { ![user_exists $_tester(email)] } { create_user $_tester(email) }
+if { ![user_exists $_tester(email)] } {
+  if { [catch { create_user $_tester(email) }] } {
+    print_msg "Error creating test user! Aborting tests." red
+    exit 1
+  }
+}
 
 puts "TESTER_EMAIL: $_tester(email)"
 puts "REMOTE: $_remote"
