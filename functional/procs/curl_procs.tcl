@@ -161,6 +161,26 @@ proc delete_project {project} {
   }
 }
 
+proc get_container_ids {project service} {
+  set url $::base_url/projects/$project/services/$service/instances
+  set response [http_get $url $::auth]
+  set response_code [lindex $response 0]
+  set body [lindex $response 1]
+
+  if { $response_code != 200 } {
+    handle_response "Could not get container ids" $body
+  }
+
+  set match_list [regexp -all -inline {"containerId":"(.*?)"} $body]
+  set ids {}
+
+  foreach { whole container_id } $match_list {
+    lappend ids $container_id
+  }
+
+  return $ids
+}
+
 # get user id  of currently logged in user, presumed to be $_tester(email)
 proc get_user_id {} {
   set url $::base_url/user
