@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/fancy"
@@ -293,6 +295,9 @@ func (s *SetupHost) getProjectFromCurrentWorkingDirectory() (project string, err
 	if !isterm.Check() {
 		return overview.ProjectID, nil
 	}
+
+	_, _ = fmt.Fprintln(os.Stderr, color.Format(color.FgHiRed, `Confirming you want to use a given project ID is deprecated.
+Next minor release is going to remove the question below (defaulting to "yes").`))
 
 	fmt.Println(`A reference to a project ID was found within your services.`)
 
