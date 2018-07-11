@@ -15,7 +15,7 @@ import (
 
 // Prompt from the list selection
 func (l *List) Prompt(ctx context.Context, wectx config.Context) (string, error) {
-	fmt.Printf("Please %s a instance from the list below.\n",
+	fmt.Printf("Please %s an instance from the list below.\n",
 		color.Format(color.FgMagenta, color.Bold, "select"))
 
 	l.SelectNumber = true
