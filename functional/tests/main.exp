@@ -115,8 +115,14 @@ print_msg "Total number of tests: $_tests_total" green
 print_msg "Total passed: $passed" green
 
 if { $_tests_failed > 0 } {
-  print_msg "Total failed: $_tests_failed" red
+  print_msg "Total failed: $_tests_failed failed tests :(" magenta
+}
+
+if { $_tests_errors > 0 } {
+  print_msg "Total errors: $_tests_errors" red
   exit 1
 } else {
-  print_msg "All tests passed!" green
+  if { $_tests_failed == 0 } {
+    print_msg "All tests passed! :D" green
+  }
 }
