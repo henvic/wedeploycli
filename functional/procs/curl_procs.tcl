@@ -68,8 +68,7 @@ proc assert_service_exists {project service} {
   set body [lindex $response 1]
 
   if { $response_code != 200 } {
-    incr ::_tests_failed 1
-    handle_response "Could not verify service $service-$project" $body
+    expectation_not_met "Could not verify service $service-$project\n$body"
   }
 }
 
