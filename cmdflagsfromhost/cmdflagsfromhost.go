@@ -42,6 +42,7 @@ type SetupHost struct {
 
 	UseProjectFromWorkingDirectory bool
 	UseServiceDirectory            bool
+	AutoSelectSingleInstance       bool
 
 	PromptMissingProject  bool
 	PromptMissingService  bool
@@ -422,8 +423,13 @@ func (s *SetupHost) maybePromptMissing() (err error) {
 
 	if s.PromptMissingInstance && s.instance == "" {
 		var li = listinstances.New(s.project, s.service)
+		var f = li.Prompt
 
-		selection, err := li.Prompt(s.ctx, s.wectx)
+		if s.AutoSelectSingleInstance {
+			f = li.AutoSelectOrPrompt
+		}
+
+		selection, err := f(s.ctx, s.wectx)
 
 		if err != nil {
 			return err

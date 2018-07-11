@@ -7,24 +7,57 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/fancy"
+	"github.com/wedeploy/cli/verbose"
 )
 
 // Prompt from the list selection
 func (l *List) Prompt(ctx context.Context, wectx config.Context) (string, error) {
+	return l.printAndPrompt(ctx, wectx, false)
+}
+
+// AutoSelectOrPrompt lets you select an instance from the list selection
+// or select a single instance automatically if only one exists.
+func (l *List) AutoSelectOrPrompt(ctx context.Context, wectx config.Context) (string, error) {
+	return l.printAndPrompt(ctx, wectx, true)
+}
+
+func (l *List) printAndPrompt(ctx context.Context, wectx config.Context, askSingle bool) (string, error) {
+	l.once = true
+	l.PoolingInterval = time.Minute
+	l.prepare(ctx, wectx)
+	l.updateHandler()
+
+	if askSingle && len(l.Instances) == 1 && l.Instances[0].State == "running" {
+		container := l.Instances[0].ContainerID
+		verbose.Debug("Only one instance found. Automatically connection to instance " + container)
+		return container, nil
+	}
+
 	fmt.Printf("Please %s an instance from the list below.\n",
 		color.Format(color.FgMagenta, color.Bold, "select"))
 
 	l.SelectNumber = true
 
-	if err := l.Once(ctx, wectx); err != nil {
+	if err := l.printOnce(ctx, wectx); err != nil {
 		return "", err
 	}
 
 	return l.prompt()
+}
+
+func (l *List) printOnce(ctx context.Context, wectx config.Context) error {
+	l.w.Init(l.outStream)
+	l.watchHandler()
+
+	l.watchMutex.RLock()
+	var le = l.lastError
+	l.watchMutex.RUnlock()
+	return le
 }
 
 func (l *List) prompt() (string, error) {

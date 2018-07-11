@@ -21,6 +21,8 @@ var setupHost = cmdflagsfromhost.SetupHost{
 		Instance: true,
 	},
 
+	AutoSelectSingleInstance: true,
+
 	PromptMissingService:  true,
 	PromptMissingInstance: true,
 }
