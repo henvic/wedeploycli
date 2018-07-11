@@ -1,0 +1,196 @@
+#! /usr/bin/expect
+
+spawn $env(SHELL)
+
+#####################################################
+Feature: "Shell"
+#####################################################
+
+#####################################################
+Scenario: "Cannot `we shell` without signing in"
+#####################################################
+
+logout $_tester(email)
+
+while {1} {
+  send "we shell\r"
+  expect {
+    timeout { handle_timeout; break }
+    "You need to log in before using \"we shell\"."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Open your browser and authenticate?"
+  }
+  send "n\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Login canceled."
+  }
+  break
+}
+
+#####################################################
+TearDownScenario: "Cannot `we shell` without signing in"
+#####################################################
+
+#####################################################
+Scenario: "Open a shell on a service container"
+#####################################################
+
+login $_tester(email) $_tester(pw)
+set_user_plan standard
+
+create_project shell1
+create_service shell1 hosting1
+
+while {1} {
+  sleep 5
+  send "we shell\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Please*select*a service from the list below"
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Type service ID or #"
+  }
+  send "1\r"
+  expect {
+    timeout { exit_shell; handle_timeout; break }
+    "Please *select* a instance from the list below"
+  }
+  send "\r"
+  set instances [get_container_ids shell1 hosting1]
+  set instance_1 [string range [lindex $instances 0] 0 11]
+  expect {
+    timeout { exit_shell; handle_timeout; break }
+    "You are now accessing instance *$instance_1"
+  }
+  expect {
+    timeout { exit_shell; handle_timeout; break }
+    "Warning: don't use this shell to make changes on your services."
+  }
+  expect {
+    timeout { exit_shell; handle_timeout; break }
+    "/wedeploy-container"
+  }
+  send "ls\r"
+  expect {
+    timeout { exit_shell; handle_timeout; break }
+    "index.html"
+  }
+  expect {
+    timeout { exit_shell; handle_timeout; break }
+    "/wedeploy-container"
+  }
+  send "exit\r"
+  expect {
+    timeout { handle_timeout; break }
+    "/$::_root_dir/"
+  }
+  break
+}
+
+delete_project shell1
+
+#####################################################
+TearDownScenario: "Open a shell on a service container"
+#####################################################
+
+#####################################################
+Scenario: "Open a shell on a specific instance"
+#####################################################
+
+create_project shell2
+create_service shell2 hosting1
+
+while {1} {
+  send "we scale -p shell2 -s hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Number of instances"
+  }
+  send "3\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "Scaling service \"*hosting1*\" on project \"*shell2*\" on *wedeploy.* to *3* instances."
+  }
+  sleep 5
+  send "we shell -p shell2 -s hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Please *select* a instance from the list below"
+  }
+  send "2\r"
+  set instances [get_container_ids shell2 hosting1]
+  set instance_2 [string range [lindex $instances 1] 0 11]
+  expect {
+    timeout { exit_shell; handle_timeout; break }
+    "You are now accessing instance *$instance_2"
+  }
+  expect {
+    timeout { exit_shell; handle_timeout; break }
+    "/wedeploy-container"
+  }
+  send "exit\r"
+  expect {
+    timeout { handle_timeout; break }
+    "/$::_root_dir/"
+  }
+  break
+}
+
+delete_project shell2
+
+#####################################################
+TearDownScenario: "Open a shell on a specific instance"
+#####################################################
+
+#####################################################
+Scenario: "Open a shell using --instance flag"
+#####################################################
+
+create_project shell3
+create_service shell3 hosting1
+
+while {1} {
+  send "we scale -p shell3 -s hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Number of instances"
+  }
+  send "3\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "Scaling service \"*hosting1*\" on project \"*shell3*\" on *wedeploy.* to *3* instances."
+  }
+  sleep 5
+  set instances [get_container_ids shell3 hosting1]
+  set instance_1 [string range [lindex $instances 0] 0 11]
+  send "we shell -p shell3 -s hosting1 --instance $instance_1\r"
+  expect {
+    timeout { exit_shell; handle_timeout; break }
+    "You are now accessing instance *$instance_1"
+  }
+  expect {
+    timeout { exit_shell; handle_timeout; break }
+    "/wedeploy-container"
+  }
+  send "exit\r"
+  expect {
+    timeout { handle_timeout; break }
+    "/$::_root_dir/"
+  }
+  break
+}
+
+delete_project shell3
+
+#####################################################
+TearDownScenario: "Open a shell using --instance flag"
+#####################################################
+
+#####################################################
+TearDownFeature: "Shell"
+#####################################################

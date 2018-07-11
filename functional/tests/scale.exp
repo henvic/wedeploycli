@@ -39,6 +39,7 @@ Scenario: "Configure scale for a service"
 #####################################################
 
 login $_tester(email) $_tester(pw)
+set_user_plan standard
 
 create_project scale1
 create_service scale1 hosting1

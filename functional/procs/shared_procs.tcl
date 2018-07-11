@@ -52,6 +52,14 @@ proc control_c {} {
   }
 }
 
+proc exit_shell {} {
+  send "exit\r"
+  expect {
+    timeout { error "Failed to exit shell" }
+    "$::_root_dir"
+  }
+}
+
 proc expectation_not_met {message} {
   incr ::_tests_failed 1
   incr ::_tests_failed_by_feature 1
