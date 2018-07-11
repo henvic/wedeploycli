@@ -1,13 +1,45 @@
 #! /usr/bin/expect
 
+proc Feature: {name} {
+  print_msg "FEATURE: $name" magenta
+  add_to_report "\nFEATURE: $name"
+  set ::_scenarios_count 0
+  set ::_tests_errors 0
+  set ::_tests_failed_by_feature 0
+  set ::_junit_scenarios_content ""
+}
+
+proc TearDownFeature: {name} {
+  append ::_junit_features_content "<testsuite id='$name' name='$name' tests='$::_scenarios_count' errors='$::_tests_errors' failures='$::_tests_failed_by_feature' time='1'>"
+  append ::_junit_features_content $::_junit_scenarios_content
+  append ::_junit_features_content "</testsuite>"
+  print_msg "TEAR DOWN FEATURE: $name" magenta
+  add_to_report "\nTEAR DOWN FEATURE: $name"
+}
+
 proc Scenario: {name} {
   incr ::_tests_total 1
   print_msg "SCENARIO: $name" magenta
   add_to_report "\nSCENARIO: $name"
+  incr ::_scenarios_count 1
+  append ::_junit_scenarios_content "<testcase id='$name' name='$name' time='1'>"
+}
+
+proc TearDownScenario: {name} {
+  append ::_junit_scenarios_content "</testcase>"
+
+  print_msg "TEAR DOWN SCENARIO: $name" magenta
+  add_to_report "\nTEAR DOWN SCENARIO: $name"
 }
 
 proc add_to_report {text} {
   set file [open $::_test_report a+]
+  puts $file $text
+  close $file
+}
+
+proc add_to_junit_report {text} {
+  set file [open $::_junit_test_report w]
   puts $file $text
   close $file
 }
@@ -22,17 +54,21 @@ proc control_c {} {
 
 proc expectation_not_met {message} {
   incr ::_tests_failed 1
+  incr ::_tests_failed_by_feature 1
   print_msg "Expectation not met: $message" red
   set stack [print_stack]
   add_to_report "Expectation Not Met Error: $message\n$stack"
   set timeout $::_default_timeout
+  append ::_junit_scenarios_content "<failure>Expectation Not Met Error: $message\n$stack</failure>"
 }
 
 proc handle_timeout {{message ""}} {
   incr ::_tests_failed 1
+  incr ::_tests_failed_by_feature 1
   print_msg "Timeout Error: $message" red
   set stack [print_stack]
   add_to_report "  Timeout Error: $message\n$stack"
+  append ::_junit_scenarios_content "<failure>Timeout Error: $message\n$stack</failure>"
   set timeout $::_default_timeout
   control_c
 }
