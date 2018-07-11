@@ -23,10 +23,9 @@ var ie = &interativeEnvCmd{}
 
 // EnvCmd controls the envs for a given project
 var EnvCmd = &cobra.Command{
-	Use:     "env-var",
-	Aliases: []string{"env"},
-	Short:   "Show and configure environment variables for services",
-	Long:    `Show and configure environment variables for services. You must restart the service afterwards.`,
+	Use:   "env-var",
+	Short: "Show and configure environment variables for services",
+	Long:  `Show and configure environment variables for services. You must restart the service afterwards.`,
 	Example: `  we env-var (to list and change your environment variables values)
   we env-var set foo bar
   we env-var rm foo`,
@@ -48,7 +47,6 @@ var setupHost = cmdflagsfromhost.SetupHost{
 }
 
 func (ie *interativeEnvCmd) preRun(cmd *cobra.Command, args []string) error {
-	commands.EnvIsDeprecatedWarning(cmd, args)
 	ie.ctx = context.Background()
 
 	if _, _, err := cmd.Find(args); err != nil {
