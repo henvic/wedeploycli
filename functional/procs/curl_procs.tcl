@@ -55,7 +55,7 @@ proc http_post {url userpw data} {
 
 proc handle_response {message body} {
   append message "\n  $body"
-  add_to_report "  $message"
+  add_to_report "$message"
   print_msg $message red
 }
 
@@ -68,8 +68,7 @@ proc assert_service_exists {project service} {
   set body [lindex $response 1]
 
   if { $response_code != 200 } {
-    incr ::_tests_failed 1
-    handle_response "Could not verify service $service-$project" $body
+    expectation_not_met "Could not verify service $service-$project\n$body"
   }
 }
 
