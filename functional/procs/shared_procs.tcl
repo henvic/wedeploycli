@@ -1,6 +1,7 @@
 #! /usr/bin/expect
 
 proc Feature: {name} {
+  set ::_current_feature "$name"
   print_msg "FEATURE: $name" magenta
   add_to_report "\nFEATURE: $name"
   set ::_scenarios_count 0
@@ -18,6 +19,7 @@ proc TearDownFeature: {name} {
 }
 
 proc Scenario: {name} {
+  set ::_current_scenario "$name"
   incr ::_tests_total 1
   print_msg "SCENARIO: $name" magenta
   add_to_report "\nSCENARIO: $name"

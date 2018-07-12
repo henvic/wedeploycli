@@ -1,6 +1,8 @@
 #! /usr/bin/expect
 
 # set globals here
+set _current_feature ""
+set _current_scenario ""
 set _default_timeout 5
 set _remote wedeploy.xyz
 set _root_dir functional
@@ -97,6 +99,9 @@ foreach test_file $test_files {
     append message "ErrorInfo:\n$errorInfo\n"
     puts $message
     add_to_report $message
+
+    TearDownScenario: $_current_scenario
+    TearDownFeature: $_current_feature
   }
 }
 
