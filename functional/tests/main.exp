@@ -1,6 +1,8 @@
 #! /usr/bin/expect
 
 # set globals here
+set _current_feature ""
+set _current_scenario ""
 set _default_timeout 5
 set _remote wedeploy.xyz
 set _root_dir functional
@@ -15,6 +17,7 @@ set _teamuser(pw) "L6P&ZExVXydC"
 set _tester(email) cli-tester@test.com
 set _tester(pw) test
 set _tests_errors 0
+set _tests_errors_by_feature 0
 set _tests_failed 0
 set _tests_failed_by_feature 0
 set _tests_total 0
@@ -89,17 +92,22 @@ if { $::argc > 1 } {
 foreach test_file $test_files {
   if { [catch { source $test_file } errmsg] } {
     incr ::_tests_errors 1
+    incr ::_tests_errors_by_feature 1
     set message "\nUnexpected error occurred:\n"
     append message "ErrorMsg: $errmsg\n"
     append message "ErrorCode: $errorCode\n"
     append message "ErrorInfo:\n$errorInfo\n"
     puts $message
     add_to_report $message
+    append ::_junit_scenarios_content "<error>$message</error>"
+
+    TearDownScenario: $_current_scenario
+    TearDownFeature: $_current_feature
   }
 }
 
 append _junit_report_content "<testsuites name='cli-functional-tests' tests='$_tests_total'"
-append _junit_report_content " failures='$_tests_failed'>"
+append _junit_report_content " failures='$_tests_failed' errors='::_tests_errors'>"
 append _junit_report_content $_junit_features_content
 append _junit_report_content "</testsuites>"
 
