@@ -27,14 +27,18 @@ proc Scenario: {name} {
   print_msg "SCENARIO: $name" magenta
   add_to_report "\nSCENARIO: $name"
   incr ::_scenarios_count 1
-  append ::_junit_scenarios_content "<testcase id='$name' name='$name' time='1'>"
+  set ::_time_by_scenario [clock milliseconds]
 }
 
 proc TearDownScenario: {name} {
+  set end [clock milliseconds]
+  set time ($end - ::_time_by_scenario)
+  append ::_junit_scenarios_content "<testcase id='$name' name='$name' time='$time'>"
+  append ::_junit_scenarios_content ::_junit_scenarios_error_content
   append ::_junit_scenarios_content "</testcase>"
 
-  print_msg "TEAR DOWN SCENARIO: $name" magenta
-  add_to_report "\nTEAR DOWN SCENARIO: $name"
+  print_msg "TEAR DOWN SCENARIO: $name  in $time milliseconds" magenta
+  add_to_report "\nTEAR DOWN SCENARIO: $name  in $time milliseconds"
 }
 
 proc add_to_report {text} {
@@ -72,7 +76,7 @@ proc expectation_not_met {message} {
   set stack [print_stack]
   add_to_report "Expectation Not Met Error: $message\n$stack"
   set timeout $::_default_timeout
-  append ::_junit_scenarios_content "<failure>Expectation Not Met Error: $message\n$stack</failure>"
+  append ::_junit_scenarios_error_content "<failure>Expectation Not Met Error: $message\n$stack</failure>"
 }
 
 proc handle_timeout {{message ""}} {
@@ -81,7 +85,7 @@ proc handle_timeout {{message ""}} {
   print_msg "Timeout Error: $message" red
   set stack [print_stack]
   add_to_report "Timeout Error: $message\n$stack"
-  append ::_junit_scenarios_content "<failure>Timeout Error: $message\n$stack</failure>"
+  append ::_junit_scenarios_error_content "<failure>Timeout Error: $message\n$stack</failure>"
   set timeout $::_default_timeout
   control_c
 }
