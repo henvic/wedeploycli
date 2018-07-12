@@ -61,6 +61,44 @@ pipeline {
   }
 }
 
+void handleCurrentResultChange() {
+  switch(currentBuild.currentResult) {
+    case 'SUCCESS':
+      pushSuccessToSlack();
+    break
+  }
+}
+
+JSONArray buildAttachments(String pretext, String text, String fallback, String title, String color) {
+  JSONArray attachments = new JSONArray();
+
+  attachment = new JSONObject();
+  attachment.put('pretext', pretext);
+  attachment.put('text', text);
+  attachment.put('fallback', fallback);
+  attachment.put('color', color);
+  attachment.put('author_name', getGitAuthor());
+  attachment.put('title', title);
+  attachment.put('title_link', env.BUILD_URL);
+  attachment.put('footer', 'WeDeploy CI Team');
+  attachment.put('footer_icon', 'https://a.slack-edge.com/7bf4/img/services/jenkins-ci_48.png')
+
+  JSONArray attachmentFields = new JSONArray();
+
+  lastCommitField = new JSONObject();
+  lastCommitField.put('title', 'Last Commit');
+  lastCommitField.put('value', getLastCommitMessage());
+  lastCommitField.put('short', false);
+
+  attachmentFields.add(lastCommitField);
+
+  attachment.put('fields', attachmentFields);
+
+  attachments.add(attachment);
+
+  return attachments;
+}
+
 void buildStep(String message, Closure closure) {
   try {
     setBuildStatus(message, "PENDING");
@@ -71,6 +109,7 @@ void buildStep(String message, Closure closure) {
   }
   catch (Exception e) {
     setBuildStatus(message, "FAILURE");
+    pushFailureToSlack(message);
     throw e
   }
 }
@@ -121,7 +160,7 @@ void pushSuccessToSlack() {
   String text = getRandom(successMessages);
 
   JSONArray attachments = buildAttachments(
-    'BUILD FIXED - wedeploy/api',
+    'BUILD FIXED - wedeploy/cli-functional-tests',
     text,
     'CI BUILD FIXED',
     title,
