@@ -15,6 +15,7 @@ set _teamuser(pw) "L6P&ZExVXydC"
 set _tester(email) cli-tester@test.com
 set _tester(pw) test
 set _tests_errors 0
+set _tests_errors_by_feature 0
 set _tests_failed 0
 set _tests_failed_by_feature 0
 set _tests_total 0
@@ -89,6 +90,7 @@ if { $::argc > 1 } {
 foreach test_file $test_files {
   if { [catch { source $test_file } errmsg] } {
     incr ::_tests_errors 1
+    incr ::_tests_errors_by_feature 1
     set message "\nUnexpected error occurred:\n"
     append message "ErrorMsg: $errmsg\n"
     append message "ErrorCode: $errorCode\n"
@@ -99,7 +101,7 @@ foreach test_file $test_files {
 }
 
 append _junit_report_content "<testsuites name='cli-functional-tests' tests='$_tests_total'"
-append _junit_report_content " failures='$_tests_failed'>"
+append _junit_report_content " failures='$_tests_failed' errors='::_tests_errors'>"
 append _junit_report_content $_junit_features_content
 append _junit_report_content "</testsuites>"
 

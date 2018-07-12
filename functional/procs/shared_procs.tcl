@@ -4,13 +4,13 @@ proc Feature: {name} {
   print_msg "FEATURE: $name" magenta
   add_to_report "\nFEATURE: $name"
   set ::_scenarios_count 0
-  set ::_tests_errors 0
+  set ::_tests_errors_by_feature 0
   set ::_tests_failed_by_feature 0
   set ::_junit_scenarios_content ""
 }
 
 proc TearDownFeature: {name} {
-  append ::_junit_features_content "<testsuite id='$name' name='$name' tests='$::_scenarios_count' errors='$::_tests_errors' failures='$::_tests_failed_by_feature' time='1'>"
+  append ::_junit_features_content "<testsuite id='$name' name='$name' tests='$::_scenarios_count' errors='$::_tests_errors_by_feature' failures='$::_tests_failed_by_feature' time='1'>"
   append ::_junit_features_content $::_junit_scenarios_content
   append ::_junit_features_content "</testsuite>"
   print_msg "TEAR DOWN FEATURE: $name" magenta
