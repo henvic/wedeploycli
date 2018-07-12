@@ -77,7 +77,7 @@ proc handle_timeout {{message ""}} {
   incr ::_tests_failed_by_feature 1
   print_msg "Timeout Error: $message" red
   set stack [print_stack]
-  add_to_report "  Timeout Error: $message\n$stack"
+  add_to_report "Timeout Error: $message\n$stack"
   append ::_junit_scenarios_content "<failure>Timeout Error: $message\n$stack</failure>"
   set timeout $::_default_timeout
   control_c
@@ -108,12 +108,12 @@ proc print_stack {} {
     if { [dict exists $frame file] } { set file [dict get $frame file] }
     if { [dict exists $frame line] } { set line [dict get $frame line] }
 
-    set max_string_size 30
+    set max_string_size 120
     if { [string length $cmd] > $max_string_size } {
       set cmd "[string range $cmd 0 $max_string_size]..."
     }
 
-    set stack_line "  ERROR: [file tail $file] | line $line | cmd: $cmd "
+    set stack_line "[file tail $file], line $line\n  $cmd"
 
     lappend stack $stack_line
   }

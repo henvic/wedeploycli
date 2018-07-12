@@ -55,7 +55,7 @@ proc http_post {url userpw data} {
 
 proc handle_response {message body} {
   append message "\n  $body"
-  add_to_report "  $message"
+  add_to_report "$message"
   print_msg $message red
 }
 
