@@ -13,7 +13,7 @@ proc Feature: {name} {
 
 proc TearDownFeature: {name} {
   set end [clock milliseconds]
-  set time ($end - ::_time_by_feature)
+  set time [expr {$end - $::_time_by_feature}]
   append ::_junit_features_content "<testsuite hostname='localhost' id='$name' name='$name' tests='$::_scenarios_count' time='$time' errors='$::_tests_errors_by_feature' failures='$::_tests_failed_by_feature'>"
   append ::_junit_features_content $::_junit_scenarios_content
   append ::_junit_features_content "</testsuite>"
@@ -32,7 +32,7 @@ proc Scenario: {name} {
 
 proc TearDownScenario: {name} {
   set end [clock milliseconds]
-  set time ($end - ::_time_by_scenario)
+  set time [expr {$end - $::_time_by_scenario}]
   append ::_junit_scenarios_content "<testcase id='$name' name='$name' time='$time'>"
   append ::_junit_scenarios_content ::_junit_scenarios_error_content
   append ::_junit_scenarios_content "</testcase>"
