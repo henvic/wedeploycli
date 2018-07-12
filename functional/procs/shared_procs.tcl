@@ -8,14 +8,17 @@ proc Feature: {name} {
   set ::_tests_errors_by_feature 0
   set ::_tests_failed_by_feature 0
   set ::_junit_scenarios_content ""
+  set ::_time_by_feature [clock milliseconds]
 }
 
 proc TearDownFeature: {name} {
-  append ::_junit_features_content "<testsuite hostname='localhost' id='$name' name='$name' tests='$::_scenarios_count' errors='$::_tests_errors_by_feature' failures='$::_tests_failed_by_feature' time='1'>"
+  set end [clock milliseconds]
+  set time ($end - ::_time_by_feature)
+  append ::_junit_features_content "<testsuite hostname='localhost' id='$name' name='$name' tests='$::_scenarios_count' time='$time' errors='$::_tests_errors_by_feature' failures='$::_tests_failed_by_feature' time='1'>"
   append ::_junit_features_content $::_junit_scenarios_content
   append ::_junit_features_content "</testsuite>"
-  print_msg "TEAR DOWN FEATURE: $name" magenta
-  add_to_report "\nTEAR DOWN FEATURE: $name"
+  print_msg "TEAR DOWN FEATURE: $name in $time milliseconds" magenta
+  add_to_report "\nTEAR DOWN FEATURE: $name in $time milliseconds"
 }
 
 proc Scenario: {name} {

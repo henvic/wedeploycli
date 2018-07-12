@@ -21,6 +21,7 @@ set _tests_errors_by_feature 0
 set _tests_failed 0
 set _tests_failed_by_feature 0
 set _tests_total 0
+set _time_by_feature 0
 
 if { [info exists env(REMOTE)] } {
   set _remote $::env(REMOTE)
