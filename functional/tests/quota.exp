@@ -69,14 +69,14 @@ while {1} {
   send "2\r"
   expect {
     timeout { handle_timeout; break }
-    "Select a Service Type"
-  }
-  send "4\r"
-  expect {
-    timeout { handle_timeout; break }
     "Choose a Service ID"
   }
   send "hosting3\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Select a Service Type"
+  }
+  send "4\r"
   expect {
     timeout { handle_timeout; break }
     "You've reached your plan limits"

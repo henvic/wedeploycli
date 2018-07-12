@@ -54,7 +54,7 @@ while {1} {
   send "new1\r"
   expect {
     timeout { handle_timeout; break }
-    -gl "Project*new1*created."
+    -gl "Project*new1*created"
   }
   send "we new\r"
   expect {
@@ -73,14 +73,14 @@ while {1} {
   send "new1\r"
   expect {
     timeout { handle_timeout; break }
-    "Select a Service Type"
-  }
-  send "4\r"
-  expect {
-    timeout { handle_timeout; break }
     "Choose a Service ID"
   }
   send "hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Select a Service Type"
+  }
+  send "4\r"
   expect {
     timeout { handle_timeout; break }
     "Service*hosting1-new1.wedeploy.sh*created"

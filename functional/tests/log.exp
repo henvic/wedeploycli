@@ -42,6 +42,7 @@ login $_tester(email) $_tester(pw)
 
 create_project log1
 create_service log1 ui1qa
+sleep 5
 create_service log1 ui2qa
 
 while {1} {
@@ -101,15 +102,11 @@ while {1} {
   send "we log -p log1\r"
   expect {
     timeout { handle_timeout; break }
-    -re "ui1qa.*Deploy in progress.*ui2qa.*Deploy in progress"
+    -re "ui1qa.*Deploy in progress.*ui1qa"
   }
   expect {
     timeout { handle_timeout; break }
-    -re "ui.qa.*HOSTING will now listen on 0.0.0.0:80."
-  }
-  expect {
-    timeout { handle_timeout; break }
-    -re "ui.qa.*HOSTING will now listen on 0.0.0.0:80."
+    -re "ui2qa.*Deploy in progress.*ui2qa"
   }
   control_c
   send "we log -p log2\r"
