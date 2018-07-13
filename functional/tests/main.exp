@@ -9,6 +9,7 @@ set _root_dir functional
 set _junit_features_content ""
 set _junit_report_content "<?xml version='1.0' encoding='utf-8'?>"
 set _junit_scenarios_content ""
+set _junit_scenarios_error_content ""
 set _junit_test_report "../test-results/TEST-report.xml"
 set _scenarios_count 0
 set _test_report "../test-results/report.txt"
@@ -21,6 +22,8 @@ set _tests_errors_by_feature 0
 set _tests_failed 0
 set _tests_failed_by_feature 0
 set _tests_total 0
+set _time_by_feature 0
+set _time_by_scenario 0
 
 if { [info exists env(REMOTE)] } {
   set _remote $::env(REMOTE)
@@ -99,7 +102,7 @@ foreach test_file $test_files {
     append message "ErrorInfo:\n$errorInfo\n"
     puts $message
     add_to_report $message
-    append ::_junit_scenarios_content "<error>$message</error>"
+    append ::_junit_scenarios_error_content "<error>$message</error>"
 
     TearDownScenario: $_current_scenario
     TearDownFeature: $_current_feature
