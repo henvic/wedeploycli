@@ -196,7 +196,7 @@ func (p *Process) printInfo(es *execStarted) {
 			"Warning: don't use this shell to make changes on your services. Only changes inside volumes persist."))
 	}
 
-	if verbose.Enabled {
+	if verbose.Enabled || p.Cmd != "" {
 		verbose.Debug(info)
 		return
 	}
