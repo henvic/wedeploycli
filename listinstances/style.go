@@ -7,6 +7,7 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/services"
+	"github.com/wedeploy/cli/verbose"
 )
 
 // Printf list
@@ -50,5 +51,11 @@ func (l *List) printInstance(instance services.Instance) {
 		l.Printf("%d\t", len(l.selectors))
 	}
 
-	l.Printf("%s\t%s\n", instance.ContainerID, instance.State)
+	printed := instance.ContainerID
+
+	if len(printed) > 12 && !verbose.Enabled {
+		printed = printed[:11]
+	}
+
+	l.Printf("%s\t%s\n", printed, instance.State)
 }
