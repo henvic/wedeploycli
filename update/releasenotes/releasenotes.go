@@ -160,4 +160,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "July 8th, 2018",
 		Description: `Added "we list instances" command. Improved instance support. Minor improvements.`,
 	},
+	ReleaseNote{
+		Version:     "1.5.10",
+		Date:        "July 12th, 2018",
+		Description: `Only print first 12 chars of instance ids. Autoconnect to instance on "we shell" when only one instance is running. Minor improvements.`,
+	},
 }
