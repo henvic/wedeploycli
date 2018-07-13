@@ -34,7 +34,7 @@ proc TearDownScenario: {name} {
   set end [clock milliseconds]
   set time [expr {$end - $::_time_by_scenario}]
   append ::_junit_scenarios_content "<testcase id='$name' name='$name' time='$time'>"
-  append ::_junit_scenarios_content ::_junit_scenarios_error_content
+  append ::_junit_scenarios_content $::_junit_scenarios_error_content
   append ::_junit_scenarios_content "</testcase>"
 
   print_msg "TEAR DOWN SCENARIO: $name  in $time milliseconds" magenta
