@@ -110,7 +110,7 @@ foreach test_file $test_files {
 }
 
 append _junit_report_content "<testsuites name='cli-functional-tests' tests='$_tests_total'"
-append _junit_report_content " failures='$_tests_failed' errors='::_tests_errors'>"
+append _junit_report_content " failures='$_tests_failed' errors='$_tests_errors'>"
 append _junit_report_content $_junit_features_content
 append _junit_report_content "</testsuites>"
 
