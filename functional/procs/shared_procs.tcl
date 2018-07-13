@@ -23,6 +23,7 @@ proc TearDownFeature: {name} {
 
 proc Scenario: {name} {
   set ::_current_scenario "$name"
+  set ::_junit_scenarios_error_content ""
   incr ::_tests_total 1
   print_msg "SCENARIO: $name" magenta
   add_to_report "\nSCENARIO: $name"
