@@ -102,7 +102,7 @@ foreach test_file $test_files {
     append message "ErrorInfo:\n$errorInfo\n"
     puts $message
     add_to_report $message
-    append ::_junit_scenarios_error_content "<error>$message</error>"
+    append _junit_scenarios_error_content "<error>$message</error>"
 
     TearDownScenario: $_current_scenario
     TearDownFeature: $_current_feature
