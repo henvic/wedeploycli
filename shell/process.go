@@ -51,6 +51,30 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 	p.execStarted = make(chan struct{}, 1)
 	p.err = make(chan error, 1)
 
+	chanErr := make(chan error, 1)
+	runErr := make(chan error, 1)
+
+	if err := p.shell.On("error", func(err error) {
+		chanErr <- err
+		return
+	}); err != nil {
+		return err
+	}
+
+	go func() {
+		runErr <- p.run(ctx, conn)
+	}()
+
+	select {
+	case err := <-chanErr:
+		p.ctxCancel()
+		return err
+	case err := <-runErr:
+		return err
+	}
+}
+
+func (p *Process) run(ctx context.Context, conn *socketio.Client) (err error) {
 	if err := p.authenticate(); err != nil {
 		return err
 	}
@@ -81,7 +105,7 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 		return err
 	}
 
-	t := termsession.New(shell)
+	t := termsession.New(p.shell)
 
 	if err := p.Fork(); err != nil {
 		return err
