@@ -56,11 +56,6 @@ while {1} {
     "Type service ID or #"
   }
   send "1\r"
-  expect {
-    timeout { exit_shell; handle_timeout; break }
-    "Please *select* a instance from the list below"
-  }
-  send "\r"
   set instances [get_container_ids shell1 hosting1]
   set instance_1 [string range [lindex $instances 0] 0 11]
   expect {
@@ -120,7 +115,7 @@ while {1} {
   send "we shell -p shell2 -s hosting1\r"
   expect {
     timeout { handle_timeout; break }
-    "Please *select* a instance from the list below"
+    "Please *select* an instance from the list below"
   }
   send "2\r"
   set instances [get_container_ids shell2 hosting1]
