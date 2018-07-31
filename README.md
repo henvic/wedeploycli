@@ -61,7 +61,13 @@ REMOTE=wedeploy.xyz \
 ## Test results
 Results are reported in test-results/report.txt.  This contains a list of all scenarios from latest test run.  Any fails and errors encountered are listed below the respective scenario name.
 
-For Jenkins CI, view test results [here](https://ci.wedeploy.com/blue/organizations/jenkins/WeDeploy%2Fcli-functional-tests/activity/).  Click on a test run, then click 'Tests' in the top nav bar.
+Results are also compiled in junit format in test-results/TEST-report.xml.  
+
+To view test reports on Jenkins CI
+1. Click [here](https://ci.wedeploy.com/blue/organizations/jenkins/WeDeploy%2Fcli-functional-tests/activity/).  
+1. Click on a test run.
+1. For junit report, click 'Tests' in the top nav bar.
+1. For report.txt, click 'Artifacts' in the top nav bar, then click functional/test-results/report.txt.
 
 ## Contributing
 The tests are organized into Features and Scenarios.  A Feature is a test suite, which corresponds to a file in the functional/tests folder.  A Feature can contain one or more Scenarios.  Each Scenario is a test case.
