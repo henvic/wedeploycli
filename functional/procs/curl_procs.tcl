@@ -168,6 +168,7 @@ proc get_container_ids {project service} {
 
   if { $response_code != 200 } {
     handle_response "Could not get container ids" $body
+    error "Could not get container ids"
   }
 
   set match_list [regexp -all -inline {"containerId":"(.*?)"} $body]

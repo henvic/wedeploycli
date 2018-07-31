@@ -144,10 +144,98 @@ while {1} {
   break
 }
 
+#####################################################
+TearDownScenario: "View logs with -p and -s flags"
+#####################################################
+
+#####################################################
+Scenario: "View logs with --instance flag"
+#####################################################
+
+while {1} {
+  send "we scale -p log1 -s ui1qa\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Number of instances"
+  }
+  send "3\r"
+  sleep 5
+  set timeout 15
+  expect {
+    timeout { handle_timeout; break }
+    -gl "Scaling service \"*ui1qa*\" on project \"*log1*\" on *wedeploy.* to *3* instances."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    $::_root_dir
+  }
+  set timeout $::_default_timeout
+  set instances [get_container_ids log1 ui1qa]
+  set instance_1 [string range [lindex $instances 0] 0 11]
+  set instance_2 [string range [lindex $instances 1] 0 11]
+  set instance_3 [string range [lindex $instances 2] 0 11]
+  send "we log --instance $instance_2\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Type project/service ID or service #"
+  }
+  send "1\r"
+  expect {
+    timeout {}
+    $instance_1 { expectation_not_met "Should not see logs for $instance_1"; break }
+  }
+  expect {
+    timeout {}
+    $instance_3 { expectation_not_met "Should not see logs for $instance_1"; break }
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "$instance_2"
+  }
+  control_c
+  break
+}
+
+#####################################################
+TearDownScenario: "View logs --instance flags"
+#####################################################
+
+#####################################################
+Scenario: "View logs with --since flag"
+#####################################################
+
+# need to wait here to test the --since flag
+sleep 60
+create_service log1 ui3qa
+
+while {1} {
+  unset expect_out(buffer)
+  send "we log --since 1min\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Type project/service ID or service #"
+  }
+  send "log1\r"
+  expect {
+    timeout {}
+    "ui1qa" { expectation_not_met "Should not see logs for ui1qa"; break }
+  }
+  expect {
+    timeout {}
+    "ui2qa" { expectation_not_met "Should not see logs for ui2qa"; break }
+  }
+  expect {
+    timeout { handle_timeout; break }
+    -re "ui3qa.*Deploy in progress"
+  }
+  control_c
+  break
+}
+
 delete_project log1
 
 #####################################################
-TearDownScenario: "View logs with -p and -s flags"
+TearDownScenario: "View logs with --since flag"
 #####################################################
 
 #####################################################
