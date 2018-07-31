@@ -59,4 +59,39 @@ REMOTE=wedeploy.xyz \
 
 
 ## Test results
-Results are reported in test-results/report.txt.  This contains a list of all scenarios from latest test run.  Any errors encountered are listed below the respective scenario name.
+Results are reported in test-results/report.txt.  This contains a list of all scenarios from latest test run.  Any fails and errors encountered are listed below the respective scenario name.
+
+Results are also compiled in junit format in test-results/TEST-report.xml.  
+
+To view test reports on Jenkins CI
+1. Click [here](https://ci.wedeploy.com/blue/organizations/jenkins/WeDeploy%2Fcli-functional-tests/activity/).  
+1. Click on a test run.
+1. For junit report, click 'Tests' in the top nav bar.
+1. For report.txt, click 'Artifacts' in the top nav bar, then click functional/test-results/report.txt.
+
+## Contributing
+The tests are organized into Features and Scenarios.  A Feature is a test suite, which corresponds to a file in the functional/tests folder.  A Feature can contain one or more Scenarios.  Each Scenario is a test case.
+
+Each Feature must begin with
+```
+Feature: {feature name}
+```
+and end with
+```
+TearDownFeature: {feature name}
+```
+Similarly, each Scenario must begin with
+```
+Scenario: {scenario name}
+```
+and end with
+```
+TearDownScenario: {scenario name}
+```
+
+Each scenario begins with setup steps.  Then the actual test steps are all enclosed within a `while` block.  The test steps are a series of `send` and `expect` commands.  In other words, `send` something to the command line, then `expect` something in the terminal output.  After the test steps are any necessary teardown steps.  Please see any of the test files for examples.
+
+Here's some helpful quick start guides for using Expect/TCL:
+
+- [Basic principles of using tcl-expect scripts](https://gist.github.com/Fluidbyte/6294378)
+- [Expect and TCL mini reference manual](http://inguza.com/document/expect-and-tcl-mini-reference-manual)
