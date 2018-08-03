@@ -4,8 +4,8 @@ import (
 	"context"
 	"os"
 
-	"github.com/henvic/socketio"
 	"github.com/wedeploy/cli/verbose"
+	"github.com/wedeploy/gosocketio"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -22,11 +22,11 @@ type TermSession struct {
 
 	watcher chan os.Signal
 
-	socket *socketio.Namespace
+	socket *gosocketio.Namespace
 }
 
 // New terminal session.
-func New(shell *socketio.Namespace) *TermSession {
+func New(shell *gosocketio.Namespace) *TermSession {
 	return &TermSession{
 		fd:     int(os.Stdin.Fd()),
 		socket: shell,

@@ -7,10 +7,10 @@ import (
 	"os"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/henvic/socketio"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/shell/internal/termsession"
 	"github.com/wedeploy/cli/verbose"
+	"github.com/wedeploy/gosocketio"
 )
 
 // Process to run
@@ -27,8 +27,8 @@ type Process struct {
 	PID      int
 	ExitCode int
 
-	conn  *socketio.Client
-	shell *socketio.Namespace
+	conn  *gosocketio.Client
+	shell *gosocketio.Namespace
 
 	execStarted chan struct{}
 
@@ -36,7 +36,7 @@ type Process struct {
 }
 
 // Run connection
-func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
+func (p *Process) Run(ctx context.Context, conn *gosocketio.Client) (err error) {
 	p.ctx, p.ctxCancel = context.WithCancel(ctx)
 	defer p.ctxCancel()
 
@@ -74,7 +74,7 @@ func (p *Process) Run(ctx context.Context, conn *socketio.Client) (err error) {
 	}
 }
 
-func (p *Process) run(ctx context.Context, conn *socketio.Client) (err error) {
+func (p *Process) run(ctx context.Context, conn *gosocketio.Client) (err error) {
 	if err := p.authenticate(); err != nil {
 		return err
 	}

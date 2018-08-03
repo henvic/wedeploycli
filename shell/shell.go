@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/henvic/socketio"
-	"github.com/henvic/socketio/websocket"
+	"github.com/wedeploy/gosocketio"
+	"github.com/wedeploy/gosocketio/websocket"
 )
 
 // An ExitError reports an unsuccessful exit by a command.
@@ -71,7 +71,7 @@ func Run(ctx context.Context, params Params, cmd string, args ...string) error {
 		RawQuery: query.Encode(),
 	}
 
-	conn, err := socketio.Connect(u, websocket.NewTransport())
+	conn, err := gosocketio.Connect(u, websocket.NewTransport())
 
 	if err != nil {
 		return err
