@@ -105,6 +105,7 @@ type Transport struct {
 
 	BufferSize int
 
+	Dialer        ws.Dialer
 	RequestHeader http.Header
 }
 
@@ -124,9 +125,13 @@ func NewTransport() *Transport {
 	return t
 }
 
-// Connect to web socket
+// Connect to web socket with default gorilla websocket dialer
 func (wst *Transport) Connect(url string) (conn *Connection, err error) {
-	dialer := ws.Dialer{}
+	return wst.ConnectDialer(ws.Dialer{}, url)
+}
+
+// ConnectDialer to web socket
+func (wst *Transport) ConnectDialer(dialer ws.Dialer, url string) (conn *Connection, err error) {
 	socket, _, err := dialer.Dial(url, wst.RequestHeader)
 
 	if err != nil {

@@ -1,4 +1,6 @@
-# golang socket.io [![GoDoc](https://godoc.org/github.com/wedeploy/gosocketio?status.svg)](https://godoc.org/github.com/wedeploy/gosocketio)
+# golang socket.io [<img src="https://avatars3.githubusercontent.com/u/10002920" alt="WeDeploy logo" width="90" height="90" align="right">](https://wedeploy.com/)
+
+[![GoDoc](https://godoc.org/github.com/wedeploy/gosocketio?status.svg)](https://godoc.org/github.com/wedeploy/gosocketio) [![Build Status](https://travis-ci.org/wedeploy/gosocketio.svg?branch=master)](https://travis-ci.org/wedeploy/gosocketio)
 
 golang socket.io is an implementation for the [socket.io](https://socket.io) protocol in Go. There is a lack of specification for the socket.io protocol, so reverse engineering is the easiest way to find out how it works.
 
@@ -6,6 +8,7 @@ golang socket.io is an implementation for the [socket.io](https://socket.io) pro
 
 **golang socket.io is an adapted work from [github.com/graarh/golang-socketio](https://github.com/graarh/golang-socketio).**
 
+---
 
 ## on "connection", "error", and "disconnection"
 socket.io has three special events it triggers on the client-side and you should not emit them on your own programs.
@@ -46,7 +49,7 @@ if err != nil {
 
 // ...
 
-exampleNamespace, err := c.Of("example")	
+exampleNamespace, err := c.Of("example")
 
 If err != nil {
 	return err

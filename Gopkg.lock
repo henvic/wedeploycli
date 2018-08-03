@@ -151,7 +151,7 @@
   revision = "65a9db5fad5105a89e17f38adcc9878685be6d78"
 
 [[projects]]
-  digest = "1:88d97aedd1d0ca580b25ecdc295d596ccd9ba741d8980db625bb3dbf86f8b85b"
+  digest = "1:9f802891ee0f66f80e2ceb44bbca2577732f7fcf4a1bbfccfa9b3b5c7dfff203"
   name = "github.com/wedeploy/gosocketio"
   packages = [
     ".",
@@ -160,8 +160,8 @@
     "websocket",
   ]
   pruneopts = ""
-  revision = "c4a2c9d8230a020e1f086ad11e9d81b19a639ac8"
-  version = "0.0.4-beta"
+  revision = "ef257277a67693f4f0830594e3829e3e02c4d402"
+  version = "v0.0.5-beta"
 
 [[projects]]
   digest = "1:6ae823063d8a916ca692a4ae1741360b6019c48c2566dcb578e2e38b333a6c05"

@@ -96,7 +96,7 @@ func dial(u url.URL, tr *websocket.Transport) (c *Client, err error) {
 	}
 
 	c.connLocker.Lock()
-	c.conn, err = tr.Connect(u.String())
+	c.conn, err = tr.ConnectDialer(tr.Dialer, u.String())
 	c.connLocker.Unlock()
 
 	if err != nil {
