@@ -1,4 +1,4 @@
-package socketio
+package gosocketio
 
 import (
 	"errors"
@@ -83,7 +83,7 @@ func NewHandler(f interface{}) (*Handler, error) {
 	numIn := fType.NumIn()
 
 	if isVariadicNonInterface(fType) {
-		return nil, errors.New("support for variadic is only partially implemented; see https://github.com/henvic/socket.io-client-go/issues/1")
+		return nil, errors.New("support for variadic is only partially implemented; see https://github.com/wedeploy/gosocket.io-client-go/issues/1")
 	}
 
 	h := &Handler{

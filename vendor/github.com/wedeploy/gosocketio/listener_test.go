@@ -1,4 +1,4 @@
-package socketio
+package gosocketio
 
 import (
 	"reflect"

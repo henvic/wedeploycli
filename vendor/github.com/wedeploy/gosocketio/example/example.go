@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/henvic/socketio"
-	"github.com/henvic/socketio/websocket"
+	"github.com/wedeploy/gosocketio"
+	"github.com/wedeploy/gosocketio/websocket"
 )
 
 // Route to fly.
@@ -39,17 +39,17 @@ func main() {
 		Host:   "localhost:3000",
 	}
 
-	c, err := socketio.Connect(u, websocket.NewTransport())
+	c, err := gosocketio.Connect(u, websocket.NewTransport())
 
 	if err != nil {
 		panic(err) // you should prefer returning errors than panicking
 	}
 
-	if err := c.On(socketio.OnError, errorHandler); err != nil {
+	if err := c.On(gosocketio.OnError, errorHandler); err != nil {
 		panic(err)
 	}
 
-	if err := c.On(socketio.OnDisconnect, disconnectHandler); err != nil {
+	if err := c.On(gosocketio.OnDisconnect, disconnectHandler); err != nil {
 		panic(err)
 	}
 
@@ -76,30 +76,41 @@ func main() {
 			ticker.Stop()
 			return
 		case <-ticker.C:
-			index1 := rand.Intn(len(Airports))
-			index2 := rand.Intn(len(Airports))
-
-			if index1 == index2 {
-				var res HotelReservation
-				err := c.Ack(context.Background(), "book_hotel_for_tonight", Airports[index1], &res)
-
-				if err != nil {
-					fmt.Fprintln(os.Stderr, err)
-					os.Exit(1)
-				}
-
-				fmt.Printf("%s has reserved a %s bedroom for $%d near %s.\n", res.Name, res.Room, res.Price, res.Location)
-				continue
-			}
-
-			if err := c.Emit("find_tickets", Route{
-				From: Airports[index1],
-				To:   Airports[index2],
-			}); err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				os.Exit(1)
-			}
+			doSomething(c)
 		}
+	}
+}
+
+func doSomething(c *gosocketio.Client) {
+	index1 := rand.Intn(len(Airports))
+	index2 := rand.Intn(len(Airports))
+
+	if index1 == index2 {
+		bookHotelRoom(c, Airports[index1])
+	}
+
+	if err := c.Emit("find_tickets", Route{
+		From: Airports[index1],
+		To:   Airports[index2],
+	}); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+func bookHotelRoom(c *gosocketio.Client, hotel string) {
+	var ctx, cancel = context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	var res HotelReservation
+	switch err := c.Ack(ctx, "book_hotel_for_tonight", hotel, &res); {
+	case err == nil:
+		fmt.Printf("%s has booked a %s bedroom for $%d near %s.\n", res.Name, res.Room, res.Price, res.Location)
+	case err == context.DeadlineExceeded || err == context.Canceled:
+		fmt.Fprintf(os.Stderr, "Couldn't complete a booking at %s.\n", hotel)
+	case err != nil:
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 }
 
@@ -122,14 +133,14 @@ func skipHandler(vehicle string) {
 }
 
 type goodbye struct {
-	client *socketio.Client
+	client *gosocketio.Client
 	cancel context.CancelFunc
 }
 
 func (g *goodbye) Handler() {
 	fmt.Print(`Oops! This program is exiting in 5s to demonstrate a clean termination approach.
 Comment the "goodbye" event listener in the Go code example to avoid this from happening.
-The server sends this "goodbye" message 20 seconds after the connection has been established.
+The server sends this "goodbye" message 120 seconds after the connection has been established.
 `)
 	time.Sleep(5 * time.Second)
 	g.cancel()

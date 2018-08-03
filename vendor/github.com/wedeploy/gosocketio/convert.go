@@ -1,11 +1,11 @@
-package socketio
+package gosocketio
 
 import (
 	"encoding/json"
 	"fmt"
 	"reflect"
 
-	"github.com/henvic/socketio/internal/protocol"
+	"github.com/wedeploy/gosocketio/internal/protocol"
 )
 
 func (h *Handler) getFunctionCallArgs(msg *protocol.Message) (is []interface{}, err error) {

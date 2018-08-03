@@ -1,4 +1,4 @@
-# golang socket.io [![GoDoc](https://godoc.org/github.com/henvic/socketio?status.svg)](https://godoc.org/github.com/henvic/socketio)
+# golang socket.io [![GoDoc](https://godoc.org/github.com/wedeploy/gosocketio?status.svg)](https://godoc.org/github.com/wedeploy/gosocketio)
 
 golang socket.io is an implementation for the [socket.io](https://socket.io) protocol in Go. There is a lack of specification for the socket.io protocol, so reverse engineering is the easiest way to find out how it works.
 
@@ -10,7 +10,7 @@ golang socket.io is an implementation for the [socket.io](https://socket.io) pro
 ## on "connection", "error", and "disconnection"
 socket.io has three special events it triggers on the client-side and you should not emit them on your own programs.
 
-**Wait for the socket.io connection event before emitting messages or you risk losing them** due in an unpredictable fashion (due to concurrency: connection latency, server load, etc.). For the default namespace this is automatically handled on socketio.Connect.
+**Wait for the socket.io connection event before emitting messages or you risk losing them** due in an unpredictable fashion (due to concurrency: connection latency, server load, etc.). For the default namespace this is automatically handled on gosocketio.Connect.
 
 However, before emitting a message on a custom namespace, you want to wait for the ready signal, like so:
 
@@ -32,13 +32,13 @@ if err := exampleNamespace.Emit("fleet", 100); err != nil {
 
 The reason why you probably want to use a `select` receiving a second channel, such as context.Done() on all non-trivial programs is to avoid program loop, leak memory, or both in case of failure.
 
-The default namespace is automatically ready after establishing the socket.io session. Therefore, `*socketio.Client` doesn't expose a `Ready()` method.
+The default namespace is automatically ready after establishing the socket.io session. Therefore, `*gosocketio.Client` doesn't expose a `Ready()` method.
 
 ## Connecting to a socket.io server with a custom namespace
 You can connect to a namespace and start emitting messages to it with:
 
 ```go
-c, err := socketio.Connect(u, websocket.NewTransport())
+c, err := gosocketio.Connect(u, websocket.NewTransport())
 
 if err != nil {
 	return err
