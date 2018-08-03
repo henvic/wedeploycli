@@ -2,25 +2,32 @@
 
 
 [[projects]]
+  digest = "1:982e2547680f9fd2212c6443ab73ea84eef40ee1cdcecb61d997de838445214c"
   name = "github.com/cpuguy83/go-md2man"
   packages = ["md2man"]
+  pruneopts = ""
   revision = "20f5889cbdc3c73dbd2862796665e7c465ade7d1"
   version = "v1.0.8"
 
 [[projects]]
+  digest = "1:6098222470fe0172157ce9bbef5d2200df4edde17ee649c5d6e48330e4afa4c6"
   name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
+  pruneopts = ""
   revision = "06ea1031745cb8b3dab3f6a236daf2b0aa468b7e"
   version = "v3.2.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:ae162f9b5c46f6d5ff4bd53a3d78f72e2eb6676c11c5d33b8b106c36f87ddb31"
   name = "github.com/dustin/go-humanize"
   packages = ["."]
+  pruneopts = ""
   revision = "bb3d318650d48840a39aa21a027c6630e198e626"
 
 [[projects]]
   branch = "master"
+  digest = "1:d2e64fd57678d367e932dab7e12f6d8ce2f7887dd174cacf566d25486f3dd0d8"
   name = "github.com/equinox-io/equinox"
   packages = [
     ".",
@@ -28,106 +35,136 @@
     "internal/go-update/internal/binarydist",
     "internal/go-update/internal/osext",
     "internal/osext",
-    "proto"
+    "proto",
   ]
+  pruneopts = ""
   revision = "f24972fa72facf59d05c91c848b65eac38815915"
 
 [[projects]]
+  digest = "1:64d212c703a2b94054be0ce470303286b177ad260b2f89a307e3d1bb6c073ef6"
   name = "github.com/gorilla/websocket"
   packages = ["."]
+  pruneopts = ""
   revision = "ea4d1f681babbce9545c9c5f3d5194a789c89f5b"
   version = "v1.2.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:304c322b62533a48ac052ffee80f67087fce1bc07186cd4e610a1b0e77765836"
   name = "github.com/hashicorp/errwrap"
   packages = ["."]
+  pruneopts = ""
   revision = "7554cd9344cec97297fa6649b055a8c98c2a1e55"
 
 [[projects]]
   branch = "master"
+  digest = "1:94158926759c3333201f81eee5a21112f7ae9d000b4d6926455008c7ab3fb7fc"
   name = "github.com/hashicorp/go-version"
   packages = ["."]
+  pruneopts = ""
   revision = "23480c0665776210b5fbbac6eaaee40e3e6a96b7"
 
 [[projects]]
   branch = "fix-windows-subsystem"
+  digest = "1:c18ccaed44e92a8f03eb605d65012324ca3ae830c19bb529fa28044394479fdb"
   name = "github.com/henvic/browser"
   packages = ["."]
+  pruneopts = ""
   revision = "647cc3c01339b0b4654a9cadc6a2ff41abd837f6"
 
 [[projects]]
-  name = "github.com/henvic/socketio"
-  packages = [
-    ".",
-    "ack",
-    "internal/protocol",
-    "websocket"
-  ]
-  revision = "9ddc2e4f558d22135739b2296fdaf4973699e4ac"
-  version = "0.0.3-beta"
-
-[[projects]]
   branch = "master"
+  digest = "1:1fd4637745135667cb47efdfaa9973c4fa528b0b2cf677870a1cfcffebb9bb77"
   name = "github.com/henvic/uilive"
   packages = ["."]
+  pruneopts = ""
   revision = "dc7a6ced9df35e99c5bafbe99cb1bf59a5965224"
 
 [[projects]]
+  digest = "1:870d441fe217b8e689d7949fef6e43efbc787e50f200cb1e70dbca9204a1d6be"
   name = "github.com/inconshreveable/mousetrap"
   packages = ["."]
+  pruneopts = ""
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
   version = "v1.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:ee97ec8a00b2424570c1ce53d7b410e96fbd4c241b29df134276ff6aa3750335"
   name = "github.com/kylelemons/godebug"
   packages = [
     "diff",
-    "pretty"
+    "pretty",
   ]
+  pruneopts = ""
   revision = "d65d576e9348f5982d7f6d83682b694e731a45c6"
 
 [[projects]]
+  digest = "1:78229b46ddb7434f881390029bd1af7661294af31f6802e0e1bedaad4ab0af3c"
   name = "github.com/mattn/go-isatty"
   packages = ["."]
+  pruneopts = ""
   revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
   version = "v0.0.3"
 
 [[projects]]
+  digest = "1:fd0e88ec70bf0efce538ec8b968a824d992cc60a6cf1539698aa366b3527a053"
   name = "github.com/russross/blackfriday"
   packages = ["."]
+  pruneopts = ""
   revision = "55d61fa8aa702f59229e6cff85793c22e580eaf5"
   version = "v1.5.1"
 
 [[projects]]
+  digest = "1:7f569d906bdd20d906b606415b7d794f798f91a62fcfb6a4daa6d50690fb7a3f"
   name = "github.com/satori/go.uuid"
   packages = ["."]
+  pruneopts = ""
   revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
   version = "v1.2.0"
 
 [[projects]]
+  digest = "1:74c32990510c9f188556aa17600313e867d1d06f5a9db244056a95d144ec34ce"
   name = "github.com/spf13/cobra"
   packages = [
     ".",
-    "doc"
+    "doc",
   ]
+  pruneopts = ""
   revision = "a1f051bc3eba734da4772d60e2d677f47cf93ef4"
   version = "v0.0.2"
 
 [[projects]]
+  digest = "1:261bc565833ef4f02121450d74eb88d5ae4bd74bfe5d0e862cddb8550ec35000"
   name = "github.com/spf13/pflag"
   packages = ["."]
+  pruneopts = ""
   revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
   version = "v1.0.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:7eed51dcae60e95dbde54662594ef90a7cbf3b7e3f0de32f84f0213b695967ff"
   name = "github.com/tidwall/pretty"
   packages = ["."]
+  pruneopts = ""
   revision = "65a9db5fad5105a89e17f38adcc9878685be6d78"
 
 [[projects]]
+  digest = "1:88d97aedd1d0ca580b25ecdc295d596ccd9ba741d8980db625bb3dbf86f8b85b"
+  name = "github.com/wedeploy/gosocketio"
+  packages = [
+    ".",
+    "ack",
+    "internal/protocol",
+    "websocket",
+  ]
+  pruneopts = ""
+  revision = "c4a2c9d8230a020e1f086ad11e9d81b19a639ac8"
+  version = "0.0.4-beta"
+
+[[projects]]
+  digest = "1:6ae823063d8a916ca692a4ae1741360b6019c48c2566dcb578e2e38b333a6c05"
   name = "github.com/wedeploy/wedeploy-sdk-go"
   packages = [
     ".",
@@ -137,53 +174,88 @@
     "jsonlib",
     "qrange",
     "query",
-    "urilib"
+    "urilib",
   ]
+  pruneopts = ""
   revision = "f7580b9b20e0777894eb3f620aa3d3bda9d76d64"
   version = "v2.1.2"
 
 [[projects]]
   branch = "master"
+  digest = "1:08d571c8dec4db63f3a6d1857b74dbe6b8de6007ad50b6edef0c01d01c3c2172"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
+  pruneopts = ""
   revision = "beb2a9779c3b677077c41673505f150149fce895"
 
 [[projects]]
   branch = "master"
+  digest = "1:40dd5a4f1e82c4d3dc3de550a96152f6a8937bcfcb20c7ee34685f8764e1bda5"
   name = "golang.org/x/net"
   packages = ["context"]
+  pruneopts = ""
   revision = "61147c48b25b599e5b561d2e9c4f3e1ef489ca41"
 
 [[projects]]
   branch = "master"
+  digest = "1:e9490adb0a1d5ac8f621a6430754822f87e565fd71d4cd1c9c4d90626f390624"
   name = "golang.org/x/sys"
   packages = [
     "unix",
-    "windows"
+    "windows",
   ]
+  pruneopts = ""
   revision = "3b87a42e500a6dc65dae1a55d0b641295971163e"
 
 [[projects]]
   branch = "master"
+  digest = "1:8d6915fbd16d945a7e80b46b78fc75f0fadf7d30eb0a90badf36471b23bcd94f"
   name = "golang.org/x/time"
   packages = ["rate"]
+  pruneopts = ""
   revision = "26559e0f760e39c24d730d3224364aef164ee23f"
 
 [[projects]]
+  digest = "1:bd7060f8e1e139ea11f261dcf508ce93f8eee1e984c3215aaf82f4fcddd58e48"
   name = "gopkg.in/ini.v1"
   packages = ["."]
+  pruneopts = ""
   revision = "6333e38ac20b8949a8dd68baa3650f4dee8f39f0"
   version = "v1.33.0"
 
 [[projects]]
+  digest = "1:f0620375dd1f6251d9973b5f2596228cc8042e887cd7f827e4220bc1ce8c30e2"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
+  pruneopts = ""
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
   version = "v2.2.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b36ae244e7996aa0756225bb56b1906956b3ed72340b67451b4486cdb6ad0f4b"
+  input-imports = [
+    "github.com/dgrijalva/jwt-go",
+    "github.com/dustin/go-humanize",
+    "github.com/equinox-io/equinox",
+    "github.com/hashicorp/errwrap",
+    "github.com/hashicorp/go-version",
+    "github.com/henvic/browser",
+    "github.com/henvic/uilive",
+    "github.com/kylelemons/godebug/diff",
+    "github.com/kylelemons/godebug/pretty",
+    "github.com/satori/go.uuid",
+    "github.com/spf13/cobra",
+    "github.com/spf13/cobra/doc",
+    "github.com/spf13/pflag",
+    "github.com/tidwall/pretty",
+    "github.com/wedeploy/gosocketio",
+    "github.com/wedeploy/gosocketio/websocket",
+    "github.com/wedeploy/wedeploy-sdk-go",
+    "github.com/wedeploy/wedeploy-sdk-go/jsonlib",
+    "golang.org/x/crypto/ssh/terminal",
+    "golang.org/x/time/rate",
+    "gopkg.in/ini.v1",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

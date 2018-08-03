@@ -48,8 +48,8 @@
   version = "=1.33.0"
 
 [[constraint]]
-  name = "github.com/henvic/socketio"
-  version = "0.0.3-beta"
+  name = "github.com/wedeploy/gosocketio"
+  version = "0.0.5-beta"
 
 [[constraint]]
   branch = "master"
