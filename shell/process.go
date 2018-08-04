@@ -56,7 +56,6 @@ func (p *Process) Run(ctx context.Context, conn *gosocketio.Client) (err error) 
 
 	if err := p.shell.On("error", func(err error) {
 		chanErr <- err
-		return
 	}); err != nil {
 		return err
 	}
