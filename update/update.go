@@ -16,22 +16,11 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/fancy"
+	"github.com/wedeploy/cli/update/keys"
 	"github.com/wedeploy/cli/verbose"
 )
 
 var cacheNonAvailabilityHours = 12
-
-// AppID is Equinox's app ID for this tool
-var AppID = "app_g12mjgk2k9D"
-
-// PublicKey is the public key for the certificate used with Equinox
-var PublicKey = []byte(`
------BEGIN ECDSA PUBLIC KEY-----
-MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE1+wgAlkBJRmtRwmZWfq9fa8dBlJ929hM
-BzASHioHo6RP1V+4EKnAxaYXN4eWlgalxQ2BEr8TqYRM+uHPizteVR11wKfsO6S0
-GENiOKpfivw5FIiTN14MZeMTagiKJUOq
------END ECDSA PUBLIC KEY-----
-`)
 
 // GetReleaseChannel gets the channel user has used last time (or stable)
 func GetReleaseChannel(c *config.Config) string {
@@ -174,11 +163,11 @@ func check(channel string) (*equinox.Response, error) {
 	var opts equinox.Options
 	opts.Channel = channel
 
-	if err := opts.SetPublicKeyPEM(PublicKey); err != nil {
+	if err := opts.SetPublicKeyPEM(keys.PublicKey); err != nil {
 		return nil, err
 	}
 
-	resp, err := equinox.Check(AppID, opts)
+	resp, err := equinox.Check(keys.AppID, opts)
 
 	return &resp, err
 }
