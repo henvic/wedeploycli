@@ -22,9 +22,7 @@ type Client struct {
 // New Client
 func New(wectx config.Context) *Client {
 	return &Client{
-		&apihelper.Client{
-			Context: wectx,
-		},
+		apihelper.New(wectx),
 	}
 }
 
