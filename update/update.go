@@ -196,7 +196,7 @@ func handleUpdateCheckError(c *config.Config, channel string, err error) error {
 		if err := c.Save(); err != nil {
 			return err
 		}
-		fmt.Println(fancy.Info("No updates available."))
+		fmt.Println(fancy.Info("No update available."))
 		return nil
 	case strings.Contains(err.Error(), fmt.Sprintf("No channel with the name '%s' can be found.", channel)):
 		return errwrap.Wrapf(fmt.Sprintf(`channel "%s" was not found`, channel), err)
