@@ -18,4 +18,7 @@ const (
 
 	// SkipTerminalVerification makes isTerm.Check() return true always
 	SkipTerminalVerification = "WEDEPLOY_SKIP_TERMINAL_VERIFICATION"
+
+	// SkipTLSVerification is used to skip the TLS/SSL verification
+	SkipTLSVerification = "WEDEPLOY_SKIP_TLS_VERIFICATION"
 )

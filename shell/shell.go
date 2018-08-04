@@ -4,10 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 
+	ws "github.com/gorilla/websocket"
 	"github.com/wedeploy/gosocketio"
 	"github.com/wedeploy/gosocketio/websocket"
+	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 
 // An ExitError reports an unsuccessful exit by a command.
@@ -71,7 +74,9 @@ func Run(ctx context.Context, params Params, cmd string, args ...string) error {
 		RawQuery: query.Encode(),
 	}
 
-	conn, err := gosocketio.Connect(u, websocket.NewTransport())
+	t := websocket.NewTransport()
+	t.Dialer = websocketDialerConfig()
+	conn, err := gosocketio.Connect(u, t)
 
 	if err != nil {
 		return err
@@ -85,6 +90,19 @@ func Run(ctx context.Context, params Params, cmd string, args ...string) error {
 	}()
 
 	return process.Run(ctx, conn)
+}
+
+func websocketDialerConfig() ws.Dialer {
+	// copy Proxy and TLSClientConfig options from the default WeDeploy client
+	wedeployClient := wedeploy.Client()
+	dt := wedeployClient.HTTP().Transport.(*http.Transport)
+
+	dialer := ws.Dialer{
+		Proxy:           dt.Proxy,
+		TLSClientConfig: dt.TLSClientConfig,
+	}
+
+	return dialer
 }
 
 func getCmdWithArgs(cmd string, args []string) string {

@@ -29,29 +29,33 @@ func (d *Deploy) getConfigEnvs() (es []string) {
 	}
 
 	var originals = os.Environ()
-	var envs = map[string]string{}
+	var vars = map[string]string{}
 
 	for _, o := range originals {
 		if e := strings.SplitN(o, "=", 2); len(e) == 2 {
-			envs[e[0]] = e[1]
+			vars[e[0]] = e[1]
 		}
 	}
 
-	envs["GIT_DIR"] = d.getGitPath()
+	if v, ok := vars[envs.SkipTLSVerification]; ok {
+		vars["GIT_SSL_NO_VERIFY"] = v
+	}
+
+	vars["GIT_DIR"] = d.getGitPath()
 
 	switch runtime.GOOS {
 	case "windows":
 		verbose.Debug("Microsoft Windows detected: using git system config")
 	default:
-		envs["GIT_CONFIG_NOSYSTEM"] = "true"
+		vars["GIT_CONFIG_NOSYSTEM"] = "true"
 	}
 
 	var sandboxHome = filepath.Join(userhome.GetHomeDir(), ".wedeploy", "git-sandbox")
-	envs["HOME"] = sandboxHome
-	envs["XDG_CONFIG_HOME"] = sandboxHome
-	envs["GIT_CONFIG"] = filepath.Join(d.getGitPath(), "config")
+	vars["HOME"] = sandboxHome
+	vars["XDG_CONFIG_HOME"] = sandboxHome
+	vars["GIT_CONFIG"] = filepath.Join(d.getGitPath(), "config")
 
-	for key, value := range envs {
+	for key, value := range vars {
 		if !strings.HasPrefix(key, fmt.Sprintf("%s=", key)) {
 			es = append(es, fmt.Sprintf("%s=%s", key, value))
 		}
