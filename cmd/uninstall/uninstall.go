@@ -2,8 +2,10 @@ package uninstall
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -113,6 +115,10 @@ func uninstallRun(cmd *cobra.Command, args []string) error {
 	case true:
 		m = waitlivemsg.NewMessage("Removing configuration files [1/2]")
 	default:
+		if runtime.GOOS == "windows" {
+			_, _ = fmt.Fprintln(os.Stderr, "Can't self-uninstall on Windows yet. Please remove the WeDeploy CLI in the Control Panel.")
+		}
+
 		m = waitlivemsg.NewMessage("Uninstalling the WeDeploy CLI [1/2]")
 	}
 
