@@ -165,4 +165,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "July 12th, 2018",
 		Description: `Only print first 12 chars of instance ids. Autoconnect to instance on "we shell" when only one instance is running. Minor improvements.`,
 	},
+	ReleaseNote{
+		Version:     "1.6.0",
+		Date:        "August 5th, 2018",
+		Description: `Improved Windows install experience. Removed project id confirmation when extracting it from working directory. Minor improvements.`,
+	},
 }
