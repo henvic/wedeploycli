@@ -55,13 +55,13 @@ while {1} {
     timeout { handle_timeout; break }
     -gl "Restarting service*ui2qa*on project*restart1"
   }
-  send "we curl /projects/restart1/activities\r"
+  send "we curl \"/projects/restart1/activities?type=SERVICE_RESTARTED\"\r"
   expect {
     timeout { handle_timeout; break }
     -gl "\"serviceId\"*:*\"ui2qa\"*,*\"projectId\"*:*\"restart1\"*\"SERVICE_RESTARTED\""
   }
   expect /tests
-  send "we curl /projects/restart1/activities\r"
+  send "we curl \"/projects/restart1/activities?type=SERVICE_RESTARTED\"\r"
   expect {
     timeout {}
     -gl "\"serviceId\"*:*\"ui1qa\"*,*\"projectId\"*:*\"restart1\"*\"SERVICE_RESTARTED\"" {
