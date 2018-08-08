@@ -7,7 +7,7 @@ This program runs only once. On its first run, it replaces itself with the newes
 3. Program auto-updates to the newest stable CLI version
 4. Program re-executes: forks a new process with its new binary, using the very same environment variable, passing the same arguments, and piping stdin, stderr, stdout
 
-Environment variable WEDEPLOY_INSTALLER_SKIP_REEXEC can be used to skip the re-execution step.
+Environment variable `WEDEPLOY_INSTALLER_SKIP_REEXEC` can be used to skip the re-execution step.
 
 ## Why
 We use [equinox.io](https://equinox.io) to distribute the WeDeploy CLI tool (for a few reasons, like its binary deltas). It packages the generated CLI binaries in different formats, such as .rpm, .deb, .msi (Microsoft Installer), and .pkg (macOS installer).
