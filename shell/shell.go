@@ -95,11 +95,14 @@ func Run(ctx context.Context, params Params, cmd string, args ...string) error {
 func websocketDialerConfig() ws.Dialer {
 	// copy Proxy and TLSClientConfig options from the default WeDeploy client
 	wedeployClient := wedeploy.Client()
-	dt := wedeployClient.HTTP().Transport.(*http.Transport)
 
-	dialer := ws.Dialer{
-		Proxy:           dt.Proxy,
-		TLSClientConfig: dt.TLSClientConfig,
+	dialer := ws.Dialer{}
+	transport := wedeployClient.HTTP().Transport
+
+	if transport != nil {
+		dt := transport.(*http.Transport)
+		dialer.Proxy = dt.Proxy
+		dialer.TLSClientConfig = dt.TLSClientConfig
 	}
 
 	return dialer
