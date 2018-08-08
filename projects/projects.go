@@ -61,7 +61,6 @@ type createRequestBody struct {
 
 // Create on the backend
 func (c *Client) Create(ctx context.Context, project Project) (p Project, err error) {
-
 	var req = c.Client.URL(ctx, "/projects")
 	var reqBody = createRequestBody{
 		ProjectID:   project.ProjectID,
