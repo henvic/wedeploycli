@@ -170,4 +170,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "August 5th, 2018",
 		Description: `Improved Windows install experience. Removed project id confirmation when extracting it from working directory. Minor improvements.`,
 	},
+	ReleaseNote{
+		Version:     "1.6.1",
+		Date:        "August 15th, 2018",
+		Description: `Fixed panic when using "we shell".`,
+	},
 }
