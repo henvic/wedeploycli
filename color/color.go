@@ -1,7 +1,6 @@
-// Heavily modified version of
-// https://github.com/fatih/color by Fatih Arslan (2013, MIT license)
-// with minimal public interface:
-// Format and Escape functions only
+// Heavily modified version of https://github.com/fatih/color
+// SPDX-License-Identifier: MIT
+// Copyright 2013 Fatih Arslan
 
 package color
 

@@ -1,4 +1,10 @@
 #!/bin/sh
+
+# Modified version of chef-runner/script/coverage
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2004 Mathias Lafeldt
+# Source: https://github.com/mlafeldt/chef-runner/blob/v0.7.0/script/coverage
+
 # Generate test coverage statistics for Go packages.
 #
 # Works around the fact that `go test -coverprofile` currently does not work
@@ -9,7 +15,6 @@
 #     --html      Additionally create HTML report and open it in browser
 #     --coveralls Push coverage statistics to coveralls.io
 #
-# Original: https://github.com/mlafeldt/chef-runner/blob/v0.7.0/script/coverage
 # Changes: directories ending in .go used to fail
 
 set -e

@@ -1,4 +1,5 @@
 // Licensed under Apache license 2.0
+// SPDX-License-Identifier: Apache-2.0
 // Copyright 2013-2016 Docker, Inc.
 
 // NOTICE: export from moby/pkg/namesgenerator/names-generator_test.go
