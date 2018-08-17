@@ -4,26 +4,29 @@ import "time"
 
 // RoundDuration rounds the duration to the nearest interval value
 // from https://play.golang.org/p/QHocTHl8iR
-func RoundDuration(d, r time.Duration) time.Duration {
-
-	if r <= 0 {
-		return d
+// discussion: https://groups.google.com/forum/#!topic/golang-nuts/OWHmTBu16nA
+// Original version by Andy Bursavich https://github.com/abursavich
+func RoundDuration(duration, round time.Duration) time.Duration {
+	if round <= 0 {
+		return duration
 	}
 
-	neg := d < 0
-	if neg {
-		d = -d
+	negative := duration < 0
+
+	if negative {
+		duration *= -1
 	}
 
-	if m := d % r; m+m < r {
-		d = d - m
-	} else {
-		d = d + r - m
+	mid := duration % round
+	duration -= mid
+
+	if round <= 2*mid {
+		duration += round
 	}
 
-	if neg {
-		return -d
+	if negative {
+		duration *= -1
 	}
 
-	return d
+	return duration
 }
