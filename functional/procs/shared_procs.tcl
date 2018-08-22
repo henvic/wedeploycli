@@ -21,7 +21,7 @@ proc TearDownFeature: {name} {
   add_to_report "\nTEAR DOWN FEATURE: $name in $time milliseconds"
 }
 
-proc Scenario: {name} {
+proc begin_scenario {name} {
   set ::_current_scenario "$name"
   set ::_junit_scenarios_error_content ""
   incr ::_tests_total 1
@@ -31,15 +31,32 @@ proc Scenario: {name} {
   set ::_time_by_scenario [clock milliseconds]
 }
 
-proc TearDownScenario: {name} {
+proc end_scenario {name} {
   set end [clock milliseconds]
   set time [expr {$end - $::_time_by_scenario}]
   append ::_junit_scenarios_content "<testcase id='$name' name='$name' time='$time'>"
   append ::_junit_scenarios_content $::_junit_scenarios_error_content
   append ::_junit_scenarios_content "</testcase>"
 
-  print_msg "TEAR DOWN SCENARIO: $name  in $time milliseconds" magenta
-  add_to_report "\nTEAR DOWN SCENARIO: $name  in $time milliseconds"
+  print_msg "COMPLETED SCENARIO: $name  in $time milliseconds" magenta
+  add_to_report "\nCOMPLETED SCENARIO: $name  in $time milliseconds"
+}
+
+proc Scenario: {name script {teardown ""}} {
+  begin_scenario $name
+
+  while {1} {
+    eval $script
+    break
+  }
+
+  if { $teardown != "" } {
+    print_msg "Teardown in progress..."
+    eval $teardown
+    print_msg "Teardown complete"
+  }
+
+  end_scenario $name
 }
 
 proc add_to_report {text} {
@@ -100,7 +117,7 @@ proc print_msg {text {color cyan}} {
     default { set color_code 36 }
   }
 
-  puts "\n\033\[01;$color_code;m$text \033\[0;m\n"
+  puts "\033\[01;$color_code;m$text \033\[0;m\n"
 }
 
 proc print_stack {} {

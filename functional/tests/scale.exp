@@ -6,13 +6,9 @@ spawn $env(SHELL)
 Feature: "Scale"
 #####################################################
 
-#####################################################
-Scenario: "Cannot `we scale` without signing in"
-#####################################################
+Scenario: "Cannot `we scale` without signing in" {
+  logout $::_tester(email)
 
-logout $_tester(email)
-
-while {1} {
   send "we scale\r"
   expect {
     timeout { handle_timeout; break }
@@ -27,25 +23,16 @@ while {1} {
     timeout { handle_timeout; break }
     "Login canceled."
   }
-  break
 }
 
-#####################################################
-TearDownScenario: "Cannot `we scale` without signing in"
-#####################################################
+Scenario: "Configure scale for a service" {
+  login $::_tester(email) $::_tester(pw)
+  set_user_plan standard
 
-#####################################################
-Scenario: "Configure scale for a service"
-#####################################################
+  create_project scale1
+  create_service scale1 hosting1
+  create_service scale1 hosting2
 
-login $_tester(email) $_tester(pw)
-set_user_plan standard
-
-create_project scale1
-create_service scale1 hosting1
-create_service scale1 hosting2
-
-while {1} {
   send "we scale\r"
   expect {
     timeout { handle_timeout; break }
@@ -75,23 +62,12 @@ while {1} {
     timeout { handle_timeout; break }
     -gl "\"scale\"*:*1"
   }
-  break
-}
+} { delete_project scale1 }
 
-delete_project scale1
+Scenario: "Cannot exceed service quota with scale" {
+  create_project scale2
+  create_service scale2 hosting1
 
-#####################################################
-TearDownScenario: "Configure scale for a service"
-#####################################################
-
-#####################################################
-Scenario: "Cannot exceed service quota with scale"
-#####################################################
-
-create_project scale2
-create_service scale2 hosting1
-
-while {1} {
   send "we scale -p scale2 -s hosting1\r"
   expect {
     timeout { handle_timeout; break }
@@ -107,14 +83,7 @@ while {1} {
     timeout { handle_timeout; break }
     -gl "\"scale\"*:*1"
   }
-  break
-}
-
-delete_project scale2
-
-#####################################################
-TearDownScenario: "Cannot exceed service quota with scale"
-#####################################################
+} { delete_project scale2 }
 
 #####################################################
 TearDownFeature: "Scale"

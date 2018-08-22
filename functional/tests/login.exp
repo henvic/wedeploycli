@@ -6,34 +6,25 @@ spawn $env(SHELL)
 Feature: "Login"
 #####################################################
 
-#####################################################
-Scenario: "Login without browser"
-#####################################################
+Scenario: "Login without browser" {
+  logout $::_tester(email)
 
-logout $_tester(email)
-
-while {1} {
   send "we login --no-browser\r"
   expect {
     timeout { handle_timeout; break }
     "Your email:"
   }
-  send "$_tester(email)\r"
+  send "$::_tester(email)\r"
   expect {
     timeout { handle_timeout; break }
     "Now, your password:"
   }
-  send "$_tester(pw)\r"
+  send "$::_tester(pw)\r"
   expect {
     timeout { handle_timeout; break }
     "Type a command and press Enter to execute it."
   }
-  break
 }
-
-#####################################################
-TearDownScenario: "Login without browser"
-#####################################################
 
 #####################################################
 TearDownFeature: "Login"
