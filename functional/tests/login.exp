@@ -2,9 +2,7 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "Login"
-#####################################################
 
 Scenario: "Login without browser" {
   logout $::_tester(email)
@@ -25,7 +23,3 @@ Scenario: "Login without browser" {
     "Type a command and press Enter to execute it."
   }
 }
-
-#####################################################
-TearDownFeature: "Login"
-#####################################################

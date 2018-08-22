@@ -2,9 +2,7 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "Restart"
-#####################################################
 
 Scenario: "Cannot restart without signing in" {
   logout $::_tester(email)
@@ -132,7 +130,3 @@ Scenario: "Restart with -p and -s flags" {
   delete_project restart4
   delete_project restart5
 }
-
-#####################################################
-TearDownFeature: "Restart"
-#####################################################

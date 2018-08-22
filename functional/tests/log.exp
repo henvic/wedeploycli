@@ -2,9 +2,7 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "Log"
-#####################################################
 
 Scenario: "Cannot view log without signing in" {
   logout $::_tester(email)
@@ -179,7 +177,3 @@ Scenario: "View logs with --since flag" {
   control_c
   delete_project log1
 }
-
-#####################################################
-TearDownFeature: "Log"
-#####################################################

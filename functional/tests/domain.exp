@@ -2,9 +2,7 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "Domain"
-#####################################################
 
 Scenario: "Cannot `we domain` without signing in" {
   logout $::_tester(email)
@@ -94,7 +92,3 @@ Scenario: "Add and delete a custom domain" {
     }
   }
 } { delete_project domain1 }
-
-#####################################################
-TearDownFeature: "Domain"
-#####################################################

@@ -2,9 +2,7 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "Deploy"
-#####################################################
 
 send "cd ../fixtures/projectA\r"
 expect {
@@ -199,7 +197,3 @@ Scenario: "Deploy service to a new environment" {
   set timeout $::_default_timeout
   assert_service_exists deploy5-dev ui
 } { delete_project deploy5 }
-
-#####################################################
-TearDownFeature: "Deploy"
-#####################################################

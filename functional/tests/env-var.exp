@@ -2,9 +2,7 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "Environment Variables"
-#####################################################
 
 Scenario: "Cannot `we env-var` without signing in" {
   logout $::_tester(email)
@@ -139,7 +137,3 @@ Scenario: "Delete an environment variable" {
     "No environment variable found."
   }
 } { delete_project env4 }
-
-#####################################################
-TearDownFeature: "Environment Variables"
-#####################################################

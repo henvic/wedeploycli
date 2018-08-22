@@ -2,9 +2,7 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "New"
-#####################################################
 
 Scenario: "Cannot `we new` without signing in" {
   logout $::_tester(email)
@@ -116,7 +114,3 @@ Scenario: "Create a service with `we new service`" {
   }
   assert_service_exists new3 hosting1
 } { delete_project new3 }
-
-#####################################################
-TearDownFeature: "New"
-#####################################################

@@ -2,9 +2,7 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "Scale"
-#####################################################
 
 Scenario: "Cannot `we scale` without signing in" {
   logout $::_tester(email)
@@ -84,7 +82,3 @@ Scenario: "Cannot exceed service quota with scale" {
     -gl "\"scale\"*:*1"
   }
 } { delete_project scale2 }
-
-#####################################################
-TearDownFeature: "Scale"
-#####################################################

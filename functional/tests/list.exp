@@ -2,9 +2,7 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "List"
-#####################################################
 
 Scenario: "Cannot list without logging in" {
   logout $::_tester(email)
@@ -57,7 +55,3 @@ Scenario: "List project and services" {
         .*list2.*hosting2-list2\.wedeploy\.sh.*wedeploy/hosting.*none"
   }
 } { delete_project "list2" }
-
-#####################################################
-TearDownFeature: "List"
-#####################################################

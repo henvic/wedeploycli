@@ -2,9 +2,7 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "Shell"
-#####################################################
 
 Scenario: "Cannot `we shell` without signing in" {
   logout $::_tester(email)
@@ -143,7 +141,3 @@ Scenario: "Open a shell using --instance flag" {
     "/$::_root_dir/"
   }
 } { delete_project shell3 }
-
-#####################################################
-TearDownFeature: "Shell"
-#####################################################

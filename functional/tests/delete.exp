@@ -2,9 +2,7 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "Delete"
-#####################################################
 
 Scenario: "Cannot delete without signing in" {
   logout $::_tester(email)
@@ -185,7 +183,3 @@ Scenario: "Delete a service with -e flag" {
   }
   assert_service_exists delete7 hosting1
 } { delete_project delete7 }
-
-#####################################################
-TearDownFeature: "Delete"
-#####################################################

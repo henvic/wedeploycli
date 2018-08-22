@@ -2,9 +2,7 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "Quota"
-#####################################################
 
 Scenario: "Cannot exceed project quota" {
   login $::_tester(email) $::_tester(pw)
@@ -123,7 +121,3 @@ Scenario: "Cannot exceed custom domains quota" {
   delete_project quota2
   delete_project quota3
 }
-
-#####################################################
-TearDownFeature: "Quota"
-#####################################################
