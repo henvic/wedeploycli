@@ -6,13 +6,9 @@ spawn $env(SHELL)
 Feature: "New"
 #####################################################
 
-#####################################################
-Scenario: "Cannot `we new` without signing in"
-#####################################################
+Scenario: "Cannot `we new` without signing in" {
+  logout $::_tester(email)
 
-logout $_tester(email)
-
-while {1} {
   send "we new\r"
   expect {
     timeout { handle_timeout; break }
@@ -27,20 +23,11 @@ while {1} {
     timeout { handle_timeout; break }
     "Login canceled."
   }
-  break
 }
 
-#####################################################
-TearDownScenario: "Cannot `we new` without signing in"
-#####################################################
+Scenario: "Create a project and service" {
+  login $::_tester(email) $::_tester(pw)
 
-#####################################################
-Scenario: "Create a project and service"
-#####################################################
-
-login $_tester(email) $_tester(pw)
-
-while {1} {
   send "we new\r"
   expect {
     timeout { handle_timeout; break }
@@ -86,14 +73,49 @@ while {1} {
     "Service*hosting1-new1.wedeploy.sh*created"
   }
   assert_service_exists new1 hosting1
-  break
-}
+} { delete_project new1 }
 
-delete_project new1
+Scenario: "Create a project with `we new project`" {
+  login $::_tester(email) $::_tester(pw)
 
-#####################################################
-TearDownScenario: "Create a project and service"
-#####################################################
+  send "we new project\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Choose a project ID"
+  }
+  send "new2\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Project*new2*created"
+  }
+} { delete_project new2 }
+
+Scenario: "Create a service with `we new service`" {
+  login $::_tester(email) $::_tester(pw)
+  create_project new3
+
+  send "we new service\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Please*select*a project from the list below."
+  }
+  send "1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Choose a Service ID"
+  }
+  send "hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Select a Service Type"
+  }
+  send "4\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Service*hosting1-new3.wedeploy.sh*created"
+  }
+  assert_service_exists new3 hosting1
+} { delete_project new3 }
 
 #####################################################
 TearDownFeature: "New"
