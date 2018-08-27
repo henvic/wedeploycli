@@ -370,46 +370,6 @@ func (d *Deploy) getLastCommit() (commit string, err error) {
 	return commit, nil
 }
 
-// Commit adds all files and commits
-func (d *Deploy) Commit() (commit string, err error) {
-	if err = d.stageAllFiles(); err != nil {
-		return "", err
-	}
-
-	var msg = fmt.Sprintf("Deployment at %v", time.Now().Format(time.RubyDate))
-
-	var params = []string{
-		"commit",
-		"--allow-empty",
-		"--message",
-		msg,
-	}
-
-	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.ctx, "git", params...)
-	cmd.Env = append(d.getConfigEnvs(), "GIT_WORK_TREE="+d.Path)
-	cmd.Dir = d.Path
-
-	if verbose.Enabled {
-		cmd.Stderr = errStream
-	}
-
-	err = cmd.Run()
-
-	if err != nil {
-		return "", errwrap.Wrapf("can't commit: {{err}}", err)
-	}
-
-	commit, err = d.getLastCommit()
-
-	if err != nil {
-		return "", err
-	}
-
-	verbose.Debug("commit", commit)
-	return commit, nil
-}
-
 func (d *Deploy) copyGitPackage() error {
 	fmt.Println("Debugging: copying (cloning) package file to " + d.CopyPackage)
 

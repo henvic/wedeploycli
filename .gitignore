@@ -14,6 +14,11 @@ integration/mocks/login/.we_metrics
 integration/mocks/logout/.we_metrics
 integration/mocks/generate/example
 integration/mocks/generate/foo/data
+deployment/internal/repodiscovery/mocks/project
+deployment/internal/repodiscovery/mocks/project-with-git
+deployment/internal/repodiscovery/mocks/service-with-git
+deployment/internal/repodiscovery/mocks/service-with-git-init-only
+deployment/internal/repodiscovery/mocks/service-without-git
 
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 cli
