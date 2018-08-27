@@ -1,6 +1,9 @@
 package repodiscovery
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/services"
 	git "gopkg.in/src-d/go-git.v4"
@@ -44,8 +47,20 @@ func (d *Discover) Run() (repos []Repository, repoless []string, err error) {
 		return repos, repoless, nil
 	}
 
+	wd, err := os.Getwd()
+
+	if err != nil {
+		return nil, nil, err
+	}
+
 	for _, serviceInfo := range d.Services {
-		repo, err := d.walkFn(serviceInfo.Location, []string{serviceInfo.ServiceID})
+		rel, err := filepath.Rel(wd, serviceInfo.Location)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		repo, err := d.walkFn(rel, []string{serviceInfo.ServiceID})
 
 		if err == git.ErrRepositoryNotExists {
 			repoless = append(repoless, serviceInfo.ServiceID)

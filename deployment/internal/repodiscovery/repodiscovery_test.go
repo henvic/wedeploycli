@@ -59,7 +59,7 @@ var repoCases = []repoCase{
 		repositories: []Repository{
 			Repository{
 				Services:          []string{"service1"},
-				Path:              "/Users/henvic/projects/gocode/src/github.com/wedeploy/cli/deployment/internal/repodiscovery/mocks/project/service-with-git-1",
+				Path:              "mocks/project/service-with-git-1",
 				Commit:            "b0e71920287fc3d6103f45d173fd0c94cefdcf76",
 				CommitAuthor:      "Henrique Vicente",
 				CommitAuthorEmail: "henriquevicente@gmail.com",
@@ -70,7 +70,7 @@ var repoCases = []repoCase{
 			},
 			Repository{
 				Services:          []string{"service2"},
-				Path:              "/Users/henvic/projects/gocode/src/github.com/wedeploy/cli/deployment/internal/repodiscovery/mocks/project/service-with-git-2",
+				Path:              "mocks/project/service-with-git-2",
 				Commit:            "259a4e4c8bf201113ff828fa83fb7205e7ac7bba",
 				CommitAuthor:      "Henrique Vicente",
 				CommitAuthorEmail: "henriquevicente@gmail.com",
