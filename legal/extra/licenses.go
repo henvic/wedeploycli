@@ -41,4 +41,12 @@ var Licenses = []License{
 		// Files:
 		// github.com/wedeploy/cli/figures
 	},
+	License{
+		Name:        "buffruneio",
+		Package:     "github.com/pelletier/go-buffruneio",
+		LicensePath: "extra/licenses/BUFFRUNEIO_LICENSE", // MIT
+		// Files:
+		// github.com/pelletier/go-buffruneio (vendored)
+		// See https://github.com/pelletier/go-buffruneio/issues/6
+	},
 }

@@ -54,3 +54,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/tidwall/pretty"
+
+[[constraint]]
+  name = "gopkg.in/src-d/go-git.v4"
+  version = "4.6.0"
