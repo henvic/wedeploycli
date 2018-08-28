@@ -63,7 +63,9 @@ setup_machine() {
 }
 
 start_infrastructure() {
-  bash "$CURRENT_DIR/.runner/ci-infrastructure/runner/exploded-infra-runner.sh" --run
+  local BUILD_TAG=staging
+  local WEDEPLOY_ENVIRONMENT=wd-paas-test-us-east-1
+  bash "$CURRENT_DIR/.runner/ci-infrastructure/runner/exploded-infra-runner.sh" --run $BUILD_TAG $WEDEPLOY_ENVIRONMENT
 }
 
 shutdown_infrastructure() {
