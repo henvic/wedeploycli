@@ -2,24 +2,18 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "Quota"
-#####################################################
 
-#####################################################
-Scenario: "Cannot exceed project quota"
-#####################################################
+Scenario: "Cannot exceed project quota" {
+  login $::_tester(email) $::_tester(pw)
 
-login $_tester(email) $_tester(pw)
+  set_user_plan basic
+  sleep 5
 
-set_user_plan basic
-sleep 5
+  create_project quota1
+  create_project quota2
+  create_project quota3
 
-create_project quota1
-create_project quota2
-create_project quota3
-
-while {1} {
   send "we new\r"
   expect {
     timeout { handle_timeout; break }
@@ -40,22 +34,13 @@ while {1} {
     timeout {}
     "quota4" { expectation_not_met "Should not have project \"quota4\""; break }
   }
-  break
 }
 
-#####################################################
-TearDownScenario: "Cannot exceed project quota"
-#####################################################
+Scenario: "Cannot exceed service quota" {
+  create_service quota1 hosting1
+  create_service quota2 hosting1
+  create_service quota2 hosting2
 
-#####################################################
-Scenario: "Cannot exceed service quota"
-#####################################################
-
-create_service quota1 hosting1
-create_service quota2 hosting1
-create_service quota2 hosting2
-
-while {1} {
   send "we new\r"
   expect {
     timeout { handle_timeout; break }
@@ -89,29 +74,20 @@ while {1} {
       break
     }
   }
-  break
 }
 
-#####################################################
-TearDownScenario: "Cannot exceed service quota"
-#####################################################
+Scenario: "Cannot exceed custom domains quota" {
+  if { $::_remote == "wedeploy.com" } {
+    set service_domain wedeploy.io
+  } else {
+    set service_domain wedeploy.sh
+  }
 
-#####################################################
-Scenario: "Cannot exceed custom domains quota"
-#####################################################
+  set qadomain1 qadomain1.$service_domain
+  set qadomain2 qadomain2.$service_domain
+  set qadomain3 qadomain3.$service_domain
+  set qadomain4 qadomain4.$service_domain
 
-if { $::_remote == "wedeploy.com" } {
-  set service_domain wedeploy.io
-} else {
-  set service_domain wedeploy.sh
-}
-
-set qadomain1 qadomain1.$service_domain
-set qadomain2 qadomain2.$service_domain
-set qadomain3 qadomain3.$service_domain
-set qadomain4 qadomain4.$service_domain
-
-while {1} {
   send "we domain add $qadomain1 -p quota1 -s hosting1\r"
   expect {
     timeout { handle_timeout; break }
@@ -140,17 +116,8 @@ while {1} {
       break
     }
   }
-  break
+} {
+  delete_project quota1
+  delete_project quota2
+  delete_project quota3
 }
-
-delete_project quota1
-delete_project quota2
-delete_project quota3
-
-#####################################################
-TearDownScenario: "Cannot exceed custom domains quota"
-#####################################################
-
-#####################################################
-TearDownFeature: "Quota"
-#####################################################

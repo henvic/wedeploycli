@@ -70,26 +70,23 @@ To view test reports on Jenkins CI
 1. For report.txt, click 'Artifacts' in the top nav bar, then click functional/test-results/report.txt.
 
 ## Contributing
-The tests are organized into Features and Scenarios.  A Feature is a test suite, which corresponds to a file in the functional/tests folder.  A Feature can contain one or more Scenarios.  Each Scenario is a test case.
+The tests are organized into Features and Scenarios.  A Feature is a test suite, which corresponds to a file in the functional/tests folder.  A Feature may contain one or more Scenarios.  Each Scenario is a test case.
 
-Each Feature must begin with
+Each test file should begin with
 ```
 Feature: {feature name}
 ```
-and end with
+One or more scenarios follow with this structure:
 ```
-TearDownFeature: {feature name}
-```
-Similarly, each Scenario must begin with
-```
-Scenario: {scenario name}
-```
-and end with
-```
-TearDownScenario: {scenario name}
+Scenario: {scenario name} {
+    setup steps
+    test step 1
+    test step 2
+    ...
+} { teardown steps }
 ```
 
-Each scenario begins with setup steps.  Then the actual test steps are all enclosed within a `while` block.  The test steps are a series of `send` and `expect` commands.  In other words, `send` something to the command line, then `expect` something in the terminal output.  After the test steps are any necessary teardown steps.  Please see any of the test files for examples.
+Each scenario begins with setup steps.  The test steps are a series of `send` and `expect` commands.  In other words, `send` something to the command line, then `expect` something in the terminal output.  The last `{}` block contains the teardown steps.  It may be omitted if there is no teardown.  Please see any of the test files for examples.
 
 Here's some helpful quick start guides for using Expect/TCL:
 

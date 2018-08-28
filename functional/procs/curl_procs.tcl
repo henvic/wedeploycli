@@ -181,7 +181,7 @@ proc get_container_ids {project service} {
   return $ids
 }
 
-# get user id  of currently logged in user, presumed to be $_tester(email)
+# get user id  of currently logged in user, presumed to be $::_tester(email)
 proc get_user_id {} {
   set url $::base_url/user
   set response [http_get $url $::auth]

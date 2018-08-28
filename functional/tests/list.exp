@@ -1,20 +1,12 @@
 #! /usr/bin/expect
 
-set timeout $::_default_timeout
-
 spawn $env(SHELL)
 
-#####################################################
 Feature: "List"
-#####################################################
 
-#####################################################
-Scenario: "Cannot list without logging in"
-#####################################################
+Scenario: "Cannot list without logging in" {
+  logout $::_tester(email)
 
-logout $_tester(email)
-
-while {1} {
   send "we list\r"
   expect {
     timeout { handle_timeout; break }
@@ -29,68 +21,37 @@ while {1} {
     timeout { handle_timeout; break }
     "Login canceled."
   }
-  break
 }
 
-#####################################################
-TearDownScenario: "Cannot list without logging in"
-#####################################################
+Scenario: "List with no projects" {
+  login $::_tester(email) $::_tester(pw)
 
-#####################################################
-Scenario: "List with no projects"
-#####################################################
-
-login $_tester(email) $_tester(pw)
-
-send "we list\r"
-expect {
-  timeout { handle_timeout }
-  "No project found."
+  send "we list\r"
+  expect {
+    timeout { handle_timeout }
+    "No project found."
+  }
 }
 
-#####################################################
-TearDownScenario: "List with no projects"
-#####################################################
+Scenario: "List project with no services" {
+  create_project "list1"
 
-#####################################################
-Scenario: "List project with no services"
-#####################################################
+  send "we list\r"
+  expect {
+    timeout { handle_timeout }
+    "list1*zero services deployed"
+  }
+} { delete_project "list1" }
 
-create_project "list1"
+Scenario: "List project and services" {
+  create_project "list2"
+  create_service "list2" "hosting1"
+  create_service "list2" "hosting2"
 
-send "we list\r"
-expect {
-  timeout { handle_timeout }
-  "list1*zero services deployed"
-}
-
-delete_project "list1"
-
-#####################################################
-TearDownScenario: "List project with no services"
-#####################################################
-
-#####################################################
-Scenario: "List project and services"
-#####################################################
-
-create_project "list2"
-create_service "list2" "hosting1"
-create_service "list2" "hosting2"
-
-send "we list\r"
-expect {
-  timeout {handle_timeout}
-  -re "list2.*hosting1-list2\.wedeploy\.sh.*wedeploy/hosting.*none\
-      .*list2.*hosting2-list2\.wedeploy\.sh.*wedeploy/hosting.*none"
-}
-
-delete_project "list2"
-
-#####################################################
-TearDownScenario: "List project and services"
-#####################################################
-
-#####################################################
-TearDownFeature: "List"
-#####################################################
+  send "we list\r"
+  expect {
+    timeout {handle_timeout}
+    -re "list2.*hosting1-list2\.wedeploy\.sh.*wedeploy/hosting.*none\
+        .*list2.*hosting2-list2\.wedeploy\.sh.*wedeploy/hosting.*none"
+  }
+} { delete_project "list2" }

@@ -2,17 +2,11 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "Shell"
-#####################################################
 
-#####################################################
-Scenario: "Cannot `we shell` without signing in"
-#####################################################
+Scenario: "Cannot `we shell` without signing in" {
+  logout $::_tester(email)
 
-logout $_tester(email)
-
-while {1} {
   send "we shell\r"
   expect {
     timeout { handle_timeout; break }
@@ -27,24 +21,15 @@ while {1} {
     timeout { handle_timeout; break }
     "Login canceled."
   }
-  break
 }
 
-#####################################################
-TearDownScenario: "Cannot `we shell` without signing in"
-#####################################################
+Scenario: "Open a shell on a service container" {
+  login $::_tester(email) $::_tester(pw)
+  set_user_plan standard
 
-#####################################################
-Scenario: "Open a shell on a service container"
-#####################################################
+  create_project shell1
+  create_service shell1 hosting1
 
-login $_tester(email) $_tester(pw)
-set_user_plan standard
-
-create_project shell1
-create_service shell1 hosting1
-
-while {1} {
   sleep 5
   send "we shell\r"
   expect {
@@ -84,72 +69,50 @@ while {1} {
     timeout { handle_timeout; break }
     "/$::_root_dir/"
   }
-  break
-}
+} { delete_project shell1 }
 
-delete_project shell1
+Scenario: "Open a shell on a specific instance" {
+  create_project shell2
+  create_service shell2 hosting1
 
-#####################################################
-TearDownScenario: "Open a shell on a service container"
-#####################################################
-
-#####################################################
-Scenario: "Open a shell on a specific instance"
-#####################################################
-
-create_project shell2
-create_service shell2 hosting1
-
-while {1} {
   send "we scale -p shell2 -s hosting1\r"
   expect {
-    timeout { handle_timeout; break }
-    "Number of instances"
+  timeout { handle_timeout; break }
+  "Number of instances"
   }
   send "3\r"
   expect {
-    timeout { handle_timeout; break }
-    -gl "Scaling service \"*hosting1*\" on project \"*shell2*\" on *wedeploy.* to *3* instances."
+  timeout { handle_timeout; break }
+  -gl "Scaling service \"*hosting1*\" on project \"*shell2*\" on *wedeploy.* to *3* instances."
   }
-  sleep 5
+  sleep 15
   send "we shell -p shell2 -s hosting1\r"
   expect {
-    timeout { handle_timeout; break }
-    "Please *select* an instance from the list below"
+  timeout { handle_timeout; break }
+  "Please *select* an instance from the list below"
   }
   send "2\r"
   set instances [get_container_ids shell2 hosting1]
   set instance_2 [string range [lindex $instances 1] 0 11]
   expect {
-    timeout { exit_shell; handle_timeout; break }
-    "You are now accessing instance *$instance_2"
+  timeout { exit_shell; handle_timeout; break }
+  "You are now accessing instance *$instance_2"
   }
   expect {
-    timeout { exit_shell; handle_timeout; break }
-    "/wedeploy-container"
+  timeout { exit_shell; handle_timeout; break }
+  "/wedeploy-container"
   }
   send "exit\r"
   expect {
-    timeout { handle_timeout; break }
-    "/$::_root_dir/"
+  timeout { handle_timeout; break }
+  "/$::_root_dir/"
   }
-  break
-}
+} { delete_project shell2 }
 
-delete_project shell2
+Scenario: "Open a shell using --instance flag" {
+  create_project shell3
+  create_service shell3 hosting1
 
-#####################################################
-TearDownScenario: "Open a shell on a specific instance"
-#####################################################
-
-#####################################################
-Scenario: "Open a shell using --instance flag"
-#####################################################
-
-create_project shell3
-create_service shell3 hosting1
-
-while {1} {
   send "we scale -p shell3 -s hosting1\r"
   expect {
     timeout { handle_timeout; break }
@@ -177,15 +140,4 @@ while {1} {
     timeout { handle_timeout; break }
     "/$::_root_dir/"
   }
-  break
-}
-
-delete_project shell3
-
-#####################################################
-TearDownScenario: "Open a shell using --instance flag"
-#####################################################
-
-#####################################################
-TearDownFeature: "Shell"
-#####################################################
+} { delete_project shell3 }

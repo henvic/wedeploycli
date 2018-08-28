@@ -2,17 +2,11 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "Domain"
-#####################################################
 
-#####################################################
-Scenario: "Cannot `we domain` without signing in"
-#####################################################
+Scenario: "Cannot `we domain` without signing in" {
+  logout $::_tester(email)
 
-logout $_tester(email)
-
-while {1} {
   send "we domain\r"
   expect {
     timeout { handle_timeout; break }
@@ -27,29 +21,20 @@ while {1} {
     timeout { handle_timeout; break }
     "Login canceled."
   }
-  break
 }
 
-#####################################################
-TearDownScenario: "Cannot `we domain` without signing in"
-#####################################################
+Scenario: "Add and delete a custom domain" {
+  if { $::_remote == "wedeploy.com" } {
+    set domain qadomain1.wedeploy.io
+  } else {
+    set domain qadomain1.wedeploy.sh
+  }
 
-#####################################################
-Scenario: "Add and delete a custom domain"
-#####################################################
+  login $::_tester(email) $::_tester(pw)
 
-if { $::_remote == "wedeploy.com" } {
-  set domain qadomain1.wedeploy.io
-} else {
-  set domain qadomain1.wedeploy.sh
-}
+  create_project domain1
+  create_service domain1 hosting1
 
-login $_tester(email) $_tester(pw)
-
-create_project domain1
-create_service domain1 hosting1
-
-while {1} {
   send "we domain show\r"
   expect {
     timeout { handle_timeout; break }
@@ -106,15 +91,4 @@ while {1} {
       break
     }
   }
-  break
-}
-
-delete_project domain1
-
-#####################################################
-TearDownScenario: "Add and delete a custom domain"
-#####################################################
-
-#####################################################
-TearDownFeature: "Domain"
-#####################################################
+} { delete_project domain1 }

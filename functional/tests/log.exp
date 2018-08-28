@@ -2,17 +2,11 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "Log"
-#####################################################
 
-#####################################################
-Scenario: "Cannot view log without signing in"
-#####################################################
+Scenario: "Cannot view log without signing in" {
+  logout $::_tester(email)
 
-logout $_tester(email)
-
-while {1} {
   send "we log\r"
   expect {
     timeout { handle_timeout; break }
@@ -27,25 +21,15 @@ while {1} {
     timeout { handle_timeout; break }
     "Login canceled."
   }
-  break
 }
 
-#####################################################
-TearDownScenario: "Cannot view log without signing in"
-#####################################################
+Scenario: "View logs by selecting project/service ID" {
+  login $::_tester(email) $::_tester(pw)
+  create_project log1
+  create_service log1 ui1qa
+  sleep 5
+  create_service log1 ui2qa
 
-#####################################################
-Scenario: "View logs by selecting project/service ID"
-#####################################################
-
-login $_tester(email) $_tester(pw)
-
-create_project log1
-create_service log1 ui1qa
-sleep 5
-create_service log1 ui2qa
-
-while {1} {
   send "we log\r"
   expect {
     timeout { handle_timeout; break }
@@ -86,19 +70,9 @@ while {1} {
     timeout {}
     "ui2qa" { expectation_not_met "Should not see logs for ui2qa"; break }
   }
-  control_c
-  break
-}
+} { control_c }
 
-#####################################################
-TearDownScenario: "View logs by selecting project/service ID"
-#####################################################
-
-#####################################################
-Scenario: "View logs with -p flag"
-#####################################################
-
-while {1} {
+Scenario: "View logs with -p flag" {
   send "we log -p log1\r"
   expect {
     timeout { handle_timeout; break }
@@ -114,19 +88,9 @@ while {1} {
     timeout { handle_timeout; break }
     "Project does not exist"
   }
-  control_c
-  break
-}
+} { control_c }
 
-#####################################################
-TearDownScenario: "View logs with -p flag"
-#####################################################
-
-#####################################################
-Scenario: "View logs with -p and -s flags"
-#####################################################
-
-while {1} {
+Scenario: "View logs with -p and -s flags" {
   send "we log -p log1 -s ui2qa\r"
   expect {
     timeout { handle_timeout; break }
@@ -140,19 +104,9 @@ while {1} {
     timeout {}
     "ui1qa" { expectation_not_met "Should not see logs for ui1qa"; break }
   }
-  control_c
-  break
-}
+} { control_c }
 
-#####################################################
-TearDownScenario: "View logs with -p and -s flags"
-#####################################################
-
-#####################################################
-Scenario: "View logs with --instance flag"
-#####################################################
-
-while {1} {
+Scenario: "View logs with --instance flag" {
   send "we scale -p log1 -s ui1qa\r"
   expect {
     timeout { handle_timeout; break }
@@ -192,24 +146,15 @@ while {1} {
     timeout { handle_timeout; break }
     "$instance_2"
   }
-  control_c
-  break
-}
+} { control_c }
 
-#####################################################
-TearDownScenario: "View logs --instance flags"
-#####################################################
+Scenario: "View logs with --since flag" {
+  # need to wait here to test the --since flag
+  sleep 60
+  create_service log1 ui3qa
 
-#####################################################
-Scenario: "View logs with --since flag"
-#####################################################
+  if { [info exists expect_out(buffer)] } { unset expect_out(buffer) }
 
-# need to wait here to test the --since flag
-sleep 60
-create_service log1 ui3qa
-
-while {1} {
-  unset expect_out(buffer)
   send "we log --since 1min\r"
   expect {
     timeout { handle_timeout; break }
@@ -228,16 +173,7 @@ while {1} {
     timeout { handle_timeout; break }
     -re "ui3qa.*Deploy in progress"
   }
+} {
   control_c
-  break
+  delete_project log1
 }
-
-delete_project log1
-
-#####################################################
-TearDownScenario: "View logs with --since flag"
-#####################################################
-
-#####################################################
-TearDownFeature: "Log"
-#####################################################

@@ -2,17 +2,11 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "Restart"
-#####################################################
 
-#####################################################
-Scenario: "Cannot restart without signing in"
-#####################################################
+Scenario: "Cannot restart without signing in" {
+  logout $::_tester(email)
 
-logout $_tester(email)
-
-while {1} {
   send "we restart\r"
   expect {
     timeout { handle_timeout; break }
@@ -27,24 +21,15 @@ while {1} {
     timeout { handle_timeout; break }
     "Login canceled."
   }
-  break
 }
 
-#####################################################
-TearDownScenario: "Cannot restart without signing in"
-#####################################################
+Scenario: "Select a service to restart" {
+  login $::_tester(email) $::_tester(pw)
 
-#####################################################
-Scenario: "Select a service to restart"
-#####################################################
+  create_project restart1
+  create_service restart1 ui1qa
+  create_service restart1 ui2qa
 
-login $_tester(email) $_tester(pw)
-
-create_project restart1
-create_service restart1 ui1qa
-create_service restart1 ui2qa
-
-while {1} {
   send "we restart\r"
   expect {
     timeout { handle_timeout; break }
@@ -69,25 +54,14 @@ while {1} {
       break
     }
   }
-  break
-}
+} { delete_project restart1 }
 
-delete_project restart1
+Scenario: "Restart with -p flag" {
+  create_project restart2
+  create_project restart3
+  create_service restart2 hosting1a
+  create_service restart3 hosting1b
 
-#####################################################
-TearDownScenario: "Select a service to restart"
-#####################################################
-
-#####################################################
-Scenario: "Restart with -p flag"
-#####################################################
-
-create_project restart2
-create_project restart3
-create_service restart2 hosting1a
-create_service restart3 hosting1b
-
-while {1} {
   send "we restart -p restart2\r"
   expect {
     timeout {}
@@ -122,27 +96,17 @@ while {1} {
       break
     }
   }
-  break
+} {
+  delete_project restart2
+  delete_project restart3
 }
 
-delete_project restart2
-delete_project restart3
+Scenario: "Restart with -p and -s flags" {
+  create_project restart4
+  create_project restart5
+  create_service restart4 hosting1
+  create_service restart5 hosting1
 
-#####################################################
-TearDownScenario: "Select a service to restart"
-#####################################################
-
-#####################################################
-Scenario: "Restart with -p and -s flags"
-#####################################################
-
-create_project restart4
-create_project restart5
-create_service restart4 hosting1
-create_service restart5 hosting1
-
-
-while {1} {
   send "we restart -p restart5 -s hosting1\r"
   expect {
     timeout { handle_timeout; break }
@@ -162,16 +126,7 @@ while {1} {
       break
     }
   }
-  break
+} {
+  delete_project restart4
+  delete_project restart5
 }
-
-delete_project restart4
-delete_project restart5
-
-#####################################################
-TearDownScenario: "Restart with -p and -s flags"
-#####################################################
-
-#####################################################
-TearDownFeature: "Restart"
-#####################################################

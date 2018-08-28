@@ -49,14 +49,14 @@ source ../procs/shared_procs.tcl
 source ../procs/curl_procs.tcl
 
 # create tester if user doesn't already exist
-if { ![user_exists $_tester(email)] } {
-  if { [catch { create_user $_tester(email) }] } {
+if { ![user_exists $::_tester(email)] } {
+  if { [catch { create_user $::_tester(email) }] } {
     print_msg "Error creating test user! Aborting tests." red
     exit 1
   }
 }
 
-puts "TESTER_EMAIL: $_tester(email)"
+puts "TESTER_EMAIL: $::_tester(email)"
 puts "REMOTE: $_remote"
 
 # initialize test report file
@@ -104,9 +104,10 @@ foreach test_file $test_files {
     add_to_report $message
     append _junit_scenarios_error_content "<error>$message</error>"
 
-    TearDownScenario: $_current_scenario
-    TearDownFeature: $_current_feature
+    end_scenario $_current_scenario
   }
+
+  end_feature $_current_feature
 }
 
 append _junit_report_content "<testsuites name='cli-functional-tests' tests='$_tests_total'"
@@ -117,13 +118,11 @@ append _junit_report_content "</testsuites>"
 add_to_junit_report $_junit_report_content
 
 # report test counts
-set passed [expr {$_tests_total-$_tests_failed}]
 add_to_report "\nTotal number of tests: $_tests_total"
-add_to_report "Total passed: $passed"
 add_to_report "Total failed: $_tests_failed"
+add_to_report "Total errors: $_tests_errors"
 
 print_msg "Total number of tests: $_tests_total" green
-print_msg "Total passed: $passed" green
 
 if { $_tests_failed > 0 } {
   print_msg "Total failed: $_tests_failed failed tests :(" magenta

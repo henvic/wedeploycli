@@ -2,17 +2,11 @@
 
 spawn $env(SHELL)
 
-#####################################################
 Feature: "Delete"
-#####################################################
 
-#####################################################
-Scenario: "Cannot delete without signing in"
-#####################################################
+Scenario: "Cannot delete without signing in" {
+  logout $::_tester(email)
 
-logout $_tester(email)
-
-while {1} {
   send "we delete\r"
   expect {
     timeout { handle_timeout; break }
@@ -27,22 +21,12 @@ while {1} {
     timeout { handle_timeout; break }
     "Login canceled."
   }
-  break
 }
 
-#####################################################
-TearDownScenario: "Cannot delete without signing in"
-#####################################################
+Scenario: "Delete a project" {
+  login $::_tester(email) $::_tester(pw)
+  create_project delete1
 
-#####################################################
-Scenario: "Delete a project"
-#####################################################
-
-login $_tester(email) $_tester(pw)
-
-create_project delete1
-
-while {1} {
   send "we delete\r"
   expect {
     timeout { handle_timeout; break }
@@ -67,22 +51,13 @@ while {1} {
     timeout { handle_timeout; break }
     "Project does not exist."
   }
-  break
 }
 
-#####################################################
-TearDownScenario: "Delete a project"
-#####################################################
+Scenario: "Delete a service" {
+  create_project delete2
+  create_service delete2 hosting1
+  create_service delete2 hosting2
 
-#####################################################
-Scenario: "Delete a service"
-#####################################################
-
-create_project delete2
-create_service delete2 hosting1
-create_service delete2 hosting2
-
-while {1} {
   send "we delete\r"
   expect {
     timeout { handle_timeout; break }
@@ -108,23 +83,12 @@ while {1} {
     "Service delete2/hosting1 does not exist."
   }
   assert_service_exists delete2 hosting2
-  break
-}
+} { delete_project delete2 }
 
-delete_project delete2
+Scenario: "Delete a project with -p flag" {
+  create_project delete3
+  create_project delete4
 
-#####################################################
-TearDownScenario: "Delete a service"
-#####################################################
-
-#####################################################
-Scenario: "Delete a project with -p flag"
-#####################################################
-
-create_project delete3
-create_project delete4
-
-while {1} {
   send "we delete -p delete4\r"
   expect {
     timeout { handle_timeout; break }
@@ -145,24 +109,13 @@ while {1} {
     timeout { handle_timeout; break }
     -gl "\"projectId\"*: *\"delete3\""
   }
-  break
-}
+} { delete_project delete3 }
 
-delete_project delete3
+Scenario: "Delete a service with -p and -s flags" {
+  create_project delete5
+  create_service delete5 hosting1
+  create_service delete5 hosting2
 
-#####################################################
-TearDownScenario: "Delete a project with -p flag"
-#####################################################
-
-#####################################################
-Scenario: "Delete a service with -p and -s flags"
-#####################################################
-
-create_project delete5
-create_service delete5 hosting1
-create_service delete5 hosting2
-
-while {1} {
   send "we delete -p delete5 -s hosting1\r"
   expect {
     timeout { handle_timeout; break }
@@ -179,23 +132,12 @@ while {1} {
     "Service delete5/hosting1 does not exist."
   }
   assert_service_exists delete5 hosting2
-  break
-}
+} { delete_project delete5 }
 
-delete_project delete5
+Scenario: "Delete a project with -e flag" {
+  create_project delete6
+  create_project delete6-uat true
 
-#####################################################
-TearDownScenario: "Delete a service with -p and -s flags"
-#####################################################
-
-#####################################################
-Scenario: "Delete a project with -e flag"
-#####################################################
-
-create_project delete6
-create_project delete6-uat true
-
-while {1} {
   send "we delete -p delete6 -e uat\r"
   expect {
     timeout { handle_timeout; break }
@@ -216,25 +158,14 @@ while {1} {
     timeout { handle_timeout; break }
     -gl "\"projectId\"*: *\"delete6\""
   }
-  break
-}
+} { delete_project delete6 }
 
-delete_project delete6
+Scenario: "Delete a service with -e flag" {
+  create_project delete7
+  create_project delete7-dev true
+  create_service delete7 hosting1
+  create_service delete7-dev hosting2
 
-#####################################################
-TearDownScenario: "Delete a project with -e flag"
-#####################################################
-
-#####################################################
-Scenario: "Delete a service with -e flag"
-#####################################################
-
-create_project delete7
-create_project delete7-dev true
-create_service delete7 hosting1
-create_service delete7-dev hosting2
-
-while {1} {
   send "we delete -p delete7 -e dev -s hosting2\r"
   expect {
     timeout { handle_timeout; break }
@@ -251,15 +182,4 @@ while {1} {
     "Service delete7-dev/hosting2 does not exist."
   }
   assert_service_exists delete7 hosting1
-  break
-}
-
-delete_project delete7
-
-#####################################################
-TearDownScenario: "Delete a service with -e flag"
-#####################################################
-
-#####################################################
-TearDownFeature: "Delete"
-#####################################################
+} { delete_project delete7 }

@@ -2,6 +2,8 @@
 
 spawn $env(SHELL)
 
+Feature: "Deploy"
+
 send "cd ../fixtures/projectA\r"
 expect {
   timeout {
@@ -11,17 +13,9 @@ expect {
   "fixtures/projectA"
 }
 
-#####################################################
-Feature: "Deploy"
-#####################################################
+Scenario: "Cannot deploy without logging in" {
+  logout $::_tester(email)
 
-#####################################################
-Scenario: "Cannot deploy without logging in"
-#####################################################
-
-logout $_tester(email)
-
-while {1} {
   send "we deploy\r"
   expect {
     timeout { handle_timeout; break }
@@ -36,20 +30,11 @@ while {1} {
     timeout { handle_timeout; break }
     "Login canceled."
   }
-  break
 }
 
-#####################################################
-TearDownScenario: "Cannot deploy without logging in"
-#####################################################
+Scenario: "Deploy to a new project" {
+  login $::_tester(email) $::_tester(pw)
 
-#####################################################
-Scenario: "Deploy to a new project"
-#####################################################
-
-login $_tester(email) $_tester(pw)
-
-while {1} {
   send "we deploy\r"
   expect {
     timeout { handle_timeout; break }
@@ -73,22 +58,11 @@ while {1} {
   }
   set timeout $::_default_timeout
   assert_service_exists deploy1 ui
-  break
-}
+} { delete_project deploy1 }
 
-delete_project deploy1
+Scenario: "Deploy to an existing project" {
+  create_project deploy2
 
-#####################################################
-TearDownScenario: "Deploy to a new project"
-#####################################################
-
-#####################################################
-Scenario: "Deploy to an existing project"
-#####################################################
-
-create_project deploy2
-
-while {1} {
   send "we deploy\r"
   expect {
     timeout { handle_timeout; break }
@@ -107,33 +81,22 @@ while {1} {
   }
   set timeout $::_default_timeout
   assert_service_exists deploy2 ui
-  break
-}
+} { delete_project deploy2 }
 
-delete_project deploy2
+Scenario: "Deploy project with two services" {
+  send "cd ../projectB\r"
+  expect {
+    timeout {
+      handle_timeout
+      error "Had problem changing to project directory"
+     }
+    "fixtures/projectB"
+  }
 
-#####################################################
-TearDownScenario: "Deploy to an existing project"
-#####################################################
+  create_project deploy3
 
-#####################################################
-Scenario: "Deploy project with two services"
-#####################################################
+  set timeout 30
 
-send "cd ../projectB\r"
-expect {
-  timeout {
-    handle_timeout
-    error "Had problem changing to project directory"
-   }
-  "fixtures/projectB"
-}
-
-create_project deploy3
-
-set timeout 30
-
-while {1} {
   send "we deploy -p deploy3\r"
   expect {
     timeout { handle_timeout; break }
@@ -157,32 +120,23 @@ while {1} {
   }
   assert_service_exists deploy3 ui1
   assert_service_exists deploy3 ui2
-  break
+} {
+  set timeout $::_default_timeout
+  delete_project deploy3
 }
 
-set timeout $::_default_timeout
-delete_project deploy3
+Scenario: "Deploy project with bad wedeploy.json" {
+  send "cd ../projectC\r"
+  expect {
+    timeout {
+      handle_timeout
+      error "Had problem changing to project directory"
+     }
+    "fixtures/projectC"
+  }
 
-#####################################################
-TearDownScenario: "Deploy project with two services"
-#####################################################
+  create_project deploy4
 
-#####################################################
-Scenario: "Deploy project with bad wedeploy.json"
-#####################################################
-
-send "cd ../projectC\r"
-expect {
-  timeout {
-    handle_timeout
-    error "Had problem changing to project directory"
-   }
-  "fixtures/projectC"
-}
-
-create_project deploy4
-
-while {1} {
   set timeout 30
   send "we deploy -p deploy4\r"
   expect {
@@ -209,32 +163,22 @@ while {1} {
     "Something went wrong and the entire build was interrupted"
   }
   control_c
-  break
-}
+} { delete_project deploy4 }
 
-delete_project deploy4
+Scenario: "Deploy service to a new environment" {
+  login $::_tester(email) $::_tester(pw)
 
-#####################################################
-TearDownScenario: "Deploy project with bad wedeploy.json"
-#####################################################
+  send "cd ../projectA\r"
+  expect {
+    timeout {
+      handle_timeout
+      error "Had problem changing to project directory"
+     }
+    "fixtures/projectA"
+  }
 
-#####################################################
-Scenario: "Deploy service to a new environment"
-#####################################################
-login $_tester(email) $_tester(pw)
+  create_project deploy5
 
-send "cd ../projectA\r"
-expect {
-  timeout {
-    handle_timeout
-    error "Had problem changing to project directory"
-   }
-  "fixtures/projectA"
-}
-
-create_project deploy5
-
-while {1} {
   send "we deploy -p deploy5 -e dev\r"
   expect {
     timeout { handle_timeout; break }
@@ -252,15 +196,4 @@ while {1} {
   }
   set timeout $::_default_timeout
   assert_service_exists deploy5-dev ui
-  break
-}
-
-delete_project deploy5
-
-#####################################################
-TearDownScenario: "Deploy service to a new environment"
-#####################################################
-
-#####################################################
-TearDownFeature: "Deploy"
-#####################################################
+} { delete_project deploy5 }
