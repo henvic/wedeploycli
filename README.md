@@ -72,7 +72,7 @@ To view test reports on Jenkins CI
 ## Contributing
 The tests are organized into Features and Scenarios.  A Feature is a test suite, which corresponds to a file in the functional/tests folder.  A Feature may contain one or more Scenarios.  Each Scenario is a test case.
 
-Each test file should must with
+Each test file should begin with
 ```
 Feature: {feature name}
 ```
