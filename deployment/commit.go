@@ -58,10 +58,12 @@ func (d *Deploy) Commit() (commit string, err error) {
 	return commit, nil
 }
 
-type deployInfo struct {
-	CLIVersion   string                     `json:"cliVersion,omitempty"`
-	Time         string                     `json:"time,omitempty"`
-	OnlyBuild    bool                       `json:"onlyBuild,omitempty"` // @todo
+// Info about the deployment.
+type Info struct {
+	CLIVersion string `json:"cliVersion,omitempty"`
+	Time       string `json:"time,omitempty"`
+	Deploy     bool   `json:"deploy,omitempty"`
+
 	Repositories []repodiscovery.Repository `json:"repos,omitempty"`
 	Repoless     []string                   `json:"repoless,omitempty"`
 }
@@ -74,10 +76,11 @@ func (d *Deploy) commitMessage() (message string, err error) {
 	---
 	%v`
 
-	return fmt.Sprintf(template, date, d.deployInfo()), err
+	return fmt.Sprintf(template, date, d.Info()), err
 }
 
-func (d *Deploy) deployInfo() string {
+// Info about the deployment.
+func (d *Deploy) Info() string {
 	version := fmt.Sprintf("%s %s/%s",
 		defaults.Version,
 		runtime.GOOS,
@@ -95,9 +98,10 @@ func (d *Deploy) deployInfo() string {
 		return ""
 	}
 
-	di := deployInfo{
+	di := Info{
 		CLIVersion:   version,
 		Time:         time.Now().Format(time.RubyDate),
+		Deploy:       !d.OnlyBuild,
 		Repositories: repositories,
 		Repoless:     repoless,
 	}
