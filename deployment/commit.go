@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/deployment/internal/repodiscovery"
+	"github.com/wedeploy/cli/deployment/internal/repodiscovery/tiny"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -106,7 +107,7 @@ func (d *Deploy) Info() string {
 		Repoless:     repoless,
 	}
 
-	bdi, err := json.Marshal(di)
+	bdi, err := json.Marshal(tiny.Convert(tiny.Info(di)))
 
 	if err != nil {
 		verbose.Debug(err)
