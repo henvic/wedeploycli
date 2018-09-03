@@ -14,7 +14,7 @@ import (
 type Repository struct {
 	Services          []string `json:"repos,omitempty"`
 	Path              string   `json:"path,omitempty"`
-	Origin            string   `json:"origins,omitempty"` // @todo clean origin credentials
+	Origin            string   `json:"origins,omitempty"`
 	Commit            string   `json:"commit,omitempty"`
 	CommitAuthor      string   `json:"commitAuthor,omitempty"`
 	CommitAuthorEmail string   `json:"commitAuthorEmail,omitempty"`

@@ -44,6 +44,10 @@ var cases = []remoteCase{
 		out: "https://github.com/example/hello.example",
 	},
 	remoteCase{
+		in:  "https://username:password@github.com/example/hello.example",
+		out: "https://github.com/example/hello.example",
+	},
+	remoteCase{
 		in:  "git+ssh://git@github.com:example/hello.git",
 		out: "https://github.com/example/hello",
 	},
