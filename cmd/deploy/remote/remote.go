@@ -30,6 +30,7 @@ type RemoteDeployment struct {
 
 	CopyPackage string
 
+	OnlyBuild    bool
 	SkipProgress bool
 	Quiet        bool
 
@@ -73,6 +74,7 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 
 		CopyPackage: rd.CopyPackage,
 
+		OnlyBuild:    rd.OnlyBuild,
 		SkipProgress: rd.SkipProgress,
 		Quiet:        rd.Quiet,
 	}

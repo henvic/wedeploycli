@@ -17,6 +17,7 @@ type ParamsFromRepository struct {
 
 	ProjectID string
 
+	OnlyBuild    bool
 	SkipProgress bool
 	Quiet        bool
 }
@@ -28,6 +29,8 @@ func DeployFromGitRepository(ctx context.Context, wectx config.Context, params P
 
 	build := projects.BuildRequestBody{
 		Repository: params.Repository,
+
+		Deploy: !params.OnlyBuild,
 	}
 
 	groupUID, builds, err := projectsClient.Build(ctx, params.ProjectID, build)

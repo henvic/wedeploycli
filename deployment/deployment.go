@@ -41,6 +41,7 @@ type Deploy struct {
 
 	CopyPackage string
 
+	OnlyBuild    bool
 	SkipProgress bool
 	Quiet        bool
 
@@ -219,6 +220,7 @@ func (d *Deploy) Do(ctx context.Context) error {
 
 		Services: d.Services,
 
+		OnlyBuild:    d.OnlyBuild,
 		SkipProgress: d.SkipProgress,
 		Quiet:        d.Quiet,
 
@@ -280,7 +282,7 @@ func (d *Deploy) do() (err error) {
 		return err
 	}
 
-	d.watch.NotifyDeploying()
+	d.watch.NotifyStart()
 
 	if err = d.uploadPackage(); err != nil {
 		return err

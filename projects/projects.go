@@ -171,6 +171,8 @@ func (c *Client) CreateOrUpdate(ctx context.Context, project Project) (pRec Proj
 // BuildRequestBody structure
 type BuildRequestBody struct {
 	Repository string `json:"repository,omitempty"`
+
+	Deploy bool `json:"deploy"`
 }
 
 // BuildResponseBody structure

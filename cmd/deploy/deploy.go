@@ -30,6 +30,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 }
 
 var (
+	onlyBuild    bool
 	skipProgress bool
 	quiet        bool
 	copyPackage  string
@@ -73,7 +74,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		ServiceID: setupHost.Service(),
 		Remote:    setupHost.Remote(),
 
-		CopyPackage:  copyPackage,
+		CopyPackage: copyPackage,
+
+		OnlyBuild:    onlyBuild,
 		SkipProgress: skipProgress,
 		Quiet:        quiet,
 	}
@@ -109,6 +112,7 @@ func deployFromGitRepo(repo string) error {
 		ProjectID:  projectID,
 		Repository: repo,
 
+		OnlyBuild:    onlyBuild,
 		SkipProgress: skipProgress,
 		Quiet:        quiet,
 	}
@@ -117,6 +121,8 @@ func deployFromGitRepo(repo string) error {
 }
 
 func init() {
+	DeployCmd.Flags().BoolVar(&onlyBuild, "only-build", false,
+		"Skip deployment (only build)")
 	DeployCmd.Flags().BoolVar(&skipProgress, "skip-progress", false,
 		"Skip watching deployment progress, quiet")
 	DeployCmd.Flags().BoolVarP(&quiet, "quiet", "q", false,

@@ -9,7 +9,6 @@ import (
 
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/figures"
 	"github.com/wedeploy/cli/projects"
 	"github.com/wedeploy/cli/templates"
 )
@@ -159,13 +158,13 @@ var Friendly = map[string]string{
 	BuildStarted:    "Build started",
 	BuildPushed:     "Build pushed",
 	BuildSucceeded:  "Build succeeded",
-	DeployFailed:    figures.Cross + " Deployment failed",
-	DeployCanceled:  figures.Cross + " Deployment canceled",
-	DeployTimeout:   figures.Cross + " Deployment timed out",
-	DeployRollback:  figures.Cross + " Deployment rollback",
+	DeployFailed:    "Deployment failed",
+	DeployCanceled:  "Deployment canceled",
+	DeployTimeout:   "Deployment timed out",
+	DeployRollback:  "Deployment rollback",
 	DeployCreated:   "Deployment created",
 	DeployPending:   "Deployment pending",
-	DeploySucceeded: figures.Tick + " Deployment succeeded",
+	DeploySucceeded: "Deployment succeeded",
 	DeployStarted:   "Deployment started",
 }
 
