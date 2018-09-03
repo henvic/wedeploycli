@@ -371,7 +371,7 @@ func (d *Deploy) getLastCommit() (commit string, err error) {
 }
 
 func (d *Deploy) copyGitPackage() error {
-	fmt.Println("Debugging: copying (cloning) package file to " + d.CopyPackage)
+	_, _ = fmt.Fprintf(os.Stderr, "Debugging: copying (cloning) package file to %s\n", d.CopyPackage)
 
 	var target = fmt.Sprintf("%s-%s", d.ProjectID, d.pushStartTime.Format("2006-01-02-15-04-05Z0700"))
 	var params = []string{"clone", d.getGitPath(), target}
