@@ -59,7 +59,7 @@ var repoCases = []repoCase{
 		repositories: []Repository{
 			Repository{
 				Services:          []string{"service1"},
-				Path:              "mocks/project/service-with-git-1",
+				Path:              "service-with-git-1",
 				Commit:            "b0e71920287fc3d6103f45d173fd0c94cefdcf76",
 				CommitAuthor:      "Henrique Vicente",
 				CommitAuthorEmail: "henriquevicente@gmail.com",
@@ -70,7 +70,7 @@ var repoCases = []repoCase{
 			},
 			Repository{
 				Services:          []string{"service2"},
-				Path:              "mocks/project/service-with-git-2",
+				Path:              "service-with-git-2",
 				Commit:            "259a4e4c8bf201113ff828fa83fb7205e7ac7bba",
 				CommitAuthor:      "Henrique Vicente",
 				CommitAuthorEmail: "henriquevicente@gmail.com",
@@ -87,7 +87,7 @@ var repoCases = []repoCase{
 		repositories: []Repository{
 			Repository{
 				Services:          []string{"service", "nested"},
-				Path:              "mocks/project-with-git",
+				Path:              "",
 				Origin:            "https://github.com/example/project-with-git",
 				Commit:            "c03668d5c9d781188f5e60e7417d79ccc74b3549",
 				CommitAuthor:      "Henrique Vicente",
@@ -103,7 +103,7 @@ var repoCases = []repoCase{
 		repositories: []Repository{
 			Repository{
 				Services:          []string{"withgit"},
-				Path:              "mocks/service-with-git",
+				Path:              "",
 				Origin:            "https://github.com/example/service-with-git",
 				Commit:            "ef1a4f3d06b0c3f547f69a3b530c06687efbf4d8",
 				CommitAuthor:      "Henrique Vicente",

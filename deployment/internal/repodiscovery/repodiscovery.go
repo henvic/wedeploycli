@@ -1,7 +1,6 @@
 package repodiscovery
 
 import (
-	"os"
 	"path/filepath"
 
 	"github.com/hashicorp/errwrap"
@@ -36,6 +35,12 @@ type Discover struct {
 
 // Run discovery process
 func (d *Discover) Run() (repos []Repository, repoless []string, err error) {
+	d.Path, err = filepath.Abs(d.Path)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
 	repoOnRoot, err := d.walkFn(d.Path, d.Services.GetIDs())
 
 	if err != nil && err != git.ErrRepositoryNotExists {
@@ -47,20 +52,8 @@ func (d *Discover) Run() (repos []Repository, repoless []string, err error) {
 		return repos, repoless, nil
 	}
 
-	wd, err := os.Getwd()
-
-	if err != nil {
-		return nil, nil, err
-	}
-
 	for _, serviceInfo := range d.Services {
-		rel, err := filepath.Rel(wd, serviceInfo.Location)
-
-		if err != nil {
-			return nil, nil, err
-		}
-
-		repo, err := d.walkFn(rel, []string{serviceInfo.ServiceID})
+		repo, err := d.walkFn(serviceInfo.Location, []string{serviceInfo.ServiceID})
 
 		if err == git.ErrRepositoryNotExists {
 			repoless = append(repoless, serviceInfo.ServiceID)
@@ -117,9 +110,19 @@ func (d *Discover) walkFn(path string, services []string) (*Repository, error) {
 		return nil, err
 	}
 
+	rel, err := filepath.Rel(d.Path, path)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if rel == "." {
+		rel = ""
+	}
+
 	return &Repository{
 		Services:          services,
-		Path:              path,
+		Path:              rel,
 		Origin:            d.maybeGetOriginURL(remote),
 		Commit:            commitHash.String(),
 		CommitAuthor:      commit.Author.Name,
