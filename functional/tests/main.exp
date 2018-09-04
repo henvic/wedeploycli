@@ -48,6 +48,16 @@ if { [info exists env(TESTER_PW)] } {
 source ../procs/shared_procs.tcl
 source ../procs/curl_procs.tcl
 
+# initialize test report file
+set report_file [open $_test_report w]
+close $report_file
+
+# set remote
+exec we curl enable
+exec we remote set qa-remote $_remote
+exec we remote default qa-remote
+puts "REMOTE: $_remote"
+
 # create tester if user doesn't already exist
 if { ![user_exists $::_tester(email)] } {
   if { [catch { create_user $::_tester(email) }] } {
@@ -57,15 +67,6 @@ if { ![user_exists $::_tester(email)] } {
 }
 
 puts "TESTER_EMAIL: $::_tester(email)"
-puts "REMOTE: $_remote"
-
-# initialize test report file
-set report_file [open $_test_report w]
-close $report_file
-
-exec we curl enable
-exec we remote set qa-remote $_remote
-exec we remote default qa-remote
 
 set test_files {}
 
