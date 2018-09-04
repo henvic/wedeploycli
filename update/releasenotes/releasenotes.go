@@ -175,4 +175,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "August 15th, 2018",
 		Description: `Fixed panic when using "we shell".`,
 	},
+	ReleaseNote{
+		Version:     "1.6.2",
+		Date:        "September 4th, 2018",
+		Description: `Added "we deploy --only-build" support.`,
+	},
 }
