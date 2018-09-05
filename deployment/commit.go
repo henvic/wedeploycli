@@ -21,11 +21,7 @@ func (d *Deploy) Commit() (commit string, err error) {
 		return "", err
 	}
 
-	msg, err := d.commitMessage()
-
-	if err != nil {
-		return "", err
-	}
+	msg := d.Info()
 
 	var params = []string{
 		"commit",
@@ -67,17 +63,6 @@ type Info struct {
 
 	Repositories []repodiscovery.Repository `json:"repos,omitempty"`
 	Repoless     []string                   `json:"repoless,omitempty"`
-}
-
-func (d *Deploy) commitMessage() (message string, err error) {
-	date := time.Now().Format(time.RubyDate)
-
-	template := `Deployment at %v
-
-	---
-	%v`
-
-	return fmt.Sprintf(template, date, d.Info()), err
 }
 
 // Info about the deployment.
