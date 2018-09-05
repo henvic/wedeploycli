@@ -78,9 +78,13 @@ func (up *usagePrinter) printAll() {
 
 	useLine := strings.TrimSuffix(up.cmd.UseLine(), " [flags]")
 
-	usage := fmt.Sprintf("\n  Usage: %s%s [flag]",
+	usage := fmt.Sprintf("\n  Usage: %s%s",
 		useLine,
 		cmdPart)
+
+	if !up.cmd.DisableFlagsInUseLine && up.cmd.HasAvailableFlags() && !strings.Contains(usage, "[flag]") {
+		usage += " [flag]"
+	}
 
 	if up.cmd.Args == nil || runtime.FuncForPC(reflect.ValueOf(up.cmd.Args).Pointer()).Name() !=
 		runtime.FuncForPC(reflect.ValueOf(cobra.NoArgs).Pointer()).Name() {
