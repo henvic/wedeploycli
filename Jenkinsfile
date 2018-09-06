@@ -47,15 +47,15 @@ pipeline {
           }
         }
       }
-    }
-  }
-  post {
-    always {
-      junit(allowEmptyResults: true, testResults: 'functional/test-results/TEST-*.xml')
+      post {
+        always {
+          junit(allowEmptyResults: true, testResults: 'functional/test-results/TEST-*.xml')
 
-      archiveArtifacts artifacts: 'functional/test-results/report.txt'
+          archiveArtifacts artifacts: 'functional/test-results/report.txt'
 
-      sh './.jenkins/main.sh --shutdown-infrastructure'
+          sh './.jenkins/main.sh --shutdown-infrastructure'
+        }
+      }
     }
   }
 }
