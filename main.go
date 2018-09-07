@@ -38,6 +38,21 @@ func maybeSetCustomTimezone() {
 	time.Local = l
 }
 
+func maybeShortcutCredentialHelper() {
+	if len(os.Args) < 2 || os.Args[1] != "git-credential-helper" {
+		return
+	}
+
+	var err = gitcredentialhelper.Run(os.Args)
+
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
+	}
+
+	os.Exit(0)
+}
+
 func maybeSetSkipTLSVerification() {
 	skipTLSVerification := os.Getenv(envs.SkipTLSVerification)
 
@@ -77,18 +92,6 @@ func main() {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	var args = os.Args
-
-	if len(args) >= 2 && args[1] == "git-credential-helper" {
-		var err = gitcredentialhelper.Run(args)
-
-		if err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
-			os.Exit(1)
-		}
-
-		return
-	}
-
+	maybeShortcutCredentialHelper()
 	cmd.Execute()
 }
