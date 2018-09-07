@@ -80,7 +80,7 @@ func (m *mainProgram) run() {
 
 	var uc update.Checker
 
-	if !isCommand("autocomplete") && !isCommand("metrics") && !isCommand("build") {
+	if !isCommand("autocomplete") && !isCommand("metrics") {
 		uc.Check(m.config)
 	}
 
