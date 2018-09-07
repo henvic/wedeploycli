@@ -180,4 +180,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "September 4th, 2018",
 		Description: `Added "we deploy --only-build" support.`,
 	},
+	ReleaseNote{
+		Version:     "1.6.3",
+		Date:        "September 4th, 2018",
+		Description: `Don't parse flags after command name on "we exec". Minor changes.`,
+	},
 }
