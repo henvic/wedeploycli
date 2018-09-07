@@ -15,6 +15,8 @@ import (
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/autocomplete"
 	"github.com/wedeploy/cli/cmd/canceled"
+	cmdexec "github.com/wedeploy/cli/cmd/exec"
+	execargs "github.com/wedeploy/cli/cmd/exec/args"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmd/root"
 	"github.com/wedeploy/cli/color"
@@ -84,6 +86,7 @@ func (m *mainProgram) run() {
 		uc.Check(m.config)
 	}
 
+	m.prepareCommand()
 	m.executeCommand()
 	uc.Feedback(m.config)
 	m.autocomplete()
@@ -120,6 +123,14 @@ func printError(e error) {
 
 	_, _ = fmt.Fprintf(os.Stderr, "%v\n",
 		fancy.Error("Contact us: "+defaults.SupportEmail))
+}
+
+func (m *mainProgram) prepareCommand() {
+	if isCommand("exec") {
+		if execArgs, rewrite := execargs.MaybeRewrite(cmdexec.ExecCmd, os.Args[1:]); rewrite {
+			root.Cmd.SetArgs(execArgs)
+		}
+	}
 }
 
 func (m *mainProgram) executeCommand() {
