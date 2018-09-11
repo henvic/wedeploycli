@@ -76,8 +76,8 @@ func Debug(a ...interface{}) {
 	}
 
 	bufDeferredVerboseMutex.Lock()
+	defer bufDeferredVerboseMutex.Unlock()
 	bufDeferredVerbose.WriteString(fmt.Sprintln(a...))
-	bufDeferredVerboseMutex.Unlock()
 }
 
 // PrintDeferred debug messages
