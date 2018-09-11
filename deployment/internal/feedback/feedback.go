@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	humanize "github.com/dustin/go-humanize"
 	"github.com/hashicorp/errwrap"
 	"github.com/henvic/browser"
 	"github.com/henvic/uilive"
@@ -82,6 +83,19 @@ func (w *Watch) Start(ctx context.Context) {
 	}
 
 	w.createServicesActivitiesMap()
+}
+
+// PrintPackageSize related to the created temporary git repo.
+func (w *Watch) PrintPackageSize(b uint64) {
+	m := &waitlivemsg.Message{}
+	msg := "Package size: " + humanize.Bytes(b)
+
+	m.StopText(figures.Tick + " " + msg)
+	w.wlm.AddMessage(m)
+
+	if w.Quiet {
+		_, _ = fmt.Fprintf(os.Stderr, "%s\n", msg)
+	}
 }
 
 func (w *Watch) setValidTransitions() {

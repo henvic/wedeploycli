@@ -3,7 +3,9 @@ package deployment
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -20,6 +22,8 @@ func (d *Deploy) Commit() (commit string, err error) {
 	if err = d.stageAllFiles(); err != nil {
 		return "", err
 	}
+
+	d.printPackageSize()
 
 	msg := d.Info()
 
@@ -53,6 +57,26 @@ func (d *Deploy) Commit() (commit string, err error) {
 
 	verbose.Debug("commit", commit)
 	return commit, nil
+}
+
+func (d *Deploy) printPackageSize() {
+	var s uint64
+
+	// not the best thing to do in terms of performance, by the way
+	// https://github.com/golang/go/issues/16399
+	f := func(path string, info os.FileInfo, err error) error {
+		if info != nil {
+			s += uint64(info.Size())
+		}
+
+		return err
+	}
+
+	if err := filepath.Walk(d.getGitPath(), f); err != nil {
+		verbose.Debug("can't get deployment size correctly:", err)
+	}
+
+	d.watch.PrintPackageSize(s)
 }
 
 // Info about the deployment.
