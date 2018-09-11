@@ -3,6 +3,7 @@ package project
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/projects"
@@ -68,6 +69,16 @@ func createProject(projectID string) error {
 		return err
 	}
 
+	if strings.Contains(project.ProjectID, "-") {
+		return createdEnvironment(project)
+	}
+
+	return createdProject(project)
+}
+
+func createdProject(p projects.Project) error {
+	wectx := we.Context()
+
 	fmt.Printf(color.Format(
 		color.FgHiBlack, "Project \"")+
 		"%v"+
@@ -75,7 +86,21 @@ func createProject(projectID string) error {
 		wectx.InfrastructureDomain()+
 		color.Format(color.FgHiBlack, ".")+
 		"\n",
-		project.ProjectID)
+		p.ProjectID)
+	return nil
+}
+
+func createdEnvironment(p projects.Project) error {
+	wectx := we.Context()
+
+	fmt.Printf(color.Format(
+		color.FgHiBlack, "Project environment \"")+
+		"%v"+
+		color.Format(color.FgHiBlack, "\" created on ")+
+		wectx.InfrastructureDomain()+
+		color.Format(color.FgHiBlack, ".")+
+		"\n",
+		p.ProjectID)
 	return nil
 }
 
