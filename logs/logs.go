@@ -277,26 +277,24 @@ func (w *Watcher) pool() {
 
 	if err != nil {
 		errStreamMutex.Lock()
+		defer errStreamMutex.Unlock()
 		_, _ = fmt.Fprintf(errStream, "%v\n", errorhandler.Handle(err))
-		errStreamMutex.Unlock()
+		return
+	}
+
+	if len(list) == 0 {
+		w.filterMutex.Lock()
+		defer w.filterMutex.Unlock()
+		verbose.Debug("No new log since " + w.Filter.Since)
 		return
 	}
 
 	printList(list)
 
-	var length = len(list)
-
-	if length == 0 {
-		w.filterMutex.Lock()
-		verbose.Debug("No new log since " + w.Filter.Since)
-		w.filterMutex.Unlock()
-		return
-	}
-
 	if err := w.incSinceArgument(list); err != nil {
 		errStreamMutex.Lock()
+		defer errStreamMutex.Unlock()
 		_, _ = fmt.Fprintf(errStream, "%v\n", errorhandler.Handle(err))
-		errStreamMutex.Unlock()
 		return
 	}
 }
