@@ -269,7 +269,7 @@ func (w *WaitLiveMsg) print() {
 	}
 
 	w.msgsMutex.Lock()
+	defer w.msgsMutex.Unlock()
 	_, _ = fmt.Fprintf(w.stream, "%v", buf.String())
 	_ = w.stream.Flush()
-	w.msgsMutex.Unlock()
 }
