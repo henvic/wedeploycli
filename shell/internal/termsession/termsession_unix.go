@@ -27,5 +27,5 @@ func (t *TermSession) watchResize() {
 }
 
 func (t *TermSession) restore() {
-	signal.Reset(syscall.SIGWINCH)
+	signal.Stop(t.watcher)
 }
