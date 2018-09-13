@@ -227,7 +227,7 @@ type BasicAuth struct {
 }
 
 // GetOAuthToken from a Basic Auth flow
-func (b *BasicAuth) GetOAuthToken(ctx context.Context) (token string, err error) {
+func (b *BasicAuth) GetOAuthToken(ctx context.Context) (string, error) {
 	var apiClient = apihelper.New(b.Context)
 	var request = apiClient.URL(ctx, "/login")
 
@@ -239,6 +239,6 @@ func (b *BasicAuth) GetOAuthToken(ctx context.Context) (token string, err error)
 	}
 
 	var data accessToken
-	err = apihelper.DecodeJSON(request, &data)
+	var err = apihelper.DecodeJSON(request, &data)
 	return data.AccessToken, err
 }
