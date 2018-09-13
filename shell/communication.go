@@ -80,7 +80,7 @@ readStdin:
 	if err == io.EOF {
 		verbose.Debug("Closing stdin: reading rune returned io.EOF")
 
-		if err := p.shell.Emit("stdinDone", map[string]string{}); err != nil {
+		if err = p.shell.Emit("stdinDone", map[string]string{}); err != nil {
 			verbose.Debug("error sending stdinEOF signal:", err)
 		}
 		return
@@ -92,40 +92,47 @@ readStdin:
 		return
 	}
 
+	var bg []byte
+	bg, err = p.readBuf(reader, b)
+
+	if err != nil {
+		p.err <- err
+		p.ctxCancel()
+		return
+	}
+
+	if err = p.shell.Emit("stdin", string(bg)); err != nil {
+		p.err <- errwrap.Wrapf("stdin pipe broken: {{err}}", err)
+		p.ctxCancel()
+		return
+	}
+
+	goto readStdin
+}
+
+func (p *Process) readBuf(reader *bufio.Reader, b rune) ([]byte, error) {
+	var err error
 	var bg = []byte(string(b))
 	bfed := reader.Buffered()
 
 	if bfed != 0 {
-		if err := reader.UnreadRune(); err != nil {
-			p.err <- errwrap.Wrapf("stdin unread rune issue: {{err}}", err)
-			p.ctxCancel()
-			return
+		if err = reader.UnreadRune(); err != nil {
+			return nil, errwrap.Wrapf("stdin unread rune issue: {{err}}", err)
 		}
 
 		// peeking the whole stdin at once, but maybe choosing a chunk size to slice it is wiser
 		bg, err = reader.Peek(bfed)
 
 		if err != nil {
-			p.err <- errwrap.Wrapf("stdin peeking issue: {{err}}", err)
-			p.ctxCancel()
-			return
+			return nil, errwrap.Wrapf("stdin peeking issue: {{err}}", err)
 		}
 
 		if _, err := reader.Discard(len(bg)); err != nil {
-			p.err <- errwrap.Wrapf("stdin discarding issue: {{err}}", err)
-			p.ctxCancel()
-			return
+			return nil, errwrap.Wrapf("stdin discarding issue: {{err}}", err)
 		}
 	}
 
-	if err := p.shell.Emit("stdin", string(bg)); err != nil {
-		p.err <- errwrap.Wrapf("stdin pipe broken: {{err}}", err)
-		p.ctxCancel()
-		return
-	}
-
-	// a sleep() throttle call might go here
-	goto readStdin
+	return bg, nil
 }
 
 // PipeStdout from UNIX socket to websocket

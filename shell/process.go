@@ -73,7 +73,7 @@ func (p *Process) Run(ctx context.Context, conn *gosocketio.Client) (err error) 
 	}
 }
 
-func (p *Process) run(ctx context.Context, conn *gosocketio.Client) (err error) {
+func (p *Process) run(ctx context.Context, conn *gosocketio.Client) error {
 	if err := p.authenticate(); err != nil {
 		return err
 	}
@@ -120,16 +120,14 @@ func (p *Process) run(ctx context.Context, conn *gosocketio.Client) (err error) 
 		return errwrap.Wrapf("can't initialize terminal: {{err}}", err)
 	}
 
-	err = <-p.err
-
-	if err != nil {
+	if err := <-p.err; err != nil {
 		stopTermSession(t)
 
 		// add a line break to separate connection errors from other messages
 		_, _ = fmt.Fprintln(os.Stderr)
 	}
 
-	return err
+	return nil
 }
 
 type authMap struct {
