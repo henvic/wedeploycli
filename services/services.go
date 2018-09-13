@@ -54,11 +54,11 @@ func (c *Client) Create(ctx context.Context, projectID string, body CreateBody) 
 
 	c.Client.Auth(req)
 
-	if err := apihelper.SetBody(req, body); err != nil {
+	if err = apihelper.SetBody(req, body); err != nil {
 		return s, err
 	}
 
-	if err := apihelper.Validate(req, req.Post()); err != nil {
+	if err = apihelper.Validate(req, req.Post()); err != nil {
 		return s, err
 	}
 
@@ -233,7 +233,7 @@ func (l *listFromDirectoryGetter) Walk(root string) (ServiceInfoList, error) {
 		return nil, err
 	}
 
-	if err := l.readDir(l.root, info); err != nil {
+	if err = l.readDir(l.root, info); err != nil {
 		return nil, err
 	}
 
