@@ -345,7 +345,7 @@ func (s *SetupHost) loadValues() (err error) {
 		}
 	}
 
-	if err := s.wectx.SetEndpoint(s.Remote()); err != nil {
+	if err = s.wectx.SetEndpoint(s.Remote()); err != nil {
 		return err
 	}
 
