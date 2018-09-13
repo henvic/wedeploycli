@@ -208,7 +208,7 @@ func TestSave(t *testing.T) {
 	// save in a different location
 	conf.Path = tmp.Name()
 
-	if err := conf.Save(); err != nil {
+	if err = conf.Save(); err != nil {
 		panic(err)
 	}
 
@@ -292,7 +292,7 @@ func TestRemotes(t *testing.T) {
 	// save in a different location
 	conf.Path = tmp.Name()
 
-	if err := conf.Save(); err != nil {
+	if err = conf.Save(); err != nil {
 		panic(err)
 	}
 
