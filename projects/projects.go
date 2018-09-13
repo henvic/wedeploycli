@@ -69,11 +69,11 @@ func (c *Client) Create(ctx context.Context, project Project) (p Project, err er
 
 	c.Client.Auth(req)
 
-	if err := apihelper.SetBody(req, reqBody); err != nil {
+	if err = apihelper.SetBody(req, reqBody); err != nil {
 		return p, err
 	}
 
-	if err := apihelper.Validate(req, req.Post()); err != nil {
+	if err = apihelper.Validate(req, req.Post()); err != nil {
 		return p, err
 	}
 
@@ -90,11 +90,11 @@ func (c *Client) Update(ctx context.Context, project Project) (p Project, err er
 
 	c.Client.Auth(req)
 
-	if err := apihelper.SetBody(req, reqBody); err != nil {
+	if err = apihelper.SetBody(req, reqBody); err != nil {
 		return p, err
 	}
 
-	if err := apihelper.Validate(req, req.Patch()); err != nil {
+	if err = apihelper.Validate(req, req.Patch()); err != nil {
 		return p, err
 	}
 
@@ -186,11 +186,11 @@ func (c *Client) Build(ctx context.Context, projectID string, build BuildRequest
 	var req = c.Client.URL(ctx, "/projects", projectID, "/build")
 	c.Client.Auth(req)
 
-	if err := apihelper.SetBody(req, build); err != nil {
+	if err = apihelper.SetBody(req, build); err != nil {
 		return "", builds, errwrap.Wrapf("can't set body for build: {{err}}", err)
 	}
 
-	if err := apihelper.Validate(req, req.Post()); err != nil {
+	if err = apihelper.Validate(req, req.Post()); err != nil {
 		return "", builds, err
 	}
 
