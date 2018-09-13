@@ -248,7 +248,7 @@ func (d *Deploy) stageAllFiles() (err error) {
 	}
 
 	for _, s := range d.Services {
-		if err := d.stageService(s.Location); err != nil {
+		if err = d.stageService(s.Location); err != nil {
 			return err
 		}
 	}
@@ -293,7 +293,7 @@ func (d *Deploy) overwriteServicePackageHashObject(content []byte) (hashObject s
 
 	verbose.Debug(fmt.Sprintf("Using hash-object:\n%v", string(content)))
 
-	if _, err := in.Write(content); err != nil {
+	if _, err = in.Write(content); err != nil {
 		return "", err
 	}
 
@@ -393,9 +393,9 @@ func (d *Deploy) Push() (groupUID string, err error) {
 	}()
 
 	if d.CopyPackage != "" {
-		if err := d.copyGitPackage(); err != nil {
+		if errCopy := d.copyGitPackage(); errCopy != nil {
 			verbose.Debug("Error trying to copy git package for debugging.")
-			verbose.Debug(err)
+			verbose.Debug(errCopy)
 		}
 	}
 
@@ -471,7 +471,7 @@ func (d *Deploy) addEmptyCredentialHelper() (err error) {
 	return cmd.Run()
 }
 
-func (d *Deploy) addCredentialHelper() (err error) {
+func (d *Deploy) addCredentialHelper() error {
 	if d.useCredentialHack() {
 		verbose.Debug("Skipping adding git credential helper")
 		return nil
