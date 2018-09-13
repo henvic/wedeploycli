@@ -24,7 +24,7 @@ func TestGetWorkingDirectory(t *testing.T) {
 		t.Errorf("Can't get working directory: %v", err)
 	}
 
-	if err := os.Chdir(userhome.GetHomeDir()); err != nil {
+	if err = os.Chdir(userhome.GetHomeDir()); err != nil {
 		panic(err)
 	}
 

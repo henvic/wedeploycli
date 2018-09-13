@@ -340,7 +340,7 @@ type curlRunner struct {
 	cmd *cobra.Command
 }
 
-func (cr *curlRunner) run(cmd *cobra.Command, args []string) (err error) {
+func (cr *curlRunner) run(cmd *cobra.Command, args []string) error {
 	cr.cmd = cmd
 
 	// Let's try to avoid verbose messages from the CLI
@@ -382,7 +382,7 @@ Using it might make you inadvertently expose private data. Continue at your own 
 		return err
 	}
 
-	if err := maybeChangeRemote(wectx, cmd, weArgs, alternative); err != nil {
+	if err = maybeChangeRemote(wectx, cmd, weArgs, alternative); err != nil {
 		return err
 	}
 
