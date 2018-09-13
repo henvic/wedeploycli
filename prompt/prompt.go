@@ -33,8 +33,8 @@ func SelectOption(indexLength int, equivalents map[string]int) (index int, err e
 	option = strings.TrimSpace(option)
 
 	if equivalents != nil {
-		if index, ok := equivalents[option]; ok {
-			return getSelectOptionIndex(index, indexLength, nil)
+		if i, ok := equivalents[option]; ok {
+			return getSelectOptionIndex(i, indexLength, nil)
 		}
 	}
 
