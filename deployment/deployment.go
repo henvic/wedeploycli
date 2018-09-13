@@ -254,7 +254,7 @@ func (d *Deploy) do() (err error) {
 	d.listenCleanupOnCancel()
 
 	defer func() {
-		if ec := d.Cleanup(); ec != nil {
+		if ec := d.CleanupPackage(); ec != nil {
 			if err == nil {
 				err = ec
 				return
@@ -344,8 +344,8 @@ func (d *Deploy) uploadPackage() (err error) {
 	return nil
 }
 
-// Cleanup directory
-func (d *Deploy) Cleanup() error {
+// CleanupPackage directory
+func (d *Deploy) CleanupPackage() error {
 	var tmpWorkDir = d.getTmpWorkDir()
 
 	if tmpWorkDir != "" {
