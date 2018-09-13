@@ -84,21 +84,17 @@ func notifierCheck(c *config.Config) error {
 
 	var resp, err = check(GetReleaseChannel(c))
 
-	switch err {
-	case nil:
-		c.NextVersion = resp.ReleaseVersion
-		if err := c.Save(); err != nil {
-			return err
-		}
-	case equinox.NotAvailableErr:
+	if err == equinox.NotAvailableErr {
 		c.NextVersion = ""
-		if err := c.Save(); err != nil {
-			return err
-		}
-		return nil
+		return c.Save()
 	}
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	c.NextVersion = resp.ReleaseVersion
+	return c.Save()
 }
 
 // Notify is called every time this tool executes to verify if it is outdated
@@ -177,21 +173,25 @@ func getCurrentTime() string {
 }
 
 func handleUpdateCheckError(c *config.Config, channel string, err error) error {
-	switch {
-	case err == equinox.NotAvailableErr:
+	if err == equinox.NotAvailableErr {
 		c.NextVersion = ""
 		c.ReleaseChannel = channel
 		c.LastUpdateCheck = getCurrentTime()
-		if err := c.Save(); err != nil {
+
+		if err = c.Save(); err != nil {
 			return err
 		}
+
 		fmt.Println(fancy.Info("No update available."))
 		return nil
-	case strings.Contains(err.Error(), fmt.Sprintf("No channel with the name '%s' can be found.", channel)):
-		return errwrap.Wrapf(fmt.Sprintf(`channel "%s" was not found`, channel), err)
-	default:
-		return errwrap.Wrapf("update failed: {{err}}", err)
 	}
+
+	if strings.Contains(err.Error(),
+		fmt.Sprintf("No channel with the name '%s' can be found.", channel)) {
+		return errwrap.Wrapf(fmt.Sprintf(`channel "%s" was not found`, channel), err)
+	}
+
+	return errwrap.Wrapf("update failed: {{err}}", err)
 }
 
 func isNotifyOn(c *config.Config) bool {
