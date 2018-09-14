@@ -89,6 +89,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:b31621c9582a815566b465f1348bca99695af2374cd0600a2dafdc0dad79ab6f"
+  name = "github.com/henvic/ctxsignal"
+  packages = ["."]
+  pruneopts = ""
+  revision = "b9b4da1ea988d4d471dd089c58e31e85e6cf87dd"
+
+[[projects]]
+  branch = "master"
   digest = "1:1fd4637745135667cb47efdfaa9973c4fa528b0b2cf677870a1cfcffebb9bb77"
   name = "github.com/henvic/uilive"
   packages = ["."]
@@ -421,6 +429,7 @@
     "github.com/hashicorp/errwrap",
     "github.com/hashicorp/go-version",
     "github.com/henvic/browser",
+    "github.com/henvic/ctxsignal",
     "github.com/henvic/uilive",
     "github.com/kylelemons/godebug/diff",
     "github.com/kylelemons/godebug/pretty",
@@ -437,6 +446,8 @@
     "golang.org/x/time/rate",
     "gopkg.in/ini.v1",
     "gopkg.in/src-d/go-git.v4",
+    "gopkg.in/src-d/go-git.v4/config",
+    "gopkg.in/src-d/go-git.v4/plumbing",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
