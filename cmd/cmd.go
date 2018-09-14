@@ -25,6 +25,7 @@ import (
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/envs"
 	"github.com/wedeploy/cli/errorhandler"
+	"github.com/wedeploy/cli/exiterror"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/formatter"
 	"github.com/wedeploy/cli/metrics"
@@ -180,6 +181,10 @@ func (m *mainProgram) handleErrorExitCode() {
 
 	if sshE, ok := maybeSSHExitErr.(*shell.ExitError); ok {
 		os.Exit(sshE.ExitCode)
+	}
+
+	if e, ok := m.cmdErr.(exiterror.Error); ok {
+		os.Exit(e.Code())
 	}
 
 	os.Exit(1)
