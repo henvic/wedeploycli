@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"sort"
 
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
@@ -34,22 +33,6 @@ type Activity struct {
 	ProjectUID string                 `json:"projectUid"`
 	Type       string                 `json:"type"`
 	Metadata   map[string]interface{} `json:"metadata"`
-}
-
-// Activities slice
-type Activities []Activity
-
-// Reverse activities slice
-func (as Activities) Reverse() (ras []Activity) {
-	for l := len(as) - 1; l >= 0; l-- {
-		ras = append(ras, as[l])
-	}
-
-	sort.SliceStable(ras, func(i, j int) bool {
-		return ras[i].CreatedAt < ras[j].CreatedAt
-	})
-
-	return ras
 }
 
 // Filter for list
@@ -201,7 +184,7 @@ var activityTemplates = map[string]string{
 }
 
 // List activities of a given project
-func (c *Client) List(ctx context.Context, projectID string, f Filter) (activities Activities, err error) {
+func (c *Client) List(ctx context.Context, projectID string, f Filter) (activities []Activity, err error) {
 	if projectID == "" {
 		return activities, projects.ErrEmptyProjectID
 	}
