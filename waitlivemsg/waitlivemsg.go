@@ -268,6 +268,10 @@ func (w *WaitLiveMsg) print() {
 		buf.WriteString("\n")
 	}
 
+	w.pb(buf)
+}
+
+func (w *WaitLiveMsg) pb(buf bytes.Buffer) {
 	w.msgsMutex.Lock()
 	defer w.msgsMutex.Unlock()
 	_, _ = fmt.Fprintf(w.stream, "%v", buf.String())
