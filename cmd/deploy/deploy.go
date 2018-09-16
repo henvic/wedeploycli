@@ -5,6 +5,7 @@ import (
 	"errors"
 	"path/filepath"
 
+	"github.com/henvic/ctxsignal"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/deploy/internal/getproject"
 	"github.com/wedeploy/cli/cmd/deploy/remote"
@@ -81,7 +82,11 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		Quiet:        quiet,
 	}
 
-	_, err = rd.Run(context.Background())
+	ctx, cancel := ctxsignal.WithTermination(context.Background())
+	defer cancel()
+
+	_, err = rd.Run(ctx)
+
 	return err
 }
 

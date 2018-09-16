@@ -10,11 +10,9 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"os/signal"
 	"path/filepath"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/hashicorp/errwrap"
@@ -199,16 +197,6 @@ func extractGroupUIDFromBuild(e []byte) (groupUID string, err error) {
 	return bds[0].GroupUID, nil
 }
 
-func (d *Deploy) listenCleanupOnCancel() {
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		<-sigs
-		d.ctxCancel()
-	}()
-}
-
 // Do deployment
 func (d *Deploy) Do(ctx context.Context) error {
 	d.ctx, d.ctxCancel = context.WithCancel(ctx)
@@ -251,8 +239,6 @@ func (d *Deploy) Do(ctx context.Context) error {
 }
 
 func (d *Deploy) do() (err error) {
-	d.listenCleanupOnCancel()
-
 	defer func() {
 		if ec := d.CleanupPackage(); ec != nil {
 			if err == nil {
@@ -262,8 +248,6 @@ func (d *Deploy) do() (err error) {
 
 			verbose.Debug(err)
 		}
-
-		signal.Reset(syscall.SIGINT, syscall.SIGTERM)
 	}()
 
 	tmpWorkDir, err := ioutil.TempDir("", "wedeploy")
@@ -284,12 +268,7 @@ func (d *Deploy) do() (err error) {
 
 	d.watch.NotifyStart()
 
-	if err = d.uploadPackage(); err != nil {
-		return err
-	}
-
-	signal.Reset(syscall.SIGINT, syscall.SIGTERM)
-	return nil
+	return d.uploadPackage()
 }
 
 func (d *Deploy) preparePackage() (err error) {

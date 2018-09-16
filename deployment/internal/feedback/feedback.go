@@ -7,20 +7,21 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	humanize "github.com/dustin/go-humanize"
 	"github.com/hashicorp/errwrap"
-	"github.com/henvic/browser"
+	"github.com/henvic/ctxsignal"
 	"github.com/henvic/uilive"
 	"github.com/wedeploy/cli/activities"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/errorhandler"
+	"github.com/wedeploy/cli/exiterror"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/figures"
 	"github.com/wedeploy/cli/projects"
@@ -31,6 +32,8 @@ import (
 	"github.com/wedeploy/cli/waitlivemsg"
 	"golang.org/x/time/rate"
 )
+
+const uncancelableExitCode = 64
 
 // Watch deployment feedback.
 type Watch struct {
@@ -56,10 +59,9 @@ type Watch struct {
 	header      *waitlivemsg.Message
 	stepMessage *waitlivemsg.Message
 
-	transitions map[string][]string
-	activities  servicesMap
+	sa sactivities
 
-	states finalStates
+	f final
 }
 
 // Start watching deployment feedback.
@@ -70,8 +72,6 @@ func (w *Watch) Start(ctx context.Context) {
 	w.stepMessage = &waitlivemsg.Message{}
 	w.header = &waitlivemsg.Message{}
 	w.wlm = waitlivemsg.WaitLiveMsg{}
-
-	w.setValidTransitions()
 
 	if w.Quiet && w.IsUpload {
 		w.prepareQuiet()
@@ -96,15 +96,6 @@ func (w *Watch) PrintPackageSize(b uint64) {
 	if w.Quiet {
 		_, _ = fmt.Fprintf(os.Stderr, "%s\n", msg)
 	}
-}
-
-func (w *Watch) setValidTransitions() {
-	if w.OnlyBuild {
-		w.transitions = ValidBuildTransitions
-		return
-	}
-
-	w.transitions = ValidDeployTransitions
 }
 
 func (w *Watch) notifySucceeded() {
@@ -170,14 +161,14 @@ func (w *Watch) PrintSkipProgress() {
 
 // StopFailedUpload stops the deployment messages due to a failed upload error.
 func (w *Watch) StopFailedUpload() {
-	if !w.Quiet {
-		return
-	}
-
 	w.notifyFailed()
 
-	for serviceID, s := range w.activities.states {
-		s.msgWLM.PlayText(fancy.Error(w.makeServiceStatusMessage(serviceID, "Upload failed")))
+	var sa = w.sa
+
+	for serviceID, sw := range sa.states {
+		sw.msgWLMMutex.RLock()
+		sw.msgWLM.PlayText(fancy.Error(w.makeServiceStatusMessage(serviceID, "Upload failed")))
+		sw.msgWLMMutex.RUnlock()
 	}
 
 	w.wlm.Stop()
@@ -214,7 +205,7 @@ func (w *Watch) NotifyUploadComplete(t time.Duration) {
 	}
 }
 
-type finalStates struct {
+type final struct {
 	BuildFailed    []string
 	DeployFailed   []string
 	DeployCanceled []string
@@ -251,8 +242,8 @@ func (w *Watch) prepareProgress() {
 }
 
 func (w *Watch) createServicesActivitiesMap() {
-	w.activities = servicesMap{
-		states: map[string]*serviceWatch{},
+	w.sa = sactivities{
+		states: map[string]*swatch{},
 
 		buildOnly: w.OnlyBuild,
 	}
@@ -267,10 +258,13 @@ func (w *Watch) createServicesActivitiesMap() {
 
 		m.PlayText(w.makeServiceStatusMessage(s.ServiceID, msg))
 
-		w.activities.states[s.ServiceID] = &serviceWatch{
-			msgWLM:  m,
-			visited: map[string]bool{},
+		sw := &swatch{
+			ServiceID: s.ServiceID,
+			msgWLM:    m,
+			visited:   map[string]bool{},
 		}
+
+		w.sa.states[s.ServiceID] = sw
 		w.wlm.AddMessage(m)
 	}
 }
@@ -280,14 +274,18 @@ func (w *Watch) reorderDeployments() {
 	order, _ := projectsClient.GetDeploymentOrder(w.ctx, w.ProjectID, w.GroupUID)
 
 	for _, do := range order {
-		if a, ok := w.activities.states[do]; ok {
+		if a, ok := w.sa.states[do]; ok {
+			a.msgWLMMutex.RLock()
 			w.wlm.RemoveMessage(a.msgWLM)
+			a.msgWLMMutex.RUnlock()
 		}
 	}
 
 	for _, do := range order {
-		if a, ok := w.activities.states[do]; ok {
+		if a, ok := w.sa.states[do]; ok {
+			a.msgWLMMutex.RLock()
 			w.wlm.AddMessage(a.msgWLM)
+			a.msgWLMMutex.RUnlock()
 		}
 	}
 }
@@ -335,61 +333,40 @@ func (w *Watch) makeServiceStatusMessage(serviceID, pre string) string {
 }
 
 func (w *Watch) setFinalStates() (err error) {
-	var states = w.activities.getFinalActivitiesStates()
-	w.states = states
+	var sa = w.sa
+	w.f = sa.getFinalActivitiesStates()
 
-	if len(states.BuildFailed) == 0 &&
-		len(states.DeployFailed) == 0 &&
-		len(states.DeployCanceled) == 0 &&
-		len(states.DeployTimeout) == 0 &&
-		len(states.DeployRollback) == 0 {
+	if len(w.f.BuildFailed) == 0 &&
+		len(w.f.DeployFailed) == 0 &&
+		len(w.f.DeployCanceled) == 0 &&
+		len(w.f.DeployTimeout) == 0 &&
+		len(w.f.DeployRollback) == 0 {
 		return nil
 	}
 
 	var emsgs []string
 
-	for _, s := range states.BuildFailed {
+	for _, s := range w.f.BuildFailed {
 		emsgs = append(emsgs, fmt.Sprintf(`error building service "%s"`, s))
 	}
 
-	for _, s := range states.DeployFailed {
+	for _, s := range w.f.DeployFailed {
 		emsgs = append(emsgs, fmt.Sprintf(`error deploying service "%s"`, s))
 	}
 
-	for _, s := range states.DeployCanceled {
+	for _, s := range w.f.DeployCanceled {
 		emsgs = append(emsgs, fmt.Sprintf(`canceled deployment of service "%s"`, s))
 	}
 
-	for _, s := range states.DeployTimeout {
+	for _, s := range w.f.DeployTimeout {
 		emsgs = append(emsgs, fmt.Sprintf(`timed out deploying "%s"`, s))
 	}
 
-	for _, s := range states.DeployRollback {
+	for _, s := range w.f.DeployRollback {
 		emsgs = append(emsgs, fmt.Sprintf(`rolling back service "%s"`, s))
 	}
 
 	return errors.New(strings.Join(emsgs, "\n"))
-}
-
-func (w *Watch) updateActivityState(a activities.Activity) {
-	// stop processing if service ID is not available or state transition is invalid
-	var serviceID, ok = a.Metadata["serviceId"].(string)
-
-	if !ok || !w.isValidState(a.Type) {
-		return
-	}
-
-	if _, exists := w.activities.states[serviceID]; !exists {
-		// skip activity
-		// we want to avoid problems (read: nil pointer panics)
-		// if the server sends back a response with an ID we don't have already locally
-		return
-	}
-
-	w.markTransition(serviceID, a.Type)
-	w.updateActivitiesStateMessage(serviceID, a.Type)
-	var sa = w.activities.states[serviceID]
-	sa.visited[a.Type] = true
 }
 
 func (w *Watch) getDecoratedFriendlyActivity(t string) string {
@@ -397,6 +374,10 @@ func (w *Watch) getDecoratedFriendlyActivity(t string) string {
 
 	if !ok {
 		return t
+	}
+
+	if w.Quiet {
+		return friendly
 	}
 
 	switch t {
@@ -431,8 +412,11 @@ func (w *Watch) updateActivitiesStateMessage(serviceID, t string) {
 }
 
 func (w *Watch) updateBuildActivitiesStateMessage(serviceID, t, ssm string) {
-	var sa = w.activities.states[serviceID]
-	var m = sa.msgWLM
+	var sa = w.sa
+	var sw = sa.states[serviceID]
+	sw.msgWLMMutex.RLock()
+	var m = sw.msgWLM
+	sw.msgWLMMutex.RUnlock()
 
 	switch t {
 	case activities.BuildStarted,
@@ -446,12 +430,15 @@ func (w *Watch) updateBuildActivitiesStateMessage(serviceID, t, ssm string) {
 		m.StopText(ssm)
 	}
 
-	w.maybePrintQuietActivity(sa, t, ssm)
+	w.maybePrintQuietActivity(sw, t, ssm)
 }
 
 func (w *Watch) updateDeployActivitiesStateMessage(serviceID, t, ssm string) {
-	var sa = w.activities.states[serviceID]
-	var m = sa.msgWLM
+	var sa = w.sa
+	var sw = sa.states[serviceID]
+	sw.msgWLMMutex.RLock()
+	var m = sw.msgWLM
+	sw.msgWLMMutex.RUnlock()
 
 	switch t {
 	case activities.BuildStarted,
@@ -473,10 +460,10 @@ func (w *Watch) updateDeployActivitiesStateMessage(serviceID, t, ssm string) {
 		m.StopText(ssm)
 	}
 
-	w.maybePrintQuietActivity(sa, t, ssm)
+	w.maybePrintQuietActivity(sw, t, ssm)
 }
 
-func (w *Watch) maybePrintQuietActivity(sw *serviceWatch, aType, text string) {
+func (w *Watch) maybePrintQuietActivity(sw *swatch, aType, text string) {
 	if w.Quiet && !sw.visited[aType] {
 		fmt.Println(text)
 	}
@@ -524,31 +511,8 @@ func (w *Watch) isValidDeployState(activityType string) bool {
 	return false
 }
 
-func (w *Watch) markTransition(serviceID, activityType string) {
-	var old = w.activities.states[serviceID].state
-
-	var validFrom, ok = w.transitions[old]
-
-	if !ok {
-		w.activities.states[serviceID].state = activityType
-
-		if old != "" {
-			verbose.Debug("Unexpected Transition: from:", old, "to:", activityType)
-		}
-
-		return
-	}
-
-	for _, eachValid := range validFrom {
-		if activityType == eachValid {
-			w.activities.states[serviceID].state = activityType
-			return
-		}
-	}
-}
-
 func (w *Watch) updateActivitiesStates() (end bool, err error) {
-	var as activities.Activities
+	var as []activities.Activity
 	var ctx, cancel = context.WithTimeout(w.ctx, 5*time.Second)
 	defer cancel()
 
@@ -558,23 +522,54 @@ func (w *Watch) updateActivitiesStates() (end bool, err error) {
 		GroupUID: w.GroupUID,
 	})
 	cancel()
-	as = as.Reverse()
+
+	sort.SliceStable(as, func(i, j int) bool {
+		return as[i].CreatedAt < as[j].CreatedAt
+	})
 
 	if err != nil {
 		return isNotFoundError(err), err
 	}
 
-	for _, a := range as {
-		w.updateActivityState(a)
-	}
+	w.sync(as)
 
-	for id := range w.activities.states {
-		if !w.activities.isFinalState(id) {
+	var sa = w.sa
+
+	for serviceID := range sa.states {
+		if !sa.isFinalState(serviceID) {
 			return false, nil
 		}
 	}
 
 	return true, nil
+}
+
+func (w *Watch) sync(as []activities.Activity) {
+	var sa = w.sa
+
+	for _, a := range as {
+		// stop processing if service ID is not available or state transition is invalid
+		var serviceID, ok = a.Metadata["serviceId"].(string)
+
+		if _, exists := sa.states[serviceID]; !exists {
+			// don't track activities for services we don't know
+			return
+		}
+
+		if !ok || !w.isValidState(a.Type) {
+			return
+		}
+
+		var sw = sa.states[serviceID]
+
+		if _, ok := sw.visited[serviceID]; ok {
+			return
+		}
+
+		w.updateActivitiesStateMessage(serviceID, a.Type)
+		sw.current = a.Type
+		sw.visited[a.Type] = true
+	}
 }
 
 func updateMessageErrorStringCounter(input string) (output string) {
@@ -625,7 +620,7 @@ func (w *Watch) Wait() error {
 	w.reorderDeployments()
 
 	if err := w.wait(); err != nil {
-		return err
+		return w.handleWaitError(err)
 	}
 
 	err := w.setFinalStates()
@@ -637,9 +632,7 @@ func (w *Watch) Wait() error {
 		w.notifyFailed()
 	}
 
-	if !w.Quiet {
-		w.wlm.Stop()
-	}
+	w.wlm.Stop()
 
 	return err
 }
@@ -652,6 +645,10 @@ func (w *Watch) wait() error {
 			verbose.Debug(er)
 		}
 
+		if err := w.ctx.Err(); err != nil {
+			return err
+		}
+
 		var end, err = w.updateActivitiesStates()
 		var stepText = w.header.GetText()
 
@@ -660,7 +657,7 @@ func (w *Watch) wait() error {
 
 			w.header.PlayText(umerr)
 
-			if w.Quiet {
+			if _, errCtx := ctxsignal.Closed(w.ctx); errCtx != nil && w.Quiet {
 				_, _ = fmt.Fprintln(os.Stderr, umerr)
 			}
 
@@ -668,7 +665,7 @@ func (w *Watch) wait() error {
 		}
 
 		if err != nil && end {
-			return errors.New("deployment not found")
+			return err
 		}
 
 		if err == nil && strings.Contains(stepText, "retrying to get status #") {
@@ -681,85 +678,98 @@ func (w *Watch) wait() error {
 	}
 }
 
-func (w *Watch) maybeSetOpenLogsFunc() {
-	states := w.states
-	askLogs := (len(states.BuildFailed) != 0 || len(states.DeployFailed) != 0)
+func (w *Watch) handleWaitError(err error) error {
+	w.finishError()
 
-	if askLogs {
-		errorhandler.SetAfterError(func() {
-			w.maybeOpenLogs()
-		})
-	}
-}
-
-func (w *Watch) maybeOpenLogs() {
-	var states = w.states
-	var failedBuilds = states.BuildFailed
-	var failedDeploys = states.DeployFailed
-
-	switch yes, err := fancy.Boolean("Open browser to check the logs?"); {
-	case err != nil:
-		_, _ = fmt.Fprintf(os.Stderr, "%v", err)
-		fallthrough
-	case !yes:
-		return
+	if err != w.ctx.Err() {
+		return err
 	}
 
-	var logsURL = fmt.Sprintf("https://%v%v/projects/%v/logs",
-		defaults.DashboardAddressPrefix,
-		w.ConfigContext.InfrastructureDomain(),
-		w.ProjectID)
+	s, err := ctxsignal.Closed(w.ctx)
 
-	switch {
-	case len(failedBuilds) == 1 && len(failedDeploys) == 0:
-		logsURL += "?label=buildUid&logServiceId=" + failedBuilds[0]
-	case len(failedBuilds) == 0 && len(failedDeploys) == 1:
-		logsURL += "?logServiceId=" + failedDeploys[0]
-	case len(failedDeploys) == 0:
-		logsURL += "?label=buildUid"
+	if err != nil {
+		return err
 	}
 
-	if err := browser.OpenURL(logsURL); err != nil {
-		fmt.Println("Open URL: (can't open automatically)", logsURL)
-		verbose.Debug(err)
+	fmt.Println()
+	verbose.Debug(s)
+
+	if w.OnlyBuild {
+		return exiterror.New(
+			"Too late to cancel build: please check your project logs and activities",
+			uncancelableExitCode)
 	}
+
+	return exiterror.New(
+		"Too late to cancel deployment: please check your project logs and activities",
+		uncancelableExitCode)
 }
 
-type serviceWatch struct {
-	state   string
-	visited map[string]bool // deployment transitions that already happened
+func (w *Watch) finishError() {
+	w.header.StopText(figures.Cross + " " + w.getActionMessage())
 
-	msgWLM *waitlivemsg.Message
-}
+	if w.IsUpload && w.uploadCompleted != 0 {
+		var msg = fmt.Sprintf(figures.Tick+" Upload completed in %v.",
+			timehelper.RoundDuration(w.uploadCompleted, time.Second))
 
-type servicesMap struct {
-	states map[string]*serviceWatch
+		w.stepMessage.StopText(msg)
 
-	buildOnly bool
-}
-
-func (s *servicesMap) getFinalActivitiesStates() finalStates {
-	var states = finalStates{}
-
-	for k, service := range s.states {
-		switch service.state {
-		case activities.BuildFailed:
-			states.BuildFailed = append(states.BuildFailed, k)
-		case activities.DeployFailed:
-			states.DeployFailed = append(states.DeployFailed, k)
-		case activities.DeployCanceled:
-			states.DeployCanceled = append(states.DeployCanceled, k)
-		case activities.DeployTimeout:
-			states.DeployTimeout = append(states.DeployTimeout, k)
-		case activities.DeployRollback:
-			states.DeployRollback = append(states.DeployRollback, k)
+		if w.Quiet {
+			_, _ = fmt.Fprintf(os.Stderr, "\n%s\n", msg)
 		}
 	}
 
-	return states
+	var sa = w.sa
+
+	for _, sw := range sa.states {
+		if !sa.isFinalState(sw.ServiceID) {
+			sw.msgWLMMutex.RLock()
+			sw.msgWLM.StopText("? " + sw.msgWLM.GetText())
+			sw.msgWLMMutex.RUnlock()
+		}
+	}
+
+	w.wlm.Stop()
 }
 
-func (s *servicesMap) isFinalState(key string) bool {
+type swatch struct {
+	ServiceID string
+
+	current string
+	visited map[string]bool // deployment transitions that already happened
+
+	msgWLM      *waitlivemsg.Message
+	msgWLMMutex sync.RWMutex
+}
+
+type sactivities struct {
+	buildOnly bool
+
+	states map[string]*swatch
+}
+
+func (s *sactivities) getFinalActivitiesStates() final {
+	var f = final{}
+
+	for k, service := range s.states {
+		switch service.current {
+		case activities.BuildFailed:
+			f.BuildFailed = append(f.BuildFailed, k)
+		case activities.DeployFailed:
+			f.DeployFailed = append(f.DeployFailed, k)
+		case activities.DeployCanceled:
+			f.DeployCanceled = append(f.DeployCanceled, k)
+		case activities.DeployTimeout:
+			f.DeployTimeout = append(f.DeployTimeout, k)
+		case activities.DeployRollback:
+			f.DeployRollback = append(f.DeployRollback, k)
+		}
+	}
+
+	return f
+}
+
+func (s *sactivities) isFinalState(key string) bool {
 	if s.states == nil || s.states[key] == nil {
 		return false
 	}
@@ -771,8 +781,8 @@ func (s *servicesMap) isFinalState(key string) bool {
 	return s.isDeployFinalState(key)
 }
 
-func (s *servicesMap) isBuildFinalState(key string) bool {
-	var state = s.states[key].state
+func (s *sactivities) isBuildFinalState(key string) bool {
+	var state = s.states[key].current
 
 	if state == activities.BuildFailed || state == activities.BuildSucceeded {
 		return true
@@ -781,10 +791,10 @@ func (s *servicesMap) isBuildFinalState(key string) bool {
 	return false
 }
 
-func (s *servicesMap) isDeployFinalState(key string) bool {
-	var state = s.states[key].state
+func (s *sactivities) isDeployFinalState(key string) bool {
+	var sw = s.states[key]
 
-	switch state {
+	switch sw.current {
 	case activities.BuildFailed,
 		activities.DeployFailed,
 		activities.DeployCanceled,
