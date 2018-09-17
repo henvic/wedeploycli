@@ -19,3 +19,6 @@ alias golintt='test -z "$(golint ./... | grep -v "^vendor" | tee /dev/stderr)"'
 # Run govet
 # Excluding vendor/ directory verification
 alias govet='go vet -shadow $(go list ./...)'
+
+# Start the Go docs server on port 6060 with playground enabled.
+alias=godocserver='godoc -http :6060 -play'
