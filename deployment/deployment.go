@@ -262,7 +262,7 @@ func (d *Deploy) do() (err error) {
 				return
 			}
 
-			verbose.Debug(err)
+			_, _ = fmt.Fprintf(os.Stderr, "%+v\n", err)
 		}
 	}()
 
