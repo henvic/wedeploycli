@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/henvic/ctxsignal"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	listinstances "github.com/wedeploy/cli/cmd/list/instances"
 	listprojects "github.com/wedeploy/cli/cmd/list/projects"
@@ -94,7 +95,15 @@ func listRun(cmd *cobra.Command, args []string) error {
 	fmt.Println(color.Format(color.FgHiBlack,
 		"List of services will be updated when a change occurs.\n"))
 
-	l.Start(context.Background(), we.Context())
+	ctx, cancel := ctxsignal.WithTermination(context.Background())
+	defer cancel()
+
+	l.Start(ctx, we.Context())
+
+	if _, err := ctxsignal.Closed(ctx); err == nil {
+		fmt.Println()
+	}
+
 	return nil
 }
 

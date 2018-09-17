@@ -2,7 +2,6 @@ package list
 
 import (
 	"context"
-	"os"
 	"time"
 
 	"github.com/wedeploy/cli/errorhandler"
@@ -35,15 +34,6 @@ func (l *List) watchHandler() {
 	}
 
 	l.printProjects()
-}
-
-func (l *List) watchKiller(sigs chan os.Signal) {
-	select {
-	case <-sigs:
-		l.stop()
-	case <-l.ctx.Done():
-		return
-	}
 }
 
 func (l *List) watch() {
