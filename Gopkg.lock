@@ -89,11 +89,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b31621c9582a815566b465f1348bca99695af2374cd0600a2dafdc0dad79ab6f"
+  digest = "1:9ba22ea21f1f9687791a796574bd212864e32ad4dce73dcd2473c50ed981e89d"
   name = "github.com/henvic/ctxsignal"
   packages = ["."]
   pruneopts = ""
-  revision = "b9b4da1ea988d4d471dd089c58e31e85e6cf87dd"
+  revision = "e3880d6a848fd92b51418c8abdf88ca514ed637f"
 
 [[projects]]
   branch = "master"
