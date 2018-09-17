@@ -87,6 +87,34 @@ func TestServiceTypeHelperHint(t *testing.T) {
 	}
 }
 
+func TestServiceInfoPackage(t *testing.T) {
+	var s = ServiceInfo{
+		ProjectID: "",
+		ServiceID: "hi",
+		Location:  abs("mocks/nest"),
+
+		pkg: Package{
+			ID: "hi",
+			Env: map[string]string{
+				"A": "B",
+			},
+		},
+	}
+
+	pkg := s.Package()
+
+	want := Package{
+		ID: "hi",
+		Env: map[string]string{
+			"A": "B",
+		},
+	}
+
+	if !reflect.DeepEqual(pkg, want) {
+		t.Errorf("Want %+v, got %+v instead", want, pkg)
+	}
+}
+
 func TestGetListFromDirectory(t *testing.T) {
 	var services, err = GetListFromDirectory("mocks/app")
 
@@ -112,24 +140,41 @@ func TestGetListFromDirectory(t *testing.T) {
 
 	var want = ServiceInfoList{
 		ServiceInfo{
-			"exampleProject",
-			"email",
-			abs("mocks/app/email"),
+			ProjectID: "exampleProject",
+			ServiceID: "email",
+			Location:  abs("mocks/app/email"),
+
+			pkg: Package{
+				ID:        "email",
+				ProjectID: "exampleProject",
+				Scale:     1,
+			},
 		},
 		ServiceInfo{
-			"exampleProject",
-			"landing",
-			abs("mocks/app/landing"),
+			ProjectID: "exampleProject",
+			ServiceID: "landing",
+			Location:  abs("mocks/app/landing"),
+
+			pkg: Package{
+				ID:        "landing",
+				ProjectID: "exampleProject",
+			},
 		},
 		ServiceInfo{
-			"exampleProject",
-			"speaker",
-			abs("mocks/app/speaker"),
+			ProjectID: "exampleProject",
+			ServiceID: "speaker",
+			Location:  abs("mocks/app/speaker"),
+
+			pkg: Package{
+				ID:        "speaker",
+				ProjectID: "exampleProject",
+				Image:     "nodejs",
+			},
 		},
 	}
 
 	if !reflect.DeepEqual(services, want) {
-		t.Errorf("Want %v, got %v instead", want, services)
+		t.Errorf("Want %+v, got %+v instead", want, services)
 	}
 
 	speakerCI, speakerErr := services.Get("speaker")
@@ -172,14 +217,18 @@ func TestGetListFromDirectoryIgnoreNestedServiceOnRootLevel(t *testing.T) {
 
 	var want = ServiceInfoList{
 		ServiceInfo{
-			"",
-			"hi",
-			abs("mocks/nest"),
+			ProjectID: "",
+			ServiceID: "hi",
+			Location:  abs("mocks/nest"),
+
+			pkg: Package{
+				ID: "hi",
+			},
 		},
 	}
 
 	if !reflect.DeepEqual(services, want) {
-		t.Errorf("Want %v, got %v instead", want, services)
+		t.Errorf("Want %+v, got %+v instead", want, services)
 	}
 }
 
@@ -187,7 +236,7 @@ func TestGetListFromDirectoryOnProjectWithServicesInsideSubdirectories(t *testin
 	var services, err = GetListFromDirectory("mocks/project-with-services-inside-subdirs")
 
 	if err != nil {
-		t.Errorf("Expected %v, got %v instead", nil, err)
+		t.Errorf("Expected %+v, got %+v instead", nil, err)
 	}
 
 	var wantIDs = []string{"level1"}
@@ -214,9 +263,14 @@ func TestGetListFromDirectoryOnProjectWithServicesInsideSubdirectories(t *testin
 
 	var want = ServiceInfoList{
 		ServiceInfo{
-			"exampleProject",
-			"level1",
-			abs("mocks/project-with-services-inside-subdirs/service-level-1"),
+			ProjectID: "exampleProject",
+			ServiceID: "level1",
+			Location:  abs("mocks/project-with-services-inside-subdirs/service-level-1"),
+
+			pkg: Package{
+				ID:        "level1",
+				ProjectID: "exampleProject",
+			},
 		},
 	}
 

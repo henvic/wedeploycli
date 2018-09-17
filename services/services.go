@@ -168,6 +168,13 @@ type ServiceInfo struct {
 	ProjectID string
 	ServiceID string
 	Location  string
+
+	pkg Package
+}
+
+// Package gets a copy of the package.
+func (s *ServiceInfo) Package() Package {
+	return s.pkg
 }
 
 // ServiceInfoList is a list of ServiceInfo
@@ -315,6 +322,8 @@ func (l *listFromDirectoryGetter) addFunc(p *Package, dir string) error {
 		ProjectID: p.ProjectID,
 		ServiceID: p.ID,
 		Location:  dir,
+
+		pkg: *p,
 	})
 
 	return nil
