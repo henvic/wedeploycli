@@ -32,10 +32,12 @@ var (
 // Deploy project
 type Deploy struct {
 	ConfigContext config.Context
-	ProjectID     string
-	ServiceID     string
-	Path          string
-	Services      services.ServiceInfoList
+
+	ProjectID string
+	ServiceID string
+
+	Path     string
+	Services services.ServiceInfoList
 
 	CopyPackage string
 
