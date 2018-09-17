@@ -78,7 +78,13 @@ func (d *Deploy) prepareAndModifyServicePackage(s services.ServiceInfo) error {
 	// to avoid compatibility issues due to lack of a synchronization channel
 	// between the CLI team and the other teams in maintaining wedeploy.json structure
 	// synced.
-	bin, err := getPreparedServicePackage(s.ServiceID, s.Location)
+
+	c := changes{
+		ServiceID: s.ServiceID,
+		Image:     d.Image,
+	}
+
+	bin, err := getPreparedServicePackage(c, s.Location)
 	if err != nil {
 		return err
 	}
@@ -87,27 +93,37 @@ func (d *Deploy) prepareAndModifyServicePackage(s services.ServiceInfo) error {
 	return d.overwriteServicePackage(bin, fmt.Sprintf("%s/wedeploy.json", filepath.Base(s.Location)))
 }
 
-func getPreparedServicePackage(serviceID string, path string) ([]byte, error) {
+type changes struct {
+	ServiceID string
+	Image     string
+}
+
+func getPreparedServicePackage(c changes, path string) ([]byte, error) {
 	// this smells a little bad because wedeploy.json is the responsibility of the services package
 	// and I shouldn't be accessing it directly from here
-	var spMap = map[string]interface{}{}
+	var sp = map[string]interface{}{}
 	wedeployJSON, err := ioutil.ReadFile(filepath.Join(path, "wedeploy.json"))
 	switch {
 	case err == nil:
-		if err = json.Unmarshal(wedeployJSON, &spMap); err != nil {
+		if err = json.Unmarshal(wedeployJSON, &sp); err != nil {
 			return nil, errwrap.Wrapf("error parsing wedeploy.json on "+path+": {{err}}", err)
 		}
 	case os.IsNotExist(err):
-		spMap = map[string]interface{}{}
+		sp = map[string]interface{}{}
 		err = nil
 	default:
 		return nil, err
 	}
 
-	spMap["id"] = strings.ToLower(serviceID)
-	delete(spMap, "projectId")
+	sp["id"] = strings.ToLower(c.ServiceID)
 
-	return json.MarshalIndent(&spMap, "", "    ")
+	if c.Image != "" {
+		sp["image"] = c.Image
+	}
+
+	delete(sp, "projectId")
+
+	return json.MarshalIndent(&sp, "", "    ")
 }
 
 func copyErrStreamAndVerbose(cmd *exec.Cmd) *bytes.Buffer {
