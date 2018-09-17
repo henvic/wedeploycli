@@ -36,6 +36,8 @@ type Deploy struct {
 	ProjectID string
 	ServiceID string
 
+	Image string
+
 	Path     string
 	Services services.ServiceInfoList
 

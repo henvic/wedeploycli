@@ -28,6 +28,8 @@ type RemoteDeployment struct {
 	ServiceID string
 	Remote    string
 
+	Image string
+
 	CopyPackage string
 
 	OnlyBuild    bool
@@ -63,14 +65,22 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 		return "", errors.New("no service available for deployment was found")
 	}
 
+	if err = rd.checkImage(); err != nil {
+		return "", err
+	}
+
 	rd.verboseRemappedServices()
 
 	var deploy = &deployment.Deploy{
-		ProjectID:     rd.ProjectID,
-		ServiceID:     rd.ServiceID,
-		Path:          rd.path,
 		ConfigContext: wectx,
-		Services:      rd.services,
+
+		ProjectID: rd.ProjectID,
+		ServiceID: rd.ServiceID,
+
+		Image: rd.Image,
+
+		Path:     rd.path,
+		Services: rd.services,
 
 		CopyPackage: rd.CopyPackage,
 
@@ -81,6 +91,39 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 
 	err = deploy.Do(ctx)
 	return deploy.GetGroupUID(), err
+}
+
+func (rd *RemoteDeployment) checkImage() error {
+	if rd.Image == "" || len(rd.services) <= 1 {
+		return nil
+	}
+
+	var first = rd.services[0]
+	var pkg = first.Package()
+	var original = pkg.Image
+	var diff = []string{}
+	var f = fmt.Sprintf("%s is %s (%s)", first.ServiceID, pkg.Image, first.Location)
+
+	for _, s := range rd.services {
+		pkg := s.Package()
+
+		if original == "" {
+			original = pkg.Image
+		}
+
+		if original != pkg.Image {
+			diff = append(diff, fmt.Sprintf("%s is %s (%s)", s.ServiceID, pkg.Image, s.Location))
+		}
+	}
+
+	// found services with duplicated ID "email" on %v and %v
+	if len(diff) != 0 {
+		diff = append([]string{f}, diff...)
+		return fmt.Errorf("refusing to overwrite image for services with different images:\n%v",
+			strings.Join(diff, "\n"))
+	}
+
+	return nil
 }
 
 func (rd *RemoteDeployment) verboseRemappedServices() {

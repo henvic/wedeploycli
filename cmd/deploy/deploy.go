@@ -31,6 +31,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 }
 
 var (
+	image        string
 	onlyBuild    bool
 	skipProgress bool
 	quiet        bool
@@ -75,6 +76,8 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		ServiceID: setupHost.Service(),
 		Remote:    setupHost.Remote(),
 
+		Image: image,
+
 		CopyPackage: copyPackage,
 
 		OnlyBuild:    onlyBuild,
@@ -107,6 +110,10 @@ func maybePreRunDeployFromGitRepo(cmd *cobra.Command, args []string) error {
 }
 
 func deployFromGitRepo(repo string) error {
+	if image != "" {
+		return errors.New("overwriting image when deploying from a git repository is not supported")
+	}
+
 	projectID, err := getproject.MaybeID(setupHost.Project())
 
 	if err != nil {
@@ -126,6 +133,7 @@ func deployFromGitRepo(repo string) error {
 }
 
 func init() {
+	DeployCmd.Flags().StringVar(&image, "image", "", "Use different image for service")
 	DeployCmd.Flags().BoolVar(&onlyBuild, "only-build", false,
 		"Skip deployment (only build)")
 	DeployCmd.Flags().BoolVar(&skipProgress, "skip-progress", false,
