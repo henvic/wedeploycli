@@ -223,7 +223,7 @@ func (a *Authentication) Run(ctx context.Context, c config.Context) error {
 	}
 
 	if !yes {
-		return canceled.CancelCommand("Login canceled.")
+		return canceled.CancelCommand("login canceled")
 	}
 
 	return a.browserWorkflowAuth()

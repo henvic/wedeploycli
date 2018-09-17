@@ -74,5 +74,5 @@ func confirmation(projectID string, userProject projects.Project) error {
 		return nil
 	}
 
-	return canceled.CancelCommand("Deployment canceled.")
+	return canceled.CancelCommand("deployment canceled")
 }

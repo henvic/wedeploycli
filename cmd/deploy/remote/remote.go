@@ -173,7 +173,7 @@ func (rd *RemoteDeployment) checkEmptyIDOnMultipleDeployment() error {
 		return nil
 	}
 
-	return canceled.CancelCommand("Deployment canceled.")
+	return canceled.CancelCommand("deployment canceled")
 }
 
 func (rd *RemoteDeployment) checkServiceParameter() error {
