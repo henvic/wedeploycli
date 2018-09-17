@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/henvic/ctxsignal"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
@@ -66,7 +67,15 @@ func listRun(cmd *cobra.Command, args []string) error {
 	fmt.Println(color.Format(color.FgHiBlack,
 		"List of instances will be updated when a change occurs.\n"))
 
-	li.Start(context.Background(), we.Context())
+	ctx, cancel := ctxsignal.WithTermination(context.Background())
+	defer cancel()
+
+	li.Start(ctx, we.Context())
+
+	if _, err = ctxsignal.Closed(ctx); err == nil {
+		fmt.Println()
+	}
+
 	return nil
 }
 

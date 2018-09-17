@@ -1,9 +1,15 @@
 package listinstances
 
-import "time"
+import (
+	"github.com/wedeploy/cli/verbose"
+	"golang.org/x/time/rate"
+)
 
 func (l *List) updateHandler() {
 	var is, err = l.fetch()
+
+	l.watchMutex.Lock()
+	defer l.watchMutex.Unlock()
 
 	switch {
 	case err == nil:
@@ -12,29 +18,26 @@ func (l *List) updateHandler() {
 		l.updated <- false
 		return
 	default:
-		l.watchMutex.Lock()
 		l.lastError = err
 		l.retry++
 		l.updated <- false
-		l.watchMutex.Unlock()
 		return
 	}
 
-	l.watchMutex.Lock()
 	l.Instances = is
 	l.retry = 0
 	l.updated <- true
-	l.watchMutex.Unlock()
 }
 
 func (l *List) update() {
+	rate := rate.NewLimiter(rate.Every(l.PoolingInterval), 1)
+
 	for {
-		select {
-		default:
-			l.updateHandler()
-			time.Sleep(time.Second)
-		case <-l.ctx.Done():
+		if err := rate.Wait(l.ctx); err != nil {
+			verbose.Debug(err)
 			return
 		}
+
+		l.updateHandler()
 	}
 }

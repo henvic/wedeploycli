@@ -99,26 +99,16 @@ func maybeGetOption(option string, selectors []string) string {
 	var candidate string
 
 	for _, s := range selectors {
-		if strings.HasPrefix(s, option) {
-			if candidate != "" {
-				example := candidate
-
-				if len(example) >= 8 {
-					example = example[:8]
-				}
-
-				_, _ = fmt.Fprintf(os.Stderr, "%s%s%s%s%s%s\n",
-					color.Format(color.FgHiBlack, "Multiple instances match ID \""),
-					option,
-					color.Format(color.FgHiBlack, "\". Try again. Example: use \""),
-					option,
-					example,
-					color.Format(color.FgHiBlack, "\" or #."))
-				return ""
-			}
-
-			candidate = s
+		if !strings.HasPrefix(s, option) {
+			continue
 		}
+
+		if candidate != "" {
+			ambiguity(candidate, option)
+			return ""
+		}
+
+		candidate = s
 	}
 
 	if candidate != "" {
@@ -126,4 +116,20 @@ func maybeGetOption(option string, selectors []string) string {
 	}
 
 	return option
+}
+
+func ambiguity(candidate, option string) {
+	example := candidate
+
+	if len(example) >= 8 {
+		example = example[:8]
+	}
+
+	_, _ = fmt.Fprintf(os.Stderr, "%s%s%s%s%s%s\n",
+		color.Format(color.FgHiBlack, "Multiple instances match ID \""),
+		option,
+		color.Format(color.FgHiBlack, "\". Try again. Example: use \""),
+		option,
+		example,
+		color.Format(color.FgHiBlack, "\" or #."))
 }

@@ -1,10 +1,9 @@
 package listinstances
 
 import (
-	"context"
-	"os"
 	"time"
 
+	"github.com/henvic/ctxsignal"
 	"github.com/wedeploy/cli/errorhandler"
 )
 
@@ -16,7 +15,7 @@ func (l *List) watchHandler() {
 		_ = l.livew.Flush()
 	}()
 
-	if l.ctx.Err() == context.Canceled {
+	if _, err := ctxsignal.Closed(l.ctx); err == nil {
 		return
 	}
 
@@ -35,15 +34,6 @@ func (l *List) watchHandler() {
 	}
 
 	l.printInstances()
-}
-
-func (l *List) watchKiller(sigs chan os.Signal) {
-	select {
-	case <-sigs:
-		l.stop()
-	case <-l.ctx.Done():
-		return
-	}
 }
 
 func (l *List) watch() {

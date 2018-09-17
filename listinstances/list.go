@@ -3,11 +3,8 @@ package listinstances
 import (
 	"context"
 	"io"
-	"os"
-	"os/signal"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/henvic/uilive"
@@ -42,7 +39,6 @@ type List struct {
 
 	wectx     config.Context
 	ctx       context.Context
-	stop      context.CancelFunc
 	selectors []string
 }
 
@@ -63,7 +59,7 @@ func (l *List) fetch() ([]services.Instance, error) {
 }
 
 func (l *List) prepare(ctx context.Context, wectx config.Context) {
-	l.ctx, l.stop = context.WithCancel(ctx)
+	l.ctx = ctx
 	l.wectx = wectx
 
 	l.servicesClient = services.New(l.wectx)
@@ -76,16 +72,10 @@ func (l *List) prepare(ctx context.Context, wectx config.Context) {
 // Start for the list
 func (l *List) Start(ctx context.Context, wectx config.Context) {
 	l.prepare(ctx, wectx)
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	defer signal.Reset(syscall.SIGINT, syscall.SIGTERM)
 
 	go l.update()
 	go l.watch()
-	go l.watchKiller(sigs)
-
 	<-l.ctx.Done()
-	signal.Reset(syscall.SIGINT, syscall.SIGTERM)
 }
 
 // Once runs the list only once
@@ -105,12 +95,8 @@ func (l *List) Once(ctx context.Context, wectx config.Context) error {
 }
 
 func isContextError(err error) bool {
-	if err == nil {
-		return false
-	}
-
-	if strings.Contains(err.Error(), context.DeadlineExceeded.Error()) ||
-		strings.Contains(err.Error(), context.Canceled.Error()) {
+	if err != nil && (strings.Contains(err.Error(), context.DeadlineExceeded.Error()) ||
+		strings.Contains(err.Error(), context.Canceled.Error())) {
 		return true
 	}
 
