@@ -23,8 +23,8 @@ var (
 
 	unsafeVerbose = false
 
-	bufDeferredVerbose      bytes.Buffer
-	bufDeferredVerboseMutex sync.Mutex
+	bufDeferredVerbose bytes.Buffer
+	m                  sync.RWMutex
 )
 
 func init() {
@@ -66,6 +66,9 @@ func SafeEscapeSlice(values []string) string {
 
 // Debug prints verbose messages to stderr on verbose mode
 func Debug(a ...interface{}) {
+	m.Lock()
+	defer m.Unlock()
+
 	if !Enabled {
 		return
 	}
@@ -75,21 +78,20 @@ func Debug(a ...interface{}) {
 		return
 	}
 
-	bufDeferredVerboseMutex.Lock()
-	defer bufDeferredVerboseMutex.Unlock()
 	bufDeferredVerbose.WriteString(fmt.Sprintln(a...))
 }
 
 // PrintDeferred debug messages
 func PrintDeferred() {
+	m.Lock()
+	defer m.Unlock()
+
 	if !Deferred {
 		return
 	}
 
-	bufDeferredVerboseMutex.Lock()
 	if bufDeferredVerbose.Len() != 0 {
 		_, _ = fmt.Fprintf(ErrStream, "\n%v\n", color.Format(color.BgHiBlue, " Deferred verbose messages below "))
 		_, _ = bufDeferredVerbose.WriteTo(ErrStream)
 	}
-	bufDeferredVerboseMutex.Unlock()
 }
