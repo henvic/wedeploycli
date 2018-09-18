@@ -101,13 +101,12 @@ func (l *List) prepare(ctx context.Context, wectx config.Context) {
 	l.w = formatter.NewTabWriter(l.outStream)
 }
 
-// Start for the list
-func (l *List) Start(ctx context.Context, wectx config.Context) {
+// Watch for the list
+func (l *List) Watch(ctx context.Context, wectx config.Context) {
 	l.prepare(ctx, wectx)
 
 	go l.update()
-	go l.watch()
-	<-l.ctx.Done()
+	l.watch()
 }
 
 // Once runs the list only once

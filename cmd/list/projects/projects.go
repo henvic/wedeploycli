@@ -58,7 +58,7 @@ func listRun(cmd *cobra.Command, args []string) error {
 	fmt.Println(color.Format(color.FgHiBlack,
 		"List of projects will be updated when a change occurs.\n"))
 
-	l.Start(context.Background(), we.Context())
+	l.Watch(context.Background(), we.Context())
 	return nil
 }
 

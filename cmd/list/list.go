@@ -98,7 +98,7 @@ func listRun(cmd *cobra.Command, args []string) error {
 	ctx, cancel := ctxsignal.WithTermination(context.Background())
 	defer cancel()
 
-	l.Start(ctx, we.Context())
+	l.Watch(ctx, we.Context())
 
 	if _, err := ctxsignal.Closed(ctx); err == nil {
 		fmt.Println()
