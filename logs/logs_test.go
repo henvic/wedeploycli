@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"sync"
-	"syscall"
 	"testing"
 	"time"
 
@@ -114,7 +113,7 @@ func TestGetList(t *testing.T) {
 
 	var filter = &Filter{
 		Project:  "foo",
-		Service:  "nodejs5143",
+		Services: []string{"nodejs5143"},
 		Instance: "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
 		Level:    4,
 	}
@@ -148,7 +147,7 @@ func TestList(t *testing.T) {
 	var filter = &Filter{
 		Level:    4,
 		Project:  "foo",
-		Service:  "nodejs5143",
+		Services: []string{"nodejs5143"},
 		Instance: "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
 	}
 
@@ -250,11 +249,11 @@ func TestWatch(t *testing.T) {
 			}
 		})
 
-	var watcher = &Watcher{
+	var w = &Watcher{
 		Filter: &Filter{
-			Project: "foo",
-			Service: "bar",
-			Level:   4,
+			Project:  "foo",
+			Services: []string{"bar"},
+			Level:    4,
 		},
 		PoolingInterval: time.Millisecond,
 	}
@@ -263,18 +262,17 @@ func TestWatch(t *testing.T) {
 
 	wg.Add(1)
 
+	var ctx, cancel = context.WithCancel(context.Background())
+	defer cancel()
+
 	go func() {
 		time.Sleep(20 * time.Millisecond)
-
-		if err := syscall.Kill(syscall.Getpid(), syscall.SIGINT); err != nil {
-			panic(err)
-		}
-
+		cancel()
 		time.Sleep(20 * time.Millisecond)
 		wg.Done()
 	}()
 
-	Watch(context.Background(), wectx, watcher)
+	w.Watch(ctx, wectx)
 
 	wg.Wait()
 
@@ -311,42 +309,52 @@ func TestWatcherStart(t *testing.T) {
 
 	servertest.Setup()
 
-	var fileNum = 0
+	var file = 0
+	var fileM sync.Mutex
 
-	servertest.Mux.HandleFunc("/projects/foo/services/nodejs5143/logs",
+	servertest.Mux.HandleFunc("/projects/foo/services/bar/logs",
 		func(w http.ResponseWriter, r *http.Request) {
+			fileM.Lock()
+			defer fileM.Unlock()
+
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-			time.Sleep(2 * time.Millisecond)
-			if fileNum < 4 {
-				fileNum++
-				log := fmt.Sprintf("%s%d%s", "mocks/logs_watch_response_", fileNum, ".json")
+
+			if file < 4 {
+				file++
+				log := fmt.Sprintf("%s%d%s", "mocks/logs_watch_response_", file, ".json")
 				_, _ = fmt.Fprintln(w, tdata.FromFile(log))
 			} else {
 				_, _ = fmt.Fprintln(w, "[]")
 			}
 		})
 
-	var watcher = &Watcher{
+	var w = &Watcher{
 		Filter: &Filter{
 			Project:  "foo",
-			Service:  "nodejs5143",
+			Services: []string{"bar"},
 			Instance: "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
 			Level:    4,
 		},
-		PoolingInterval: time.Millisecond,
+		PoolingInterval: 2 * time.Millisecond,
 	}
 
-	done := make(chan bool, 1)
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+
+	var ctx, cancel = context.WithCancel(context.Background())
+	defer cancel()
 
 	go func() {
-		watcher.Start(context.Background(), wectx)
 		// this sleep has to be slightly greater than pooling * requests
 		time.Sleep(60 * time.Millisecond)
-		watcher.Stop()
-		done <- true
+		cancel()
+		wg.Done()
 	}()
 
-	<-done
+	w.Watch(ctx, wectx)
+
+	wg.Wait()
 
 	outStreamMutex.Lock()
 	var got = bufOutStream.String()

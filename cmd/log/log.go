@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/henvic/ctxsignal"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
@@ -14,9 +16,9 @@ import (
 )
 
 var (
-	severityArg string
-	sinceArg    string
-	watchArg    bool
+	severity string
+	since    string
+	watch    bool
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{
@@ -57,70 +59,76 @@ func logRun(cmd *cobra.Command, args []string) error {
 	var service = setupHost.Service()
 	var instance = setupHost.Instance()
 
-	level, levelErr := logs.GetLevel(severityArg)
+	var level, err = logs.GetLevel(since)
 
-	if levelErr != nil {
-		return levelErr
+	if err != nil {
+		return err
 	}
 
 	if len(args) > 2 {
 		return errors.New("invalid number of arguments")
 	}
 
-	since, err := getSince()
+	var t string
+	t, err = getSince()
 
 	if err != nil {
 		return err
 	}
 
-	filter := &logs.Filter{
+	f := &logs.Filter{
 		Project:  project,
-		Service:  service,
 		Instance: instance,
 		Level:    level,
-		Since:    since,
+		Since:    t,
 	}
 
-	switch watchArg {
-	case true:
-		logs.Watch(
-			context.Background(),
-			we.Context(),
-			&logs.Watcher{
-				Filter:          filter,
-				PoolingInterval: time.Second,
-			})
-	default:
-		logsClient := logs.New(we.Context())
+	if service != "" {
+		f.Services = strings.Split(service, ",")
+	}
 
-		if err = logsClient.List(context.Background(), filter); err != nil {
-			return err
-		}
+	if !watch {
+		logsClient := logs.New(we.Context())
+		return logsClient.List(context.Background(), f)
+	}
+
+	watcher := &logs.Watcher{
+		Filter:          f,
+		PoolingInterval: time.Second,
+	}
+
+	ctx, cancel := ctxsignal.WithTermination(context.Background())
+	defer cancel()
+
+	watcher.Watch(ctx, we.Context())
+
+	if _, err := ctxsignal.Closed(ctx); err == nil {
+		fmt.Println()
 	}
 
 	return nil
 }
 
 func getSince() (string, error) {
-	if sinceArg == "" {
+	if since == "" {
 		return "", nil
 	}
 
-	var since, err = logs.GetUnixTimestamp(sinceArg)
+	t, err := logs.GetUnixTimestamp(since)
 
 	if err != nil {
 		return "", errwrap.Wrapf("can't parse since argument: {{err}}.", err)
 	}
 
 	// use nanoseconds instead of seconds (console takes ns as a param)
-	return fmt.Sprintf("%v000000000", since), err
+	return fmt.Sprintf("%v000000000", t), err
 }
 
 func init() {
-	LogCmd.Flags().StringVar(&severityArg, "level", "0", `Severity (critical, error, warning, info (default), debug)`)
+	LogCmd.Flags().StringVar(&severity, "level", "0", `Severity (critical, error, warning, info (default), debug)`)
 	LogCmd.Flag("level").Hidden = true
 
-	LogCmd.Flags().StringVar(&sinceArg, "since", "", "Show since moment (i.e., 20min, 3h, UNIX timestamp)")
-	LogCmd.Flags().BoolVarP(&watchArg, "watch", "w", true, "Watch / follow log output")
+	LogCmd.Flags().StringVar(&since, "since", "", "Show since moment (i.e., 20min, 3h, UNIX timestamp)")
+	LogCmd.Flags().BoolVarP(&watch, "watch", "w", true, "Watch / follow log output")
 	_ = LogCmd.Flags().MarkHidden("watch")
 }

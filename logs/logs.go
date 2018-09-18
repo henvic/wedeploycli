@@ -6,11 +6,9 @@ import (
 	"io"
 	"net/url"
 	"os"
-	"os/signal"
 	"strconv"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/hashicorp/errwrap"
@@ -49,11 +47,11 @@ type Log struct {
 
 // Filter structure
 type Filter struct {
-	Project  string `json:"-"`
-	Service  string `json:"serviceId,omitempty"`
-	Instance string `json:"containerUid,omitempty"`
-	Level    int    `json:"level,omitempty"`
-	Since    string `json:"start,omitempty"`
+	Project  string   `json:"-"`
+	Services []string `json:"services,omitempty"`
+	Instance string   `json:"containerUid,omitempty"`
+	Level    int      `json:"level,omitempty"`
+	Since    string   `json:"start,omitempty"`
 }
 
 // Watcher structure
@@ -65,9 +63,6 @@ type Watcher struct {
 	filterMutex sync.Mutex
 
 	ctx context.Context
-
-	end      bool
-	endMutex sync.Mutex
 }
 
 // SeverityToLevel map
@@ -120,8 +115,10 @@ func (c *Client) GetList(ctx context.Context, f *Filter) ([]Log, error) {
 		url.PathEscape(f.Project),
 	}
 
-	if f.Service != "" {
-		params = append(params, "/services", url.PathEscape(f.Service))
+	if len(f.Services) == 1 && f.Services[0] != "" {
+		// avoid getting all logs unnecessarily
+		// CAUTION: see filter function below: on changes here, update it.
+		params = append(params, "/services", url.PathEscape(f.Services[0]))
 	}
 
 	params = append(params, "/logs")
@@ -153,23 +150,42 @@ func (c *Client) GetList(ctx context.Context, f *Filter) ([]Log, error) {
 		return list, errwrap.Wrapf("can't decode logs JSON: {{err}}", err)
 	}
 
-	return filter(list, f.Instance), nil
+	return filter(list, f.Services, f.Instance), nil
 }
 
-func filter(list []Log, instance string) []Log {
-	if instance == "" {
+func filter(list []Log, services []string, instance string) []Log {
+	// CAUTION: see optimization call to /services/:serviceID above: on changes here, update it.
+	if instance == "" && len(services) <= 1 {
 		return list
 	}
 
 	var l = []Log{}
 
 	for _, il := range list {
-		if strings.HasPrefix(il.ContainerUID, instance) {
+		if isService(il.ServiceID, services) && isContainer(il.ContainerUID, instance) {
 			l = append(l, il)
 		}
 	}
 
 	return l
+}
+
+func isContainer(s, prefix string) bool {
+	if prefix == "" {
+		return true
+	}
+
+	return strings.HasPrefix(s, prefix)
+}
+
+func isService(current string, ss []string) bool {
+	for _, s := range ss {
+		if current == s {
+			return true
+		}
+	}
+
+	return len(ss) == 0
 }
 
 // List logs
@@ -183,52 +199,26 @@ func (c *Client) List(ctx context.Context, filter *Filter) error {
 	return err
 }
 
-// Watch logs
-func Watch(ctx context.Context, wectx config.Context, watcher *Watcher) {
-	sigs := make(chan os.Signal, 1)
-	done := make(chan bool, 1)
-
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	watcher.Start(ctx, wectx)
-
-	go func() {
-		<-sigs
-		outStreamMutex.Lock()
-		_, _ = fmt.Fprintln(outStream, "")
-		outStreamMutex.Unlock()
-		watcher.Stop()
-		done <- true
-	}()
-
-	<-done
-}
-
-// Start for Watcher
-func (w *Watcher) Start(ctx context.Context, wectx config.Context) {
+// Watch logs.
+func (w *Watcher) Watch(ctx context.Context, wectx config.Context) {
 	w.ctx = ctx
 	w.Client = New(wectx)
 
-	go func() {
-		for {
-			w.endMutex.Lock()
-			e := w.end
-			w.endMutex.Unlock()
-
-			if e {
-				return
-			}
-			w.pool()
-			time.Sleep(w.PoolingInterval)
-		}
-	}()
+	w.watch()
 }
 
-// Stop for Watcher
-func (w *Watcher) Stop() {
-	w.endMutex.Lock()
-	w.end = true
-	w.endMutex.Unlock()
+func (w *Watcher) watch() {
+	ticker := time.NewTicker(w.PoolingInterval)
+
+	for {
+		select {
+		case <-w.ctx.Done():
+			ticker.Stop()
+			return
+		case <-ticker.C:
+			w.pool()
+		}
+	}
 }
 
 func addHeader(log Log) (m string) {
@@ -271,11 +261,12 @@ func getTimestamp(timestamp string) string {
 
 func (w *Watcher) pool() {
 	var ctx, cancel = context.WithTimeout(w.ctx, 10*time.Second)
-	var list, err = w.Client.GetList(ctx, w.Filter)
+	defer cancel()
 
+	var list, err = w.Client.GetList(ctx, w.Filter)
 	cancel()
 
-	if err != nil {
+	if err != nil && w.ctx.Err() == nil {
 		errStreamMutex.Lock()
 		defer errStreamMutex.Unlock()
 		_, _ = fmt.Fprintf(errStream, "%v\n", errorhandler.Handle(err))
@@ -311,9 +302,9 @@ func (w *Watcher) incSinceArgument(list []Log) error {
 	next++
 
 	w.filterMutex.Lock()
+	defer w.filterMutex.Unlock()
 	w.Filter.Since = fmt.Sprintf("%v", next)
 	verbose.Debug("Next --since parameter value = " + w.Filter.Since)
-	w.filterMutex.Unlock()
 	return nil
 }
 
