@@ -112,16 +112,16 @@ func GetLevel(severityOrLevel string) (int, error) {
 }
 
 // GetList logs
-func (c *Client) GetList(ctx context.Context, filter *Filter) ([]Log, error) {
+func (c *Client) GetList(ctx context.Context, f *Filter) ([]Log, error) {
 	var list []Log
 
 	var params = []string{
 		"/projects",
-		url.PathEscape(filter.Project),
+		url.PathEscape(f.Project),
 	}
 
-	if filter.Service != "" {
-		params = append(params, "/services", url.PathEscape(filter.Service))
+	if f.Service != "" {
+		params = append(params, "/services", url.PathEscape(f.Service))
 	}
 
 	params = append(params, "/logs")
@@ -130,12 +130,12 @@ func (c *Client) GetList(ctx context.Context, filter *Filter) ([]Log, error) {
 
 	c.Client.Auth(req)
 
-	if filter.Level != 0 {
-		req.Param("level", fmt.Sprintf("%d", filter.Level))
+	if f.Level != 0 {
+		req.Param("level", fmt.Sprintf("%d", f.Level))
 	}
 
-	if filter.Since != "" {
-		req.Param("start", filter.Since)
+	if f.Since != "" {
+		req.Param("start", f.Since)
 	}
 
 	// it relies on wedeploy/data, which currently has a hard limit of 9999 results
@@ -153,10 +153,10 @@ func (c *Client) GetList(ctx context.Context, filter *Filter) ([]Log, error) {
 		return list, errwrap.Wrapf("can't decode logs JSON: {{err}}", err)
 	}
 
-	return filterInstanceInLogs(list, filter.Instance), nil
+	return filter(list, f.Instance), nil
 }
 
-func filterInstanceInLogs(list []Log, instance string) []Log {
+func filter(list []Log, instance string) []Log {
 	if instance == "" {
 		return list
 	}
