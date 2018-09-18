@@ -141,7 +141,7 @@ func (c *Client) GetList(ctx context.Context, f *Filter) ([]Log, error) {
 	var err = apihelper.Validate(req, req.Get())
 
 	if err != nil {
-		return list, errwrap.Wrapf("can't list logs: {{err}}", err)
+		return list, err
 	}
 
 	err = apihelper.DecodeJSON(req, &list)
