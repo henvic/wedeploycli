@@ -185,4 +185,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "September 4th, 2018",
 		Description: `Don't parse flags after command name on "we exec". Minor changes.`,
 	},
+	ReleaseNote{
+		Version:     "1.6.4",
+		Date:        "September 18th, 2018",
+		Description: `Added several improvements to "we deploy", such as showing package size and supporting container image replacement with --image. Minor improvements.`,
+	},
 }
