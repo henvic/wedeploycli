@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/henvic/ctxsignal"
 	"github.com/wedeploy/cli/services"
 
 	"github.com/wedeploy/cli/config"
@@ -23,7 +24,9 @@ type ParamsFromRepository struct {
 }
 
 // DeployFromGitRepository deploys from a repository on the web.
-func DeployFromGitRepository(ctx context.Context, wectx config.Context, params ParamsFromRepository) error {
+func DeployFromGitRepository(ctx context.Context,
+	wectx config.Context, params ParamsFromRepository) (
+	services.ServiceInfoList, error) {
 	projectsClient := projects.New(wectx)
 	params.Repository = addSchemaGitRepoPath(params.Repository)
 
@@ -36,7 +39,7 @@ func DeployFromGitRepository(ctx context.Context, wectx config.Context, params P
 	groupUID, builds, err := projectsClient.Build(ctx, params.ProjectID, build)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	sil := services.ServiceInfoList{}
@@ -60,14 +63,18 @@ func DeployFromGitRepository(ctx context.Context, wectx config.Context, params P
 		Quiet:        params.Quiet,
 	}
 
+	var cancel context.CancelFunc
+	ctx, cancel = ctxsignal.WithTermination(ctx)
+	defer cancel()
+
 	watch.Start(ctx)
 
 	if params.SkipProgress {
 		watch.PrintSkipProgress()
-		return nil
+		return sil, nil
 	}
 
-	return watch.Wait()
+	return sil, watch.Wait()
 }
 
 func addSchemaGitRepoPath(repo string) string {

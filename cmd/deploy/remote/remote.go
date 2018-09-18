@@ -42,31 +42,40 @@ type RemoteDeployment struct {
 	ctx      context.Context
 }
 
+// Feedback about a deployment.
+type Feedback struct {
+	GroupUID string
+	Services services.ServiceInfoList
+}
+
 // Run does the remote deployment procedures
-func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error) {
+func (rd *RemoteDeployment) Run(ctx context.Context) (f Feedback, err error) {
 	rd.ctx = ctx
 	wectx := we.Context()
 
 	if rd.path, err = getWorkingDirectory(); err != nil {
-		return "", err
+		return f, err
 	}
 
 	rd.ProjectID, err = getproject.MaybeID(rd.ProjectID)
 
 	if err != nil {
-		return "", err
+		return f, err
 	}
 
-	if err = rd.loadServicesList(); err != nil {
-		return "", err
+	err = rd.loadServicesList()
+	f.Services = rd.services
+
+	if err != nil {
+		return f, err
 	}
 
 	if len(rd.services) == 0 {
-		return "", errors.New("no service available for deployment was found")
+		return f, errors.New("no service available for deployment was found")
 	}
 
 	if err = rd.checkImage(); err != nil {
-		return "", err
+		return f, err
 	}
 
 	rd.verboseRemappedServices()
@@ -90,7 +99,8 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (groupUID string, err error
 	}
 
 	err = deploy.Do(ctx)
-	return deploy.GetGroupUID(), err
+	f.GroupUID = deploy.GetGroupUID()
+	return f, err
 }
 
 func (rd *RemoteDeployment) checkImage() error {
@@ -265,6 +275,10 @@ func (rd *RemoteDeployment) loadServicesListFromPath() (err error) {
 			Location:  rd.path,
 			ServiceID: rd.ServiceID,
 		})
+	}
+
+	for k := range rd.services {
+		rd.services[k].ProjectID = rd.ProjectID
 	}
 
 	return nil

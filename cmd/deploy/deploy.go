@@ -3,7 +3,9 @@ package deploy
 import (
 	"context"
 	"errors"
+	"fmt"
 	"path/filepath"
+	"time"
 
 	"github.com/henvic/ctxsignal"
 	"github.com/spf13/cobra"
@@ -11,7 +13,10 @@ import (
 	"github.com/wedeploy/cli/cmd/deploy/remote"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/deployment"
+	"github.com/wedeploy/cli/logs"
+	"github.com/wedeploy/cli/services"
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{
@@ -35,6 +40,7 @@ var (
 	onlyBuild    bool
 	skipProgress bool
 	quiet        bool
+	follow       bool
 	copyPackage  string
 )
 
@@ -61,13 +67,25 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
-	if len(args) != 0 {
-		return deployFromGitRepo(args[0])
+	var sil services.ServiceInfoList
+	switch {
+	case len(args) != 0:
+		sil, err = fromGitRepo(args[0])
+	default:
+		sil, err = local()
 	}
 
+	if err != nil || !follow {
+		return err
+	}
+
+	return followLogs(sil)
+}
+
+func local() (sil services.ServiceInfoList, err error) {
 	if copyPackage != "" {
 		if copyPackage, err = filepath.Abs(copyPackage); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
@@ -88,9 +106,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	ctx, cancel := ctxsignal.WithTermination(context.Background())
 	defer cancel()
 
-	_, err = rd.Run(ctx)
-
-	return err
+	var f deployremote.Feedback
+	f, err = rd.Run(ctx)
+	return f.Services, err
 }
 
 func maybePreRunDeployFromGitRepo(cmd *cobra.Command, args []string) error {
@@ -109,15 +127,15 @@ func maybePreRunDeployFromGitRepo(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func deployFromGitRepo(repo string) error {
+func fromGitRepo(repo string) (services.ServiceInfoList, error) {
 	if image != "" {
-		return errors.New("overwriting image when deploying from a git repository is not supported")
+		return nil, errors.New("overwriting image when deploying from a git repository is not supported")
 	}
 
 	projectID, err := getproject.MaybeID(setupHost.Project())
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	params := deployment.ParamsFromRepository{
@@ -132,6 +150,47 @@ func deployFromGitRepo(repo string) error {
 	return deployment.DeployFromGitRepository(context.Background(), we.Context(), params)
 }
 
+func followLogs(sil services.ServiceInfoList) error {
+	now := time.Now()
+	since := 10 * time.Second
+	// BUG(henvic): this preliminary version only loads logs from 10s ago onwards.
+
+	if len(sil) == 0 {
+		panic("no services found to list logs")
+	}
+
+	var projectID = sil[0].ProjectID
+
+	f := &logs.Filter{
+		Project:  projectID,
+		Services: sil.GetIDs(),
+
+		Since: fmt.Sprintf("%v000000000", now.Add(-since).Unix()),
+	}
+
+	watcher := &logs.Watcher{
+		Filter:          f,
+		PoolingInterval: time.Second,
+	}
+
+	ctx, cancel := ctxsignal.WithTermination(context.Background())
+	defer cancel()
+
+	fmt.Println()
+	fmt.Println(color.Format(color.FgBlue, color.Bold,
+		fmt.Sprintf("Showing logs from %v ago onwards.", since)))
+	fmt.Printf("You can exit anytime.\n\n")
+	time.Sleep(220 * time.Millisecond)
+
+	watcher.Watch(ctx, we.Context())
+
+	if _, err := ctxsignal.Closed(ctx); err == nil {
+		fmt.Println()
+	}
+
+	return nil
+}
+
 func init() {
 	DeployCmd.Flags().StringVar(&image, "image", "", "Use different image for service")
 	DeployCmd.Flags().BoolVar(&onlyBuild, "only-build", false,
@@ -140,8 +199,11 @@ func init() {
 		"Skip watching deployment progress, quiet")
 	DeployCmd.Flags().BoolVarP(&quiet, "quiet", "q", false,
 		"Suppress progress animations")
+	DeployCmd.Flags().BoolVar(&follow, "follow", false,
+		"Follow logs after deployment")
 	DeployCmd.Flags().StringVar(&copyPackage, "copy-pkg", "",
 		"Path to copy the deployment package to (for debugging)")
+	_ = DeployCmd.Flags().MarkHidden("follow")
 	_ = DeployCmd.Flags().MarkHidden("copy-pkg")
 
 	setupHost.Init(DeployCmd)
