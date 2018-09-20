@@ -190,4 +190,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "September 18th, 2018",
 		Description: `Added several improvements to "we deploy", such as showing package size and supporting container image replacement with --image. Minor improvements.`,
 	},
+	ReleaseNote{
+		Version:     "1.6.5",
+		Date:        "September 18th, 2018",
+		Description: `Minor improvements.`,
+	},
 }
