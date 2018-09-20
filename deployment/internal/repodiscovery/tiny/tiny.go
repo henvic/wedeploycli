@@ -24,6 +24,7 @@ type Tiny struct {
 
 type commitInfo struct {
 	SHA         string `json:"sha,omitempty"`
+	Branch      string `json:"branch,omitempty"`
 	Message     string `json:"message,omitempty"`
 	AuthorName  string `json:"authorName,omitempty"`
 	AuthorEmail string `json:"authorEmail,omitempty"`
@@ -51,6 +52,7 @@ func convertCommit(i Info, t *Tiny) {
 
 	t.Commit = &commitInfo{
 		SHA:         repo.Commit,
+		Branch:      repo.Branch,
 		Message:     repo.CommitMessage,
 		AuthorName:  repo.CommitAuthor,
 		AuthorEmail: repo.CommitAuthorEmail,

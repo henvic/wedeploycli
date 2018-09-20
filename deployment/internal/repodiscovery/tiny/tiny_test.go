@@ -34,6 +34,7 @@ var convertCases = []convertCase{
 			Deploy: true,
 			Commit: &commitInfo{
 				SHA:         "5fb64d23dc767fda01416ba0f89375ee88688a74",
+				Branch:      "master",
 				Message:     "deployment: create microformat to list repos used during a deployment.",
 				AuthorName:  "Example",
 				AuthorEmail: "good@example.com",
