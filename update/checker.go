@@ -1,6 +1,10 @@
 package update
 
-import "github.com/wedeploy/cli/config"
+import (
+	"context"
+
+	"github.com/wedeploy/cli/config"
+)
 
 // Checker for update checks
 type Checker struct {
@@ -8,10 +12,10 @@ type Checker struct {
 }
 
 // Check if an update is available on a goroutine
-func (c *Checker) Check(conf *config.Config) {
+func (c *Checker) Check(ctx context.Context, conf *config.Config) {
 	c.Cue = make(chan error, 1)
 	go func() {
-		c.Cue <- NotifierCheck(conf)
+		c.Cue <- NotifierCheck(ctx, conf)
 	}()
 }
 
@@ -23,6 +27,7 @@ func (c *Checker) Feedback(conf *config.Config) {
 
 	var err = <-c.Cue
 	switch err {
+	case context.Canceled:
 	case nil:
 		Notify(conf)
 	default:

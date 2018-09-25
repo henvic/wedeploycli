@@ -56,12 +56,12 @@ func canVerifyAgain(c *config.Config) bool {
 }
 
 // NotifierCheck enquires equinox if a new version is available
-func NotifierCheck(c *config.Config) error {
+func NotifierCheck(ctx context.Context, c *config.Config) error {
 	if !isNotifyOn(c) || !canVerify(c) {
 		return nil
 	}
 
-	err := notifierCheck(c)
+	err := notifierCheck(ctx, c)
 
 	switch err.(type) {
 	case *url.Error:
@@ -74,7 +74,7 @@ func NotifierCheck(c *config.Config) error {
 	return err
 }
 
-func notifierCheck(c *config.Config) error {
+func notifierCheck(ctx context.Context, c *config.Config) error {
 	// save, just to be safe (e.g., if the check below breaks)
 	c.LastUpdateCheck = getCurrentTime()
 
@@ -82,7 +82,7 @@ func notifierCheck(c *config.Config) error {
 		return err
 	}
 
-	var resp, err = check(GetReleaseChannel(c))
+	var resp, err = check(ctx, GetReleaseChannel(c))
 
 	if err == equinox.NotAvailableErr {
 		c.NextVersion = ""
@@ -110,11 +110,11 @@ func Notify(c *config.Config) {
 }
 
 // Update this tool
-func Update(c *config.Config, channel string) error {
+func Update(ctx context.Context, c *config.Config, channel string) error {
 	fmt.Printf("Current installed version is %s.\n", defaults.Version)
 	fmt.Printf("Channel \"%s\" is now selected.\n", channel)
 
-	var resp, err = check(channel)
+	var resp, err = check(ctx, channel)
 
 	if err != nil {
 		return handleUpdateCheckError(c, channel, err)
@@ -155,7 +155,7 @@ func runUpdateNotices() {
 	}
 }
 
-func check(channel string) (*equinox.Response, error) {
+func check(ctx context.Context, channel string) (*equinox.Response, error) {
 	var opts equinox.Options
 	opts.Channel = channel
 
@@ -163,7 +163,7 @@ func check(channel string) (*equinox.Response, error) {
 		return nil, err
 	}
 
-	resp, err := equinox.Check(keys.AppID, opts)
+	resp, err := equinox.CheckContext(ctx, keys.AppID, opts)
 
 	return &resp, err
 }

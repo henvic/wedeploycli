@@ -1,6 +1,8 @@
 package update
 
 import (
+	"context"
+
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmd/update/releasenotes"
@@ -26,7 +28,7 @@ func updateRun(cmd *cobra.Command, args []string) error {
 		channel = wectx.Config().ReleaseChannel
 	}
 
-	return update.Update(wectx.Config(), channel)
+	return update.Update(context.Background(), wectx.Config(), channel)
 }
 
 func init() {

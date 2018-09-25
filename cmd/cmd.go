@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -83,12 +84,17 @@ func (m *mainProgram) run() {
 
 	var uc update.Checker
 
+	var ctx, cancel = context.WithCancel(context.Background())
+	defer cancel()
+
 	if !isCommand("autocomplete") && !isCommand("metrics") {
-		uc.Check(m.config)
+		uc.Check(ctx, m.config)
 	}
 
 	m.prepareCommand()
 	m.executeCommand()
+	cancel()
+
 	uc.Feedback(m.config)
 	m.autocomplete()
 	m.maybeSubmitAnalyticsReport()
