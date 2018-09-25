@@ -42,7 +42,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d2e64fd57678d367e932dab7e12f6d8ce2f7887dd174cacf566d25486f3dd0d8"
+  digest = "1:b0a1af5fae8a5471ee6ccb78cf6195e6b63787f259da82a8ef6d368bedf27dce"
   name = "github.com/equinox-io/equinox"
   packages = [
     ".",
@@ -53,7 +53,7 @@
     "proto",
   ]
   pruneopts = ""
-  revision = "f24972fa72facf59d05c91c848b65eac38815915"
+  revision = "5205c98a6c11dc72747ce12fff6cd620a99fde05"
 
 [[projects]]
   digest = "1:64d212c703a2b94054be0ce470303286b177ad260b2f89a307e3d1bb6c073ef6"
