@@ -146,14 +146,33 @@ function info() {
   fi
 
   UNPRIVILEGED_USER=${SUDO_USER:-""}
+  fixChannel
+  check
 
+  echo "Installed, type 'we help' to start."
+}
+
+function check() {
   if [ -z "$UNPRIVILEGED_USER" ]; then
     we 2>&1 >/dev/null
   else
     sudo --user $UNPRIVILEGED_USER we 2>&1 >/dev/null
   fi
+}
 
-  echo "Installed, type 'we help' to start."
+# Verify direct installation of non-stable version
+# and fix channel on ~/.we configuration file automatically.
+# Fix issue https://github.com/wedeploy/cli/issues/472
+function fixChannel() {
+  if [[ $RELEASE_CHANNEL == "stable" ]]; then
+    return
+  fi
+
+  if [ -z "$UNPRIVILEGED_USER" ]; then
+    we update --channel $RELEASE_CHANNEL 2>&1 >/dev/null
+  else
+    sudo --user $UNPRIVILEGED_USER we update --channel $RELEASE_CHANNEL 2>&1 >/dev/null
+  fi
 }
 
 function cleanup() {
