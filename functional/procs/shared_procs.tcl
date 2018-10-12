@@ -59,6 +59,10 @@ proc Scenario: {name script {teardown ""}} {
   end_scenario $name
 }
 
+# place - in front of Scenario to skip it
+proc -Scenario: {name script {teardown ""}} {
+}
+
 proc add_to_report {text} {
   set file [open $::_test_report a+]
   puts $file $text
