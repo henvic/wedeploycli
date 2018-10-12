@@ -61,6 +61,8 @@ Scenario: "Deploy to a new project" {
 } { delete_project deploy1 }
 
 Scenario: "Deploy to an existing project" {
+  login $::_tester(email) $::_tester(pw)
+
   create_project deploy2
 
   send "we deploy\r"
@@ -84,6 +86,8 @@ Scenario: "Deploy to an existing project" {
 } { delete_project deploy2 }
 
 Scenario: "Deploy project with two services" {
+  login $::_tester(email) $::_tester(pw)
+
   send "cd ../projectB\r"
   expect {
     timeout {
@@ -126,6 +130,8 @@ Scenario: "Deploy project with two services" {
 }
 
 Scenario: "Deploy project with bad wedeploy.json" {
+  login $::_tester(email) $::_tester(pw)
+
   send "cd ../projectC\r"
   expect {
     timeout {
@@ -157,12 +163,6 @@ Scenario: "Deploy project with bad wedeploy.json" {
     timeout { handle_timeout; break }
     "fixtures/projectC"
   }
-  send "we log -p deploy4\r"
-  expect {
-    timeout { handle_timeout; break }
-    "Something went wrong and the entire build was interrupted"
-  }
-  control_c
 } { delete_project deploy4 }
 
 Scenario: "Deploy service to a new environment" {
