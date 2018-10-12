@@ -24,7 +24,7 @@ var (
 	PlanUpgradeURL = "https://console.wedeploy.com/account/billing"
 
 	// DiagnosticsEndpoint is the endpoint to where the diagnostics should be sent
-	DiagnosticsEndpoint = "https://diagnostics.wedeploy.com/report/cli"
+	DiagnosticsEndpoint = "https://cli-metrics.wedeploy.com/diagnostics/report"
 
 	// Docs page
 	Docs = "http://wedeploy.com/docs/"
@@ -33,7 +33,7 @@ var (
 	Hub = "http://api.wedeploy.io"
 
 	// AnalyticsEndpoint for posting analytics events in bulk
-	AnalyticsEndpoint = "https://cli-metrics.wedeploy.com/"
+	AnalyticsEndpoint = "https://cli-metrics.wedeploy.com/metrics/bulk"
 
 	// CloudRemote is the name for the default cloud for WeDeploy
 	CloudRemote = "wedeploy"
