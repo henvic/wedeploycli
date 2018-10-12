@@ -649,7 +649,7 @@ func (c *Client) Validate(ctx context.Context, projectID, serviceID string) (err
 	var req = c.Client.URL(ctx, "/validators/services/id")
 	err = c.doValidate(projectID, serviceID, req)
 
-	if err == nil || err != wedeploy.ErrUnexpectedResponse {
+	if _, se := err.(wedeploy.StatusError); err == nil || !se {
 		return err
 	}
 

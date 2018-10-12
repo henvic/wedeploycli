@@ -258,7 +258,7 @@ func (c *Client) URL(ctx context.Context, paths ...string) *wedeploy.WeDeploy {
 func Validate(request *wedeploy.WeDeploy, err error) error {
 	verbosereq.Feedback(request)
 
-	if err == wedeploy.ErrUnexpectedResponse {
+	if _, ok := err.(wedeploy.StatusError); ok {
 		if af := reportHTTPError(request); af != nil {
 			return af
 		}

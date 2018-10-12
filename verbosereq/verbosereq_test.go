@@ -58,7 +58,6 @@ func TestRequestVerboseFeedback(t *testing.T) {
 
 	var request = wedeploy.URL("http://www.example.com/foo")
 
-	request.Headers.Add("Accept", "application/json")
 	request.Headers.Add("Accept", "text/plain")
 
 	if err := request.Get(); err != nil {
