@@ -86,6 +86,7 @@ proc create_project {project {env false}} {
   if { $response_code != 200 } {
     handle_response "Project $project could not be created" $body
   }
+  sleep 10
 }
 
 proc create_service {project service {image wedeploy/hosting}} {
