@@ -192,7 +192,7 @@ func (e *eventRecorder) rec(ie event) (err error) {
 func (s *Sender) TrySubmit(ctx context.Context, conf *config.Config) (int, error) {
 	if !conf.EnableAnalytics {
 		return 0, errors.New(
-			"Aborting submission of analytics (analytics report status = disabled)")
+			"aborting submission of analytics (analytics report status = disabled)")
 	}
 
 	verbose.Debug("Submitting analytics")

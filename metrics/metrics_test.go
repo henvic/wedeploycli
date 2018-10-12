@@ -423,7 +423,7 @@ func (te *testStatusMetricsStory) testDisable(t *testing.T) {
 
 	sender := &Sender{}
 	trySubmitCounter, trySubmitErr := sender.TrySubmit(context.Background(), conf)
-	wantTrySubmitErr := "Aborting submission of analytics (analytics report status = disabled)"
+	wantTrySubmitErr := "aborting submission of analytics (analytics report status = disabled)"
 
 	if trySubmitCounter != 0 ||
 		trySubmitErr == nil ||
