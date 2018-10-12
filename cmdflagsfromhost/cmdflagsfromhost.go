@@ -455,8 +455,8 @@ func (s *SetupHost) verifyCmdReqAuth() error {
 	}
 
 	metrics.Rec(s.wectx.Config(), metrics.Event{
-		Type: "required_auth_cmd_precondition_failure",
-		Text: fmt.Sprintf(`Command "%v" requires authentication, but one is not set.`, s.cmd.CommandPath()),
+		Type: "required_auth_failure",
+		Text: fmt.Sprintf(`command "%v" requires authentication`, s.cmd.CommandPath()),
 		Extra: map[string]string{
 			"cmd": s.cmd.CommandPath(),
 		},
