@@ -190,6 +190,39 @@ func TestAPIFaultGet(t *testing.T) {
 	}
 }
 
+func TestAPIFaultUnstructured(t *testing.T) {
+	var e = &APIFault{
+		URL:    "http://example.com/",
+		Method: "POST",
+		Status: 404,
+	}
+
+	var want = "POST http://example.com/ 404 Not Found"
+
+	var msg = e.Error()
+
+	if msg != want {
+		t.Errorf("Wanted reason to be %v, got %v", want, msg)
+	}
+}
+
+func TestAPIFaultMessageOnly(t *testing.T) {
+	var e = &APIFault{
+		URL:     "http://example.com/",
+		Method:  "POST",
+		Status:  404,
+		Message: "Resource Not Found",
+	}
+
+	var want = "POST http://example.com/ 404 Not Found: Resource Not Found"
+
+	var msg = e.Error()
+
+	if msg != want {
+		t.Errorf("Wanted reason to be %v, got %v", want, msg)
+	}
+}
+
 func TestAPIFaultContextMissingMessage(t *testing.T) {
 	var e = &APIFault{
 		Status:  404,

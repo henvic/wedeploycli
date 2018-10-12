@@ -51,7 +51,7 @@ func (a APIFault) Error() string {
 	var s []string
 
 	if a.Errors == nil {
-		return a.getErrorMessage()
+		return a.unstructured()
 	}
 
 	for _, value := range a.Errors {
@@ -66,8 +66,8 @@ func (a APIFault) Error() string {
 	return strings.Join(s, "; ")
 }
 
-func (a APIFault) getErrorMessage() string {
-	var s = a.getErrorURL()
+func (a APIFault) unstructured() string {
+	var s = a.unstructuredURL()
 
 	if len(s) != 0 {
 		s += " "
@@ -88,11 +88,11 @@ func (a APIFault) getErrorMessage() string {
 	return s
 }
 
-func (a APIFault) getErrorURL() string {
+func (a APIFault) unstructuredURL() string {
 	var s string
 
 	if a.Method != "" || a.URL != "" {
-		s += " (" + a.Method + " " + a.URL + ")"
+		s = a.Method + " " + a.URL
 	}
 
 	return s
