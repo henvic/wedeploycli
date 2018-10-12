@@ -16,8 +16,6 @@ func init() {
 	UsageCmd.AddCommand(submitCmd)
 
 	MetricsCmd.Hidden = true
-	UsageCmd.Hidden = true
-	submitCmd.Hidden = true
 
 	submitCmd.Flags().BoolVar(
 		&noPurge,
