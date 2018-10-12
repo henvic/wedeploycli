@@ -222,7 +222,7 @@ function passGoDevDependencies() {
   go get -u github.com/kisielk/errcheck
   
   echo "golint https://github.com/golang/lint/golint"
-  go get -u github.com/golang/lint/golint
+  go get -u golang.org/x/lint/golint
   
   echo "megacheck https://github.com/dominikh/go-tools/tree/master/cmd/megacheck"
   go get -u honnef.co/go/tools/cmd/megacheck
