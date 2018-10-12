@@ -36,10 +36,6 @@ Scenario: "View logs by selecting project/service ID" {
     "Type project/service ID or service #"
   }
   send "ui2qa\r"
-  expect {
-    timeout { handle_timeout; break }
-    -re "ui2qa.*Deploy in progress"
-  }
   set timeout 30
   expect {
     timeout { handle_timeout; break }
@@ -60,10 +56,6 @@ Scenario: "View logs by selecting project/service ID" {
   send "1\r"
   expect {
     timeout { handle_timeout; break }
-    -re "ui1qa.*Deploy in progress"
-  }
-  expect {
-    timeout { handle_timeout; break }
     -re "ui1qa.*HOSTING will now listen on 0.0.0.0:80."
   }
   expect {
@@ -76,11 +68,11 @@ Scenario: "View logs with -p flag" {
   send "we log -p log1\r"
   expect {
     timeout { handle_timeout; break }
-    -re "ui1qa.*Deploy in progress.*ui1qa"
+    -re "ui1qa.*HOSTING will now listen on 0.0.0.0:80."
   }
   expect {
     timeout { handle_timeout; break }
-    -re "ui2qa.*Deploy in progress.*ui2qa"
+    -re "ui2qa.*HOSTING will now listen on 0.0.0.0:80."
   }
   control_c
   send "we log -p log2\r"
@@ -92,10 +84,6 @@ Scenario: "View logs with -p flag" {
 
 Scenario: "View logs with -p and -s flags" {
   send "we log -p log1 -s ui2qa\r"
-  expect {
-    timeout { handle_timeout; break }
-    -re "ui2qa.*Deploy in progress"
-  }
   expect {
     timeout { handle_timeout; break }
     -re "ui2qa.*HOSTING will now listen on 0.0.0.0:80."
@@ -171,7 +159,7 @@ Scenario: "View logs with --since flag" {
   }
   expect {
     timeout { handle_timeout; break }
-    -re "ui3qa.*Deploy in progress"
+    -re "ui3qa.*HOSTING will now listen on 0.0.0.0:80."
   }
 } {
   control_c
