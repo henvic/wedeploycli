@@ -533,7 +533,6 @@ func TestRequestVerboseFeedback(t *testing.T) {
 
 	var request = (&Client{conf}).URL(context.Background(), "/foo")
 
-	request.Headers.Add("Accept", "application/json")
 	request.Headers.Add("Accept", "text/plain")
 
 	if err := Validate(request, request.Get()); err != nil {
