@@ -3,7 +3,6 @@ package diagnostics
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	humanize "github.com/dustin/go-humanize"
@@ -48,11 +47,13 @@ func diagnosticsRun(cmd *cobra.Command, args []string) error {
 	fmt.Println()
 
 	if print {
-		diagnostics.Write(os.Stderr, report)
+		fmt.Printf("%s", report)
 	}
 
+	bu := uint64(len([]byte(report)))
+
 	fmt.Println(fancy.Info("Diagnostics report size: ") +
-		color.Format(color.Bold, humanize.Bytes(uint64(report.Len()))))
+		color.Format(color.Bold, humanize.Bytes(bu)))
 
 	if !send && !cmd.Flag("send").Changed {
 		var report, askErr = fancy.Boolean("Send this report to WeDeploy?")
