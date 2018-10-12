@@ -240,7 +240,7 @@
   version = "v0.0.5-beta"
 
 [[projects]]
-  digest = "1:6ae823063d8a916ca692a4ae1741360b6019c48c2566dcb578e2e38b333a6c05"
+  digest = "1:f70702b4dd166cf1df8e8ddcded6c0e4dc8b94f71004c0cf6e23654f6218e7a1"
   name = "github.com/wedeploy/wedeploy-sdk-go"
   packages = [
     ".",
@@ -253,8 +253,8 @@
     "urilib",
   ]
   pruneopts = ""
-  revision = "f7580b9b20e0777894eb3f620aa3d3bda9d76d64"
-  version = "v2.1.2"
+  revision = "ceb411fd511eada68202fea2fc5769b9dbe77449"
+  version = "v3.0.0"
 
 [[projects]]
   digest = "1:afc0b8068986a01e2d8f449917829753a54f6bd4d1265c2b4ad9cba75560020f"

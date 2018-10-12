@@ -9,7 +9,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io"
 	"math/rand"
 	"net/http"
@@ -24,17 +24,23 @@ import (
 
 var (
 	// Version of Go API Client for WeDeploy Project
-	Version = "2.1.2"
+	Version = "3.0.0"
 	// UserAgent of the WeDeploy wedeploy-sdk-go client
 	UserAgent = "WeDeploy/" + Version + " (+https://wedeploy.com)"
-
-	// ErrUnexpectedResponse is used when an unexpected response happens
-	ErrUnexpectedResponse = errors.New("Unexpected response")
 
 	client = &HTTPClient{
 		http: &http.Client{},
 	}
 )
+
+// StatusError is used for HTTP status code >= 400
+type StatusError struct {
+	Code int
+}
+
+func (s StatusError) Error() string {
+	return fmt.Sprintf("%d %s", s.Code, http.StatusText(s.Code))
+}
 
 // Client used by default for requests
 func Client() *HTTPClient {
@@ -102,7 +108,8 @@ func (h *HTTPClient) URL(uri string, paths ...string) *WeDeploy {
 	w.Headers = http.Header{}
 
 	w.Headers.Set("User-Agent", UserAgent)
-	w.Headers.Set("Content-Type", "application/json")
+	w.Headers.Set("Content-Type", "application/json; charset=utf-8")
+	w.Headers.Set("Accept", "application/json")
 
 	return w
 }
@@ -142,7 +149,17 @@ func (w *WeDeploy) Count() *WeDeploy {
 }
 
 // DecodeJSON decodes a JSON response
-func (w *WeDeploy) DecodeJSON(class interface{}) error {
+func (w *WeDeploy) DecodeJSON(class interface{}) (err error) {
+	defer func() {
+		if w.Response != nil {
+			ec := w.Response.Body.Close()
+
+			if err == nil {
+				err = ec
+			}
+		}
+	}()
+
 	return json.NewDecoder(w.Response.Body).Decode(class)
 }
 
@@ -310,7 +327,7 @@ func (w *WeDeploy) action(method string) (err error) {
 	}
 
 	if err == nil && w.Response.StatusCode >= 400 {
-		err = ErrUnexpectedResponse
+		err = StatusError{w.Response.StatusCode}
 	}
 
 	return err

@@ -360,8 +360,23 @@ func TestErrorStatusCode404(t *testing.T) {
 
 	req := URL("http://example.com/url")
 
-	if err := req.Get(); err != ErrUnexpectedResponse {
-		t.Errorf("Missing error %s", ErrUnexpectedResponse)
+	err := req.Get()
+
+	e, ok := err.(StatusError)
+
+	if !ok {
+		t.Errorf("Error %v doesn't implement StatusError", err)
+	}
+
+	if e.Code != 404 {
+		t.Errorf("Expected error code to be 404, got %v instead", e.Code)
+	}
+
+	var want = "404 Not Found"
+	var got = e.Error()
+
+	if got != want {
+		t.Errorf("Wanted %v, got %v instead", want, got)
 	}
 
 	assertTextualBody(t, "", req.Response.Body)
