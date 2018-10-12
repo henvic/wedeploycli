@@ -235,7 +235,7 @@ func (m *mainProgram) reportCommand() {
 	}
 
 	metrics.Rec(m.config, metrics.Event{
-		Type:  "command_exec",
+		Type:  "cmd",
 		Text:  commandPath,
 		Tags:  m.getCommandFlags(),
 		Extra: m.getCommandErrorDetails(),
