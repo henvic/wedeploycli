@@ -192,7 +192,7 @@ var ReleaseNotes = []ReleaseNote{
 	},
 	ReleaseNote{
 		Version:     "1.6.5",
-		Date:        "September 18th, 2018",
+		Date:        "September 21st, 2018",
 		Description: `Minor improvements.`,
 	},
 }
