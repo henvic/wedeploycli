@@ -7,14 +7,11 @@ var we = os.Args[0]
 // Executables is a list of executables
 var Executables = []*Executable{
 	&Executable{
-		Command: we + " who",
-	},
-	&Executable{
 		Description: "Installed version",
 		Command:     we + " version",
 	},
 	&Executable{
-		Command: we + " --verbose",
+		Command: we + " who",
 	},
 	&Executable{
 		Description: "Inspecting working directory context",

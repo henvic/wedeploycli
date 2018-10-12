@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io"
-	"os"
 	"os/exec"
 	"sync"
 	"time"
@@ -119,74 +117,31 @@ func (d *Diagnostics) Run(ctx context.Context) {
 	d.execAll()
 }
 
-// Report is a map of filename to content
-type Report map[string][]byte
-
-// Len returns the number of bytes of a report
-func (r *Report) Len() int {
-	var l = 0
-
-	for _, rb := range *r {
-		l += len(rb)
-	}
-
-	return l
-}
-
-// String created from the report
-func (r *Report) String() map[string]string {
-	var m = map[string]string{}
-
-	for k, rb := range *r {
-		m[k] = string(rb)
-	}
-
-	return m
-}
+// Report of the system diagnostics.
+type Report []byte
 
 // Collect diagnostics
 func (d *Diagnostics) Collect() Report {
 	<-d.ctx.Done()
 
-	var files = Report{}
+	var r Report
 
 	for _, e := range d.Executables {
-		if e.IgnoreError {
-			break
+		var what = []byte(fmt.Sprintf("$ %s\n", e.Command))
+		r = append(r, what...)
+		r = append(r, e.output...)
+
+		if r[len(r)-1] != '\n' {
+			r = append(r, byte('\n'))
 		}
-
-		var appendTo = e.LogFile
-
-		if appendTo == "" {
-			appendTo = "log"
-		}
-
-		if _, ok := files[appendTo]; !ok {
-			files[appendTo] = []byte{}
-		}
-
-		var what = []byte(fmt.Sprintln(color.Format(color.FgHiYellow, "$ %s", e.Command)))
-		files[appendTo] = append(files[appendTo], what...)
-		files[appendTo] = append(files[appendTo], e.output...)
 	}
 
-	return files
-}
-
-// Write report
-func Write(w io.Writer, r Report) {
-	for k, v := range r {
-		_, _ = fmt.Fprintf(os.Stderr,
-			"%v\n%s",
-			color.Format(color.Bold, " %v ", k),
-			v)
-	}
+	return r
 }
 
 // Executable is a command to be executed on the diagnostics
 type Executable struct {
 	Description string
-	LogFile     string
 	Command     string
 	// IgnoreError if command exit code is != 0 (don't log)
 	IgnoreError bool
@@ -207,9 +162,10 @@ type Entry struct {
 }
 
 type submitPost struct {
-	ID       string            `json:"id"`
-	Username string            `json:"username"`
-	Report   map[string]string `json:"report"`
+	ID       string `json:"id"`
+	Username string `json:"username"`
+	Time     string `json:"time"`
+	Report   string `json:"report"`
 }
 
 // Submit diagnostics
@@ -220,7 +176,8 @@ func Submit(ctx context.Context, entry Entry) (err error) {
 	err = apihelper.SetBody(req, submitPost{
 		ID:       entry.ID,
 		Username: entry.Username,
-		Report:   entry.Report.String(),
+		Time:     time.Now().Format(time.RubyDate),
+		Report:   string(entry.Report),
 	})
 
 	if err != nil {
