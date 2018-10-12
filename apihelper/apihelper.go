@@ -174,7 +174,7 @@ func (c *Client) AuthGet(ctx context.Context, path string, data interface{}) err
 }
 
 // DecodeJSON decodes a JSON response
-func DecodeJSON(request *wedeploy.WeDeploy, data interface{}) error {
+func DecodeJSON(request *wedeploy.WeDeploy, data interface{}) (err error) {
 	var response = request.Response
 
 	if response == nil {
@@ -187,7 +187,15 @@ func DecodeJSON(request *wedeploy.WeDeploy, data interface{}) error {
 		return ErrInvalidContentType
 	}
 
-	body, err := ioutil.ReadAll(response.Body)
+	var body []byte
+	body, err = ioutil.ReadAll(response.Body)
+	defer func() {
+		ec := response.Body.Close()
+
+		if err == nil {
+			err = ec
+		}
+	}()
 
 	if err != nil {
 		return errwrap.Wrapf("error on DecodeJSON: {{err}}", err)
