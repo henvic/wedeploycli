@@ -161,6 +161,7 @@ func (e *eventRecorder) jsonMarshal() (err error) {
 }
 
 func (e *eventRecorder) appendEvent() error {
+	// BUG(henvic): corruption might happen from time to time if the last entry didn't finish with a new line
 	var file, err = os.OpenFile(metricsPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
 	defer func() {
 		if ef := file.Close(); ef != nil {
