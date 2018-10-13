@@ -357,6 +357,6 @@ func (m *mainProgram) commandErrorConditionalUsage() {
 			panic(ue)
 		}
 	} else if strings.HasPrefix(emsg, "unknown command ") {
-		println(fancy.Error(`Run "we --help" for usage.`))
+		_, _ = fmt.Fprintln(os.Stderr, fancy.Error(`Run "we --help" for usage.`))
 	}
 }

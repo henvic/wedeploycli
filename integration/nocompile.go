@@ -2,7 +2,12 @@
 
 package integration
 
+import (
+	"fmt"
+	"os"
+)
+
 func init() {
-	println(`Skipping compilation: using "we" command available on system.`)
+	_, _ = fmt.Fprintln(os.Stderr, `Skipping compilation: using "we" command available on system.`)
 	binary = "we"
 }

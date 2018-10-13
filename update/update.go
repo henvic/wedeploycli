@@ -217,7 +217,7 @@ func notify(c *config.Config) {
 		cmd += " --channel " + channel
 	}
 
-	println(color.Format(color.FgBlue,
+	_, _ = fmt.Fprintln(os.Stderr, color.Format(color.FgBlue,
 		`
 INFO: New version of WeDeploy CLI is available. Please run "%v".`,
 		cmd))

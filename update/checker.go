@@ -2,6 +2,8 @@ package update
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/wedeploy/cli/config"
 )
@@ -31,6 +33,6 @@ func (c *Checker) Feedback(conf *config.Config) {
 	case nil:
 		Notify(conf)
 	default:
-		println("Update notification error:", err.Error())
+		_, _ = fmt.Fprintln(os.Stderr, "Update notification error:", err.Error())
 	}
 }

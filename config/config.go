@@ -151,7 +151,9 @@ func (c *Config) loadDefaultRemotes() {
 			InfrastructureComment: "Default cloud remote",
 		})
 	default:
-		println(color.Format(color.FgHiRed, "Warning: Non-standard wedeploy remote cloud detected"))
+		_, _ = fmt.Fprintln(os.Stderr, color.Format(
+			color.FgHiRed,
+			"Warning: Non-standard wedeploy remote cloud detected"))
 	}
 }
 
