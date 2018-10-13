@@ -9,14 +9,13 @@ import (
 	"runtime"
 	"strings"
 
-	"gopkg.in/ini.v1"
-
 	"github.com/hashicorp/errwrap"
 	version "github.com/hashicorp/go-version"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/remotes"
 	"github.com/wedeploy/cli/verbose"
+	"gopkg.in/ini.v1"
 )
 
 // Context structure
