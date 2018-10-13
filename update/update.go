@@ -82,7 +82,7 @@ func notifierCheck(ctx context.Context, c *config.Config) error {
 		return err
 	}
 
-	var resp, err = check(ctx, GetReleaseChannel(c))
+	var resp, err = check(ctx, GetReleaseChannel(c), "")
 
 	if err == equinox.NotAvailableErr {
 		c.NextVersion = ""
@@ -110,11 +110,11 @@ func Notify(c *config.Config) {
 }
 
 // Update this tool
-func Update(ctx context.Context, c *config.Config, channel string) error {
+func Update(ctx context.Context, c *config.Config, channel, version string) error {
 	fmt.Printf("Current installed version is %s.\n", defaults.Version)
 	fmt.Printf("Channel \"%s\" is now selected.\n", channel)
 
-	var resp, err = check(ctx, channel)
+	var resp, err = check(ctx, channel, version)
 
 	if err != nil {
 		return handleUpdateCheckError(c, channel, err)
@@ -155,9 +155,12 @@ func runUpdateNotices() {
 	}
 }
 
-func check(ctx context.Context, channel string) (*equinox.Response, error) {
-	var opts equinox.Options
-	opts.Channel = channel
+func check(ctx context.Context, channel, version string) (*equinox.Response, error) {
+	var opts = equinox.Options{
+		CurrentVersion: defaults.Version,
+		Channel:        channel,
+		Version:        version,
+	}
 
 	if err := opts.SetPublicKeyPEM(keys.PublicKey); err != nil {
 		return nil, err
