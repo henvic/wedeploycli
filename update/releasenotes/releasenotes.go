@@ -200,4 +200,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "October 14th, 2018",
 		Description: "Improved error handling. Fixed metrics and diagnostics reporting. Minor improvements.",
 	},
+	ReleaseNote{
+		Version:     "1.6.7",
+		Date:        "October 14th, 2018",
+		Description: "Fixed Windows build.",
+	},
 }
