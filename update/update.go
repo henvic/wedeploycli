@@ -78,23 +78,18 @@ func notifierCheck(ctx context.Context, c *config.Config) error {
 	// save, just to be safe (e.g., if the check below breaks)
 	c.LastUpdateCheck = getCurrentTime()
 
-	if err := c.Save(); err != nil {
-		return err
-	}
-
 	var resp, err = check(ctx, GetReleaseChannel(c), "")
 
-	if err == equinox.NotAvailableErr {
+	switch {
+	case err == equinox.NotAvailableErr:
 		c.NextVersion = ""
 		return c.Save()
-	}
-
-	if err != nil {
+	case err != nil:
 		return err
+	default:
+		c.NextVersion = resp.ReleaseVersion
+		return c.Save()
 	}
-
-	c.NextVersion = resp.ReleaseVersion
-	return c.Save()
 }
 
 // Notify is called every time this tool executes to verify if it is outdated

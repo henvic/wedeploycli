@@ -3,6 +3,7 @@ package update
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/wedeploy/cli/config"
@@ -28,11 +29,15 @@ func (c *Checker) Feedback(conf *config.Config) {
 	}
 
 	var err = <-c.Cue
-	switch err {
-	case context.Canceled:
-	case nil:
-		Notify(conf)
-	default:
+	ue, ueok := err.(*url.Error)
+
+	switch {
+	case err == context.Canceled, ueok && ue.Err == context.Canceled:
+		return
+	case err != nil:
 		_, _ = fmt.Fprintln(os.Stderr, "Update notification error:", err.Error())
+		return
+	default:
+		Notify(conf)
 	}
 }
