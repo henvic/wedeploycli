@@ -40,7 +40,10 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	wectx.Config().EnableAnalytics = true
+	var params = conf.GetParams()
+	params.EnableAnalytics = true
+	conf.SetParams(params)
+
 	resetMetricsSetup()
 	ec := m.Run()
 	SetPID(0)
@@ -115,12 +118,17 @@ func TestSetPID(t *testing.T) {
 }
 
 func TestRecIsNotEnabled(t *testing.T) {
-	conf.EnableAnalytics = false
+	var params = conf.GetParams()
+
+	params.EnableAnalytics = false
+	conf.SetParams(params)
+
 	defer func() {
-		conf.EnableAnalytics = true
+		params.EnableAnalytics = true
+		conf.SetParams(params)
 	}()
 
-	if conf.EnableAnalytics {
+	if params.EnableAnalytics {
 		t.Errorf("Analytics should not be enabled for this test")
 	}
 
@@ -368,6 +376,7 @@ func testTrySubmitNothingToSend(t *testing.T) {
 }
 
 func testRecCheckMetrics(t *testing.T, line string, expected event) {
+	var params = conf.GetParams()
 	var e event
 	var err = json.Unmarshal([]byte(line), &e)
 
@@ -383,7 +392,7 @@ func testRecCheckMetrics(t *testing.T, line string, expected event) {
 		t.Errorf("Expected ID to have at least 38 characters, got event.ID = %v instead", e.PID)
 	}
 
-	if len(e.SID) != 36 || e.SID != conf.AnalyticsID {
+	if len(e.SID) != 36 || e.SID != params.AnalyticsID {
 		t.Errorf("Expected SID to have 36 characters and be registered, got event.SID = %v) instead", e.SID)
 	}
 
@@ -415,7 +424,7 @@ type testStatusMetricsStory struct {
 }
 
 func (te *testStatusMetricsStory) testDisable(t *testing.T) {
-	te.initialSID = conf.AnalyticsID
+	te.initialSID = conf.GetParams().AnalyticsID
 
 	if err := Disable(conf); err != nil {
 		t.Errorf("Expected no error while disabling analytics, got %v instead", err)
@@ -431,7 +440,7 @@ func (te *testStatusMetricsStory) testDisable(t *testing.T) {
 		t.Errorf("Wanted TrySubmit error to be %v, got %v instead", wantTrySubmitErr, trySubmitErr)
 	}
 
-	if conf.EnableAnalytics {
+	if conf.GetParams().EnableAnalytics {
 		t.Errorf("Analytics should be disabled")
 	}
 
@@ -451,8 +460,10 @@ func (te *testStatusMetricsStory) testEnableAndRecording(t *testing.T) {
 		t.Errorf(".we should have enable_analytics = true")
 	}
 
-	if conf.AnalyticsID != te.initialSID {
-		t.Errorf("Initial SID should persist: wanted %v, got %v instead", te.initialSID, conf.AnalyticsID)
+	var params = conf.GetParams()
+
+	if params.AnalyticsID != te.initialSID {
+		t.Errorf("Initial SID should persist: wanted %v, got %v instead", te.initialSID, params.AnalyticsID)
 	}
 
 	var bufErrStream bytes.Buffer
@@ -481,8 +492,10 @@ func (te *testStatusMetricsStory) testResetting(t *testing.T) {
 		t.Errorf("Expected no error while re-enabling analytics, got %v instead", err)
 	}
 
-	if conf.AnalyticsID == te.initialSID {
-		t.Errorf("Initial SID should be revoked: got same: %v", conf.AnalyticsID)
+	var params = conf.GetParams()
+
+	if params.AnalyticsID == te.initialSID {
+		t.Errorf("Initial SID should be revoked: got same: %v", params.AnalyticsID)
 	}
 
 	var weWithoutSpace = strings.Replace(tdata.FromFile("mocks/.we"), " ", "", -1)
@@ -491,7 +504,7 @@ func (te *testStatusMetricsStory) testResetting(t *testing.T) {
 		t.Errorf(".we should not have analytics_id = <initial SID>")
 	}
 
-	if !strings.Contains(weWithoutSpace, "analytics_id="+conf.AnalyticsID) {
+	if !strings.Contains(weWithoutSpace, "analytics_id="+params.AnalyticsID) {
 		t.Errorf(".we should have analytics_id = <new SID>")
 	}
 

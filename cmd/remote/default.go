@@ -22,7 +22,10 @@ we remote wedeploy`,
 func getRemoteFromList() (string, error) {
 	var wectx = we.Context()
 	var conf = wectx.Config()
-	var keys = conf.Remotes.Keys()
+	var params = conf.GetParams()
+	var rl = params.Remotes
+	var keys = rl.Keys()
+
 	var m = map[string]int{}
 
 	fmt.Println(`Select a remote to use for the next "we" commands:`)
@@ -61,12 +64,14 @@ func setDefaultRun(cmd *cobra.Command, args []string) (err error) {
 func saveDefaultRemote(remote string) error {
 	var wectx = we.Context()
 	var conf = wectx.Config()
-	var remotes = conf.Remotes
+	var params = conf.GetParams()
+	var remotes = params.Remotes
 	var keys = remotes.Keys()
 
 	for _, k := range keys {
 		if remote == k {
-			conf.DefaultRemote = remote
+			params.DefaultRemote = remote
+			conf.SetParams(params)
 			return conf.Save()
 		}
 	}

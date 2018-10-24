@@ -38,8 +38,10 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 func tokenRun(cmd *cobra.Command, args []string) error {
 	var wectx = we.Context()
-	var config = wectx.Config()
-	var remote = config.Remotes[setupHost.Remote()]
+	var conf = wectx.Config()
+	var params = conf.GetParams()
+	var rl = params.Remotes
+	var remote = rl.Get(setupHost.Remote())
 
 	if format == "" {
 		fmt.Println(remote.Token)

@@ -28,13 +28,14 @@ var (
 
 func updateRun(cmd *cobra.Command, args []string) error {
 	var wectx = we.Context()
+	var conf = wectx.Config()
+	var params = conf.GetParams()
+
 	if !cmd.Flag("channel").Changed {
-		channel = wectx.Config().ReleaseChannel
+		channel = params.ReleaseChannel
 	}
 
-	var conf = wectx.Config()
-
-	if conf.ReleaseChannel != unstable && version != "" {
+	if params.ReleaseChannel != unstable && version != "" {
 		return fmt.Errorf(
 			`to update to a specific version you need to set the release channel to "%s" first`,
 			unstable)

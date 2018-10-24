@@ -4,6 +4,7 @@ import (
 	"net"
 	"sort"
 	"strings"
+	"sync"
 )
 
 // Entry for a remote
@@ -40,13 +41,18 @@ func isHTTPLocalhost(address string) bool {
 }
 
 // List of remotes
-type List map[string]Entry
+type List struct {
+	entries map[string]Entry
+	m       sync.RWMutex
+}
 
 // Keys of the remote list
 func (l List) Keys() []string {
-	var keys = make([]string, 0, len(l))
+	l.m.RLock()
+	defer l.m.RUnlock()
+	var keys = make([]string, 0, len(l.entries))
 
-	for k := range l {
+	for k := range l.entries {
 		keys = append(keys, k)
 	}
 
@@ -54,12 +60,36 @@ func (l List) Keys() []string {
 	return keys
 }
 
+// Has checks if a remote exists
+func (l *List) Has(name string) bool {
+	l.m.RLock()
+	defer l.m.RUnlock()
+	_, ok := l.entries[name]
+	return ok
+}
+
+// Get a remote
+func (l *List) Get(name string) Entry {
+	l.m.RLock()
+	defer l.m.RUnlock()
+	return l.entries[name]
+}
+
 // Set a remote
-func (l List) Set(name string, entry Entry) {
-	l[name] = entry
+func (l *List) Set(name string, entry Entry) {
+	l.m.Lock()
+	defer l.m.Unlock()
+
+	if l.entries == nil {
+		l.entries = map[string]Entry{}
+	}
+
+	l.entries[name] = entry
 }
 
 // Del deletes a remote by name
-func (l List) Del(name string) {
-	delete(l, name)
+func (l *List) Del(name string) {
+	l.m.Lock()
+	defer l.m.Unlock()
+	delete(l.entries, name)
 }

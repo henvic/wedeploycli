@@ -24,7 +24,8 @@ var cacheNonAvailabilityHours = 12
 
 // GetReleaseChannel gets the channel user has used last time (or stable)
 func GetReleaseChannel(c *config.Config) string {
-	var channel = c.ReleaseChannel
+	var params = c.GetParams()
+	var channel = params.ReleaseChannel
 
 	if channel == "" {
 		channel = defaults.StableReleaseChannel
@@ -34,7 +35,8 @@ func GetReleaseChannel(c *config.Config) string {
 }
 
 func canVerify(c *config.Config) bool {
-	var next = c.NextVersion
+	var params = c.GetParams()
+	var next = params.NextVersion
 
 	// is there an update being rolled at this exec time?
 	if next != "" && next != defaults.Version {
@@ -46,7 +48,8 @@ func canVerify(c *config.Config) bool {
 }
 
 func canVerifyAgain(c *config.Config) bool {
-	var luc, luce = time.Parse(time.RubyDate, c.LastUpdateCheck)
+	var params = c.GetParams()
+	var luc, luce = time.Parse(time.RubyDate, params.LastUpdateCheck)
 
 	if luce == nil && time.Since(luc).Hours() < float64(cacheNonAvailabilityHours) {
 		return false
@@ -75,19 +78,21 @@ func NotifierCheck(ctx context.Context, c *config.Config) error {
 }
 
 func notifierCheck(ctx context.Context, c *config.Config) error {
-	// save, just to be safe (e.g., if the check below breaks)
-	c.LastUpdateCheck = getCurrentTime()
+	var params = c.GetParams()
+	params.LastUpdateCheck = getCurrentTime()
 
 	var resp, err = check(ctx, GetReleaseChannel(c), "")
 
 	switch {
 	case err == equinox.NotAvailableErr:
-		c.NextVersion = ""
+		params.NextVersion = ""
+		c.SetParams(params)
 		return c.Save()
 	case err != nil:
 		return err
 	default:
-		c.NextVersion = resp.ReleaseVersion
+		params.NextVersion = resp.ReleaseVersion
+		c.SetParams(params)
 		return c.Save()
 	}
 }
@@ -98,7 +103,8 @@ func Notify(c *config.Config) {
 		return
 	}
 
-	var next = c.NextVersion
+	var params = c.GetParams()
+	var next = params.NextVersion
 	if next != "" && next != defaults.Version {
 		notify(c)
 	}
@@ -172,9 +178,13 @@ func getCurrentTime() string {
 
 func handleUpdateCheckError(c *config.Config, channel string, err error) error {
 	if err == equinox.NotAvailableErr {
-		c.NextVersion = ""
-		c.ReleaseChannel = channel
-		c.LastUpdateCheck = getCurrentTime()
+		params := c.GetParams()
+
+		params.NextVersion = ""
+		params.ReleaseChannel = channel
+		params.LastUpdateCheck = getCurrentTime()
+
+		c.SetParams(params)
 
 		if err = c.Save(); err != nil {
 			return err
@@ -197,7 +207,9 @@ func isNotifyOn(c *config.Config) bool {
 		return false
 	}
 
-	if defaults.Version == "master" || !c.NotifyUpdates {
+	var params = c.GetParams()
+
+	if defaults.Version == "master" || !params.NotifyUpdates {
 		return false
 	}
 
@@ -205,10 +217,11 @@ func isNotifyOn(c *config.Config) bool {
 }
 
 func notify(c *config.Config) {
-	var channel = c.ReleaseChannel
+	var params = c.GetParams()
+	var channel = params.ReleaseChannel
 	var cmd = "we update"
 
-	if channel != c.ReleaseChannel {
+	if channel != params.ReleaseChannel {
 		cmd += " --channel " + channel
 	}
 
@@ -235,9 +248,13 @@ func handleUpdateApplyError(err error) error {
 }
 
 func updateConfig(c *config.Config, channel string) error {
-	c.ReleaseChannel = channel
-	c.PastVersion = defaults.Version
-	c.NextVersion = ""
-	c.LastUpdateCheck = getCurrentTime()
+	var params = c.GetParams()
+
+	params.ReleaseChannel = channel
+	params.PastVersion = defaults.Version
+	params.NextVersion = ""
+	params.LastUpdateCheck = getCurrentTime()
+
+	c.SetParams(params)
 	return c.Save()
 }

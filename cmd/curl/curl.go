@@ -183,7 +183,11 @@ func extractRemoteFromFullPath(wectx config.Context, fullPath string) (string, e
 		return "", err
 	}
 
-	for key, r := range conf.Remotes {
+	var params = conf.GetParams()
+	var rl = params.Remotes
+
+	for _, key := range rl.Keys() {
+		r := rl.Get(key)
 		i, err := url.Parse(r.InfrastructureServer())
 
 		if err != nil {
@@ -305,16 +309,24 @@ func expandPathsToFullRequests(wectx config.Context, params []string) ([]string,
 func enableRun(cmd *cobra.Command, args []string) (err error) {
 	var wectx = we.Context()
 	var conf = wectx.Config()
+	var params = conf.GetParams()
 
-	conf.EnableCURL = true
+	params.EnableCURL = true
+
+	conf.SetParams(params)
+
 	return conf.Save()
 }
 
 func disableRun(cmd *cobra.Command, args []string) (err error) {
 	var wectx = we.Context()
 	var conf = wectx.Config()
+	var params = conf.GetParams()
 
-	conf.EnableCURL = false
+	params.EnableCURL = false
+
+	conf.SetParams(params)
+
 	return conf.Save()
 }
 
@@ -350,6 +362,8 @@ func (cr *curlRunner) run(cmd *cobra.Command, args []string) error {
 	}()
 
 	var wectx = we.Context()
+	var conf = wectx.Config()
+	var params = conf.GetParams()
 
 	var weArgs, curlArgs = cr.parseArguments()
 
@@ -363,7 +377,7 @@ func (cr *curlRunner) run(cmd *cobra.Command, args []string) error {
 		return cmd.Help()
 	}
 
-	if !wectx.Config().EnableCURL {
+	if !params.EnableCURL {
 		_, _ = fmt.Fprintln(os.Stderr,
 			`This command is not enabled by default as it might be dangerous for security.
 Using it might make you inadvertently expose private data. Continue at your own risk.`)

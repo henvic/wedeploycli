@@ -46,14 +46,17 @@ func TestParseRemoteAddressNotFoundForAddress(t *testing.T) {
 }
 
 func TestParseRemoteAddressMultipleRemote(t *testing.T) {
-	var c = New(&remotes.List{
-		"foo": remotes.Entry{
-			Service: "foo-bar.wedeploy.me",
-		},
-		"bar": remotes.Entry{
-			Service: "foo-bar.wedeploy.me",
-		},
+	var rl = remotes.List{}
+
+	rl.Set("foo", remotes.Entry{
+		Service: "foo-bar.wedeploy.me",
 	})
+
+	rl.Set("bar", remotes.Entry{
+		Service: "foo-bar.wedeploy.me",
+	})
+
+	var c = New(&rl)
 
 	parsed, err := c.ParseRemoteAddress("foo-bar.wedeploy.me")
 
@@ -73,14 +76,17 @@ func TestParseRemoteAddressMultipleRemote(t *testing.T) {
 }
 
 func TestParseMultipleRemoteHostMultipleRemote(t *testing.T) {
-	var c = New(&remotes.List{
-		"foo": remotes.Entry{
-			Service: "wedeploy.me",
-		},
-		"bar": remotes.Entry{
-			Service: "wedeploy.me",
-		},
+	var rl = remotes.List{}
+
+	rl.Set("foo", remotes.Entry{
+		Service: "wedeploy.me",
 	})
+
+	rl.Set("bar", remotes.Entry{
+		Service: "wedeploy.me",
+	})
+
+	var c = New(&rl)
 
 	parsed, err := c.Parse(ParseFlags{
 		Host: "wedeploy.me",
@@ -102,11 +108,13 @@ func TestParseMultipleRemoteHostMultipleRemote(t *testing.T) {
 }
 
 func TestParseLocalRemoteAddress(t *testing.T) {
-	var c = New(&remotes.List{
-		"foo": remotes.Entry{
-			Service: "foo-bar.wedeploy.me",
-		},
+	var rl = remotes.List{}
+
+	rl.Set("foo", remotes.Entry{
+		Service: "foo-bar.wedeploy.me",
 	})
+
+	var c = New(&rl)
 
 	if r, err := c.ParseRemoteAddress(""); r != "" || err != nil {
 		t.Errorf("Expected parsed remote to be (empty, nil), got (%v, %v) instead", r, err)
@@ -114,14 +122,17 @@ func TestParseLocalRemoteAddress(t *testing.T) {
 }
 
 func TestParseRemoteAddresses(t *testing.T) {
-	var c = New(&remotes.List{
-		"cloud": remotes.Entry{
-			Service: "wedeploy.io",
-		},
-		"demo": remotes.Entry{
-			Service: "demo.wedeploy.com",
-		},
+	var rl = remotes.List{}
+
+	rl.Set("cloud", remotes.Entry{
+		Service: "wedeploy.io",
 	})
+
+	rl.Set("demo", remotes.Entry{
+		Service: "demo.wedeploy.com",
+	})
+
+	var c = New(&rl)
 
 	if r, err := c.ParseRemoteAddress("wedeploy.io"); r != "cloud" || err != nil {
 		t.Errorf("Expected parsed remote to be (cloud, nil), got (%v, %v) instead", r, err)
@@ -156,11 +167,13 @@ var parseByFlagsMocks = []ParseFlags{
 }
 
 func TestParseByFlagsOnly(t *testing.T) {
-	var c = New(&remotes.List{
-		"hollywood": remotes.Entry{
-			Service: "example.com",
-		},
+	var rl = remotes.List{}
+
+	rl.Set("hollywood", remotes.Entry{
+		Service: "example.com",
 	})
+
+	var c = New(&rl)
 
 	for _, k := range parseByFlagsMocks {
 		var parsed, err = c.Parse(k)
@@ -182,11 +195,13 @@ func TestParseByFlagsOnly(t *testing.T) {
 }
 
 func TestServiceWithMissingProject(t *testing.T) {
-	var c = New(&remotes.List{
-		"hollywood": remotes.Entry{
-			Service: "example.com",
-		},
+	var rl = remotes.List{}
+
+	rl.Set("hollywood", remotes.Entry{
+		Service: "example.com",
 	})
+
+	var c = New(&rl)
 
 	var parsed, err = c.Parse(ParseFlags{
 		Service: "foo",
@@ -255,11 +270,13 @@ func TestParseErrorMultiModeService(t *testing.T) {
 }
 
 func TestParseHostWithErrorRemoteFlagAndHost(t *testing.T) {
-	var c = New(&remotes.List{
-		"xyz": remotes.Entry{
-			Service: "wedeploy.com",
-		},
+	var rl = remotes.List{}
+
+	rl.Set("xyz", remotes.Entry{
+		Service: "wedeploy.com",
 	})
+
+	var c = New(&rl)
 
 	var parsed, err = c.Parse(ParseFlags{
 		Host:   "foo-bar.wedeploy.com",
@@ -282,11 +299,13 @@ func TestParseHostWithErrorRemoteFlagAndHost(t *testing.T) {
 }
 
 func TestParseNoMatchFromExternalHost(t *testing.T) {
-	var c = New(&remotes.List{
-		"xyz": remotes.Entry{
-			Service: "wedeploy.com",
-		},
+	var rl = remotes.List{}
+
+	rl.Set("xyz", remotes.Entry{
+		Service: "wedeploy.com",
 	})
+
+	var c = New(&rl)
 
 	var parsed, err = c.Parse(ParseFlags{
 		Host: "x.example.com",
@@ -565,20 +584,25 @@ func testParse(c CommandFlagFromHost, pm parseMock, t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
-	var c = New(&remotes.List{
-		"foo": remotes.Entry{
-			Service: "example.com",
-		},
-		"alphabet": remotes.Entry{
-			Service: "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
-		},
-		"ip": remotes.Entry{
-			Service: "11.22.33.44:5555",
-		},
-		"wedeploy": remotes.Entry{
-			Service: "wedeploy.io",
-		},
+	var rl = remotes.List{}
+
+	rl.Set("foo", remotes.Entry{
+		Service: "example.com",
 	})
+
+	rl.Set("alphabet", remotes.Entry{
+		Service: "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
+	})
+
+	rl.Set("ip", remotes.Entry{
+		Service: "11.22.33.44:5555",
+	})
+
+	rl.Set("wedeploy", remotes.Entry{
+		Service: "wedeploy.io",
+	})
+
+	var c = New(&rl)
 
 	for _, k := range parseMocks {
 		testParse(c, k, t)
@@ -841,23 +865,29 @@ func testParseWithDefaultCustomRemote(c CommandFlagFromHost, pm parseMockWithDef
 }
 
 func TestParseWithDefaultCustomRemote(t *testing.T) {
-	var c = New(&remotes.List{
-		"foo": remotes.Entry{
-			Service: "example.com",
-		},
-		"alphabet": remotes.Entry{
-			Service: "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
-		},
-		"ip": remotes.Entry{
-			Service: "11.22.33.44:5555",
-		},
-		"wedeploy": remotes.Entry{
-			Service: "wedeploy.io",
-		},
-		"local": remotes.Entry{
-			Service: "wedeploy.me",
-		},
+	var rl = remotes.List{}
+
+	rl.Set("foo", remotes.Entry{
+		Service: "example.com",
 	})
+
+	rl.Set("alphabet", remotes.Entry{
+		Service: "def.ghi.jkl.mnn.opq.rst.uvw.xyz",
+	})
+
+	rl.Set("ip", remotes.Entry{
+		Service: "11.22.33.44:5555",
+	})
+
+	rl.Set("wedeploy", remotes.Entry{
+		Service: "wedeploy.io",
+	})
+
+	rl.Set("local", remotes.Entry{
+		Service: "wedeploy.me",
+	})
+
+	var c = New(&rl)
 
 	for _, k := range parseMocksWithDefaultCustomRemote {
 		testParseWithDefaultCustomRemote(c, k, t)

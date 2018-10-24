@@ -291,7 +291,9 @@ func (a *Authentication) browserWorkflowAuth() error {
 func (a *Authentication) success(username string) {
 	var duration = a.wlm.Duration()
 	var conf = a.wectx.Config()
-	var remote = conf.Remotes[a.wectx.Remote()]
+	var params = conf.GetParams()
+	var rl = params.Remotes
+	var remote = rl.Get(a.wectx.Remote())
 
 	var buf = &bytes.Buffer{}
 	_, _ = fmt.Fprintf(buf, "%s Authentication completed in %s [2/2]\n", figures.Tick, timehelper.RoundDuration(duration, time.Second))
@@ -318,13 +320,15 @@ func (a *Authentication) printTipCommands(buf *bytes.Buffer) {
 
 func (a *Authentication) saveUser(username, token string) (err error) {
 	var conf = a.wectx.Config()
-	var remote = conf.Remotes[a.wectx.Remote()]
+	var params = conf.GetParams()
+	var rl = params.Remotes
+	var remote = rl.Get(a.wectx.Remote())
 	remote.Username = username
 	remote.Token = token
 	remote.Infrastructure = a.Domains.Infrastructure
 	remote.Service = a.Domains.Service
 
-	conf.Remotes[a.wectx.Remote()] = remote
+	rl.Set(a.wectx.Remote(), remote)
 
 	if err = a.wectx.SetEndpoint(a.wectx.Remote()); err != nil {
 		a.msg.StopText(fancy.Error("Authentication failed [1/2]"))

@@ -37,8 +37,10 @@ func TestSetupNonExistingConfigFileAndTeardown(t *testing.T) {
 		wantInfrastructureDomain = "wedeploy.com"
 	)
 
-	if len(conf.Remotes) != 1 {
-		t.Errorf("Expected to have one remote, got %v", conf.Remotes)
+	var params = conf.GetParams()
+
+	if len(params.Remotes.Keys()) != 1 {
+		t.Errorf("Expected to have one remote, got %v", params.Remotes)
 	}
 
 	if wectx.Username() != wantUsername {
@@ -66,6 +68,7 @@ func TestSetupDefaultAndTeardown(t *testing.T) {
 	}
 
 	conf := wectx.Config()
+	params := conf.GetParams()
 
 	if err := wectx.SetEndpoint(defaults.CloudRemote); err != nil {
 		panic(err)
@@ -82,8 +85,8 @@ func TestSetupDefaultAndTeardown(t *testing.T) {
 		wantInfrastructure = "wedeploy.com"
 	)
 
-	if len(conf.Remotes) != 2 {
-		t.Errorf("Expected to have 2 remotes, got %v", conf.Remotes)
+	if len(params.Remotes.Keys()) != 2 {
+		t.Errorf("Expected to have 2 remotes, got %v", params.Remotes)
 	}
 
 	if wectx.Username() != wantUsername {
@@ -111,6 +114,7 @@ func TestSetupRemoteAndTeardown(t *testing.T) {
 	}
 
 	conf := wectx.Config()
+	params := conf.GetParams()
 
 	if err := wectx.SetEndpoint(defaults.CloudRemote); err != nil {
 		panic(err)
@@ -127,8 +131,8 @@ func TestSetupRemoteAndTeardown(t *testing.T) {
 		wantInfrastructure = "wedeploy.com"
 	)
 
-	if len(conf.Remotes) != 2 {
-		t.Errorf("Expected to have 2 remotes, got %v", conf.Remotes)
+	if len(params.Remotes.Keys()) != 2 {
+		t.Errorf("Expected to have 2 remotes, got %v", params.Remotes)
 	}
 
 	if wectx.Username() != wantUsername {
@@ -147,11 +151,11 @@ func TestSetupRemoteAndTeardown(t *testing.T) {
 		t.Errorf("Wanted remoteAddress to be %v, got %v instead", wantInfrastructure, wectx.InfrastructureDomain())
 	}
 
-	if conf.NotifyUpdates {
+	if params.NotifyUpdates {
 		t.Errorf("Wrong NotifyUpdate value")
 	}
 
-	if conf.ReleaseChannel != "stable" {
+	if params.ReleaseChannel != "stable" {
 		t.Errorf("Wrong ReleaseChannel value")
 	}
 }
@@ -259,6 +263,7 @@ func TestRemotes(t *testing.T) {
 	}
 
 	conf := wectx.Config()
+	params := conf.GetParams()
 
 	tmp, err := ioutil.TempFile(os.TempDir(), "we")
 
@@ -266,28 +271,28 @@ func TestRemotes(t *testing.T) {
 		panic(err)
 	}
 
-	conf.Remotes.Set("staging", remotes.Entry{
+	params.Remotes.Set("staging", remotes.Entry{
 		Infrastructure: "https://staging.example.net/",
 	})
 
-	conf.Remotes.Set("beta", remotes.Entry{
+	params.Remotes.Set("beta", remotes.Entry{
 		Infrastructure: "https://beta.example.com/",
 		Comment:        "remote for beta testing",
 	})
 
-	conf.Remotes.Set("new", remotes.Entry{
+	params.Remotes.Set("new", remotes.Entry{
 		Infrastructure: "http://foo/",
 	})
 
-	conf.Remotes.Del("temporary")
+	params.Remotes.Del("temporary")
 
-	conf.Remotes.Set("remain", remotes.Entry{
+	params.Remotes.Set("remain", remotes.Entry{
 		Comment: "commented vars remains even when empty",
 	})
 
-	conf.Remotes.Set("dontremain", remotes.Entry{})
+	params.Remotes.Set("dontremain", remotes.Entry{})
 
-	conf.Remotes.Del("dontremain2")
+	params.Remotes.Del("dontremain2")
 
 	// save in a different location
 	conf.Path = tmp.Name()
@@ -347,42 +352,55 @@ func TestRemotesListAndGet(t *testing.T) {
 	}
 
 	conf := wectx.Config()
+	params := conf.GetParams()
 
-	var wantOriginalRemotes = remotes.List{
-		"wedeploy": remotes.Entry{
-			Infrastructure:        "wedeploy.com",
-			InfrastructureComment: "Default cloud remote",
-		},
-		"alternative": remotes.Entry{
-			Infrastructure: "http://example.net/",
-		},
-		"staging": remotes.Entry{
-			Infrastructure: "http://staging.example.net/",
-		},
-		"beta": remotes.Entry{
-			Infrastructure:        "http://beta.example.com/",
-			InfrastructureComment: "; my beta comment",
-		},
-		"remain": remotes.Entry{
-			Infrastructure: "http://localhost/",
-			Comment:        "; commented vars remains even when empty",
-		},
-		"dontremain": remotes.Entry{
-			Infrastructure: "http://localhost/",
-			Comment:        "; commented vars remains even when empty",
-		},
-		"dontremain2": remotes.Entry{
-			Infrastructure: "http://localhost/",
-		},
+	var wantOriginalRemotes = remotes.List{}
+
+	wantOriginalRemotes.Set("wedeploy", remotes.Entry{
+		Infrastructure:        "wedeploy.com",
+		InfrastructureComment: "Default cloud remote",
+	})
+
+	wantOriginalRemotes.Set("alternative", remotes.Entry{
+		Infrastructure: "http://example.net/",
+	})
+
+	wantOriginalRemotes.Set("staging", remotes.Entry{
+		Infrastructure: "http://staging.example.net/",
+	})
+
+	wantOriginalRemotes.Set("beta", remotes.Entry{
+		Infrastructure:        "http://beta.example.com/",
+		InfrastructureComment: "; my beta comment",
+	})
+
+	wantOriginalRemotes.Set("remain", remotes.Entry{
+		Infrastructure: "http://localhost/",
+		Comment:        "; commented vars remains even when empty",
+	})
+
+	wantOriginalRemotes.Set("dontremain", remotes.Entry{
+		Infrastructure: "http://localhost/",
+		Comment:        "; commented vars remains even when empty",
+	})
+
+	wantOriginalRemotes.Set("dontremain2", remotes.Entry{
+		Infrastructure: "http://localhost/",
+	})
+
+	worKeys := wantOriginalRemotes.Keys()
+	prKeys := params.Remotes.Keys()
+
+	if len(worKeys) != len(prKeys) {
+		t.Errorf("Number of remotes doesn't match: wanted %v, got %v instead", len(worKeys), len(prKeys))
 	}
 
-	if len(wantOriginalRemotes) != len(conf.Remotes) {
-		t.Errorf("Number of remotes doesn't match: wanted %v, got %v instead", len(wantOriginalRemotes), len(conf.Remotes))
-	}
+	for _, k := range wantOriginalRemotes.Keys() {
+		want := wantOriginalRemotes.Get(k)
+		got := params.Remotes.Get(k)
 
-	for k := range wantOriginalRemotes {
-		if wantOriginalRemotes[k] != conf.Remotes[k] {
-			t.Errorf("Expected remote doesn't match for %v: %+v instead of %+v", k, conf.Remotes[k], wantOriginalRemotes[k])
+		if want != got {
+			t.Errorf("Expected remote doesn't match for %v: %+v instead of %+v", k, got, want)
 		}
 	}
 
@@ -396,7 +414,7 @@ func TestRemotesListAndGet(t *testing.T) {
 		"wedeploy",
 	}
 
-	var names = conf.Remotes.Keys()
+	var names = params.Remotes.Keys()
 
 	if !reflect.DeepEqual(names, wantList) {
 		t.Errorf("Wanted %v, got %v instead", wantList, names)
@@ -407,13 +425,9 @@ func TestRemotesListAndGet(t *testing.T) {
 		Comment:        "; commented vars remains even when empty",
 	}
 
-	var gotRemain, gotRemainOK = conf.Remotes["remain"]
+	gotRemain := params.Remotes.Get("remain")
 
 	if gotRemain != wantRemain {
 		t.Errorf("Wanted %v, got %v instead", wantRemain, gotRemain)
-	}
-
-	if !gotRemainOK {
-		t.Errorf("Wanted gotRemainOK to be true")
 	}
 }

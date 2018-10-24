@@ -90,7 +90,13 @@ func Rec(conf *config.Config, e Event) {
 
 // RecOrFail records event if analytics is enabled and returns an error on failure
 func RecOrFail(conf *config.Config, e Event) (saved bool, err error) {
-	if conf == nil || !conf.EnableAnalytics {
+	if conf == nil {
+		return false, nil
+	}
+
+	var params = conf.GetParams()
+
+	if !params.EnableAnalytics {
 		return false, nil
 	}
 
@@ -101,7 +107,7 @@ func RecOrFail(conf *config.Config, e Event) (saved bool, err error) {
 		Tags:    e.Tags,
 		Extra:   e.Extra,
 		PID:     pid,
-		SID:     conf.AnalyticsID,
+		SID:     params.AnalyticsID,
 		Time:    time.Now().Format(time.RubyDate),
 		Version: defaults.Version,
 		OS:      runtime.GOOS,
@@ -117,24 +123,33 @@ func RecOrFail(conf *config.Config, e Event) (saved bool, err error) {
 
 // Enable metrics
 func Enable(conf *config.Config) error {
-	conf.EnableAnalytics = true
+	var params = conf.GetParams()
 
-	if conf.AnalyticsID == "" {
-		conf.AnalyticsID = newAnalyticsID()
+	params.EnableAnalytics = true
+
+	if params.AnalyticsID == "" {
+		params.AnalyticsID = newAnalyticsID()
 	}
+
+	conf.SetParams(params)
 
 	return conf.Save()
 }
 
 // Disable metrics
 func Disable(conf *config.Config) error {
-	conf.EnableAnalytics = false
+	var params = conf.GetParams()
+	params.EnableAnalytics = false
+	conf.SetParams(params)
 	return conf.Save()
 }
 
 // Reset metrics by regenerating metrics ID and purge existing metrics
 func Reset(conf *config.Config) error {
-	conf.AnalyticsID = newAnalyticsID()
+	var params = conf.GetParams()
+	params.AnalyticsID = newAnalyticsID()
+
+	conf.SetParams(params)
 
 	if err := conf.Save(); err != nil {
 		return err
@@ -191,7 +206,9 @@ func (e *eventRecorder) rec(ie event) (err error) {
 
 // TrySubmit events file if enabled
 func (s *Sender) TrySubmit(ctx context.Context, conf *config.Config) (int, error) {
-	if !conf.EnableAnalytics {
+	var params = conf.GetParams()
+
+	if !params.EnableAnalytics {
 		return 0, errors.New(
 			"aborting submission of analytics (analytics report status = disabled)")
 	}
@@ -237,7 +254,9 @@ func (s *Sender) trySend(ctx context.Context) (events int, err error) {
 // SubmitEventuallyOnBackground eventually forks a child process that submits analytics to WeDeploy
 // if the analytics reporting is enabled
 func SubmitEventuallyOnBackground(conf *config.Config) (err error) {
-	if !conf.EnableAnalytics {
+	var params = conf.GetParams()
+
+	if !params.EnableAnalytics {
 		return nil
 	}
 

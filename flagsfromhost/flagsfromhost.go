@@ -179,7 +179,7 @@ func (c CommandFlagFromHost) parse(host, project, service, remote string) (*Flag
 	}
 
 	if remote != "" {
-		if _, ok := (*c.RemotesList)[remote]; !ok {
+		if !(*c.RemotesList).Has(remote) {
 			return nil, ErrorNotFound{remote}
 		}
 	}
@@ -221,7 +221,7 @@ func (c CommandFlagFromHost) parseWithHost(host, remoteFromFlag string) (*FlagsF
 	}
 
 	if remoteFromFlag != "" {
-		if _, ok := (*c.RemotesList)[remoteFromFlag]; !ok {
+		if !(*c.RemotesList).Has(remoteFromFlag) {
 			return nil, ErrorNotFound{remoteFromFlag}
 		}
 
@@ -330,7 +330,7 @@ func (c CommandFlagFromHost) ParseRemoteAddress(remoteAddress string) (remote st
 
 func (c CommandFlagFromHost) parseRemoteAddress(remoteAddress string) (found []string) {
 	for _, k := range c.RemotesList.Keys() {
-		var v = (*c.RemotesList)[k]
+		var v = (*c.RemotesList).Get(k)
 
 		var sameHTTP = matchStringWithPrefix("http://", remoteAddress, v.Service)
 		var sameHTTPS = matchStringWithPrefix("https://", remoteAddress, v.Service)

@@ -2,12 +2,11 @@ package config
 
 import (
 	"fmt"
-	"net"
 	"os"
-	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
+	"sync"
 
 	"github.com/hashicorp/errwrap"
 	version "github.com/hashicorp/go-version"
@@ -18,98 +17,44 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-// Context structure
-type Context struct {
-	config  *Config
-	context *ContextParams
-}
-
-// NewContext with received params and uninitialized configuration
-func NewContext(params ContextParams) Context {
-	return Context{
-		context: &ContextParams{},
-		config:  &Config{},
-	}
-}
-
-// ContextParams is the set of environment configurations
-type ContextParams struct {
-	Remote               string
-	Infrastructure       string
-	InfrastructureDomain string
-	ServiceDomain        string
-	Username             string
-	Token                string
-}
-
-// Remote used on the context
-func (c *Context) Remote() string {
-	return c.context.Remote
-}
-
-// Infrastructure used on the context
-func (c *Context) Infrastructure() string {
-	return c.context.Infrastructure
-}
-
-// InfrastructureDomain used on the context
-func (c *Context) InfrastructureDomain() string {
-	return c.context.InfrastructureDomain
-}
-
-// ServiceDomain used on the context
-func (c *Context) ServiceDomain() string {
-	return c.context.ServiceDomain
-}
-
-// Username used on the context
-func (c *Context) Username() string {
-	return c.context.Username
-}
-
-// Token used on the context
-func (c *Context) Token() string {
-	return c.context.Token
-}
-
-// Config gets the configuration
-func (c *Context) Config() *Config {
-	return c.config
-}
-
-// SetEndpoint for the context
-func (c *Context) SetEndpoint(remote string) error {
-	var r, ok = c.Config().Remotes[remote]
-
-	if !ok {
-		return fmt.Errorf(`Error loading selected remote "%v"`, remote)
-	}
-
-	c.context.Remote = remote
-	c.context.Infrastructure = r.InfrastructureServer()
-	c.context.InfrastructureDomain = getRemoteAddress(r.Infrastructure)
-	c.context.ServiceDomain = r.Service
-	c.context.Username = r.Username
-	c.context.Token = r.Token
-	return nil
-}
-
 // Config of the application
 type Config struct {
-	DefaultRemote   string       `ini:"default_remote"`
-	NoAutocomplete  bool         `ini:"disable_autocomplete_autoinstall"`
-	NoColor         bool         `ini:"disable_colors"`
-	NotifyUpdates   bool         `ini:"notify_updates"`
-	ReleaseChannel  string       `ini:"release_channel"`
-	LastUpdateCheck string       `ini:"last_update_check"`
-	PastVersion     string       `ini:"past_version"`
-	NextVersion     string       `ini:"next_version"`
-	EnableAnalytics bool         `ini:"enable_analytics"`
-	AnalyticsID     string       `ini:"analytics_id"`
-	EnableCURL      bool         `ini:"enable_curl"`
-	Path            string       `ini:"-"`
-	Remotes         remotes.List `ini:"-"`
-	file            *ini.File    `ini:"-"`
+	Path string
+
+	Params Params
+
+	m    sync.Mutex
+	file *ini.File
+}
+
+// GetParams gets the configuration parameters in a concurrent safe way.
+func (c *Config) GetParams() Params {
+	c.m.Lock()
+	defer c.m.Unlock()
+	return c.Params
+}
+
+// SetParams updates the set of params.
+func (c *Config) SetParams(p Params) {
+	c.m.Lock()
+	defer c.m.Unlock()
+	c.Params = p
+}
+
+// Params for the configuration
+type Params struct {
+	DefaultRemote   string        `ini:"default_remote"`
+	NoAutocomplete  bool          `ini:"disable_autocomplete_autoinstall"`
+	NoColor         bool          `ini:"disable_colors"`
+	NotifyUpdates   bool          `ini:"notify_updates"`
+	ReleaseChannel  string        `ini:"release_channel"`
+	LastUpdateCheck string        `ini:"last_update_check"`
+	PastVersion     string        `ini:"past_version"`
+	NextVersion     string        `ini:"next_version"`
+	EnableAnalytics bool          `ini:"enable_analytics"`
+	AnalyticsID     string        `ini:"analytics_id"`
+	EnableCURL      bool          `ini:"enable_curl"`
+	Remotes         *remotes.List `ini:"-"`
 }
 
 var parseRemoteSectionNameRegex = regexp.MustCompile(`remote \"(.*)\"`)
@@ -122,9 +67,13 @@ func (c *Config) Load() error {
 
 	c.load()
 
-	if c.Remotes == nil {
-		c.Remotes = remotes.List{}
+	var params = c.GetParams()
+
+	if params.Remotes == nil {
+		params.Remotes = &remotes.List{}
 	}
+
+	c.SetParams(params)
 
 	c.loadDefaultRemotes()
 	return c.validateDefaultRemote()
@@ -142,10 +91,13 @@ func (c *Config) openOrCreate() error {
 }
 
 func (c *Config) loadDefaultRemotes() {
-	switch c.Remotes[defaults.CloudRemote].Infrastructure {
+	var params = c.GetParams()
+	var rl = params.Remotes
+
+	switch rl.Get(defaults.CloudRemote).Infrastructure {
 	case defaults.Infrastructure:
 	case "":
-		c.Remotes.Set(defaults.CloudRemote, remotes.Entry{
+		rl.Set(defaults.CloudRemote, remotes.Entry{
 			Infrastructure:        defaults.Infrastructure,
 			InfrastructureComment: "Default cloud remote",
 		})
@@ -157,22 +109,25 @@ func (c *Config) loadDefaultRemotes() {
 }
 
 func (c *Config) validateDefaultRemote() error {
-	var keys = c.Remotes.Keys()
+	var params = c.Params
+	var rl = params.Remotes
+	var keys = rl.Keys()
 
 	for _, k := range keys {
-		if c.DefaultRemote == k {
+		if params.DefaultRemote == k {
 			return nil
 		}
 	}
 
 	return fmt.Errorf(`Remote "%v" is set as default, but not found.
-Please fix your ~/.we file`, c.DefaultRemote)
+Please fix your ~/.we file`, c.Params.DefaultRemote)
 }
 
 // Save the configuration
 func (c *Config) Save() error {
 	var cfg = c.file
-	var err = cfg.ReflectFrom(c)
+	var params = c.GetParams()
+	var err = cfg.ReflectFrom(&params)
 
 	if err != nil {
 		return errwrap.Wrapf("can't load configuration: {{err}}", err)
@@ -190,53 +145,22 @@ func (c *Config) Save() error {
 	return nil
 }
 
-// Setup the environment
-func Setup(path string) (wectx Context, err error) {
-	wectx = NewContext(ContextParams{})
-	path, err = filepath.Abs(path)
-
-	if err != nil {
-		return wectx, err
-	}
-
-	var c = &Config{
-		Path: path,
-	}
-
-	if err = c.Load(); err != nil {
-		return wectx, err
-	}
-
-	wectx.config = c
-	return wectx, nil
-}
-
-func getRemoteAddress(address string) string {
-	if strings.HasPrefix(address, "https://api.") {
-		address = strings.TrimPrefix(address, "https://api.")
-	}
-
-	var h, _, err = net.SplitHostPort(address)
-
-	if err != nil {
-		return address
-	}
-
-	return h
-}
-
 func (c *Config) setDefaults() {
-	c.EnableAnalytics = true
-	c.NotifyUpdates = true
-	c.ReleaseChannel = defaults.StableReleaseChannel
-	c.DefaultRemote = defaults.CloudRemote
+	var params = c.GetParams()
+
+	params.EnableAnalytics = true
+	params.NotifyUpdates = true
+	params.ReleaseChannel = defaults.StableReleaseChannel
+	params.DefaultRemote = defaults.CloudRemote
 
 	// By design Windows users should see no color unless they enable it
 	// Issue #51.
 	// https://github.com/wedeploy/cli/issues/51
 	if runtime.GOOS == "windows" {
-		c.NoColor = true
+		params.NoColor = true
 	}
+
+	c.SetParams(params)
 }
 
 func (c *Config) configExists() bool {
@@ -255,9 +179,13 @@ func (c *Config) configExists() bool {
 func (c *Config) load() {
 	c.setDefaults()
 
-	if err := c.file.MapTo(c); err != nil {
+	var params = c.GetParams()
+
+	if err := c.file.MapTo(&params); err != nil {
 		panic(err)
 	}
+
+	c.SetParams(params)
 }
 
 func (c *Config) read() error {
@@ -287,7 +215,9 @@ func (c *Config) checkNextVersionCacheIsNewer() {
 		return
 	}
 
-	vNext, err := version.NewVersion(c.NextVersion)
+	var params = c.GetParams()
+
+	vNext, err := version.NewVersion(params.NextVersion)
 
 	if err != nil {
 		verbose.Debug(err)
@@ -295,7 +225,8 @@ func (c *Config) checkNextVersionCacheIsNewer() {
 	}
 
 	if vThis.GreaterThan(vNext) {
-		c.NextVersion = ""
+		params.NextVersion = ""
+		c.SetParams(params)
 	}
 }
 
@@ -335,7 +266,7 @@ func (c *Config) deleteRemote(key string) {
 }
 
 func (c *Config) readRemotes() {
-	c.Remotes = remotes.List{}
+	var rl = &remotes.List{}
 
 	for _, k := range c.listRemotes() {
 		remote := c.getRemote(k)
@@ -345,7 +276,7 @@ func (c *Config) readRemotes() {
 		token := remote.Key("token")
 		comment := remote.Comment
 
-		c.Remotes[k] = remotes.Entry{
+		rl.Set(k, remotes.Entry{
 			Comment:               strings.TrimSpace(comment),
 			Infrastructure:        strings.TrimSpace(infrastructure.String()),
 			InfrastructureComment: strings.TrimSpace(infrastructure.Comment),
@@ -355,8 +286,12 @@ func (c *Config) readRemotes() {
 			UsernameComment:       strings.TrimSpace(username.Comment),
 			Token:                 strings.TrimSpace(token.String()),
 			TokenComment:          strings.TrimSpace(token.Comment),
-		}
+		})
 	}
+
+	var params = c.GetParams()
+	params.Remotes = rl
+	c.SetParams(params)
 }
 
 func (c *Config) simplify() {
@@ -401,13 +336,17 @@ func (c *Config) simplifyRemotes() {
 }
 
 func (c *Config) updateRemotes() {
+	var params = c.GetParams()
+	var rl = params.Remotes
+
 	for _, k := range c.listRemotes() {
-		if _, ok := c.Remotes[k]; !ok {
+		if rl.Has(k) {
 			c.deleteRemote(k)
 		}
 	}
 
-	for k, v := range c.Remotes {
+	for _, k := range rl.Keys() {
+		var v = rl.Get(k)
 		remote := c.getRemote(k)
 
 		keyInfrastructure := remote.Key("infrastructure")

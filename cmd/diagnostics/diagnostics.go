@@ -77,10 +77,12 @@ func diagnosticsRun(cmd *cobra.Command, args []string) error {
 func submit(report diagnostics.Report) error {
 	var username string
 	var wectx = we.Context()
+	var conf = wectx.Config()
+	var params = conf.GetParams()
+	var rl = params.Remotes
 
-	cloudRemote, ok := wectx.Config().Remotes[defaults.CloudRemote]
-
-	if ok {
+	if rl.Has(defaults.CloudRemote) {
+		cloudRemote := rl.Get(defaults.CloudRemote)
 		username = cloudRemote.Username
 	}
 

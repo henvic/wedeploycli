@@ -34,7 +34,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 func logoutRun(cmd *cobra.Command, args []string) error {
 	var wectx = we.Context()
 	var conf = wectx.Config()
-	var remote = conf.Remotes[wectx.Remote()]
+	var params = conf.GetParams()
+	var rl = params.Remotes
+	var remote = rl.Get(wectx.Remote())
 
 	switch remote.Username {
 	case "":
@@ -48,6 +50,6 @@ func logoutRun(cmd *cobra.Command, args []string) error {
 
 	remote.Username = ""
 	remote.Token = ""
-	conf.Remotes.Set(wectx.Remote(), remote)
+	rl.Set(wectx.Remote(), remote)
 	return conf.Save()
 }

@@ -65,16 +65,18 @@ var setURLCmd = &cobra.Command{
 func remoteRun(cmd *cobra.Command, args []string) error {
 	var wectx = we.Context()
 	var conf = wectx.Config()
-	var remotes = conf.Remotes
+	var params = conf.GetParams()
+	var rl = params.Remotes
+
 	var w = formatter.NewTabWriter(os.Stdout)
 
-	for _, k := range remotes.Keys() {
-		var key, _ = remotes[k]
+	for _, k := range rl.Keys() {
+		var key = rl.Get(k)
 		var infrastructure = key.Infrastructure
 
 		_, _ = fmt.Fprintf(w, "%s\t%s", k, infrastructure)
 
-		if k == conf.DefaultRemote {
+		if k == params.DefaultRemote {
 			_, _ = fmt.Fprintf(w, " (default)")
 		}
 
@@ -89,10 +91,12 @@ func remoteRun(cmd *cobra.Command, args []string) error {
 func setRun(cmd *cobra.Command, args []string) error {
 	var wectx = we.Context()
 	var conf = wectx.Config()
-	var r = conf.Remotes
+	var params = conf.GetParams()
+	var r = params.Remotes
+
 	var name = args[0]
 
-	if _, ok := r[name]; ok {
+	if r.Has(name) {
 		r.Del(name)
 	}
 
@@ -106,43 +110,48 @@ func setRun(cmd *cobra.Command, args []string) error {
 func renameRun(cmd *cobra.Command, args []string) error {
 	var wectx = we.Context()
 	var conf = wectx.Config()
-	var r = conf.Remotes
+	var params = conf.GetParams()
+	var r = params.Remotes
+
 	var old = args[0]
 	var name = args[1]
 
-	var oldRemote, ok = r[old]
-
-	if !ok {
+	if !r.Has(old) {
 		return errors.New("fatal: remote " + old + " does not exists.")
 	}
 
-	if _, ok := r[name]; ok {
+	if r.Has(name) {
 		return errors.New("fatal: remote " + name + " already exists.")
 	}
 
+	var renamed = r.Get(old)
+
 	r.Del(old)
-	r.Set(name, oldRemote)
+	r.Set(name, renamed)
 	return conf.Save()
 }
 
 func removeRun(cmd *cobra.Command, args []string) error {
 	var wectx = we.Context()
 	var conf = wectx.Config()
-	var remotes = conf.Remotes
+	var params = conf.GetParams()
+	var rl = params.Remotes
+
 	var name = args[0]
 
-	if _, ok := remotes[name]; !ok {
+	if !rl.Has(name) {
 		return errors.New("fatal: remote " + name + " does not exists.")
 	}
 
-	remotes.Del(name)
+	rl.Del(name)
 
 	if name == defaults.CloudRemote {
 		_, _ = fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Removed default cloud remote "wedeploy" will be recreated with its default value`))
 	}
 
-	if name == conf.DefaultRemote && name != defaults.CloudRemote {
-		conf.DefaultRemote = defaults.CloudRemote
+	if name == params.DefaultRemote && name != defaults.CloudRemote {
+		params.DefaultRemote = defaults.CloudRemote
+		conf.SetParams(params)
 		_, _ = fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Default remote reset to "wedeploy"`))
 	}
 
@@ -152,13 +161,16 @@ func removeRun(cmd *cobra.Command, args []string) error {
 func getURLRun(cmd *cobra.Command, args []string) error {
 	var wectx = we.Context()
 	var conf = wectx.Config()
-	var remotes = conf.Remotes
-	var name = args[0]
-	var remote, ok = remotes[name]
+	var params = conf.GetParams()
+	var rl = params.Remotes
 
-	if !ok {
+	var name = args[0]
+
+	if !rl.Has(name) {
 		return errors.New("fatal: remote " + name + " does not exists.")
 	}
+
+	var remote = rl.Get(name)
 
 	fmt.Println(remote.Infrastructure)
 	return nil
@@ -167,19 +179,21 @@ func getURLRun(cmd *cobra.Command, args []string) error {
 func setURLRun(cmd *cobra.Command, args []string) error {
 	var wectx = we.Context()
 	var conf = wectx.Config()
-	var r = conf.Remotes
+	var params = conf.GetParams()
+	var rl = params.Remotes
+
 	var name = args[0]
 	var uri = args[1]
 
-	remote, ok := r[name]
-
-	if !ok {
+	if !rl.Has(name) {
 		return errors.New("fatal: remote " + name + " does not exists.")
 	}
 
+	var remote = rl.Get(name)
+
 	remote.Infrastructure = uri
 
-	r.Set(name, remote)
+	rl.Set(name, remote)
 
 	return conf.Save()
 }

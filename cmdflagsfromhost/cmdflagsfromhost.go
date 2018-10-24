@@ -117,12 +117,18 @@ func (s *SetupHost) Remote() string {
 
 // InfrastructureDomain of the parsed flags or host
 func (s *SetupHost) InfrastructureDomain() string {
-	return s.wectx.Config().Remotes[s.remote].Infrastructure
+	var conf = s.wectx.Config()
+	var params = conf.GetParams()
+	var rl = params.Remotes
+	return rl.Get(s.remote).Infrastructure
 }
 
 // ServiceDomain of the parsed flags or host
 func (s *SetupHost) ServiceDomain() string {
-	return s.wectx.Config().Remotes[s.remote].Service
+	var conf = s.wectx.Config()
+	var params = conf.GetParams()
+	var rl = params.Remotes
+	return rl.Get(s.remote).Service
 }
 
 // Host returns the host for a given service or partial host for a given project
@@ -195,7 +201,9 @@ func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 	}
 
 	var conf = s.wectx.Config()
-	var cffh = flagsfromhost.New(&conf.Remotes)
+	var params = conf.GetParams()
+	var rl = params.Remotes
+	var cffh = flagsfromhost.New(rl)
 
 	if err := s.injectEnvFlagInProject(); err != nil {
 		return nil, err
@@ -215,7 +223,7 @@ func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
 			Remote:        remoteFlagValue,
 			RemoteChanged: remoteFlagChanged,
 		},
-		s.wectx.Config().DefaultRemote)
+		params.DefaultRemote)
 }
 
 func (s *SetupHost) injectEnvFlagInProject() error {

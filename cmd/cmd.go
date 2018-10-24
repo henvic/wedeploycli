@@ -101,7 +101,10 @@ func (m *mainProgram) run() {
 }
 
 func (m *mainProgram) autocomplete() {
-	if !m.config.NoAutocomplete {
+	var conf = m.config
+	var params = conf.GetParams()
+
+	if !params.NoAutocomplete {
 		autocomplete.AutoInstall()
 	}
 }
@@ -270,21 +273,34 @@ func (cl *configLoader) loadConfig() {
 		os.Exit(1)
 	}
 
-	if wectx.Config().NoColor {
+	var conf = wectx.Config()
+	var params = conf.GetParams()
+
+	if params.NoColor {
 		color.NoColor = true
+		conf.SetParams(params)
 	}
 }
 
 func (cl *configLoader) checkPastVersion() {
-	if cl.wectx.Config().PastVersion != "" {
-		update.ApplyTransitions(cl.wectx.Config().PastVersion)
-		cl.wectx.Config().PastVersion = ""
+	var wectx = cl.wectx
+	var conf = wectx.Config()
+	var params = conf.GetParams()
+
+	if params.PastVersion != "" {
+		update.ApplyTransitions(params.PastVersion)
+		params.PastVersion = ""
+		conf.SetParams(params)
 		cl.reload = true
 	}
 }
 
 func (cl *configLoader) checkAnalytics() {
-	if !cl.wectx.Config().EnableAnalytics || cl.wectx.Config().AnalyticsID != "" {
+	var wectx = cl.wectx
+	var conf = wectx.Config()
+	var params = conf.GetParams()
+
+	if !params.EnableAnalytics || params.AnalyticsID != "" {
 		return
 	}
 

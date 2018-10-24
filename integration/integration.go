@@ -240,8 +240,11 @@ func setupLoginHome() {
 	removeLoginHomeMock()
 
 	var mock = &config.Config{
-		Path:    file,
-		NoColor: true,
+		Path: file,
+
+		Params: config.Params{
+			NoColor: true,
+		},
 	}
 
 	if err := mock.Load(); err != nil {
@@ -250,16 +253,18 @@ func setupLoginHome() {
 
 	var port = getIntegrationServerPort()
 
-	var cr = mock.Remotes[defaults.CloudRemote]
-	cr.Username = "admin"
-	mock.Remotes[defaults.CloudRemote] = cr
+	var params = mock.GetParams()
 
-	mock.Remotes["local"] = remotes.Entry{
+	var cr = params.Remotes.Get(defaults.CloudRemote)
+	cr.Username = "admin"
+	params.Remotes.Set(defaults.CloudRemote, cr)
+
+	params.Remotes.Set("local", remotes.Entry{
 		Infrastructure: fmt.Sprintf("http://localhost:%d", port),
 		Service:        "wedeploy.me",
 		Username:       "admin",
 		Token:          "token",
-	}
+	})
 
 	if err := mock.Save(); err != nil {
 		panic(err)
