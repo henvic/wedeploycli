@@ -1,0 +1,132 @@
+#! /usr/bin/expect
+
+spawn $env(SHELL)
+
+Feature: "Restart"
+
+Scenario: "Cannot restart without signing in" {
+  logout $::_tester(email)
+
+  send "we restart\r"
+  expect {
+    timeout { handle_timeout; break }
+    "You need to log in before using \"we restart\"."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Open your browser and authenticate?"
+  }
+  send "n\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Login canceled."
+  }
+}
+
+Scenario: "Select a service to restart" {
+  login $::_tester(email) $::_tester(pw)
+
+  create_project restart1
+  create_service restart1 ui1qa
+  create_service restart1 ui2qa
+
+  send "we restart\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Type service ID or #"
+  }
+  send "ui2qa\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "Restarting service*ui2qa*on project*restart1"
+  }
+  send "we curl \"/projects/restart1/activities?type=SERVICE_RESTARTED\"\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "\"serviceId\"*:*\"ui2qa\"*,*\"projectId\"*:*\"restart1\"*\"SERVICE_RESTARTED\""
+  }
+  expect /tests
+  send "we curl \"/projects/restart1/activities?type=SERVICE_RESTARTED\"\r"
+  expect {
+    timeout {}
+    -gl "\"serviceId\"*:*\"ui1qa\"*,*\"projectId\"*:*\"restart1\"*\"SERVICE_RESTARTED\"" {
+      expectation_not_met "Should not have SERVICE_RESTARTED activity for ui1qa"
+      break
+    }
+  }
+} { delete_project restart1 }
+
+Scenario: "Restart with -p flag" {
+  create_project restart2
+  create_project restart3
+  create_service restart2 hosting1a
+  create_service restart3 hosting1b
+
+  send "we restart -p restart2\r"
+  expect {
+    timeout {}
+    "hosting1b-restart3" {
+    expectation_not_met "Should not show restart3 project"; break
+    }
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "hosting1a-restart2"
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Type service ID or #"
+  }
+  send "1\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "Restarting service*hosting1a*on project*restart2"
+  }
+  send "we curl /projects/restart2/activities\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "\"serviceId\"*:*\"hosting1a\"*,*\"projectId\"*:*\"restart2\"*\"SERVICE_RESTARTED\""
+  }
+  expect /tests
+  send "we curl /projects/restart3/activities\r"
+  expect {
+    timeout {}
+   "SERVICE_RESTARTED" {
+      expectation_not_met "Should not have SERVICE_RESTARTED activity for hosting1b"
+      break
+    }
+  }
+} {
+  delete_project restart2
+  delete_project restart3
+}
+
+Scenario: "Restart with -p and -s flags" {
+  create_project restart4
+  create_project restart5
+  create_service restart4 hosting1
+  create_service restart5 hosting1
+
+  send "we restart -p restart5 -s hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "Restarting service*hosting1*on project*restart5"
+  }
+  send "we curl /projects/restart5/activities\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "\"serviceId\"*:*\"hosting1\"*,*\"projectId\"*:*\"restart5\"*\"SERVICE_RESTARTED\""
+  }
+  expect /tests
+  send "we curl /projects/restart4/activities\r"
+  expect {
+    timeout {}
+    "SERVICE_RESTARTED" {
+      expectation_not_met "Should not have SERVICE_RESTARTED activity for restart4"
+      break
+    }
+  }
+} {
+  delete_project restart4
+  delete_project restart5
+}

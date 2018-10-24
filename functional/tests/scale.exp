@@ -1,0 +1,84 @@
+#! /usr/bin/expect
+
+spawn $env(SHELL)
+
+Feature: "Scale"
+
+Scenario: "Cannot `we scale` without signing in" {
+  logout $::_tester(email)
+
+  send "we scale\r"
+  expect {
+    timeout { handle_timeout; break }
+    "You need to log in before using \"we scale\"."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Open your browser and authenticate?"
+  }
+  send "n\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Login canceled."
+  }
+}
+
+Scenario: "Configure scale for a service" {
+  login $::_tester(email) $::_tester(pw)
+  set_user_plan standard
+
+  create_project scale1
+  create_service scale1 hosting1
+  create_service scale1 hosting2
+
+  send "we scale\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Please*select*a service from the list below"
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Type service ID or #"
+  }
+  send "hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Number of instances"
+  }
+  send "3\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "Scaling service \"*hosting1*\" on project \"*scale1*\" on *wedeploy.* to *3* instances."
+  }
+  send "we curl /projects/scale1/services/hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "\"scale\"*:*3"
+  }
+  send "we curl /projects/scale1/services/hosting2\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "\"scale\"*:*1"
+  }
+} { delete_project scale1 }
+
+Scenario: "Cannot exceed service quota with scale" {
+  create_project scale2
+  create_service scale2 hosting1
+
+  send "we scale -p scale2 -s hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Number of instances"
+  }
+  send "22\r"
+  expect {
+    timeout { handle_timeout; break }
+    "You've reached your plan limits"
+  }
+  send "we curl /projects/scale2/services/hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "\"scale\"*:*1"
+  }
+} { delete_project scale2 }

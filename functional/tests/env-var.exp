@@ -1,0 +1,139 @@
+#! /usr/bin/expect
+
+spawn $env(SHELL)
+
+Feature: "Environment Variables"
+
+Scenario: "Cannot `we env-var` without signing in" {
+  logout $::_tester(email)
+
+  send "we env-var\r"
+  expect {
+    timeout { handle_timeout; break }
+    "You need to log in before using \"we env-var\"."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Open your browser and authenticate?"
+  }
+  send "n\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Login canceled."
+  }
+}
+
+Scenario: "Add an environment variable" {
+  login $::_tester(email) $::_tester(pw)
+
+  create_project env1
+  create_service env1 hosting1
+  create_project env2
+  create_service env2 hosting1
+  create_service env2 hosting2
+
+  send "we env-var set var1 AAA\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Please*select*a service from the list below."
+  }
+  send "3\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Environment variable \"var1\" added."
+  }
+  send "we env-var show\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Please*select*a service from the list below."
+  }
+  send "1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "No environment variable found."
+  }
+  send "we env-var show\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Please*select*a service from the list below."
+  }
+  send "2\r"
+  expect {
+    timeout { handle_timeout; break }
+    "No environment variable found."
+  }
+  send "we env-var show -p env2 -s hosting2\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "var1*AAA"
+  }
+} {
+  delete_project env1
+  delete_project env2
+}
+
+Scenario: "Update an environment variable" {
+  create_project env3
+  create_service env3 hosting1
+
+  send "we env-var set var2 12345 -p env3 -s hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Environment variable \"var2\" added."
+  }
+  send "we env-var show -p env3 -s hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "var2*12345"
+  }
+  send "we env-var set var2 abcdef -p env3 -s hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Environment variable \"var2\" added."
+  }
+  send "we env-var show -p env3 -s hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "var2*abcdef"
+  }
+} { delete_project env3 }
+
+Scenario: "Delete an environment variable" {
+  create_project env4
+  create_service env4 hosting1
+
+  send "we env-var set var3 qa123xyz -p env4 -s hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Environment variable \"var3\" added."
+  }
+  send "we env-var show -p env4 -s hosting1\r"
+  expect {
+    timeout { handle_timeout; break }
+    -gl "var3*qa123xyz"
+  }
+  send "we env-var delete -p env4\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Please*select*a service from the list below."
+  }
+  send "1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Select a environment variable # or name to delete"
+  }
+  send "1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Environment variable \"var3\" deleted."
+  }
+  send "we env-var show -p env4 -s hosting1\r"
+  expect {
+    timeout {}
+    "var3" { expectation_not_met "Should not have env var \"var3\""; break }
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "No environment variable found."
+  }
+} { delete_project env4 }

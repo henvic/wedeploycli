@@ -1,0 +1,199 @@
+#! /usr/bin/expect
+
+spawn $env(SHELL)
+
+Feature: "Deploy"
+
+send "cd ../fixtures/projectA\r"
+expect {
+  timeout {
+    handle_timeout
+    error "Had problem changing to project directory"
+   }
+  "fixtures/projectA"
+}
+
+Scenario: "Cannot deploy without logging in" {
+  logout $::_tester(email)
+
+  send "we deploy\r"
+  expect {
+    timeout { handle_timeout; break }
+    "You need to log in before using \"we deploy\"."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Open your browser and authenticate?"
+  }
+  send "n\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Login canceled."
+  }
+}
+
+Scenario: "Deploy to a new project" {
+  login $::_tester(email) $::_tester(pw)
+
+  send "we deploy\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Type project ID"
+  }
+  send "deploy1\r"
+  expect {
+    timeout { handle_timeout; break }
+    "No project found."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Create*project \"*deploy1*\""
+  }
+  send "y\r"
+  expect "Deploying services on project"
+  set timeout 30
+  expect {
+    timeout { handle_timeout; break }
+    "Deployment succeeded"
+  }
+  set timeout $::_default_timeout
+  assert_service_exists deploy1 ui
+} { delete_project deploy1 }
+
+Scenario: "Deploy to an existing project" {
+  login $::_tester(email) $::_tester(pw)
+
+  create_project deploy2
+
+  send "we deploy\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Type project ID or #"
+  }
+  send "deploy2\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Deploying services to project"
+  }
+  set timeout 30
+  expect {
+    timeout {
+      handle_timeout; break }
+    "Deployment succeeded"
+  }
+  set timeout $::_default_timeout
+  assert_service_exists deploy2 ui
+} { delete_project deploy2 }
+
+Scenario: "Deploy project with two services" {
+  login $::_tester(email) $::_tester(pw)
+
+  send "cd ../projectB\r"
+  expect {
+    timeout {
+      handle_timeout
+      error "Had problem changing to project directory"
+     }
+    "fixtures/projectB"
+  }
+
+  create_project deploy3
+
+  set timeout 30
+
+  send "we deploy -p deploy3\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Deploying services to project"
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Deployment succeeded in"
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Upload completed in"
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Deployment succeeded"
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Deployment succeeded"
+  }
+  assert_service_exists deploy3 ui1
+  assert_service_exists deploy3 ui2
+} {
+  set timeout $::_default_timeout
+  delete_project deploy3
+}
+
+Scenario: "Deploy project with bad wedeploy.json" {
+  login $::_tester(email) $::_tester(pw)
+
+  send "cd ../projectC\r"
+  expect {
+    timeout {
+      handle_timeout
+      error "Had problem changing to project directory"
+     }
+    "fixtures/projectC"
+  }
+
+  create_project deploy4
+
+  set timeout 30
+  send "we deploy -p deploy4\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Deployment failed"
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Build failed*md-deploy4"
+  }
+  set timeout $::_default_timeout
+  expect {
+    timeout { handle_timeout; break }
+    "Open browser to check the logs?"
+  }
+  send "n\r"
+  expect {
+    timeout { handle_timeout; break }
+    "fixtures/projectC"
+  }
+} { delete_project deploy4 }
+
+Scenario: "Deploy service to a new environment" {
+  login $::_tester(email) $::_tester(pw)
+
+  send "cd ../projectA\r"
+  expect {
+    timeout {
+      handle_timeout
+      error "Had problem changing to project directory"
+     }
+    "fixtures/projectA"
+  }
+
+  create_project deploy5
+
+  send "we deploy -p deploy5 -e dev\r"
+  expect {
+    timeout { handle_timeout; break }
+    "No project found."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Create*project \"*deploy5-dev*\""
+  }
+  send "y\r"
+  set timeout 30
+  expect {
+    timeout { handle_timeout; break }
+    "Deployment succeeded"
+  }
+  set timeout $::_default_timeout
+  assert_service_exists deploy5-dev ui
+} { delete_project deploy5 }

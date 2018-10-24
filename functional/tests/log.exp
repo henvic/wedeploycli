@@ -1,0 +1,167 @@
+#! /usr/bin/expect
+
+spawn $env(SHELL)
+
+Feature: "Log"
+
+Scenario: "Cannot view log without signing in" {
+  logout $::_tester(email)
+
+  send "we log\r"
+  expect {
+    timeout { handle_timeout; break }
+    "You need to log in before using \"we log\"."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "Open your browser and authenticate?"
+  }
+  send "n\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Login canceled."
+  }
+}
+
+Scenario: "View logs by selecting project/service ID" {
+  login $::_tester(email) $::_tester(pw)
+  create_project log1
+  create_service log1 ui1qa
+  sleep 5
+  create_service log1 ui2qa
+
+  send "we log\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Type project/service ID or service #"
+  }
+  send "ui2qa\r"
+  set timeout 30
+  expect {
+    timeout { handle_timeout; break }
+    -re "ui2qa.*HOSTING will now listen on 0.0.0.0:80."
+  }
+  set timeout $::_default_timeout
+  expect {
+    timeout {}
+    "ui1qa" { expectation_not_met "Should not see logs for ui1qa"; break }
+  }
+  control_c
+
+  send "we log\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Type project/service ID or service #"
+  }
+  send "1\r"
+  expect {
+    timeout { handle_timeout; break }
+    -re "ui1qa.*HOSTING will now listen on 0.0.0.0:80."
+  }
+  expect {
+    timeout {}
+    "ui2qa" { expectation_not_met "Should not see logs for ui2qa"; break }
+  }
+} { control_c }
+
+Scenario: "View logs with -p flag" {
+  send "we log -p log1\r"
+  expect {
+    timeout { handle_timeout; break }
+    -re "ui1qa.*HOSTING will now listen on 0.0.0.0:80."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    -re "ui2qa.*HOSTING will now listen on 0.0.0.0:80."
+  }
+  control_c
+  send "we log -p log2\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Project does not exist"
+  }
+} { control_c }
+
+Scenario: "View logs with -p and -s flags" {
+  send "we log -p log1 -s ui2qa\r"
+  expect {
+    timeout { handle_timeout; break }
+    -re "ui2qa.*HOSTING will now listen on 0.0.0.0:80."
+  }
+  expect {
+    timeout {}
+    "ui1qa" { expectation_not_met "Should not see logs for ui1qa"; break }
+  }
+} { control_c }
+
+Scenario: "View logs with --instance flag" {
+  send "we scale -p log1 -s ui1qa\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Number of instances"
+  }
+  send "3\r"
+  sleep 5
+  set timeout 15
+  expect {
+    timeout { handle_timeout; break }
+    -gl "Scaling service \"*ui1qa*\" on project \"*log1*\" on *wedeploy.* to *3* instances."
+  }
+  expect {
+    timeout { handle_timeout; break }
+    $::_root_dir
+  }
+  set timeout $::_default_timeout
+  set instances [get_container_ids log1 ui1qa]
+  set instance_1 [string range [lindex $instances 0] 0 11]
+  set instance_2 [string range [lindex $instances 1] 0 11]
+  set instance_3 [string range [lindex $instances 2] 0 11]
+  send "we log --instance $instance_2\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Type project/service ID or service #"
+  }
+  send "1\r"
+  expect {
+    timeout {}
+    $instance_1 { expectation_not_met "Should not see logs for $instance_1"; break }
+  }
+  expect {
+    timeout {}
+    $instance_3 { expectation_not_met "Should not see logs for $instance_1"; break }
+  }
+  expect {
+    timeout { handle_timeout; break }
+    "$instance_2"
+  }
+} { control_c }
+
+Scenario: "View logs with --since flag" {
+  # need to wait here to test the --since flag
+  sleep 60
+  create_service log1 ui3qa
+
+  if { [info exists expect_out(buffer)] } { unset expect_out(buffer) }
+
+  send "we log --since 1min\r"
+  expect {
+    timeout { handle_timeout; break }
+    "Type project/service ID or service #"
+  }
+  send "log1\r"
+  expect {
+    timeout {}
+    "ui1qa" { expectation_not_met "Should not see logs for ui1qa"; break }
+  }
+  expect {
+    timeout {}
+    "ui2qa" { expectation_not_met "Should not see logs for ui2qa"; break }
+  }
+  expect {
+    timeout { handle_timeout; break }
+    -re "ui3qa.*HOSTING will now listen on 0.0.0.0:80."
+  }
+} {
+  control_c
+  delete_project log1
+}
