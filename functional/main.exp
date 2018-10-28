@@ -1,0 +1,32 @@
+#!/usr/bin/expect
+
+if { [file exists settings.tcl] != 1} {
+  puts "No configuration found."
+  puts "You probably want to copy settings-sample.tcl to settings.tcl and configure it."
+  exit 1  
+}
+
+source settings.tcl
+
+source globals.tcl
+source check-settings.tcl
+
+source procs/shared_procs.tcl
+source procs/curl_procs.tcl
+
+print_msg "Settings"
+puts "Mode: $_mode"
+puts "Create user (if not exists): $_create_user"
+puts "Remote: $_remote"
+puts "Tester account: $::_tester(email)"
+puts "Team user account: $::_teamuser(email)"
+puts ""
+
+source prepare.tcl
+
+# include test scenarios
+source include.tcl
+
+source run.tcl
+
+source report.tcl

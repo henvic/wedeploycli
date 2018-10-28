@@ -1,11 +1,10 @@
-#! /usr/bin/expect
+#!/usr/bin/expect
 
 package require TclCurl
 
 set base_url "https://api.$::_remote"
-set auth $::_tester(email):$::_tester(pw)
-set team_auth $::_teamuser(email):$::_teamuser(pw)
-set auth_header {"Authorization: Bearer token"}
+set auth $::_tester(email):$::_tester(password)
+set team_auth $::_teamuser(email):$::_teamuser(password)
 set content_type_header {"Content-Type: application/json; charset=utf-8"}
 
 proc http_get {url userpw {args}} {

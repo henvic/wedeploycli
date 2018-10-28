@@ -47,9 +47,9 @@ pipeline {
       }
       post {
         always {
-          junit(allowEmptyResults: true, testResults: 'functional/test-results/TEST-*.xml')
+          junit(allowEmptyResults: true, testResults: 'tests/results/TEST-*.xml')
 
-          archiveArtifacts artifacts: 'functional/test-results/report.txt'
+          archiveArtifacts artifacts: 'tests/results/report.txt'
 
           sh './.jenkins/main.sh --shutdown-infrastructure'
         }

@@ -1,11 +1,11 @@
-#! /usr/bin/expect
+#!/usr/bin/expect
 
 spawn $env(SHELL)
 
 Feature: "Quota"
 
 Scenario: "Cannot exceed project quota" {
-  login $::_tester(email) $::_tester(pw)
+  login $::_tester(email) $::_tester(password)
 
   set_user_plan basic
   sleep 5

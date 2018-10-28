@@ -1,4 +1,4 @@
-#! /usr/bin/expect
+#!/usr/bin/expect
 
 proc Feature: {name} {
   set ::_current_feature "$name"
@@ -38,8 +38,8 @@ proc end_scenario {name} {
   append ::_junit_scenarios_content $::_junit_scenarios_error_content
   append ::_junit_scenarios_content "</testcase>"
 
-  print_msg "COMPLETED SCENARIO: $name  in $time milliseconds" magenta
-  add_to_report "\nCOMPLETED SCENARIO: $name  in $time milliseconds"
+  print_msg "\nCOMPLETED SCENARIO: $name in $time milliseconds" magenta
+  add_to_report "\nCOMPLETED SCENARIO: $name in $time milliseconds"
 }
 
 proc Scenario: {name script {teardown ""}} {
@@ -61,6 +61,12 @@ proc Scenario: {name script {teardown ""}} {
 
 # place - in front of Scenario to skip it
 proc -Scenario: {name script {teardown ""}} {
+}
+
+proc create_report {} {
+  # cleanup/initialize test report file
+  set report_file [open $::_test_report w]
+  close $report_file
 }
 
 proc add_to_report {text} {
@@ -94,7 +100,7 @@ proc exit_shell {} {
 proc expectation_not_met {message} {
   incr ::_tests_failed 1
   incr ::_tests_failed_by_feature 1
-  print_msg "Expectation not met: $message" red
+  print_msg_stderr "Expectation not met: $message"
   set stack [print_stack]
   add_to_report "Expectation Not Met Error: $message\n$stack"
   set timeout $::_default_timeout
@@ -104,7 +110,7 @@ proc expectation_not_met {message} {
 proc handle_timeout {{message ""}} {
   incr ::_tests_failed 1
   incr ::_tests_failed_by_feature 1
-  print_msg "Timeout Error: $message" red
+  print_msg_stderr "Timeout Error: $message"
   set stack [print_stack]
   add_to_report "Timeout Error: $message\n$stack"
   append ::_junit_scenarios_error_content "<failure>Timeout Error: $message\n$stack</failure>"
@@ -113,6 +119,14 @@ proc handle_timeout {{message ""}} {
 }
 
 proc print_msg {text {color cyan}} {
+  puts [get_msg $text $color]
+}
+
+proc print_msg_stderr {text {color red}} {
+  puts stderr [get_msg $text $color]
+}
+
+proc get_msg {text color} {
   switch $color {
     green { set color_code 32 }
     magenta { set color_code 35 }
@@ -121,7 +135,7 @@ proc print_msg {text {color cyan}} {
     default { set color_code 36 }
   }
 
-  puts "\033\[01;$color_code;m$text \033\[0;m\n"
+  return "\033\[01;$color_code;m$text \033\[0;m\n"
 }
 
 proc print_stack {} {

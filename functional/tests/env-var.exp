@@ -1,4 +1,4 @@
-#! /usr/bin/expect
+#!/usr/bin/expect
 
 spawn $env(SHELL)
 
@@ -24,7 +24,7 @@ Scenario: "Cannot `we env-var` without signing in" {
 }
 
 Scenario: "Add an environment variable" {
-  login $::_tester(email) $::_tester(pw)
+  login $::_tester(email) $::_tester(password)
 
   create_project env1
   create_service env1 hosting1

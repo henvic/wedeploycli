@@ -1,4 +1,4 @@
-#! /usr/bin/expect
+#!/usr/bin/expect
 
 spawn $env(SHELL)
 
@@ -24,7 +24,7 @@ Scenario: "Cannot `we scale` without signing in" {
 }
 
 Scenario: "Configure scale for a service" {
-  login $::_tester(email) $::_tester(pw)
+  login $::_tester(email) $::_tester(password)
   set_user_plan standard
 
   create_project scale1

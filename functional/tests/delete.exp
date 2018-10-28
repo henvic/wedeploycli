@@ -1,4 +1,4 @@
-#! /usr/bin/expect
+#!/usr/bin/expect
 
 spawn $env(SHELL)
 
@@ -24,7 +24,7 @@ Scenario: "Cannot delete without signing in" {
 }
 
 Scenario: "Delete a project" {
-  login $::_tester(email) $::_tester(pw)
+  login $::_tester(email) $::_tester(password)
   create_project delete1
 
   send "we delete\r"
