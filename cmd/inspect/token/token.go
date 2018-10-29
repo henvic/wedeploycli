@@ -2,6 +2,7 @@ package token
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -42,6 +43,10 @@ func tokenRun(cmd *cobra.Command, args []string) error {
 	var params = conf.GetParams()
 	var rl = params.Remotes
 	var remote = rl.Get(setupHost.Remote())
+
+	if remote.Token == "" {
+		return errors.New("user is not logged in")
+	}
 
 	if format == "" {
 		fmt.Println(remote.Token)
