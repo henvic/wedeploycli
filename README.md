@@ -27,6 +27,7 @@ The following commands are available and requires no arguments:
 * **make build**: compiles the program
 * **make fast-test**: run all unit tests
 * **make test**: run all unit and integration tests
+* **make functional-tests**: run functional tests
 * **make build-integration-tests**: generate integration tests suites
 * **make release**: tag, build, and publish new version of the app
 * **make promote**: publish version already released to a given distribution channel
@@ -75,7 +76,11 @@ Integration test suites and its related mocks are saved in:
 And run it as a regular executable on each target system.
 
 ## Functional testing
-See the [cli-functional-tests](http://github.com/wedeploy/cli-functional-tests) repository with tests written using [cucumber aruba](https://github.com/cucumber/aruba). Be aware functional tests might have drastic side-effects given they destroy data, so be sure you know what you are doing before you run them.
+Functional tests for the CLI are written in the [Tcl](https://tcl.tk/) programming language and uses [Expect](https://core.tcl.tk/expect/). See the [README](functional/README.md) at the functional directory.
+
+These tests are run by connecting to a real WeDeploy infrastructure, therefore caution to avoid data loss is advised. For this very reason it refuses to be run on a non-empty user account by default.
+
+You need to copy `functional/settings-sample.tcl` to `functional/settings.tcl` and configure it appropriately.
 
 ## Environment variables
 See [envs/envs.go](envs/envs.go) for an up-to-date list of used environment variables.

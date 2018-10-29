@@ -1,5 +1,5 @@
-.SILENT: main development-environment get-dependencies legal list-packages build fast-test test build-integration-tests tag release release-installer promote release-notes-page check-go check-cli-release-config-path
-.PHONY: development-environment get-dependencies legal list-packages build fast-test test build-integration-tests tag release release-installer promote release-notes-page
+.SILENT: main development-environment get-dependencies legal list-packages build fast-test test functional-tests build-integration-tests tag release release-installer promote release-notes-page check-go check-cli-release-config-path
+.PHONY: development-environment get-dependencies legal list-packages build fast-test test functional-tests build-integration-tests tag release release-installer promote release-notes-page
 main:
 	echo "WeDeploy CLI build tool commands:"
 	echo "development-environment, get-dependencies, list-packages, build, fast-test, test, tag, release, promote"
@@ -21,6 +21,8 @@ fast-test:
 	./scripts/test.sh --skip-integration-tests
 test:
 	./scripts/test.sh
+functional-tests:
+	./scripts/functional-tests.sh
 build-integration-tests:
 	./scripts/build-integration-tests.sh
 tag:
