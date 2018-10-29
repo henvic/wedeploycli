@@ -163,7 +163,7 @@ func (m *mainProgram) maybePrintCommandError() {
 		cc := m.cmdErr.(canceled.Command)
 
 		if !cc.Quiet() {
-			_, _ = fmt.Fprintln(os.Stderr, m.cmdErr)
+			printError(m.cmdErr)
 		}
 
 		m.cmdErr = nil
