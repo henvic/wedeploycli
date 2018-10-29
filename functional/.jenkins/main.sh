@@ -8,10 +8,6 @@ CURRENT_DIR=$(pwd)
 main() {
   case $1 in
 
-  --create-test-user)
-    create_test_user
-    ;;
-
   --log-into-dockerhub)
     log_into_dockerhub
     ;;
@@ -81,22 +77,6 @@ log_into_dockerhub() {
   logging into docker hub.
   "
   bash -ci 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
-}
-
-create_test_user() {
-  curl -X "POST" "localhost:8082/users" \
-    -H "Authorization: Bearer token" \
-    -H "Content-Type: application/json; charset=utf-8" \
-    -d $'{
-        "email": "qa.team.user@wedeploy.com",
-        "password": "L6P&ZExVXydC",
-        "confirmed": null,
-        "name": "QA Team User",
-        "planId": "team",
-        "supportedScopes": [
-          "team"
-        ]
-      }'
 }
 
 main "$@"
