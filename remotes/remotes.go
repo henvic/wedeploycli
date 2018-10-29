@@ -42,7 +42,7 @@ func isHTTPLocalhost(address string) bool {
 
 // List of remotes
 type List struct {
-	entries map[string]Entry
+	Entries map[string]Entry
 	m       sync.RWMutex
 }
 
@@ -50,9 +50,9 @@ type List struct {
 func (l *List) Keys() []string {
 	l.m.RLock()
 	defer l.m.RUnlock()
-	var keys = make([]string, 0, len(l.entries))
+	var keys = make([]string, 0, len(l.Entries))
 
-	for k := range l.entries {
+	for k := range l.Entries {
 		keys = append(keys, k)
 	}
 
@@ -64,7 +64,7 @@ func (l *List) Keys() []string {
 func (l *List) Has(name string) bool {
 	l.m.RLock()
 	defer l.m.RUnlock()
-	_, ok := l.entries[name]
+	_, ok := l.Entries[name]
 	return ok
 }
 
@@ -72,7 +72,7 @@ func (l *List) Has(name string) bool {
 func (l *List) Get(name string) Entry {
 	l.m.RLock()
 	defer l.m.RUnlock()
-	return l.entries[name]
+	return l.Entries[name]
 }
 
 // Set a remote
@@ -80,16 +80,16 @@ func (l *List) Set(name string, entry Entry) {
 	l.m.Lock()
 	defer l.m.Unlock()
 
-	if l.entries == nil {
-		l.entries = map[string]Entry{}
+	if l.Entries == nil {
+		l.Entries = map[string]Entry{}
 	}
 
-	l.entries[name] = entry
+	l.Entries[name] = entry
 }
 
 // Del deletes a remote by name
 func (l *List) Del(name string) {
 	l.m.Lock()
 	defer l.m.Unlock()
-	delete(l.entries, name)
+	delete(l.Entries, name)
 }
