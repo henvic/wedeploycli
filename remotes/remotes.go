@@ -47,7 +47,7 @@ type List struct {
 }
 
 // Keys of the remote list
-func (l List) Keys() []string {
+func (l *List) Keys() []string {
 	l.m.RLock()
 	defer l.m.RUnlock()
 	var keys = make([]string, 0, len(l.entries))
