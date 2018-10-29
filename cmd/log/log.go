@@ -59,7 +59,7 @@ func logRun(cmd *cobra.Command, args []string) error {
 	var service = setupHost.Service()
 	var instance = setupHost.Instance()
 
-	var level, err = logs.GetLevel(since)
+	var level, err = logs.GetLevel(severity)
 
 	if err != nil {
 		return err
