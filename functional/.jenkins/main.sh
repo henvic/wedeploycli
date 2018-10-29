@@ -49,7 +49,7 @@ setup_machine() {
 
   cd "$CURRENT_DIR/.runner"
 
-  git clone https://c2b67bf29e8283e809dbf99360074d7f8881d77e@github.com/wedeploy/ci-infrastructure.git
+  git clone git@github.com:wedeploy/ci-infrastructure.git
 
   chmod +x "$CURRENT_DIR/.runner/ci-infrastructure/runner/exploded-infra-runner.sh"
 
