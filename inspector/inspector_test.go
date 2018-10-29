@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/tdata"
 	"github.com/wedeploy/wedeploy-sdk-go/jsonlib"
@@ -265,6 +266,42 @@ func TestInspectContextOverviewService(t *testing.T) {
     ]
 }`,
 		abs("mocks/my-project/email"))
+
+	if got != want {
+		t.Errorf("Wanted %v, got %v instead", want, got)
+	}
+}
+
+func TestInspectConfig(t *testing.T) {
+	var params = config.Params{
+		ReleaseChannel: "testing",
+		NextVersion:    "3.0",
+	}
+
+	wectx := config.NewContext(config.ContextParams{})
+
+	wectx.Config().SetParams(params)
+
+	var got, err = InspectConfig("", wectx)
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	var want = `{
+    "DefaultRemote": "",
+    "NoAutocomplete": false,
+    "NoColor": false,
+    "NotifyUpdates": false,
+    "ReleaseChannel": "testing",
+    "LastUpdateCheck": "",
+    "PastVersion": "",
+    "NextVersion": "3.0",
+    "EnableAnalytics": false,
+    "AnalyticsID": "",
+    "EnableCURL": false,
+    "Remotes": null
+}`
 
 	if got != want {
 		t.Errorf("Wanted %v, got %v instead", want, got)

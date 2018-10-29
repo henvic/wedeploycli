@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/findresource"
 	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/templates"
@@ -158,4 +159,11 @@ func InspectService(format, directory string) (string, error) {
 
 	verbose.Debug("Reading service at " + servicePath)
 	return templates.ExecuteOrList(format, service)
+}
+
+// InspectConfig of the client.
+func InspectConfig(format string, wectx config.Context) (string, error) {
+	var config = wectx.Config()
+	var params = config.GetParams()
+	return templates.ExecuteOrList(format, params)
 }

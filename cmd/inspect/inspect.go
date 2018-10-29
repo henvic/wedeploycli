@@ -2,6 +2,7 @@ package inspect
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/cmd/inspect/config"
 	"github.com/wedeploy/cli/cmd/inspect/context"
 	"github.com/wedeploy/cli/cmd/inspect/service"
 	"github.com/wedeploy/cli/cmd/inspect/token"
@@ -20,5 +21,6 @@ var InspectCmd = &cobra.Command{
 func init() {
 	InspectCmd.AddCommand(inspectservice.ServiceCmd)
 	InspectCmd.AddCommand(inspectcontext.ContextCmd)
+	InspectCmd.AddCommand(inspectconfig.ConfigCmd)
 	InspectCmd.AddCommand(token.TokenCmd)
 }
