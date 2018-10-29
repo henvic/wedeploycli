@@ -14,7 +14,11 @@ if { $::argc > 1 } {
 
 # list of test files to run
 lappend test_files \
+  setup.exp \
+  logout.exp \
+  loggedout.exp \
   login.exp \
+  loggedin.exp \
   list.exp \
   deploy.exp \
   log.exp \
@@ -25,4 +29,5 @@ lappend test_files \
   env-var.exp \
   quota.exp \
   scale.exp \
-  shell.exp
+  shell.exp \
+  teardown.exp

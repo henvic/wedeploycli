@@ -1,0 +1,5 @@
+#!/usr/bin/expect
+
+logout $::_tester(email)
+
+print_msg_stderr "Teardown complete."

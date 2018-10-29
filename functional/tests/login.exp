@@ -1,13 +1,11 @@
 #!/usr/bin/expect
 
-spawn $env(SHELL)
+logout $::_tester(email)
 
 Feature: "Login"
 
 Scenario: "Login without browser" {
-  logout $::_tester(email)
-
-  send "we login --no-browser\r"
+  spawn $::bin login --no-browser
   expect {
     timeout { handle_timeout; break }
     "Your email:"
@@ -23,3 +21,5 @@ Scenario: "Login without browser" {
     "Type a command and press Enter to execute it."
   }
 }
+
+# TODO(henvic): write test case logging in with token

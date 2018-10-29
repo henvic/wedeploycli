@@ -1,20 +1,27 @@
 #!/usr/bin/expect
 
+if { $_mode != "complete" } {
+  print_msg_stderr "\nSkipping quota tests\n"
+  return
+}
+
 spawn $env(SHELL)
 
 Feature: "Quota"
 
 Scenario: "Cannot exceed project quota" {
-  login $::_tester(email) $::_tester(password)
-
   set_user_plan basic
   sleep 5
 
-  create_project quota1
-  create_project quota2
-  create_project quota3
+  set quota1 [prefixed_project quota1]
+  set quota2 [prefixed_project quota2]
+  set quota3 [prefixed_project quota3]
+  set quota4 [prefixed_project quota4]
+  create_project $quota1
+  create_project $quota2
+  create_project $quota3
 
-  send "we new\r"
+  send "$::bin new\r"
   expect {
     timeout { handle_timeout; break }
     "Do you want to*create*a new project or install a new service?"
@@ -24,24 +31,26 @@ Scenario: "Cannot exceed project quota" {
     timeout { handle_timeout; break }
     "Choose a project ID"
   }
-  send "quota4\r"
+  send "$quota4\r"
   expect {
     timeout { handle_timeout; break }
     "You've reached your plan limits"
   }
-  send "we list\r"
+  send "$::bin list\r"
   expect {
     timeout {}
-    "quota4" { expectation_not_met "Should not have project \"quota4\""; break }
+    "$quota4" { expectation_not_met "Should not have project \"$quota4\""; break }
   }
 }
 
 Scenario: "Cannot exceed service quota" {
-  create_service quota1 hosting1
-  create_service quota2 hosting1
-  create_service quota2 hosting2
+  set quota1 [prefixed_project quota1]
+  set quota2 [prefixed_project quota2]
+  create_service $quota1 hosting1
+  create_service $quota2 hosting1
+  create_service $quota2 hosting2
 
-  send "we new\r"
+  send "$::bin new\r"
   expect {
     timeout { handle_timeout; break }
     "Do you want to*create*a new project or install a new service?"
@@ -66,7 +75,7 @@ Scenario: "Cannot exceed service quota" {
     timeout { handle_timeout; break }
     "You've reached your plan limits"
   }
-  send "we list\r"
+  send "$::bin list\r"
   expect {
     timeout {}
     "hosting3" {
@@ -77,38 +86,35 @@ Scenario: "Cannot exceed service quota" {
 }
 
 Scenario: "Cannot exceed custom domains quota" {
-  if { $::_remote == "wedeploy.com" } {
-    set service_domain wedeploy.io
-  } else {
-    set service_domain wedeploy.sh
-  }
+  set quota1 [prefixed_project quota1]
+  set quota2 [prefixed_project quota2]
+  set quota3 [prefixed_project quota3]
+  set qadomain1 qadomain1.$::service_domain
+  set qadomain2 qadomain2.$::service_domain
+  set qadomain3 qadomain3.$::service_domain
+  set qadomain4 qadomain4.$::service_domain
 
-  set qadomain1 qadomain1.$service_domain
-  set qadomain2 qadomain2.$service_domain
-  set qadomain3 qadomain3.$service_domain
-  set qadomain4 qadomain4.$service_domain
-
-  send "we domain add $qadomain1 -p quota1 -s hosting1\r"
+  send "$::bin domain add $qadomain1 -p $quota1 -s hosting1\r"
   expect {
     timeout { handle_timeout; break }
     "Custom domain \"$qadomain1\" added."
   }
-  send "we domain add $qadomain2 -p quota1 -s hosting1\r"
+  send "$::bin domain add $qadomain2 -p $quota1 -s hosting1\r"
   expect {
     timeout { handle_timeout; break }
     "Custom domain \"$qadomain2\" added."
   }
-  send "we domain add $qadomain3 -p quota1 -s hosting1\r"
+  send "$::bin domain add $qadomain3 -p $quota1 -s hosting1\r"
   expect {
     timeout { handle_timeout; break }
     "Custom domain \"$qadomain3\" added."
   }
-  send "we domain add $qadomain4 -p quota1 -s hosting1\r"
+  send "$::bin domain add $qadomain4 -p $quota1 -s hosting1\r"
   expect {
     timeout { handle_timeout; break }
     "You've reached your plan limits"
   }
-  send "we domain show -p quota1 -s hosting1\r"
+  send "$::bin domain show -p $quota1 -s hosting1\r"
   expect {
     timeout {}
     $qadomain4 {
@@ -117,7 +123,7 @@ Scenario: "Cannot exceed custom domains quota" {
     }
   }
 } {
-  delete_project quota1
-  delete_project quota2
-  delete_project quota3
+  delete_project $quota1
+  delete_project $quota2
+  delete_project $quota3
 }

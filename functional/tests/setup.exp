@@ -1,0 +1,31 @@
+#!/usr/bin/expect
+
+send_user "\n\nVerifying if not logged in precondition is met.\n"
+spawn $::bin inspect token
+expect {
+  timeout {
+    print_msg_stderr "\nTimed out checking if the user is not logged in.\n"
+    exit 1
+  }
+  eof {
+    print_msg_stderr "\nRefusing to run tests using an already logged-in user.\n"
+    exit 1
+  }
+  "User is not logged in."
+}
+
+login $::_tester(email) $::_tester(password)
+
+send_user "\n\nVerifying if no projects found precondition is met.\n"
+spawn $::bin list
+expect {
+  timeout {
+    print_msg_stderr "\nTimed out.\n"
+    exit 1
+  }
+  eof {
+    print_msg_stderr "\nRefusing to run tests because projects already exists. Manual cleanup is required to continue.\n"
+    exit 1
+  }
+  "No project found."
+}

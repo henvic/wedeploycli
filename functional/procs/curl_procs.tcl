@@ -104,12 +104,12 @@ proc create_service {project service {image wedeploy/hosting}} {
   }
 }
 
-proc create_user {email {pw test} {name Tester} {plan standard}} {
+proc create_user {email {password test} {name Tester} {plan standard}} {
   print_msg "Creating user $email"
 
   set data "\{\
       \"email\": \"$email\",\
-      \"password\": \"$pw\",\
+      \"password\": \"$password\",\
       \"name\": \"$name\"\}"
   set url $::base_url/user/create
   set response [http_post $url $::team_auth $data]

@@ -165,17 +165,30 @@ proc print_stack {} {
   return [join $stack "\n"]
 }
 
-proc login {email pw} {
-  send "we login --no-browser\r"
+proc prefixed_project {project} {
+  return ${::project_prefix}$project
+}
+
+proc login {email password} {
+  spawn $::bin login --no-browser
   expect {
-    timeout { handle_timeout; error "Login failed" }
+    timeout {
+      print_msg_stderr "\nLogin timed out\n"
+      exit 1
+    }
     "Your email:" {
       send "$email\r"
       expect "Now, your password:"
-      send "$pw\r"
+      send "$password\r"
       expect {
-        timeout { handle_timeout; error "Login failed" }
-        "Authentication failed" { error "Login failed" }
+        timeout {
+          print_msg_stderr "\nLogin timed out\n"
+          exit 1
+        }
+        "Authentication failed" {
+          print_msg_stderr "\nLogin failed\n"
+          exit 1
+        }
         "Type a command and press Enter to execute it."
       }
     }
@@ -184,9 +197,11 @@ proc login {email pw} {
 }
 
 proc logout {email} {
-  send "we logout\r"
+  send "$::bin logout\r"
   expect {
-    timeout { handle_timeout }
+    timeout {
+      print_msg_stderr "\nLogout timed out\n"
+    }
     "You are not logged in" {}
     "You ($email) have been logged out"
   }

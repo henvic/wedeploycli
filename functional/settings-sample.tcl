@@ -14,6 +14,9 @@ set _create_user false
 # remote to use during tests
 set _remote "wedeploy.com"
 
+# project prefix
+set project_prefix ""
+
 # account to run tests with
 set _tester(email) "tester@example.com"
 set _tester(password) "password"
@@ -22,3 +25,6 @@ set _tester(password) "password"
 # this is only used if _mode is not default (0) or if _create_user is set to 1.
 set _teamuser(email) "tester@example.com"
 set _teamuser(password) "password"
+
+# name of the binary file to test
+set bin "we"

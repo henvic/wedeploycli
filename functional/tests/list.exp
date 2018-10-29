@@ -4,29 +4,8 @@ spawn $env(SHELL)
 
 Feature: "List"
 
-Scenario: "Cannot list without logging in" {
-  logout $::_tester(email)
-
-  send "we list\r"
-  expect {
-    timeout { handle_timeout; break }
-    "You need to log in before using \"we list\"."
-  }
-  expect {
-    timeout { handle_timeout; break }
-    "Open your browser and authenticate?"
-  }
-  send "n\r"
-  expect {
-    timeout { handle_timeout; break }
-    "Login canceled."
-  }
-}
-
 Scenario: "List with no projects" {
-  login $::_tester(email) $::_tester(pw)
-
-  send "we list\r"
+  send "$::bin list\r"
   expect {
     timeout { handle_timeout }
     "No project found."
@@ -34,24 +13,26 @@ Scenario: "List with no projects" {
 }
 
 Scenario: "List project with no services" {
-  create_project "list1"
+  set list1 [prefixed_project list1]
+  create_project "$list1"
 
-  send "we list\r"
+  send "$::bin list\r"
   expect {
     timeout { handle_timeout }
-    "list1*zero services deployed"
+    "$list1*zero services deployed"
   }
-} { delete_project "list1" }
+} { delete_project "$list1" }
 
 Scenario: "List project and services" {
-  create_project "list2"
-  create_service "list2" "hosting1"
-  create_service "list2" "hosting2"
+  set list2 [prefixed_project list2]
+  create_project "$list2"
+  create_service "$list2" "hosting1"
+  create_service "$list2" "hosting2"
 
-  send "we list\r"
+  send "$::bin list\r"
   expect {
     timeout {handle_timeout}
-    -re "list2.*hosting1-list2\.wedeploy\.sh.*wedeploy/hosting.*none\
-        .*list2.*hosting2-list2\.wedeploy\.sh.*wedeploy/hosting.*none"
+    -re "list2.*hosting1-$list2\.$::service_domain.*wedeploy/hosting.*none\
+        .*list2.*hosting2-$list2\.$::service_domain.*wedeploy/hosting.*none"
   }
-} { delete_project "list2" }
+} { delete_project "$list2" }

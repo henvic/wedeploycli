@@ -1,7 +1,12 @@
 # set remote
-exec we curl enable
-exec we remote set qa-remote $_remote
-exec we remote default qa-remote
+print_msg_stderr "enabling \"we curl\""
+exec $::bin curl enable
+
+print_msg_stderr "creating qa-remote $_remote"
+exec $::bin remote set qa-remote $_remote
+
+print_msg_stderr "set default remote to qa-remote"
+exec $::bin remote default qa-remote
 
 create_report
 
@@ -10,12 +15,12 @@ if {$_create_user} {
   create_user
 }
 
-# print we version
-puts [exec we version]
+# print $::bin version
+puts [exec $::bin version]
 
 # print list of remotes
-set result [exec we remote]
-puts "we remote\n$result"
+set result [exec $::bin remote]
+puts "$::bin remote\n$result"
 
 proc create_user {} {
   if { [user_exists $::_tester(email)] } {
