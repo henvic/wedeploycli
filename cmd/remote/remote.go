@@ -13,7 +13,7 @@ import (
 	"github.com/wedeploy/cli/remotes"
 )
 
-// RemoteCmd runs the WeDeploy structure for development locally
+// RemoteCmd is the command to control WeDeploy remotes.
 var RemoteCmd = &cobra.Command{
 	Use:    "remote",
 	Hidden: true,

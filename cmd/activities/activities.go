@@ -9,7 +9,7 @@ import (
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 )
 
-// ActivitiesCmd runs the WeDeploy structure for development locally
+// ActivitiesCmd is the command to list activities on a deploymnet.
 var ActivitiesCmd = &cobra.Command{
 	Use:     "activities",
 	Short:   "List activities of a recent deployment",
