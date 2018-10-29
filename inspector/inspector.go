@@ -20,6 +20,7 @@ import (
 func GetSpec(t interface{}) []string {
 	var fields []string
 	val := reflect.ValueOf(t)
+
 	for i := 0; i < val.NumField(); i++ {
 		field := val.Type().Field(i)
 
