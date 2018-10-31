@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
+	"github.com/wedeploy/cli/jsonerror"
 	"github.com/wedeploy/cli/verbosereq"
 	"github.com/wedeploy/wedeploy-sdk-go"
 )
@@ -519,7 +520,9 @@ func Read(path string) (*Package, error) {
 	switch {
 	case err == nil:
 		if err = json.Unmarshal(wedeployJSON, &p); err != nil {
-			return nil, errwrap.Wrapf("error parsing wedeploy.json on "+path+": {{err}}", err)
+			return nil, errwrap.Wrapf(
+				"error parsing wedeploy.json on "+path+": {{err}}",
+				jsonerror.FriendlyUnmarshal(err))
 		}
 	case os.IsNotExist(err):
 		if !hasDockerfile {
