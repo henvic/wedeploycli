@@ -11,22 +11,17 @@ func (l *List) updateHandler() {
 	l.watchMutex.Lock()
 	defer l.watchMutex.Unlock()
 
-	switch {
-	case err == nil:
-	case isContextError(err):
-		l.lastError = nil
-		l.updated <- false
-		return
-	default:
-		l.lastError = err
+	l.lastError = err
+
+	if err != nil {
 		l.retry++
-		l.updated <- false
+		l.updated <- struct{}{}
 		return
 	}
 
 	l.Instances = is
 	l.retry = 0
-	l.updated <- true
+	l.updated <- struct{}{}
 }
 
 func (l *List) update() {

@@ -8,7 +8,11 @@ import (
 )
 
 func (l *List) watchHandler() {
-	<-l.updated
+	select {
+	case <-l.ctx.Done():
+		return
+	case <-l.updated:
+	}
 
 	defer func() {
 		_ = l.w.Flush()

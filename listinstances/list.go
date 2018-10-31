@@ -3,7 +3,6 @@ package listinstances
 import (
 	"context"
 	"io"
-	"strings"
 	"sync"
 	"time"
 
@@ -21,7 +20,7 @@ type List struct {
 
 	Instances  []services.Instance
 	lastError  error
-	updated    chan bool
+	updated    chan struct{}
 	watchMutex sync.RWMutex
 
 	SelectNumber bool
@@ -48,7 +47,7 @@ func New(projectID, serviceID string) *List {
 		Project:         projectID,
 		Service:         serviceID,
 		PoolingInterval: time.Second,
-		updated:         make(chan bool, 1),
+		updated:         make(chan struct{}, 1),
 	}
 }
 
@@ -91,13 +90,4 @@ func (l *List) Once(ctx context.Context, wectx config.Context) error {
 	var le = l.lastError
 	l.watchMutex.RUnlock()
 	return le
-}
-
-func isContextError(err error) bool {
-	if err != nil && (strings.Contains(err.Error(), context.DeadlineExceeded.Error()) ||
-		strings.Contains(err.Error(), context.Canceled.Error())) {
-		return true
-	}
-
-	return false
 }
