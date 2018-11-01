@@ -3,6 +3,7 @@ package errorhandler
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"reflect"
 	"testing"
 
@@ -485,6 +486,49 @@ func TestHandleInvalidParameterContextPriority(t *testing.T) {
 
 	if af == nil {
 		t.Errorf("Expected error to be of apihelper.APIFault{} time")
+	}
+}
+
+func TestHandleURLError(t *testing.T) {
+	err := &url.Error{
+		Op:  "OPTIONS",
+		URL: "http://example.com/",
+		Err: errors.New("not timeout"),
+	}
+
+	got := Handle(err)
+	want := `network connection error:
+OPTIONS http://example.com/: not timeout`
+
+	if got.Error() != want {
+		t.Errorf("Expected error to be %v, got %v instead", got, want)
+	}
+}
+
+// from https://github.com/golang/go/blob/da0d1a4/src/net/url/url_test.go#L1538-L1543
+type timeoutError struct {
+	timeout bool
+}
+
+func (e *timeoutError) Error() string { return "timeout error" }
+func (e *timeoutError) Timeout() bool { return e.timeout }
+
+func TestHandleURLErrorTimeout(t *testing.T) {
+	err := &url.Error{
+		Op:  "OPTIONS",
+		URL: "http://example.com/",
+		Err: &timeoutError{
+			timeout: true,
+		},
+	}
+
+	got := Handle(err)
+
+	want := `network connection timed out:
+OPTIONS http://example.com/: timeout error`
+
+	if got.Error() != want {
+		t.Errorf("Expected error to be %v, got %v instead", got, want)
 	}
 }
 

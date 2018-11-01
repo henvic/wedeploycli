@@ -7,6 +7,7 @@ package errorhandler
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"reflect"
 	"runtime"
@@ -113,11 +114,17 @@ func (h *handler) unwrap() {
 func (h *handler) handle() error {
 	h.unwrap()
 
-	switch h.err.(type) {
-	case *apihelper.APIFault:
+	if _, ok := h.err.(*apihelper.APIFault); ok {
 		return h.handleAPIFaultError()
-	default:
+	}
+
+	switch nerr, ok := h.err.(*url.Error); {
+	case !ok:
 		return h.err
+	case nerr.Timeout():
+		return errwrap.Wrapf("network connection timed out:\n{{err}}", h.err)
+	default:
+		return errwrap.Wrapf("network connection error:\n{{err}}", h.err)
 	}
 }
 
