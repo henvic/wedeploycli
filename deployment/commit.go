@@ -14,6 +14,7 @@ import (
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/deployment/internal/repodiscovery"
 	"github.com/wedeploy/cli/deployment/internal/repodiscovery/tiny"
+	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -96,17 +97,7 @@ func (d *Deploy) Info() string {
 		runtime.GOOS,
 		runtime.GOARCH)
 
-	rd := repodiscovery.Discover{
-		Path:     d.Path,
-		Services: d.Services,
-	}
-
-	repositories, repoless, err := rd.Run()
-
-	if err != nil {
-		verbose.Debug(err)
-		return ""
-	}
+	repositories, repoless := getProjectOrServiceInfo(d.Path, d.Services)
 
 	di := Info{
 		CLIVersion:   version,
@@ -123,4 +114,52 @@ func (d *Deploy) Info() string {
 	}
 
 	return string(bdi)
+}
+
+func getProjectOrServiceInfo(path string, s services.ServiceInfoList) ([]repodiscovery.Repository, []string) {
+	repositories, repoless := getInfo(path, nil)
+
+	if len(repositories) != 0 {
+		return repositories, repoless
+	}
+
+	var err error
+	path, err = filepath.Abs(filepath.Join(path, ".."))
+
+	if err != nil {
+		verbose.Debug("cannot go back one directory:", err)
+		return nil, nil
+	}
+
+	return getInfo(filepath.Join(path, ".."), nil)
+}
+
+func getInfo(path string, s services.ServiceInfoList) ([]repodiscovery.Repository, []string) {
+	rd := repodiscovery.Discover{
+		Path:     path,
+		Services: s,
+	}
+
+	repositories, repoless, err := rd.Run()
+
+	if err != nil {
+		verbose.Debug(err)
+		return nil, nil
+	}
+
+	if len(repositories) == 0 {
+		rd = repodiscovery.Discover{
+			Path:     filepath.Join(path, ".."),
+			Services: s,
+		}
+
+		repositories, _, err = rd.Run()
+
+		if err != nil {
+			verbose.Debug(err)
+			return nil, nil
+		}
+	}
+
+	return repositories, repoless
 }
