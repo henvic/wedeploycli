@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/errwrap"
 )
 
-var basicFunctions = template.FuncMap{
+var funcs = template.FuncMap{
 	"json": func(v interface{}) string {
 		a, _ := json.Marshal(v)
 		return string(a)
@@ -29,6 +29,13 @@ var basicFunctions = template.FuncMap{
 	"lower": strings.ToLower,
 	"upper": strings.ToUpper,
 	"pad":   padWithSpace,
+}
+
+// Funcs adds the elements of the argument map to the template's function map.
+func Funcs(funcMap template.FuncMap) {
+	for k, v := range funcMap {
+		funcs[k] = v
+	}
 }
 
 type compiledTemplate struct {
@@ -94,7 +101,7 @@ func parse(format string) (*template.Template, error) {
 // NewParse creates a new tagged template with the basic functions
 // and parses the given format.
 func newParse(tag, format string) (*template.Template, error) {
-	return template.New(tag).Funcs(basicFunctions).Parse(format)
+	return template.New(tag).Funcs(funcs).Parse(format)
 }
 
 // padWithSpace adds whitespace to the input if the input is non-empty

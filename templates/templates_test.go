@@ -10,6 +10,7 @@ package templates
 
 import (
 	"testing"
+	"text/template"
 
 	"github.com/wedeploy/wedeploy-sdk-go/jsonlib"
 )
@@ -18,6 +19,28 @@ type mock struct {
 	ID         int
 	Name       string
 	unexported string
+}
+
+func mockf() string {
+	return "example"
+}
+
+func TestFuncs(t *testing.T) {
+	Funcs(template.FuncMap{
+		"mockf": mockf,
+	})
+
+	var got, err = Execute("{{mockf}}", nil)
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v instead", err)
+	}
+
+	var want = "example"
+
+	if got != want {
+		t.Errorf("Expected value to be \"%v\", got \"%v\" instead", want, got)
+	}
 }
 
 func TestExecuteOrListExecute(t *testing.T) {
