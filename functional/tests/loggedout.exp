@@ -8,7 +8,7 @@ Scenario: "Cannot list without logging in" {
   send "$::bin list\r"
   expect {
     timeout { handle_timeout; break }
-    "You need to log in before using \"$::bin list\"."
+    "You need to log in before using \"we list\"."
   }
   expect {
     timeout { handle_timeout; break }
@@ -25,7 +25,7 @@ Scenario: "Cannot deploy without logging in" {
   send "$::bin deploy\r"
   expect {
     timeout { handle_timeout; break }
-    "You need to log in before using \"$::bin deploy\"."
+    "You need to log in before using \"we deploy\"."
   }
   expect {
     timeout { handle_timeout; break }
@@ -42,7 +42,7 @@ Scenario: "Cannot view log without logging in" {
   send "$::bin log\r"
   expect {
     timeout { handle_timeout; break }
-    "You need to log in before using \"$::bin log\"."
+    "You need to log in before using \"we log\"."
   }
   expect {
     timeout { handle_timeout; break }
@@ -59,7 +59,7 @@ Scenario: "Cannot restart without logging in" {
   send "$::bin restart\r"
   expect {
     timeout { handle_timeout; break }
-    "You need to log in before using \"$::bin restart\"."
+    "You need to log in before using \"we restart\"."
   }
   expect {
     timeout { handle_timeout; break }
@@ -76,7 +76,7 @@ Scenario: "Cannot `$::bin new` without logging in" {
   send "$::bin new\r"
   expect {
     timeout { handle_timeout; break }
-    "You need to log in before using \"$::bin new\"."
+    "You need to log in before using \"we new\"."
   }
   expect {
     timeout { handle_timeout; break }
@@ -93,7 +93,7 @@ Scenario: "Cannot delete without logging in" {
   send "$::bin delete\r"
   expect {
     timeout { handle_timeout; break }
-    "You need to log in before using \"$::bin delete\"."
+    "You need to log in before using \"we delete\"."
   }
   expect {
     timeout { handle_timeout; break }
@@ -110,7 +110,7 @@ Scenario: "Cannot `$::bin domain` without logging in" {
   send "$::bin domain\r"
   expect {
     timeout { handle_timeout; break }
-    "You need to log in before using \"$::bin domain\"."
+    "You need to log in before using \"we domain\"."
   }
   expect {
     timeout { handle_timeout; break }
@@ -127,7 +127,7 @@ Scenario: "Cannot `$::bin env-var` without logging in" {
   send "$::bin env-var\r"
   expect {
     timeout { handle_timeout; break }
-    "You need to log in before using \"$::bin env-var\"."
+    "You need to log in before using \"we env-var\"."
   }
   expect {
     timeout { handle_timeout; break }
@@ -144,7 +144,7 @@ Scenario: "Cannot `$::bin scale` without logging in" {
   send "$::bin scale\r"
   expect {
     timeout { handle_timeout; break }
-    "You need to log in before using \"$::bin scale\"."
+    "You need to log in before using \"we scale\"."
   }
   expect {
     timeout { handle_timeout; break }
@@ -161,7 +161,7 @@ Scenario: "Cannot `$::bin shell` without logging in" {
   send "$::bin shell\r"
   expect {
     timeout { handle_timeout; break }
-    "You need to log in before using \"$::bin shell\"."
+    "You need to log in before using \"we shell\"."
   }
   expect {
     timeout { handle_timeout; break }
