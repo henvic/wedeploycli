@@ -2,4 +2,7 @@
 
 logout $::_tester(email)
 
+print_msg "Removing QA remote"
+$::bin remote rm qa-remote
+
 print_msg_stderr "Teardown complete."
