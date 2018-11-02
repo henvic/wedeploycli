@@ -12,17 +12,6 @@ create_report
 
 # create tester if user doesn't already exist
 if {$_create_user} {
-  create_user
-}
-
-# print $::bin version
-puts [exec $::bin version]
-
-# print list of remotes
-set result [exec $::bin remote]
-puts "$::bin remote\n$result"
-
-proc create_user {} {
   if { [user_exists $::_tester(email)] } {
     return
   }
@@ -32,3 +21,10 @@ proc create_user {} {
     exit 1
   }
 }
+
+# print $::bin version
+puts [exec $::bin version]
+
+# print list of remotes
+set result [exec $::bin remote]
+puts "$::bin remote\n$result"
