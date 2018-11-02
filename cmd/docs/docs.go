@@ -5,6 +5,7 @@ import (
 
 	"github.com/henvic/browser"
 	"github.com/spf13/cobra"
+	"github.com/wedeploy/cli/links"
 )
 
 // DocsCmd opens the docs on the browser
@@ -16,7 +17,7 @@ var DocsCmd = &cobra.Command{
 }
 
 func docsRun(cmd *cobra.Command, args []string) error {
-	err := browser.OpenURL("https://wedeploy.com/docs/")
+	err := browser.OpenURL(links.Docs())
 
 	if err != nil {
 		return err

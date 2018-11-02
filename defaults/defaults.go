@@ -20,14 +20,8 @@ var (
 	// DashboardURLPrefix for a given remote
 	DashboardURLPrefix = "https://" + DashboardAddressPrefix
 
-	// PlanUpgradeURL to show or open (mostly due to the exceededPlanMaximum error)
-	PlanUpgradeURL = "https://console.wedeploy.com/account/billing"
-
 	// DiagnosticsEndpoint is the endpoint to where the diagnostics should be sent
 	DiagnosticsEndpoint = "https://cli-metrics.wedeploy.com/diagnostics/report"
-
-	// Docs page
-	Docs = "http://wedeploy.com/docs/"
 
 	// Hub for the system
 	Hub = "http://api.wedeploy.io"
@@ -37,9 +31,6 @@ var (
 
 	// CloudRemote is the name for the default cloud for WeDeploy
 	CloudRemote = "wedeploy"
-
-	// SupportEmail value
-	SupportEmail = "support@wedeploy.com"
 
 	// StableReleaseChannel for the distribution of the CLI tool
 	StableReleaseChannel = "stable"

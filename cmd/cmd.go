@@ -23,12 +23,12 @@ import (
 	"github.com/wedeploy/cli/color"
 	colortemplate "github.com/wedeploy/cli/color/template"
 	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/envs"
 	"github.com/wedeploy/cli/errorhandler"
 	"github.com/wedeploy/cli/exiterror"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/formatter"
+	"github.com/wedeploy/cli/links"
 	"github.com/wedeploy/cli/metrics"
 	"github.com/wedeploy/cli/shell"
 	"github.com/wedeploy/cli/update"
@@ -132,7 +132,7 @@ func printError(e error) {
 	}
 
 	_, _ = fmt.Fprintf(os.Stderr, "%v\n",
-		fancy.Error("Contact us: "+defaults.SupportEmail))
+		fancy.Error("Contact us: "+links.Support()))
 }
 
 func (m *mainProgram) prepareCommand() {

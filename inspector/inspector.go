@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/findresource"
+	"github.com/wedeploy/cli/links"
 	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/templates"
 	"github.com/wedeploy/cli/verbose"
@@ -51,7 +52,7 @@ func (overview *ContextOverview) loadService() error {
 
 	if errwrap.GetType(cerr, &json.SyntaxError{}) != nil {
 		return errwrap.Wrapf(`{{err}}.
-The wedeploy.json file syntax is described at https://wedeploy.com/docs/deploy/configuring-deployments/`, cerr)
+The wedeploy.json file syntax is described at `+links.Configuring(), cerr)
 	}
 
 	if strings.Contains(cerr.Error(), servicePath) {
