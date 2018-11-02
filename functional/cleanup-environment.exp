@@ -1,0 +1,71 @@
+#!/usr/bin/expect
+
+source settings.tcl
+
+source globals.tcl
+source check-settings.tcl
+
+source procs/shared_procs.tcl
+
+print_msg_stderr "creating qa-remote $_remote"
+exec $::bin remote set qa-remote $_remote
+
+print_msg_stderr "set default remote to qa-remote"
+exec $::bin remote default qa-remote
+
+login $::_tester(email) $::_tester(password)
+
+print_msg "\nDeleting projects created during tests\n"
+set projects_to_delete {}
+
+lappend projects_to_delete \
+  list1 \
+  list2 \
+  deploy1 \
+  deploy2 \
+  deploy3 \
+  deploy4 \
+  deploy5 \
+  log1 \
+  log2 \
+  restart1 \
+  restart2 \
+  restart3 \
+  restart4 \
+  restart5 \
+  new1 \
+  new2 \
+  new3 \
+  delete1 \
+  delete2 \
+  delete3 \
+  delete4 \
+  delete5 \
+  delete6 \
+  delete7 \
+  domain1 \
+  domain2 \
+  domain3 \
+  domain4 \
+  env1 \
+  env2 \
+  env3 \
+  env4 \
+  quota1 \
+  quota2 \
+  quota3 \
+  quota4 \
+  scale1 \
+  scale 2 \
+  shell1 \
+  shell2 \
+  shell3
+
+delete_projects projects_to_delete
+
+logout $::_tester(email)
+
+print_msg "Removing QA remote"
+exec $::bin remote rm qa-remote
+
+print_msg "Cleanup complete."

@@ -171,7 +171,7 @@ proc prefixed_project {project} {
 
 proc delete_projects {projects} {
   foreach project $projects {
-    $::bin delete -p [prefixed_project $project] --force
+    exec $::bin delete -p [prefixed_project $project] --force
   }
 }
 

@@ -24,7 +24,9 @@ expect {
     exit 1
   }
   eof {
-    print_msg_stderr "\nRefusing to run tests because projects already exists. Manual cleanup is required to continue.\n"
+    print_msg_stderr "\nRefusing to run tests because projects already exists. Explicit cleanup is required to continue.\n"
+    print_msg_stderr "Run \"make cleanup-functional-tests-environment\" to clean up any leftovers from previous functional tests runs."
+    print_msg_stderr "For safety, only tests created by the functional tests are cleaned up in this process. Manual cleanup is required for anything else."
     exit 1
   }
   "No project found."
