@@ -125,8 +125,8 @@ func TestAuthGetError(t *testing.T) {
 	var err = (&Client{conf}).AuthGet(context.Background(), "/foo", nil)
 
 	switch err.(type) {
-	case *APIFault:
-		var ae = err.(*APIFault)
+	case APIFault:
+		var ae = err.(APIFault)
 
 		if ae.Message != "Forbidden" {
 			t.Errorf("Wanted Forbidden error message, got %v instead",
@@ -153,7 +153,7 @@ func TestAuthTokenBearer(t *testing.T) {
 }
 
 func TestAPIError(t *testing.T) {
-	var e error = &APIFault{
+	var e error = APIFault{
 		Status:  404,
 		Message: "Resource Not Found",
 	}
@@ -164,7 +164,7 @@ func TestAPIError(t *testing.T) {
 }
 
 func TestAPIFaultGet(t *testing.T) {
-	var e = &APIFault{
+	var e = APIFault{
 		Status:  404,
 		Message: "Resource Not Found",
 		Errors: APIFaultErrors{
@@ -191,7 +191,7 @@ func TestAPIFaultGet(t *testing.T) {
 }
 
 func TestAPIFaultUnstructured(t *testing.T) {
-	var e = &APIFault{
+	var e = APIFault{
 		URL:    "http://example.com/",
 		Method: "POST",
 		Status: 404,
@@ -207,7 +207,7 @@ func TestAPIFaultUnstructured(t *testing.T) {
 }
 
 func TestAPIFaultMessageOnly(t *testing.T) {
-	var e = &APIFault{
+	var e = APIFault{
 		URL:     "http://example.com/",
 		Method:  "POST",
 		Status:  404,
@@ -224,7 +224,7 @@ func TestAPIFaultMessageOnly(t *testing.T) {
 }
 
 func TestAPIFaultContextMissingMessage(t *testing.T) {
-	var e = &APIFault{
+	var e = APIFault{
 		Status:  404,
 		Message: "Resource Not Found",
 		Errors: APIFaultErrors{
@@ -246,7 +246,7 @@ func TestAPIFaultContextMissingMessage(t *testing.T) {
 }
 
 func TestAPIFaultGetNotFound(t *testing.T) {
-	var e = &APIFault{
+	var e = APIFault{
 		Status:  404,
 		Message: "Resource Not Found",
 		Errors:  APIFaultErrors{},
@@ -260,7 +260,7 @@ func TestAPIFaultGetNotFound(t *testing.T) {
 }
 
 func TestAPIFaultGetNil(t *testing.T) {
-	var e = &APIFault{
+	var e = APIFault{
 		Status:  404,
 		Message: "Resource Not Found",
 	}
@@ -273,7 +273,7 @@ func TestAPIFaultGetNil(t *testing.T) {
 }
 
 func TestAPIFaultHas(t *testing.T) {
-	var e = &APIFault{
+	var e = APIFault{
 		Status:  404,
 		Message: "Resource Not Found",
 		Errors: APIFaultErrors{
@@ -1054,7 +1054,7 @@ func TestValidateUnexpectedResponse(t *testing.T) {
 	err := Validate(r, r.Get())
 
 	switch err.(type) {
-	case *APIFault:
+	case APIFault:
 	default:
 		t.Errorf("Unexpected error type %v", reflect.TypeOf(err))
 	}

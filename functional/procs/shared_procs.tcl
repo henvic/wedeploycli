@@ -169,6 +169,12 @@ proc prefixed_project {project} {
   return ${::project_prefix}$project
 }
 
+proc delete_projects {projects} {
+  foreach project $projects {
+    $::bin delete -p [prefixed_project $project] --force
+  }
+}
+
 proc login {email password} {
   spawn $::bin login --no-browser
   expect {

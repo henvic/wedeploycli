@@ -43,7 +43,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 func verifyAlreadyLoggedIn(wectx config.Context) error {
 	projectsClient := projects.New(we.Context())
 	_, err := projectsClient.List(context.Background())
-	af, ok := err.(*apihelper.APIFault)
+	af, ok := err.(apihelper.APIFault)
 
 	if ok && af.Status == http.StatusUnauthorized {
 		_, _ = fmt.Fprintln(os.Stderr, fancy.Error(

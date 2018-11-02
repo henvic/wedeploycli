@@ -311,13 +311,13 @@ func reportHTTPErrorTryJSON(request *wedeploy.WeDeploy, body []byte) (bool, erro
 func reportHTTPErrorJSON(request *wedeploy.WeDeploy, af APIFault) error {
 	af.Method = request.Request.Method
 	af.URL = request.URL
-	return &af
+	return af
 }
 
 func reportHTTPErrorNotJSON(
-	request *wedeploy.WeDeploy, body []byte) *APIFault {
+	request *wedeploy.WeDeploy, body []byte) APIFault {
 	var response = request.Response
-	var fault = &APIFault{
+	var fault = APIFault{
 		Method:  request.Request.Method,
 		URL:     request.URL,
 		Status:  response.StatusCode,

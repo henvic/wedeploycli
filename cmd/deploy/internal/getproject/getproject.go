@@ -40,7 +40,7 @@ func MaybeID(maybe string) (projectID string, err error) {
 			return projectID, nil
 		}
 
-		if epf, ok := err.(*apihelper.APIFault); !ok || epf.Status != http.StatusNotFound {
+		if epf, ok := err.(apihelper.APIFault); !ok || epf.Status != http.StatusNotFound {
 			return "", err
 		}
 

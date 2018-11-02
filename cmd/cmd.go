@@ -119,13 +119,13 @@ func (m *mainProgram) setupMetrics() {
 func printError(e error) {
 	_, _ = fmt.Fprintf(os.Stderr, "%v\n", fancy.Error(e))
 
-	var aft = errwrap.GetType(e, &apihelper.APIFault{})
+	var aft = errwrap.GetType(e, apihelper.APIFault{})
 
 	if aft == nil {
 		return
 	}
 
-	af, ok := aft.(*apihelper.APIFault)
+	af, ok := aft.(apihelper.APIFault)
 
 	if !ok || af.Status < 500 || af.Status > 599 {
 		return

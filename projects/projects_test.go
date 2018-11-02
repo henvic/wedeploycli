@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
@@ -104,8 +105,10 @@ func TestCreateError(t *testing.T) {
 
 	var _, err = client.Create(context.Background(), Project{})
 
-	switch err.(type) {
-	case *apihelper.APIFault:
+	var af = errwrap.GetType(err, apihelper.APIFault{})
+
+	switch af.(type) {
+	case apihelper.APIFault:
 	default:
 		t.Errorf("Wanted APIFault error, got %v instead", err)
 	}

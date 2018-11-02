@@ -114,7 +114,7 @@ func (h *handler) unwrap() {
 func (h *handler) handle() error {
 	h.unwrap()
 
-	if _, ok := h.err.(*apihelper.APIFault); ok {
+	if af := errwrap.GetType(h.err, apihelper.APIFault{}); af != nil {
 		return h.handleAPIFaultError()
 	}
 
@@ -129,7 +129,8 @@ func (h *handler) handle() error {
 }
 
 func (h *handler) handleAPIFaultError() error {
-	var err = h.err.(*apihelper.APIFault)
+	var af = errwrap.GetType(h.err, apihelper.APIFault{})
+	var err = af.(apihelper.APIFault)
 	var msgs []string
 	// we want to fallback to the default error if no friendly messages are found
 	var anyFriendly bool

@@ -603,15 +603,14 @@ func clearMessageErrorStringCounter(input string) (output string) {
 }
 
 func isNotFoundError(err error) bool {
-	var aft = errwrap.GetType(err, &apihelper.APIFault{})
+	var aft = errwrap.GetType(err, apihelper.APIFault{})
 
 	if aft == nil {
 		return false
 	}
 
-	af := aft.(*apihelper.APIFault)
-
-	return af != nil && af.Status == 404
+	af, ok := aft.(apihelper.APIFault)
+	return ok && af.Status == 404
 }
 
 // Wait for deployment to finish.

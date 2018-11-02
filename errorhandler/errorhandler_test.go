@@ -86,7 +86,7 @@ func TestHandleAPIFaultGenericErrorMessageNotFound(t *testing.T) {
 		},
 	}
 
-	var err = &apihelper.APIFault{
+	var err = apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
 		Status:  404,
@@ -122,7 +122,7 @@ func TestHandleWrappedAPIFaultGenericErrorMessageNotFound(t *testing.T) {
 		},
 	}
 
-	var err = errwrap.Wrapf("wrapped: {{err}}", &apihelper.APIFault{
+	var err = errwrap.Wrapf("wrapped: {{err}}", apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
 		Status:  404,
@@ -161,7 +161,7 @@ func TestHandleAPIFaultGenericErrorFound(t *testing.T) {
 		},
 	}
 
-	var err = &apihelper.APIFault{
+	var err = apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
 		Status:  404,
@@ -200,7 +200,7 @@ func TestHandleAPIWrappedFaultGenericErrorFound(t *testing.T) {
 		},
 	}
 
-	var err = errwrap.Wrapf("wrapped error: {{err}}", &apihelper.APIFault{
+	var err = errwrap.Wrapf("wrapped error: {{err}}", apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
 		Status:  404,
@@ -243,7 +243,7 @@ func TestHandleAPIWrappedFaultGenericErrorFoundNested(t *testing.T) {
 		},
 	}
 
-	var err = errwrap.Wrapf("wrapped error: {{err}}", &apihelper.APIFault{
+	var err = errwrap.Wrapf("wrapped error: {{err}}", apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
 		Status:  404,
@@ -270,7 +270,7 @@ func TestHandleAPIWrappedFaultGenericErrorFoundNested(t *testing.T) {
 		t.Errorf("Expected error to be wrapped")
 	}
 
-	var af = errwrap.GetType(got, &apihelper.APIFault{})
+	var af = errwrap.GetType(got, apihelper.APIFault{})
 
 	if af == nil {
 		t.Errorf("Expected error to be of apihelper.APIFault{} time")
@@ -300,7 +300,7 @@ func TestHandleAPIWrappedFaultGenericErrorFoundDeepNested(t *testing.T) {
 		},
 	}
 
-	var err = errwrap.Wrapf("wrapped error: {{err}}", &apihelper.APIFault{
+	var err = errwrap.Wrapf("wrapped error: {{err}}", apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
 		Status:  404,
@@ -345,7 +345,7 @@ func TestHandleAPIWrappedFaultGenericErrorFoundDeepNestedNoOverride(t *testing.T
 		},
 	}
 
-	var err = errwrap.Wrapf("wrapped error: {{err}}", &apihelper.APIFault{
+	var err = errwrap.Wrapf("wrapped error: {{err}}", apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
 		Status:  404,
@@ -388,7 +388,7 @@ func TestHandleAPIFaultCommandOverridesErrorMessage(t *testing.T) {
 		},
 	}
 
-	var err = &apihelper.APIFault{
+	var err = apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
 		Status:  403,
@@ -415,7 +415,7 @@ func TestHandleAPIFaultCommandOverridesErrorMessage(t *testing.T) {
 func TestHandleInvalidParameter(t *testing.T) {
 	CommandName = "payment credit"
 
-	var err = errwrap.Wrapf("wrapped error: {{err}}", &apihelper.APIFault{
+	var err = errwrap.Wrapf("wrapped error: {{err}}", apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
 		Status:  http.StatusBadRequest,
@@ -443,7 +443,7 @@ func TestHandleInvalidParameter(t *testing.T) {
 		t.Errorf("Expected error to be wrapped")
 	}
 
-	var af = errwrap.GetType(got, &apihelper.APIFault{})
+	var af = errwrap.GetType(got, apihelper.APIFault{})
 
 	if af == nil {
 		t.Errorf("Expected error to be of apihelper.APIFault{} time")
@@ -453,7 +453,7 @@ func TestHandleInvalidParameter(t *testing.T) {
 func TestHandleInvalidParameterContextPriority(t *testing.T) {
 	CommandName = "payment credit"
 
-	var err = errwrap.Wrapf("wrapped error: {{err}}", &apihelper.APIFault{
+	var err = errwrap.Wrapf("wrapped error: {{err}}", apihelper.APIFault{
 		Method:  "GET",
 		URL:     "http://example.com/",
 		Status:  http.StatusBadRequest,
@@ -482,7 +482,7 @@ func TestHandleInvalidParameterContextPriority(t *testing.T) {
 		t.Errorf("Expected error to be wrapped")
 	}
 
-	var af = errwrap.GetType(got, &apihelper.APIFault{})
+	var af = errwrap.GetType(got, apihelper.APIFault{})
 
 	if af == nil {
 		t.Errorf("Expected error to be of apihelper.APIFault{} time")
