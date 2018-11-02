@@ -23,9 +23,6 @@ var (
 	// DiagnosticsEndpoint is the endpoint to where the diagnostics should be sent
 	DiagnosticsEndpoint = "https://cli-metrics.wedeploy.com/diagnostics/report"
 
-	// Hub for the system
-	Hub = "http://api.wedeploy.io"
-
 	// AnalyticsEndpoint for posting analytics events in bulk
 	AnalyticsEndpoint = "https://cli-metrics.wedeploy.com/metrics/bulk"
 
