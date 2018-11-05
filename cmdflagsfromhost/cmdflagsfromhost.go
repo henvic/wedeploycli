@@ -452,8 +452,14 @@ func (s *SetupHost) promptMissingProjectOrService() (err error) {
 		return err
 	}
 
-	s.project = selection.Project
-	s.service = selection.Service
+	if s.project == "" {
+		s.project = selection.Project
+	}
+
+	if s.service == "" {
+		s.service = selection.Service
+	}
+
 	return nil
 }
 
