@@ -205,4 +205,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "October 14th, 2018",
 		Description: "Fixed Windows build.",
 	},
+	ReleaseNote{
+		Version:     "1.7.0",
+		Date:        "November 5th, 2018",
+		Description: `Adding "we inspect config". Fix links for DXP Cloud documentation. Fix "we log --level" filter. Use metadata from project git repository for DXP Cloud. Improve "we list" reliability. Fix "we deploy --service id" issue when a prompt opens asking for the project id. Minor improvements.`,
+	},
 }
