@@ -138,8 +138,8 @@ function run() {
 }
 
 function info() {
-  wepath=$(which we 2>/dev/null)
-  if [[ ! $wepath -ef "$DESTDIR/we" ]]; then
+  wepath=$(which we 2>/dev/null) || true
+  if [[ $ec -ne 0 ]] || [[ ! $wepath -ef "$DESTDIR/we" ]]; then
     echo "Installed, but not reachable by \"we\" (check your \$PATH)"
     echo "Run with $DESTDIR/we"
     return
