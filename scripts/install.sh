@@ -6,12 +6,12 @@ IFS=$'\n\t'
 RELEASE_CHANNEL=${1:-"stable"}
 RELEASE_CHANNEL_ADDRESS=""
 
-if [[ $RELEASE_CHANNEL == "help" ]] || [[ $RELEASE_CHANNEL == "--help" ]]; then
+if [[ $RELEASE_CHANNEL == "help" ]] || [[ $RELEASE_CHANNEL == "--help" ]] || [[ $RELEASE_CHANNEL == "-h" ]]; then
   echo "WeDeploy CLI install script:
 
-install.sh [channel] [dest]
+$0 [channel] [dest]
 
-Use install.sh to install the stable version on your system."
+Use $0 to install the stable version on your system."
   exit 1
 fi
 
@@ -140,7 +140,7 @@ function run() {
 function info() {
   wepath=$(which we 2>/dev/null)
   if [[ ! $wepath -ef "$DESTDIR/we" ]]; then
-    echo "Installed, but not on your \$PATH"
+    echo "Installed, but not reachable by \"we\" (check your \$PATH)"
     echo "Run with $DESTDIR/we"
     return
   fi
