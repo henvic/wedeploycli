@@ -324,7 +324,7 @@ func (c *Config) simplifyRemotes() {
 			c.deleteRemote(k)
 		}
 
-		var omitempty = []string{"username", "password", "token"}
+		var omitempty = []string{"username", "token"}
 
 		for _, k := range omitempty {
 			var key = remote.Key(k)
