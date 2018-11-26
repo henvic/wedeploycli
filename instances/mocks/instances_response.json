@@ -1,0 +1,12 @@
+[
+    {
+        "instanceId": "abcd1234",
+        "projectId": "project",
+        "serviceId": "mail"
+    },
+    {
+        "instanceId": "abc00000",
+        "projectId": "project",
+        "serviceId": "mail"
+    }
+]
