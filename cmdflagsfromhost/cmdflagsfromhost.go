@@ -12,6 +12,7 @@ import (
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/flagsfromhost"
 	"github.com/wedeploy/cli/inspector"
+	"github.com/wedeploy/cli/instances"
 	"github.com/wedeploy/cli/isterm"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/listinstances"
@@ -84,6 +85,8 @@ const (
 	ProjectAndRemotePattern = ProjectPattern | RemotePattern
 	// FullHostPattern takes --project, --service, and --remote
 	FullHostPattern = RemotePattern | ProjectAndServicePattern
+
+	anyInstance = "any" // magic keyword for choosing any instance
 )
 
 // Project of the parsed flags or host
@@ -189,6 +192,41 @@ func (s *SetupHost) tryParseFlags() (*flagsfromhost.FlagsFromHost, error) {
 	}
 
 	return flags, err
+}
+
+func (s *SetupHost) tryInstance() error {
+	if s.instance == "" || s.instance == anyInstance || (s.service != "" && s.project != "") {
+		return nil
+	}
+
+	instancesClient := instances.New(s.wectx)
+
+	l, err := instancesClient.List(s.ctx, instances.Filter{
+		InstanceID: s.instance,
+		ServiceID:  s.service,
+		ProjectID:  s.project,
+	})
+
+	if err != nil {
+		return errwrap.Wrapf("cannot list available instances: {{err}}", err)
+		// @todo return err
+	}
+
+	if len(l) == 0 {
+		return fmt.Errorf(`no instance found starting with "%s"`, s.instance)
+	}
+
+	if len(l) > 1 {
+		return fmt.Errorf(`"%s" is not distinct enough: %d instances found`, s.instance, len(l))
+	}
+
+	instance := l[0]
+
+	s.instance = instance.InstanceID
+	s.service = instance.ServiceID
+	s.project = instance.ProjectID
+
+	return nil
 }
 
 func (s *SetupHost) parseFlags() (*flagsfromhost.FlagsFromHost, error) {
@@ -361,6 +399,12 @@ func (s *SetupHost) loadValues() (err error) {
 		return errors.New("service parameter is not allowed for this command")
 	}
 
+	if s.Pattern&InstancePattern != 0 {
+		if err = s.tryInstance(); err != nil {
+			return err
+		}
+	}
+
 	if err = s.maybePromptMissing(); err != nil {
 		return err
 	}
@@ -369,7 +413,7 @@ func (s *SetupHost) loadValues() (err error) {
 		return errors.New(`instance, service, and project are required (try "--instance any")`)
 	}
 
-	if s.instance == "any" {
+	if s.instance == anyInstance {
 		s.instance = ""
 	}
 
@@ -395,29 +439,30 @@ func (s *SetupHost) maybePromptMissing() (err error) {
 			return err
 		}
 
-		if err := s.promptMissingProjectOrService(); err != nil {
+		if err = s.promptMissingProjectOrService(); err != nil {
 			return err
 		}
 	}
 
 	if s.PromptMissingInstance && s.instance == "" {
-		var li = listinstances.New(s.project, s.service)
-		var f = li.Prompt
-
-		if s.AutoSelectSingleInstance {
-			f = li.AutoSelectOrPrompt
-		}
-
-		selection, err := f(s.ctx, s.wectx)
-
-		if err != nil {
+		if err = s.promptMissingInstanceF(); err != nil {
 			return err
 		}
-
-		s.instance = selection
 	}
 
 	return nil
+}
+
+func (s *SetupHost) promptMissingInstanceF() (err error) {
+	var li = listinstances.New(s.project, s.service)
+	var f = li.Prompt
+
+	if s.AutoSelectSingleInstance {
+		f = li.AutoSelectOrPrompt
+	}
+
+	s.instance, err = f(s.ctx, s.wectx)
+	return err
 }
 
 func (s *SetupHost) promptMissingProjectOrService() (err error) {
