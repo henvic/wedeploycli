@@ -100,19 +100,7 @@ getMessage:
 	return personalizedMsg, ok
 }
 
-func (h *handler) unwrap() {
-	// unwrapping has the side-effect of discarding wrapped messages
-	// but we assume it is expected to do so (currently)
-	var aerr = errwrap.GetType(h.err, new(apihelper.APIFault))
-
-	if aerr != nil {
-		h.err = aerr
-	}
-}
-
 func (h *handler) handle() error {
-	h.unwrap()
-
 	if af := errwrap.GetType(h.err, apihelper.APIFault{}); af != nil {
 		return h.handleAPIFaultError()
 	}
