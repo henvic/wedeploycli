@@ -5,7 +5,6 @@ root.Execute() error handler or on watches. It should not be used somewhere else
 package errorhandler
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -129,13 +128,19 @@ func (h *handler) handle() error {
 }
 
 func (h *handler) handleAPIFaultError() error {
-	var af = errwrap.GetType(h.err, apihelper.APIFault{})
-	var err = af.(apihelper.APIFault)
+	var original = h.err
+
+	var af, ok = errwrap.GetType(original, apihelper.APIFault{}).(apihelper.APIFault)
+
+	if !ok {
+		return original
+	}
+
 	var msgs []string
 	// we want to fallback to the default error if no friendly messages are found
 	var anyFriendly bool
 
-	for _, e := range err.Errors {
+	for _, e := range af.Errors {
 		rtm, ok := tryGetPersonalizedMessage(CommandName, e.Reason, e.Context)
 		if ok {
 			anyFriendly = true
@@ -147,10 +152,13 @@ func (h *handler) handleAPIFaultError() error {
 	}
 
 	if !anyFriendly {
-		return err
+		return h.err
 	}
 
-	return errwrap.Wrap(errors.New(strings.Join(msgs, "\n")), err)
+	var l = strings.Join(msgs, "\n")
+	var msg = strings.Replace(original.Error(), af.Error(), l, -1)
+
+	return errwrap.Wrapf(msg, original)
 }
 
 // GetTypes get a list of error types separated by ":"

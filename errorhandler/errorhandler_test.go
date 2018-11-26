@@ -139,7 +139,7 @@ func TestHandleWrappedAPIFaultGenericErrorMessageNotFound(t *testing.T) {
 
 	var got = Handle(err)
 
-	var want = "Document not found"
+	var want = "wrapped: Document not found"
 
 	if want != got.Error() {
 		t.Errorf("Wanted %v, got %v instead", want, got)
@@ -217,7 +217,7 @@ func TestHandleAPIWrappedFaultGenericErrorFound(t *testing.T) {
 
 	var got = Handle(err)
 
-	var want = "Credential not valid for payment"
+	var want = "wrapped error: Credential not valid for payment"
 
 	if want != got.Error() {
 		t.Errorf("Wanted %v, got %v instead", want, got)
@@ -260,7 +260,7 @@ func TestHandleAPIWrappedFaultGenericErrorFoundNested(t *testing.T) {
 
 	var got = Handle(err)
 
-	var want = "Credit card not valid for payment"
+	var want = "wrapped error: Credit card not valid for payment"
 
 	if want != got.Error() {
 		t.Errorf("Wanted %v, got %v instead", want, got)
@@ -317,7 +317,7 @@ func TestHandleAPIWrappedFaultGenericErrorFoundDeepNested(t *testing.T) {
 
 	var got = Handle(err)
 
-	var want = "Amex credit card is not accepted"
+	var want = "wrapped error: Amex credit card is not accepted"
 
 	if want != got.Error() {
 		t.Errorf("Wanted %v, got %v instead", want, got)
@@ -362,7 +362,7 @@ func TestHandleAPIWrappedFaultGenericErrorFoundDeepNestedNoOverride(t *testing.T
 
 	var got = Handle(err)
 
-	var want = "Invalid credential"
+	var want = "wrapped error: Invalid credential"
 
 	if want != got.Error() {
 		t.Errorf("Wanted %v, got %v instead", want, got)
@@ -433,7 +433,7 @@ func TestHandleInvalidParameter(t *testing.T) {
 
 	var got = Handle(err)
 
-	var want = `Invalid value "@" for parameter "creditcard"`
+	var want = `wrapped error: Invalid value "@" for parameter "creditcard"`
 
 	if want != got.Error() {
 		t.Errorf("Wanted %v, got %v instead", want, got)
@@ -472,7 +472,7 @@ func TestHandleInvalidParameterContextPriority(t *testing.T) {
 
 	var got = Handle(err)
 
-	var want = "Credit card parameter is not valid"
+	var want = "wrapped error: Credit card parameter is not valid"
 
 	if want != got.Error() {
 		t.Errorf("Wanted %v, got %v instead", want, got)
