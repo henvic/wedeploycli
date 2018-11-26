@@ -412,11 +412,11 @@ func maybeAppendDomain(customDomains []string, domain string) []string {
 }
 
 // RemoveDomain in project
-func (c *Client) RemoveDomain(ctx context.Context, projectID string, serviceID, domain string) (err error) {
-	var service, perr = c.Get(ctx, projectID, serviceID)
+func (c *Client) RemoveDomain(ctx context.Context, projectID string, serviceID, domain string) error {
+	var service, err = c.Get(ctx, projectID, serviceID)
 
-	if perr != nil {
-		return errwrap.Wrapf("can't get current domains: {{err}}", perr)
+	if err != nil {
+		return err
 	}
 
 	var customDomains = []string{}
