@@ -100,7 +100,7 @@ func GetLevel(severityOrLevel string) (int, error) {
 	var i, err = strconv.Atoi(severityOrLevel)
 
 	if err != nil {
-		err = errwrap.Wrapf(fmt.Sprintf(`Unknown log level "%v"`, severityOrLevel), err)
+		err = errwrap.Wrapf(fmt.Sprintf(`unknown log level "%v"`, severityOrLevel), err)
 	}
 
 	return i, err
