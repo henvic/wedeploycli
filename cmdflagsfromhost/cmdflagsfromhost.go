@@ -14,6 +14,7 @@ import (
 	"github.com/wedeploy/cli/inspector"
 	"github.com/wedeploy/cli/instances"
 	"github.com/wedeploy/cli/isterm"
+	"github.com/wedeploy/cli/links"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/listinstances"
 	"github.com/wedeploy/cli/login"
@@ -293,6 +294,10 @@ func (s *SetupHost) Process(ctx context.Context, wectx config.Context) (err erro
 
 	if err = s.loadValues(); err != nil {
 		return err
+	}
+
+	if strings.HasSuffix(wectx.InfrastructureDomain(), ".liferay.cloud") {
+		links.SetDXP()
 	}
 
 	if !s.Requires.Auth {
