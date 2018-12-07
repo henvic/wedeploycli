@@ -210,4 +210,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "November 5th, 2018",
 		Description: `Adding "we inspect config". Fix links for DXP Cloud documentation. Fix "we log --level" filter. Use metadata from project git repository for DXP Cloud. Improve "we list" reliability. Fix "we deploy --service id" issue when a prompt opens asking for the project id. Minor improvements.`,
 	},
+	ReleaseNote{
+		Version:     "1.7.1",
+		Date:        "December 7th, 2018",
+		Description: "Fixing links to DXP Cloud. Minor improvements.",
+	},
 }
