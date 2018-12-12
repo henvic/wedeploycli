@@ -22,10 +22,10 @@ var errorReasonMessage = messages{
 	"invalidProjectId":               "Invalid project ID",
 	"projectAlreadyExists":           "Project already exists",
 	"environmentVariableNotFound":    "Environment variable not found",
-	"exceededPlanMaximum":            "You've reached your plan limits.\nUpgrade at {{LinkPlanUpgrade}}",
+	"exceededPlanMaximum":            "You've reached your plan limits.\nUpgrade at {{LinkPlanUpgrade}}{{if .Err}}\n{{.Err}}{{end}}",
 
 	// special case: invalidParameter always uses the message from the context unless it is not set
-	"invalidParameter": `{{if .message}}{{.message}}{{else}}Invalid value "{{.value}}" for parameter "{{.param}}"{{end}}`,
+	"invalidParameter": `{{if .Context.message}}{{.Context.message}}{{else}}Invalid value "{{.Context.value}}" for parameter "{{.Context.param}}"{{end}}`,
 }
 
 var errorReasonCommandMessageOverrides = map[string]messages{

@@ -68,10 +68,15 @@ func extractParentCommand(cmd string) string {
 	return strings.Join(splitCmd[:len(splitCmd)-1], " ")
 }
 
+type data struct {
+	Err     error
+	Context map[string]interface{}
+}
+
 // tryGetPersonalizedMessage tries to get a human-friendly error message from the
 // command / local error message lists falling back to the parent command
 // and at last instance to the global
-func tryGetPersonalizedMessage(cmd, reason string, context apihelper.APIFaultErrorContext) (string, bool) {
+func tryGetPersonalizedMessage(cmd, reason string, d data) (string, bool) {
 	local := cmd
 getMessage:
 	if haystack, ok := errorReasonCommandMessageOverrides[local]; ok {
@@ -90,7 +95,7 @@ getMessage:
 		return msg, ok
 	}
 
-	personalizedMsg, err := templates.Execute(msg, context)
+	personalizedMsg, err := templates.Execute(msg, d)
 
 	if err != nil {
 		verbose.Debug(errwrap.Wrapf("error getting personalized message: {{err}}", err))
@@ -116,12 +121,10 @@ func (h *handler) handle() error {
 }
 
 func (h *handler) handleAPIFaultError() error {
-	var original = h.err
-
-	var af, ok = errwrap.GetType(original, apihelper.APIFault{}).(apihelper.APIFault)
+	var af, ok = errwrap.GetType(h.err, apihelper.APIFault{}).(apihelper.APIFault)
 
 	if !ok {
-		return original
+		return h.err
 	}
 
 	var msgs []string
@@ -129,7 +132,13 @@ func (h *handler) handleAPIFaultError() error {
 	var anyFriendly bool
 
 	for _, e := range af.Errors {
-		rtm, ok := tryGetPersonalizedMessage(CommandName, e.Reason, e.Context)
+		d := data{
+			Err:     h.err,
+			Context: e.Context,
+		}
+
+		rtm, ok := tryGetPersonalizedMessage(CommandName, e.Reason, d)
+
 		if ok {
 			anyFriendly = true
 			msgs = append(msgs, rtm)
@@ -144,9 +153,10 @@ func (h *handler) handleAPIFaultError() error {
 	}
 
 	var l = strings.Join(msgs, "\n")
-	var msg = strings.Replace(original.Error(), af.Error(), l, -1)
 
-	return errwrap.Wrapf(msg, original)
+	var msg = strings.Replace(h.err.Error(), af.Error(), l, -1)
+
+	return errwrap.Wrapf(msg, h.err)
 }
 
 // GetTypes get a list of error types separated by ":"

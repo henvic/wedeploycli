@@ -110,6 +110,38 @@ func TestHandleAPIFaultGenericErrorMessageNotFound(t *testing.T) {
 	}
 }
 
+func TestHandleAPIFaultErrorPrintedInside(t *testing.T) {
+	CommandName = "payment"
+	defer restoreOriginalErrorMessages()
+
+	errorReasonMessage = messages{
+		"innerError": "This message contains an error inside: {{.Err}}",
+	}
+
+	var err = apihelper.APIFault{
+		Method:  "GET",
+		URL:     "http://example.com/",
+		Status:  404,
+		Message: "Not Found",
+		Errors: apihelper.APIFaultErrors{
+			apihelper.APIFaultError{
+				Reason: "innerError",
+				Context: apihelper.APIFaultErrorContext{
+					"message": "message in 123",
+				},
+			},
+		},
+	}
+
+	var got = Handle(err)
+
+	var want = "This message contains an error inside: message in 123"
+
+	if want != got.Error() {
+		t.Errorf("Wanted %v, got %v instead", want, got)
+	}
+}
+
 func TestHandleWrappedAPIFaultGenericErrorMessageNotFound(t *testing.T) {
 	CommandName = "payment"
 	defer restoreOriginalErrorMessages()
