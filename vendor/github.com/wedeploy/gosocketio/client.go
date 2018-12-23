@@ -2,6 +2,7 @@ package gosocketio
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"strings"
@@ -43,14 +44,14 @@ func Connect(u url.URL, tr *websocket.Transport) (c *Client, err error) {
 	handshake := make(chan struct{}, 1)
 	ec := make(chan error, 1)
 
-	if err := c.On(OnConnection, func() {
+	if err = c.On(OnConnection, func() {
 		handshake <- struct{}{}
 	}); err != nil {
 		cancel()
 		return nil, err
 	}
 
-	if err := c.On(OnError, func(err error) {
+	if err = c.On(OnError, func(err error) {
 		ec <- err
 	}); err != nil {
 		cancel()
@@ -459,8 +460,7 @@ func (c *Client) incomingHandler(msg *protocol.Message) {
 		}
 	case protocol.MessageTypePong:
 	case protocol.MessageTypeError:
-		err := fmt.Errorf("error on method %s on namespace %s", msg.Method, msg.Namespace)
-		c.callLoopEvent(msg.Namespace, protocol.OnError, err)
+		c.handleIncomingError(msg)
 	case protocol.MessageTypeEmit:
 		c.handleIncomingEmit(msg)
 	case protocol.MessageTypeAckRequest:
@@ -477,6 +477,17 @@ func (c *Client) incomingHandler(msg *protocol.Message) {
 		err := fmt.Errorf("message type %s is not implemented", msg.Type)
 		c.callLoopEvent(msg.Namespace, OnError, err)
 	}
+}
+
+func (c *Client) handleIncomingError(msg *protocol.Message) {
+	object := msg.Source[len(msg.Namespace+protocol.ErrorMessage)+1:]
+
+	i := IncomingError{
+		Namespace: msg.Namespace,
+		Object:    json.RawMessage(object),
+	}
+
+	c.callLoopEvent(msg.Namespace, protocol.OnError, i)
 }
 
 func (c *Client) handleIncomingEmit(msg *protocol.Message) {
@@ -545,4 +556,20 @@ func (c *Client) handleIncomingNamespaceConnection(msg *protocol.Message) {
 	if h, ok := c.getHandler(msg.Namespace, msg.Method); ok {
 		_ = h.Call(nil)
 	}
+}
+
+// IncomingError handles socket.io incoming errors.
+type IncomingError struct {
+	Namespace string
+	Object    json.RawMessage
+}
+
+func (i IncomingError) Error() string {
+	var s string
+
+	if err := jsonUnmarshalUnpanic(i.Object, &s); err != nil {
+		return fmt.Sprintf("cannot decode error on namespace %s: %s", i.Namespace, i.Object)
+	}
+
+	return s
 }

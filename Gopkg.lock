@@ -227,7 +227,7 @@
   revision = "65a9db5fad5105a89e17f38adcc9878685be6d78"
 
 [[projects]]
-  digest = "1:9f802891ee0f66f80e2ceb44bbca2577732f7fcf4a1bbfccfa9b3b5c7dfff203"
+  digest = "1:fe30874a1749cb13f63d92413ce0a691681ec01dc9f3ec40b0982ad3f869f4ce"
   name = "github.com/wedeploy/gosocketio"
   packages = [
     ".",
@@ -236,8 +236,8 @@
     "websocket",
   ]
   pruneopts = ""
-  revision = "ef257277a67693f4f0830594e3829e3e02c4d402"
-  version = "v0.0.5-beta"
+  revision = "317d07a94968dd044c3f810b2af1d8f761ea709b"
+  version = "v0.0.6-beta"
 
 [[projects]]
   digest = "1:f70702b4dd166cf1df8e8ddcded6c0e4dc8b94f71004c0cf6e23654f6218e7a1"
@@ -445,9 +445,15 @@
     "golang.org/x/crypto/ssh/terminal",
     "golang.org/x/time/rate",
     "gopkg.in/ini.v1",
+    "gopkg.in/src-d/go-billy.v4/osfs",
     "gopkg.in/src-d/go-git.v4",
     "gopkg.in/src-d/go-git.v4/config",
     "gopkg.in/src-d/go-git.v4/plumbing",
+    "gopkg.in/src-d/go-git.v4/plumbing/format/gitignore",
+    "gopkg.in/src-d/go-git.v4/plumbing/object",
+    "gopkg.in/src-d/go-git.v4/plumbing/transport",
+    "gopkg.in/src-d/go-git.v4/plumbing/transport/client",
+    "gopkg.in/src-d/go-git.v4/plumbing/transport/http",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

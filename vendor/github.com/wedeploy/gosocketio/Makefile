@@ -8,7 +8,7 @@ test:
 	test -z "$(golint ./... | grep -v "^vendor" | tee /dev/stderr)"
 
 	echo "Examining source code against code defect."
-	go vet $(go list ./...)
+	go vet -shadow $(go list ./...)
 
 	echo "Checking if code can be simplified or can be improved."
 	megacheck ./...
@@ -18,9 +18,6 @@ test:
 
 get-dev-dependencies:
 	echo "Installing developer tools."
-
-	echo "cover"
-	go get -u golang.org/x/tools/cmd/cover
 
 	echo "goveralls"
 	go get -u github.com/mattn/goveralls

@@ -49,7 +49,7 @@
 
 [[constraint]]
   name = "github.com/wedeploy/gosocketio"
-  version = "0.0.5-beta"
+  version = "0.0.6-beta"
 
 [[constraint]]
   branch = "master"

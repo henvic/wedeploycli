@@ -127,7 +127,7 @@ func NewTransport() *Transport {
 
 // Connect to web socket with default gorilla websocket dialer
 func (wst *Transport) Connect(url string) (conn *Connection, err error) {
-	return wst.ConnectDialer(ws.Dialer{}, url)
+	return wst.ConnectDialer(*ws.DefaultDialer, url)
 }
 
 // ConnectDialer to web socket
