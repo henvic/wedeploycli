@@ -4,61 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"time"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/deployment/internal/repodiscovery"
 	"github.com/wedeploy/cli/deployment/internal/repodiscovery/tiny"
 	"github.com/wedeploy/cli/services"
 	"github.com/wedeploy/cli/verbose"
+	git "gopkg.in/src-d/go-git.v4"
 )
-
-// Commit adds all files and commits
-func (d *Deploy) Commit() (commit string, err error) {
-	if err = d.stageAllFiles(); err != nil {
-		return "", err
-	}
-
-	d.printPackageSize()
-
-	msg := d.Info()
-
-	var params = []string{
-		"commit",
-		"--allow-empty",
-		"--message",
-		msg,
-	}
-
-	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(d.ctx, "git", params...)
-	cmd.Env = append(d.getConfigEnvs(), "GIT_WORK_TREE="+d.Path)
-	cmd.Dir = d.Path
-
-	if verbose.Enabled {
-		cmd.Stderr = errStream
-	}
-
-	err = cmd.Run()
-
-	if err != nil {
-		return "", errwrap.Wrapf("can't commit: {{err}}", err)
-	}
-
-	commit, err = d.getLastCommit()
-
-	if err != nil {
-		return "", err
-	}
-
-	verbose.Debug("commit", commit)
-	return commit, nil
-}
 
 func (d *Deploy) printPackageSize() {
 	var s uint64
@@ -73,7 +29,9 @@ func (d *Deploy) printPackageSize() {
 		return err
 	}
 
-	if err := filepath.Walk(d.getGitPath(), f); err != nil {
+	pkg := filepath.Join(d.workDir, git.GitDirName)
+
+	if err := filepath.Walk(pkg, f); err != nil {
 		verbose.Debug("can't get deployment size correctly:", err)
 	}
 

@@ -41,6 +41,7 @@ var (
 	skipProgress bool
 	quiet        bool
 	follow       bool
+	experimental bool
 	copyPackage  string
 )
 
@@ -96,7 +97,8 @@ func local() (sil services.ServiceInfoList, err error) {
 
 		Image: image,
 
-		CopyPackage: copyPackage,
+		Experimental: experimental,
+		CopyPackage:  copyPackage,
 
 		OnlyBuild:    onlyBuild,
 		SkipProgress: skipProgress,
@@ -201,9 +203,13 @@ func init() {
 		"Suppress progress animations")
 	DeployCmd.Flags().BoolVar(&follow, "follow", false,
 		"Follow logs after deployment")
+	DeployCmd.Flags().BoolVar(
+		&experimental,
+		"experimental", false, "Enable experimental deployment")
 	DeployCmd.Flags().StringVar(&copyPackage, "copy-pkg", "",
 		"Path to copy the deployment package to (for debugging)")
 	_ = DeployCmd.Flags().MarkHidden("follow")
+	_ = DeployCmd.Flags().MarkHidden("experimental")
 	_ = DeployCmd.Flags().MarkHidden("copy-pkg")
 
 	setupHost.Init(DeployCmd)

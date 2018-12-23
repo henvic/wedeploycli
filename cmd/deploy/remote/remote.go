@@ -14,6 +14,8 @@ import (
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/deployment"
+	"github.com/wedeploy/cli/deployment/transport/git"
+	"github.com/wedeploy/cli/deployment/transport/gogit"
 	"github.com/wedeploy/cli/fancy"
 	"github.com/wedeploy/cli/inspector"
 	"github.com/wedeploy/cli/isterm"
@@ -30,7 +32,8 @@ type RemoteDeployment struct {
 
 	Image string
 
-	CopyPackage string
+	Experimental bool
+	CopyPackage  string
 
 	OnlyBuild    bool
 	SkipProgress bool
@@ -98,9 +101,17 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (f Feedback, err error) {
 		Quiet:        rd.Quiet,
 	}
 
-	err = deploy.Do(ctx)
+	err = deploy.Do(ctx, rd.getTransport())
 	f.GroupUID = deploy.GetGroupUID()
 	return f, err
+}
+
+func (rd *RemoteDeployment) getTransport() deployment.Transport {
+	if rd.Experimental {
+		return &gogit.Transport{}
+	}
+
+	return &git.Transport{}
 }
 
 func (rd *RemoteDeployment) checkImage() error {

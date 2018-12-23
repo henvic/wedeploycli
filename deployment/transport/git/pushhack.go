@@ -4,7 +4,7 @@
 // This passes the token as part of the remote address
 // Security risk: prone to sniffing (on the same machine) on most operating systems.
 
-package deployment
+package git
 
 import (
 	"bytes"
@@ -13,6 +13,8 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+
+	"github.com/wedeploy/cli/deployment/internal/groupuid"
 
 	version "github.com/hashicorp/go-version"
 	"github.com/wedeploy/cli/envs"
@@ -32,22 +34,24 @@ import (
 // 2.13.3 (Jul 13, 2017): working again
 const gitAffectedVersions = "> 2.5.1, < 2.13.3"
 
-func (d *Deploy) pushHack() (groupUID string, err error) {
-	var params = []string{"push", d.getGitRemote(), "master", "--force"}
+func (t *Transport) pushHack() (groupUID string, err error) {
+	var params = []string{"push", t.getGitRemote(), "master", "--force"}
 
 	if verbose.Enabled {
 		params = append(params, "--verbose")
 	}
 
 	verbose.Debug(fmt.Sprintf("Running git push %v master -force",
-		verbose.SafeEscape(d.getGitRemote())))
+		verbose.SafeEscape(t.getGitRemote())))
 
-	var cmd = exec.CommandContext(d.ctx, "git", params...)
-	cmd.Env = append(d.getConfigEnvs(),
+	var wectx = t.settings.ConfigContext
+
+	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	cmd.Env = append(t.getConfigEnvs(),
 		"GIT_TERMINAL_PROMPT=0",
-		envs.GitCredentialRemoteToken+"="+d.ConfigContext.Token(),
+		envs.GitCredentialRemoteToken+"="+wectx.Token(),
 	)
-	cmd.Dir = d.Path
+	cmd.Dir = t.settings.WorkDir
 
 	var bufErr *bytes.Buffer
 
@@ -74,25 +78,27 @@ func (d *Deploy) pushHack() (groupUID string, err error) {
 		}
 	}
 
-	return tryGetPushGroupUID(*bufErr)
+	return groupuid.Extract(bufErr.String())
 }
 
-func (d *Deploy) addRemoteHack() error {
+func (t *Transport) addRemoteHack() error {
 	verbose.Debug("Adding remote with token")
-	var gitServer = fmt.Sprintf("https://%v:@git.%v/%v.git",
-		d.ConfigContext.Token(),
-		d.ConfigContext.InfrastructureDomain(),
-		d.ProjectID)
+	var wectx = t.settings.ConfigContext
 
-	var params = []string{"remote", "add", d.getGitRemote(), gitServer}
+	var gitServer = fmt.Sprintf("https://%v:@git.%v/%v.git",
+		wectx.Token(),
+		wectx.InfrastructureDomain(),
+		t.settings.ProjectID)
+
+	var params = []string{"remote", "add", t.getGitRemote(), gitServer}
 
 	verbose.Debug(fmt.Sprintf("Running git remote add %v %v",
-		d.getGitRemote(),
+		t.getGitRemote(),
 		verbose.SafeEscape(gitServer)))
 
-	var cmd = exec.CommandContext(d.ctx, "git", params...)
-	cmd.Env = d.getConfigEnvs()
-	cmd.Dir = d.Path
+	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	cmd.Env = t.getConfigEnvs()
+	cmd.Dir = t.settings.WorkDir
 
 	if verbose.IsUnsafeMode() {
 		cmd.Stderr = errStream
@@ -101,12 +107,12 @@ func (d *Deploy) addRemoteHack() error {
 	return cmd.Run()
 }
 
-func (d *Deploy) useCredentialHack() bool {
+func (t *Transport) useCredentialHack() bool {
 	if runtime.GOOS != "windows" {
 		return false
 	}
 
-	v, err := version.NewVersion(d.gitVersion)
+	v, err := version.NewVersion(t.gitVersion)
 
 	if err != nil {
 		return false
@@ -122,7 +128,7 @@ func (d *Deploy) useCredentialHack() bool {
 	p := constraints.Check(v)
 
 	if p {
-		verbose.Debug("git version " + d.gitVersion + " is not compatible with credential-helper due to a bug")
+		verbose.Debug("git version " + t.gitVersion + " is not compatible with credential-helper due to a bug")
 		verbose.Debug("fall back to passing token on remote")
 		verbose.Debug("limited debug messages for security reasons")
 		verbose.Debug("updating git is highly recommended")

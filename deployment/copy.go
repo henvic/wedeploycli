@@ -8,20 +8,22 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/deployment/internal/ignore"
+	"github.com/wedeploy/cli/verbose"
 )
 
-func (d *Deploy) copyServiceFiles(path string) (copyPath string, err error) {
+func (d *Deploy) copyServiceFiles(path string) (err error) {
 	c := copyServiceFiles{
 		deploy:      d,
 		servicePath: path,
-		copyPath:    filepath.Join(d.getTmpWorkDir(), "services", filepath.Base(path)),
+		copyPath:    filepath.Join(d.workDir, filepath.Base(path)),
 	}
 
 	if err = filepath.Walk(path, c.walkFn); err != nil {
-		return "", err
+		return err
 	}
 
-	return c.copyPath, nil
+	verbose.Debug("Adding service " + path)
+	return nil
 }
 
 type copyServiceFiles struct {
@@ -44,7 +46,7 @@ func (c *copyServiceFiles) walkFn(path string, info os.FileInfo, ef error) (err 
 		return nil
 	}
 
-	if _, has := c.deploy.ignoreList[path]; has {
+	if _, has := c.deploy.ignored[path]; has {
 		return nil
 	}
 
