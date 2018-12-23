@@ -73,7 +73,7 @@ func (c *Context) SetEndpoint(remote string) error {
 	var rl = params.Remotes
 
 	if !rl.Has(remote) {
-		return fmt.Errorf(`Error loading selected remote "%v"`, remote)
+		return fmt.Errorf(`error loading selected remote "%v"`, remote)
 	}
 
 	var r = rl.Get(remote)
