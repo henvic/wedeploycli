@@ -2,7 +2,6 @@ language: go
 go:
   - "1.11.2"
 before_install:
-  - go get golang.org/x/tools/cmd/cover
   - go get github.com/mattn/goveralls
   - go get github.com/kisielk/errcheck
   - go get golang.org/x/lint/golint
