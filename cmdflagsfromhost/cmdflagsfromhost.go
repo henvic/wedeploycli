@@ -210,7 +210,6 @@ func (s *SetupHost) tryInstance() error {
 
 	if err != nil {
 		return errwrap.Wrapf("cannot list available instances: {{err}}", err)
-		// @todo return err
 	}
 
 	if len(l) == 0 {
