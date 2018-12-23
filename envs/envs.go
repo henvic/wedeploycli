@@ -14,6 +14,7 @@ const (
 	GitCredentialRemoteToken = "WEDEPLOY_REMOTE_TOKEN"
 
 	// MachineFriendly is used for returning more consistent output
+	// TODO(henvic): consider adopting the NO_COLOR standard (see no-color.org)
 	MachineFriendly = "WEDEPLOY_MACHINE_FRIENDLY"
 
 	// SkipTerminalVerification makes isTerm.Check() return true always
