@@ -2,7 +2,6 @@ package shell
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/shell/internal/termsession"
 	"github.com/wedeploy/cli/verbose"
+	"github.com/wedeploy/cli/wesocket"
 	"github.com/wedeploy/gosocketio"
 )
 
@@ -74,7 +74,7 @@ func (p *Process) Run(ctx context.Context, conn *gosocketio.Client) (err error) 
 }
 
 func (p *Process) run(ctx context.Context, conn *gosocketio.Client) error {
-	if err := p.authenticate(); err != nil {
+	if err := wesocket.Authenticate(p.shell); err != nil {
 		return err
 	}
 
@@ -128,27 +128,6 @@ func (p *Process) run(ctx context.Context, conn *gosocketio.Client) error {
 	}
 
 	return nil
-}
-
-type authMap struct {
-	Success bool
-}
-
-func (p *Process) authenticate() error {
-	var cerr = make(chan error, 1)
-
-	if err := p.shell.On("authentication", func(a authMap) {
-		if !a.Success {
-			cerr <- errors.New("server authentication failure")
-			return
-		}
-
-		cerr <- nil
-	}); err != nil {
-		return err
-	}
-
-	return <-cerr
 }
 
 func (p *Process) waitExecStarted() error {
