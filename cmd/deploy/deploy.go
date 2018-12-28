@@ -10,7 +10,7 @@ import (
 	"github.com/henvic/ctxsignal"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/deploy/internal/getproject"
-	"github.com/wedeploy/cli/cmd/deploy/remote"
+	deployremote "github.com/wedeploy/cli/cmd/deploy/remote"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/color"
