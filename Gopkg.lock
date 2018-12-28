@@ -56,12 +56,12 @@
   revision = "5205c98a6c11dc72747ce12fff6cd620a99fde05"
 
 [[projects]]
-  digest = "1:64d212c703a2b94054be0ce470303286b177ad260b2f89a307e3d1bb6c073ef6"
+  digest = "1:09aa5dd1332b93c96bde671bafb053249dc813febf7d5ca84e8f382ba255d67d"
   name = "github.com/gorilla/websocket"
   packages = ["."]
   pruneopts = ""
-  revision = "ea4d1f681babbce9545c9c5f3d5194a789c89f5b"
-  version = "v1.2.0"
+  revision = "66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d"
+  version = "v1.4.0"
 
 [[projects]]
   branch = "master"
@@ -227,7 +227,7 @@
   revision = "65a9db5fad5105a89e17f38adcc9878685be6d78"
 
 [[projects]]
-  digest = "1:fe30874a1749cb13f63d92413ce0a691681ec01dc9f3ec40b0982ad3f869f4ce"
+  digest = "1:b3bcaa176df46887b4bca202761c0427c202174f10590030bd602021f3cd9dd2"
   name = "github.com/wedeploy/gosocketio"
   packages = [
     ".",
@@ -236,8 +236,8 @@
     "websocket",
   ]
   pruneopts = ""
-  revision = "317d07a94968dd044c3f810b2af1d8f761ea709b"
-  version = "v0.0.6-beta"
+  revision = "adc8bfbe01c1134c329237b0e6de4981d091342e"
+  version = "v0.0.7-beta"
 
 [[projects]]
   digest = "1:f70702b4dd166cf1df8e8ddcded6c0e4dc8b94f71004c0cf6e23654f6218e7a1"

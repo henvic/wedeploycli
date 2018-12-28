@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"context"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -87,8 +88,8 @@ func (c *Connection) WriteMessage(message string) error {
 }
 
 // Close the connection
-func (c *Connection) Close() {
-	c.socket.Close()
+func (c *Connection) Close() error {
+	return c.socket.Close()
 }
 
 // PingParams gets the ping and pong interval and timeout
@@ -127,12 +128,22 @@ func NewTransport() *Transport {
 
 // Connect to web socket with default gorilla websocket dialer
 func (wst *Transport) Connect(url string) (conn *Connection, err error) {
-	return wst.ConnectDialer(*ws.DefaultDialer, url)
+	return wst.ConnectContext(context.Background(), url)
+}
+
+// ConnectContext to web socket with default gorilla websocket dialer
+func (wst *Transport) ConnectContext(ctx context.Context, url string) (conn *Connection, err error) {
+	return wst.ConnectDialerContext(ctx, *ws.DefaultDialer, url)
 }
 
 // ConnectDialer to web socket
 func (wst *Transport) ConnectDialer(dialer ws.Dialer, url string) (conn *Connection, err error) {
-	socket, _, err := dialer.Dial(url, wst.RequestHeader)
+	return wst.ConnectDialerContext(context.Background(), dialer, url)
+}
+
+// ConnectDialerContext to web socket
+func (wst *Transport) ConnectDialerContext(ctx context.Context, dialer ws.Dialer, url string) (conn *Connection, err error) {
+	socket, _, err := dialer.DialContext(ctx, url, wst.RequestHeader)
 
 	if err != nil {
 		return nil, err

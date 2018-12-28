@@ -41,7 +41,7 @@ The default namespace is automatically ready after establishing the socket.io se
 You can connect to a namespace and start emitting messages to it with:
 
 ```go
-c, err := gosocketio.Connect(u, websocket.NewTransport())
+c, err := gosocketio.ConnectContext(ctx, u, websocket.NewTransport())
 
 if err != nil {
 	return err

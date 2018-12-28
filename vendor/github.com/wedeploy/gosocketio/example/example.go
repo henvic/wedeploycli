@@ -144,5 +144,10 @@ The server sends this "goodbye" message 120 seconds after the connection has bee
 `)
 	time.Sleep(5 * time.Second)
 	g.cancel()
-	g.client.Close()
+
+	err := g.client.Close()
+
+	if err != nil {
+		panic(err)
+	}
 }

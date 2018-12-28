@@ -3,12 +3,14 @@ package gosocketio
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
 	"sync"
 	"time"
 
+	ws "github.com/gorilla/websocket"
 	"github.com/wedeploy/gosocketio/ack"
 	"github.com/wedeploy/gosocketio/internal/protocol"
 	"github.com/wedeploy/gosocketio/websocket"
@@ -32,7 +34,14 @@ const (
 // It blocks for the timeout duration. If the connection is not established in time,
 // it closes the connection and returns an error.
 func Connect(u url.URL, tr *websocket.Transport) (c *Client, err error) {
-	c, err = dial(u, tr)
+	return ConnectContext(context.Background(), u, tr)
+}
+
+// ConnectContext dials and waits for the "connection" event.
+// It blocks for the timeout duration. If the connection is not established in time,
+// it closes the connection and returns an error.
+func ConnectContext(ctx context.Context, u url.URL, tr *websocket.Transport) (c *Client, err error) {
+	c, err = dialContext(ctx, u, tr)
 
 	if err != nil {
 		return nil, err
@@ -80,12 +89,21 @@ func Connect(u url.URL, tr *websocket.Transport) (c *Client, err error) {
 // It doesn't wait for socket.io connection handshake.
 // You probably want to use Connect instead. Only exposed for debugging.
 func DialOnly(u url.URL, tr *websocket.Transport) (c *Client, err error) {
-	return dial(u, tr)
+	return DialOnlyContext(context.Background(), u, tr)
 }
 
-func dial(u url.URL, tr *websocket.Transport) (c *Client, err error) {
+// DialOnlyContext connects to the host and initializes the socket.io protocol.
+// It doesn't wait for socket.io connection handshake.
+// You probably want to use Connect instead. Only exposed for debugging.
+func DialOnlyContext(ctx context.Context, u url.URL, tr *websocket.Transport) (c *Client, err error) {
+	return dialContext(ctx, u, tr)
+}
+
+func dialContext(ctx context.Context, u url.URL, tr *websocket.Transport) (c *Client, err error) {
 	c = &Client{}
 	c.init()
+
+	c.ctx, c.ctxCancel = context.WithCancel(ctx)
 
 	var query = u.Query()
 	query.Add("EIO", "3")
@@ -97,7 +115,7 @@ func dial(u url.URL, tr *websocket.Transport) (c *Client, err error) {
 	}
 
 	c.connLocker.Lock()
-	c.conn, err = tr.ConnectDialer(tr.Dialer, u.String())
+	c.conn, err = tr.ConnectDialerContext(ctx, tr.Dialer, u.String())
 	c.connLocker.Unlock()
 
 	if err != nil {
@@ -127,6 +145,9 @@ type Client struct {
 
 	conn       *websocket.Connection
 	connLocker sync.RWMutex
+
+	mu  sync.Mutex
+	err error
 
 	namespaces       map[string]*Namespace
 	namespacesLocker sync.RWMutex
@@ -208,7 +229,6 @@ func (c *Client) getHandlers() *handlers {
 }
 
 func (c *Client) init() {
-	c.ctx, c.ctxCancel = context.WithCancel(context.Background())
 	c.namespaces = map[string]*Namespace{}
 	c.ack = &ack.Waiter{}
 	c.handlers = &handlers{}
@@ -219,6 +239,19 @@ func (c *Client) init() {
 // ID of current socket connection
 func (c *Client) ID() string {
 	return c.header.Sid
+}
+
+// Done returns a channel that's closed when this client connection is closed.
+func (c *Client) Done() <-chan struct{} {
+	return c.ctx.Done()
+}
+
+// Err returns why a client connection is closed. If Done is not closed, it returns nil.
+func (c *Client) Err() error {
+	c.mu.Lock()
+	err := c.err
+	c.mu.Unlock()
+	return err
 }
 
 // incoming messages loop, puts incoming messages to In channel
@@ -240,8 +273,7 @@ func (c *Client) inLoop() {
 			}
 
 			if err != nil {
-				c.callLoopEvent(defaultNamespace, protocol.OnError, err)
-				c.ctxCancel()
+				c.handleUnrecoverable(err)
 				return
 			}
 
@@ -259,6 +291,35 @@ func (c *Client) inLoop() {
 			c.incomingHandler(msg)
 		}
 	}
+}
+
+func (c *Client) handleUnrecoverable(err error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if c.err != nil {
+		err = c.err
+	}
+
+	switch ws.IsUnexpectedCloseError(err) {
+	case true:
+		for n := range c.namespaces {
+			c.callLoopEvent(n, protocol.OnError, err)
+		}
+	default:
+		c.callLoopEvent(defaultNamespace, protocol.OnError, err)
+	}
+
+	c.err = err
+
+	c.namespacesLocker.RLock()
+	defer c.namespacesLocker.RUnlock()
+
+	for n := range c.namespaces {
+		c.callLoopEvent(n, protocol.OnDisconnect)
+	}
+
+	c.ctxCancel()
 }
 
 // outcoming messages loop
@@ -400,15 +461,35 @@ func (c *Client) maybeOf(namespace string) error {
 	return c.writeMessage(command)
 }
 
-// Close client connection
-func (c *Client) Close() {
+// ErrClosed is returned when something goes wrong because a connection was closed explicitly.
+var ErrClosed = errors.New("socket.io connection closed")
+
+// Close client connection.
+// If the connection is closed this way, returns ErrClosed.
+func (c *Client) Close() error {
 	if len(c.ctx.Done()) != 0 {
-		return
+		return nil
 	}
 
-	c.getConn().Close()
-	c.ctxCancel()
-	c.callLoopEvent(defaultNamespace, protocol.OnDisconnect)
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if c.err != nil {
+		return c.err
+	}
+
+	var err = c.getConn().Close()
+
+	c.err = ErrClosed
+
+	c.namespacesLocker.RLock()
+	defer c.namespacesLocker.RUnlock()
+
+	for n := range c.namespaces {
+		c.callLoopEvent(n, protocol.OnDisconnect)
+	}
+
+	return err
 }
 
 // Find message processing function associated with given method
@@ -439,7 +520,7 @@ func (c *Client) callLoopEvent(namespace string, event string, args ...interface
 		return
 	}
 
-	_ = h.Call(&struct{}{})
+	_ = h.Call()
 }
 
 func (c *Client) incomingHandler(msg *protocol.Message) {
@@ -554,7 +635,7 @@ func (c *Client) handleIncomingAckResponse(msg *protocol.Message) {
 
 func (c *Client) handleIncomingNamespaceConnection(msg *protocol.Message) {
 	if h, ok := c.getHandler(msg.Namespace, msg.Method); ok {
-		_ = h.Call(nil)
+		_ = h.Call()
 	}
 }
 
