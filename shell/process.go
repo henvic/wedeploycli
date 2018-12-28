@@ -70,6 +70,8 @@ func (p *Process) Run(ctx context.Context, conn *gosocketio.Client) (err error) 
 		return err
 	case err := <-runErr:
 		return err
+	case <-p.conn.Done():
+		return p.conn.Err()
 	}
 }
 

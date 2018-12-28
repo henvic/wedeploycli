@@ -74,18 +74,12 @@ func Run(ctx context.Context, params Params, cmd string, args ...string) error {
 
 	t := websocket.NewTransport()
 	t.Dialer = wesocket.Dialer()
-	conn, err := gosocketio.Connect(u, t)
+
+	conn, err := gosocketio.ConnectContext(ctx, u, t)
 
 	if err != nil {
 		return err
 	}
-
-	defer conn.Close()
-
-	go func() {
-		<-ctx.Done()
-		conn.Close()
-	}()
 
 	return process.Run(ctx, conn)
 }
