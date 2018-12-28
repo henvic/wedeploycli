@@ -75,7 +75,7 @@ func maybeSetSkipTLSVerification() {
 		ExpectContinueTimeout: dt.ExpectContinueTimeout,
 		TLSHandshakeTimeout:   dt.TLSHandshakeTimeout,
 
-		// With an unsafe TLS config
+		// With an unsafe TLS config, #nosec G402
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},

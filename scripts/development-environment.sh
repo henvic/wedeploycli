@@ -226,6 +226,9 @@ function passGoDevDependencies() {
   
   echo "megacheck https://github.com/dominikh/go-tools/tree/master/cmd/megacheck"
   go get -u honnef.co/go/tools/cmd/megacheck
+
+  echo "gosec https://github.com/securego/gosec"
+  go get -u github.com/securego/gosec/cmd/gosec
 }
 
 function passPublishingDependencies() {

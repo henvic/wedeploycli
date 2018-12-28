@@ -6,6 +6,7 @@ before_install:
   - go get github.com/kisielk/errcheck
   - go get golang.org/x/lint/golint
   - go get honnef.co/go/tools/cmd/megacheck
+  - go get github.com/securego/gosec/cmd/gosec
 script:
   - make test
 after_success:

@@ -15,3 +15,5 @@ echo "Examining source code against code defect."
 go vet -shadow $(go list ./...)
 echo "Checking if code can be simplified or can be improved."
 megacheck ./...
+echo "Checking if code contains security issues."
+gosec -quiet .
