@@ -340,7 +340,7 @@ func (c *Config) updateRemotes() {
 	var rl = params.Remotes
 
 	for _, k := range c.listRemotes() {
-		if rl.Has(k) {
+		if !rl.Has(k) {
 			c.deleteRemote(k)
 		}
 	}
