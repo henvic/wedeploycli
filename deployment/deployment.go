@@ -42,10 +42,17 @@ type Params struct {
 	Image       string
 	CopyPackage string
 
+	// Metadata type not used to avoid forcing Go's unordered map structure.
+	// Metadata is only processed on the server-side (January 9th, 2019).
+	Metadata json.RawMessage
+
 	OnlyBuild    bool
 	SkipProgress bool
 	Quiet        bool
 }
+
+// Metadata for the deployment.
+type Metadata map[string]json.RawMessage
 
 // Deploy project
 type Deploy struct {

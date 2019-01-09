@@ -46,6 +46,8 @@ type Info struct {
 
 	Repositories []repodiscovery.Repository `json:"repos,omitempty"`
 	Repoless     []string                   `json:"repoless,omitempty"`
+
+	Metadata json.RawMessage `json:"metadata,omitempty"`
 }
 
 // Info about the deployment.
@@ -63,6 +65,7 @@ func (d *Deploy) Info() string {
 		Deploy:       !d.OnlyBuild,
 		Repositories: repositories,
 		Repoless:     repoless,
+		Metadata:     d.Metadata,
 	}
 
 	bdi, err := json.Marshal(tiny.Convert(tiny.Info(di)))

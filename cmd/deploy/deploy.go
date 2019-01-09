@@ -2,11 +2,13 @@ package deploy
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"path/filepath"
 	"time"
 
+	"github.com/hashicorp/errwrap"
 	"github.com/henvic/ctxsignal"
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/deploy/internal/getproject"
@@ -15,6 +17,7 @@ import (
 	"github.com/wedeploy/cli/cmdflagsfromhost"
 	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/deployment"
+	"github.com/wedeploy/cli/jsonerror"
 	"github.com/wedeploy/cli/logs"
 	"github.com/wedeploy/cli/services"
 )
@@ -37,6 +40,7 @@ var setupHost = cmdflagsfromhost.SetupHost{
 
 var (
 	params       deployment.Params
+	metadata     string
 	follow       bool
 	experimental bool
 )
@@ -53,8 +57,27 @@ var DeployCmd = &cobra.Command{
 	RunE:    run,
 }
 
+func checkMetadata() error {
+	if metadata == "" {
+		return nil
+	}
+
+	if err := json.Unmarshal([]byte(metadata), &deployment.Metadata{}); err != nil {
+		return errwrap.Wrapf(
+			"error parsing metadata: {{err}}",
+			jsonerror.FriendlyUnmarshal(err))
+	}
+
+	return nil
+}
+
 func preRun(cmd *cobra.Command, args []string) error {
 	params.Quiet = params.Quiet || params.SkipProgress // be quieter on skip progress as well
+	params.Metadata = json.RawMessage(metadata)
+
+	if err := checkMetadata(); err != nil {
+		return err
+	}
 
 	if err := maybePreRunDeployFromGitRepo(cmd, args); err != nil {
 		return err
@@ -125,6 +148,10 @@ func fromGitRepo(repo string) (services.ServiceInfoList, error) {
 		return nil, errors.New("overwriting image when deploying from a git repository is not supported")
 	}
 
+	if metadata != "" {
+		return nil, errors.New("using metadata when deploying from a git repository is not supported")
+	}
+
 	var err error
 	params.ProjectID, err = getproject.MaybeID(setupHost.Project())
 
@@ -178,6 +205,7 @@ func followLogs(sil services.ServiceInfoList) error {
 
 func init() {
 	DeployCmd.Flags().StringVar(&params.Image, "image", "", "Use different image for service")
+	DeployCmd.Flags().StringVar(&metadata, "metadata", "", "Metadata in JSON")
 	DeployCmd.Flags().BoolVar(&params.OnlyBuild, "only-build", false,
 		"Skip deployment (only build)")
 	DeployCmd.Flags().BoolVar(&params.SkipProgress, "skip-progress", false,
@@ -191,6 +219,7 @@ func init() {
 		"experimental", false, "Enable experimental deployment")
 	DeployCmd.Flags().StringVar(&params.CopyPackage, "copy-pkg", "",
 		"Path to copy the deployment package to (for debugging)")
+	_ = DeployCmd.Flags().MarkHidden("metadata")
 	_ = DeployCmd.Flags().MarkHidden("follow")
 	_ = DeployCmd.Flags().MarkHidden("experimental")
 	_ = DeployCmd.Flags().MarkHidden("copy-pkg")

@@ -1,6 +1,8 @@
 package tiny
 
 import (
+	"encoding/json"
+
 	"github.com/wedeploy/cli/deployment/internal/repodiscovery"
 )
 
@@ -13,6 +15,8 @@ type Info struct {
 
 	Repositories []repodiscovery.Repository `json:"repos,omitempty"`
 	Repoless     []string                   `json:"repoless,omitempty"`
+
+	Metadata json.RawMessage `json:"metadata,omitempty"`
 }
 
 // Tiny deployment info.
@@ -20,6 +24,8 @@ type Tiny struct {
 	Deploy bool `json:"deploy"`
 
 	Commit *commitInfo `json:"commit,omitempty"`
+
+	Metadata json.RawMessage `json:"metadata,omitempty"`
 }
 
 type commitInfo struct {
@@ -35,7 +41,8 @@ type commitInfo struct {
 // see https://github.com/wedeploy/nodegit/issues/43#issuecomment-417728174
 func Convert(i Info) Tiny {
 	var t = Tiny{
-		Deploy: i.Deploy,
+		Deploy:   i.Deploy,
+		Metadata: i.Metadata,
 	}
 
 	convertCommit(i, &t)
