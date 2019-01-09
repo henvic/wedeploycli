@@ -18,7 +18,7 @@ import (
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/jsonerror"
 	"github.com/wedeploy/cli/verbosereq"
-	"github.com/wedeploy/wedeploy-sdk-go"
+	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 
 // Client for the services
