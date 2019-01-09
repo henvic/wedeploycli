@@ -23,7 +23,7 @@ import (
 	"github.com/wedeploy/cli/stringlib"
 	"github.com/wedeploy/cli/tdata"
 	"github.com/wedeploy/cli/verbose"
-	"github.com/wedeploy/wedeploy-sdk-go"
+	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 
 type postMock struct {
