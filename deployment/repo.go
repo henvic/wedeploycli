@@ -12,26 +12,15 @@ import (
 	"github.com/wedeploy/cli/projects"
 )
 
-// ParamsFromRepository is used when deploying git from a repo.
-type ParamsFromRepository struct {
-	Repository string
-
-	ProjectID string
-
-	OnlyBuild    bool
-	SkipProgress bool
-	Quiet        bool
-}
-
 // DeployFromGitRepository deploys from a repository on the web.
 func DeployFromGitRepository(ctx context.Context,
-	wectx config.Context, params ParamsFromRepository) (
+	wectx config.Context, params Params, repository string) (
 	services.ServiceInfoList, error) {
 	projectsClient := projects.New(wectx)
-	params.Repository = addSchemaGitRepoPath(params.Repository)
+	repository = addSchemaGitRepoPath(repository)
 
 	build := projects.BuildRequestBody{
-		Repository: params.Repository,
+		Repository: repository,
 
 		Deploy: !params.OnlyBuild,
 	}

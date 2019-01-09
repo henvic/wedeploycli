@@ -36,13 +36,9 @@ var setupHost = cmdflagsfromhost.SetupHost{
 }
 
 var (
-	image        string
-	onlyBuild    bool
-	skipProgress bool
-	quiet        bool
+	params       deployment.Params
 	follow       bool
 	experimental bool
-	copyPackage  string
 )
 
 // DeployCmd runs services
@@ -58,7 +54,7 @@ var DeployCmd = &cobra.Command{
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	quiet = quiet || skipProgress // --quiet on skip progress; it also leads to a quieter output
+	params.Quiet = params.Quiet || params.SkipProgress // be quieter on skip progress as well
 
 	if err := maybePreRunDeployFromGitRepo(cmd, args); err != nil {
 		return err
@@ -68,6 +64,8 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
+	params.Remote = setupHost.Remote()
+
 	var sil services.ServiceInfoList
 	switch {
 	case len(args) != 0:
@@ -84,25 +82,18 @@ func run(cmd *cobra.Command, args []string) (err error) {
 }
 
 func local() (sil services.ServiceInfoList, err error) {
-	if copyPackage != "" {
-		if copyPackage, err = filepath.Abs(copyPackage); err != nil {
+	if params.CopyPackage != "" {
+		if params.CopyPackage, err = filepath.Abs(params.CopyPackage); err != nil {
 			return nil, err
 		}
 	}
 
+	params.ProjectID = setupHost.Project()
+	params.ServiceID = setupHost.Service()
+
 	var rd = &deployremote.RemoteDeployment{
-		ProjectID: setupHost.Project(),
-		ServiceID: setupHost.Service(),
-		Remote:    setupHost.Remote(),
-
-		Image: image,
-
+		Params:       params,
 		Experimental: experimental,
-		CopyPackage:  copyPackage,
-
-		OnlyBuild:    onlyBuild,
-		SkipProgress: skipProgress,
-		Quiet:        quiet,
 	}
 
 	ctx, cancel := ctxsignal.WithTermination(context.Background())
@@ -122,7 +113,7 @@ func maybePreRunDeployFromGitRepo(cmd *cobra.Command, args []string) error {
 		return errors.New("deploying with custom service ids isn't supported using git repositories")
 	}
 
-	if copyPackage != "" {
+	if params.CopyPackage != "" {
 		return errors.New("can't create a local package when deploying with a git remote")
 	}
 
@@ -130,26 +121,18 @@ func maybePreRunDeployFromGitRepo(cmd *cobra.Command, args []string) error {
 }
 
 func fromGitRepo(repo string) (services.ServiceInfoList, error) {
-	if image != "" {
+	if params.Image != "" {
 		return nil, errors.New("overwriting image when deploying from a git repository is not supported")
 	}
 
-	projectID, err := getproject.MaybeID(setupHost.Project())
+	var err error
+	params.ProjectID, err = getproject.MaybeID(setupHost.Project())
 
 	if err != nil {
 		return nil, err
 	}
 
-	params := deployment.ParamsFromRepository{
-		ProjectID:  projectID,
-		Repository: repo,
-
-		OnlyBuild:    onlyBuild,
-		SkipProgress: skipProgress,
-		Quiet:        quiet,
-	}
-
-	return deployment.DeployFromGitRepository(context.Background(), we.Context(), params)
+	return deployment.DeployFromGitRepository(context.Background(), we.Context(), params, repo)
 }
 
 func followLogs(sil services.ServiceInfoList) error {
@@ -194,19 +177,19 @@ func followLogs(sil services.ServiceInfoList) error {
 }
 
 func init() {
-	DeployCmd.Flags().StringVar(&image, "image", "", "Use different image for service")
-	DeployCmd.Flags().BoolVar(&onlyBuild, "only-build", false,
+	DeployCmd.Flags().StringVar(&params.Image, "image", "", "Use different image for service")
+	DeployCmd.Flags().BoolVar(&params.OnlyBuild, "only-build", false,
 		"Skip deployment (only build)")
-	DeployCmd.Flags().BoolVar(&skipProgress, "skip-progress", false,
+	DeployCmd.Flags().BoolVar(&params.SkipProgress, "skip-progress", false,
 		"Skip watching deployment progress, quiet")
-	DeployCmd.Flags().BoolVarP(&quiet, "quiet", "q", false,
+	DeployCmd.Flags().BoolVarP(&params.Quiet, "quiet", "q", false,
 		"Suppress progress animations")
 	DeployCmd.Flags().BoolVar(&follow, "follow", false,
 		"Follow logs after deployment")
 	DeployCmd.Flags().BoolVar(
 		&experimental,
 		"experimental", false, "Enable experimental deployment")
-	DeployCmd.Flags().StringVar(&copyPackage, "copy-pkg", "",
+	DeployCmd.Flags().StringVar(&params.CopyPackage, "copy-pkg", "",
 		"Path to copy the deployment package to (for debugging)")
 	_ = DeployCmd.Flags().MarkHidden("follow")
 	_ = DeployCmd.Flags().MarkHidden("experimental")

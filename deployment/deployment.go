@@ -32,26 +32,31 @@ type Transport interface {
 	UserAgent() string
 }
 
+// Params for the deployment
+type Params struct {
+	ProjectID string
+	ServiceID string
+
+	Remote string
+
+	Image       string
+	CopyPackage string
+
+	OnlyBuild    bool
+	SkipProgress bool
+	Quiet        bool
+}
+
 // Deploy project
 type Deploy struct {
 	ctx           context.Context
 	ConfigContext config.Context
 
 	Transport
-
-	ProjectID string
-	ServiceID string
-
-	Image string
+	Params
 
 	Path     string
 	Services services.ServiceInfoList
-
-	CopyPackage string
-
-	OnlyBuild    bool
-	SkipProgress bool
-	Quiet        bool
 
 	groupUID string
 

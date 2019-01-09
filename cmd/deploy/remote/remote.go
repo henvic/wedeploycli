@@ -26,18 +26,9 @@ import (
 
 // RemoteDeployment of services
 type RemoteDeployment struct {
-	ProjectID string
-	ServiceID string
-	Remote    string
-
-	Image string
+	Params deployment.Params
 
 	Experimental bool
-	CopyPackage  string
-
-	OnlyBuild    bool
-	SkipProgress bool
-	Quiet        bool
 
 	path     string
 	services services.ServiceInfoList
@@ -60,7 +51,7 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (f Feedback, err error) {
 		return f, err
 	}
 
-	rd.ProjectID, err = getproject.MaybeID(rd.ProjectID)
+	rd.Params.ProjectID, err = getproject.MaybeID(rd.Params.ProjectID)
 
 	if err != nil {
 		return f, err
@@ -86,19 +77,9 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (f Feedback, err error) {
 	var deploy = &deployment.Deploy{
 		ConfigContext: wectx,
 
-		ProjectID: rd.ProjectID,
-		ServiceID: rd.ServiceID,
-
-		Image: rd.Image,
-
+		Params:   rd.Params,
 		Path:     rd.path,
 		Services: rd.services,
-
-		CopyPackage: rd.CopyPackage,
-
-		OnlyBuild:    rd.OnlyBuild,
-		SkipProgress: rd.SkipProgress,
-		Quiet:        rd.Quiet,
 	}
 
 	err = deploy.Do(ctx, rd.getTransport())
@@ -115,7 +96,7 @@ func (rd *RemoteDeployment) getTransport() deployment.Transport {
 }
 
 func (rd *RemoteDeployment) checkImage() error {
-	if rd.Image == "" || len(rd.services) <= 1 {
+	if rd.Params.Image == "" || len(rd.services) <= 1 {
 		return nil
 	}
 
@@ -199,7 +180,7 @@ func (rd *RemoteDeployment) checkServiceIDs() error {
 		return rd.checkServiceParameter()
 	}
 
-	if rd.ServiceID != "" {
+	if rd.Params.ServiceID != "" {
 		return errors.New("service id parameter is not allowed when deploying multiple services")
 	}
 
@@ -241,12 +222,12 @@ func (rd *RemoteDeployment) checkEmptyIDOnMultipleDeployment() error {
 }
 
 func (rd *RemoteDeployment) checkServiceParameter() error {
-	if rd.ServiceID == "" && rd.services[0].ServiceID != "" {
+	if rd.Params.ServiceID == "" && rd.services[0].ServiceID != "" {
 		return nil
 	}
 
-	if rd.ServiceID != "" {
-		rd.services[0].ServiceID = rd.ServiceID
+	if rd.Params.ServiceID != "" {
+		rd.services[0].ServiceID = rd.Params.ServiceID
 		rd.remap = append(rd.remap, rd.services[0].Location)
 		return nil
 	}
@@ -267,7 +248,7 @@ func (rd *RemoteDeployment) checkServiceParameter() error {
 		serviceID = optionServiceID
 	}
 
-	rd.ServiceID = serviceID
+	rd.Params.ServiceID = serviceID
 	rd.services[0].ServiceID = serviceID
 	rd.remap = append(rd.remap, rd.services[0].Location)
 	return nil
@@ -284,12 +265,12 @@ func (rd *RemoteDeployment) loadServicesListFromPath() (err error) {
 	if len(rd.services) == 0 {
 		rd.services = append(rd.services, services.ServiceInfo{
 			Location:  rd.path,
-			ServiceID: rd.ServiceID,
+			ServiceID: rd.Params.ServiceID,
 		})
 	}
 
 	for k := range rd.services {
-		rd.services[k].ProjectID = rd.ProjectID
+		rd.services[k].ProjectID = rd.Params.ProjectID
 	}
 
 	return nil
