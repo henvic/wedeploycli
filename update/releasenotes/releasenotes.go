@@ -215,4 +215,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "December 7th, 2018",
 		Description: "Fixing links to DXP Cloud. Minor improvements.",
 	},
+	ReleaseNote{
+		Version:     "1.7.2",
+		Date:        "January 9th, 2019",
+		Description: `Fixing removing remotes. Improved "we shell" connection reliability. Minor improvements.`,
+	},
 }
