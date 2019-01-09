@@ -135,7 +135,7 @@ func Update(ctx context.Context, c *config.Config, channel, version string) erro
 func runUpdateNotices() {
 	var params = []string{"update", "release-notes", "--from", defaults.Version, "--exclusive"}
 	verbose.Debug(fmt.Sprintf("Running %v %v", os.Args[0], strings.Join(params, " ")))
-	cmd := exec.CommandContext(context.Background(), os.Args[0], params...)
+	cmd := exec.CommandContext(context.Background(), os.Args[0], params...) // #nosec
 
 	buf := new(bytes.Buffer)
 

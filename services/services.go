@@ -506,7 +506,7 @@ func Read(path string) (*Package, error) {
 	var p = Package{}
 	var hasDockerfile bool
 
-	dockerfile, err := ioutil.ReadFile(filepath.Join(path, "Dockerfile"))
+	dockerfile, err := ioutil.ReadFile(filepath.Join(path, "Dockerfile")) // #nosec
 
 	switch {
 	case err == nil:
@@ -515,7 +515,7 @@ func Read(path string) (*Package, error) {
 		return nil, errwrap.Wrapf("error reading Dockerfile: {{err}}", err)
 	}
 
-	wedeployJSON, err := ioutil.ReadFile(filepath.Join(path, "wedeploy.json"))
+	wedeployJSON, err := ioutil.ReadFile(filepath.Join(path, "wedeploy.json")) // #nosec
 
 	switch {
 	case err == nil:

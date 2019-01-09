@@ -10,7 +10,7 @@ import (
 
 // FromFile gets a string data from a file
 func FromFile(filename string) string {
-	b, err := ioutil.ReadFile(filename)
+	b, err := ioutil.ReadFile(filename) // #nosec
 
 	if err != nil {
 		panic(err)

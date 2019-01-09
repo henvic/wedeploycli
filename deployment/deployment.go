@@ -83,7 +83,7 @@ func getPreparedServicePackage(c changes, path string) ([]byte, error) {
 	// this smells a little bad because wedeploy.json is the responsibility of the services package
 	// and I shouldn't be accessing it directly from here
 	var sp = map[string]interface{}{}
-	wedeployJSON, err := ioutil.ReadFile(filepath.Join(path, "wedeploy.json"))
+	wedeployJSON, err := ioutil.ReadFile(filepath.Join(path, "wedeploy.json")) // #nosec
 	switch {
 	case err == nil:
 		if err = json.Unmarshal(wedeployJSON, &sp); err != nil {

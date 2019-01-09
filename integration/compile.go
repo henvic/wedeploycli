@@ -32,7 +32,7 @@ func compile() {
 }
 
 func build() {
-	var cmd = exec.Command("go", "build", "-race", "-o", binaryName)
+	var cmd = exec.Command("go", "build", "-race", "-o", binaryName) // #nosec
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 

@@ -50,7 +50,7 @@ func (d *Diagnostics) exec(e *Executable) {
 
 	verbose.Debug(color.Format(color.FgHiYellow, "$ %s", e.Command))
 	var name, args = getRunCommand(e.Command)
-	var c = exec.CommandContext(ctxCmd, name, args...)
+	var c = exec.CommandContext(ctxCmd, name, args...) // #nosec
 	var b = &bytes.Buffer{}
 	c.Stderr = b
 	c.Stdout = b

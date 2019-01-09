@@ -44,15 +44,16 @@ type Command struct {
 	ExitCode int
 }
 
+const binaryName = "cli_" + runtime.GOOS + "_" + runtime.GOARCH
+
 var (
 	// ErrExitCodeNotAvailable is used for exit code retrieval failure
 	ErrExitCodeNotAvailable = errors.New("Exit code not available")
 
-	binary     string
-	binaryName           = fmt.Sprintf("cli_%s_%s", runtime.GOOS, runtime.GOARCH)
-	errStream  io.Writer = os.Stderr
-
+	binary string
 	update bool
+
+	errStream io.Writer = os.Stderr
 )
 
 func init() {
@@ -144,7 +145,7 @@ func (e *Expect) Assert(t *testing.T, cmd *Command) {
 
 // Prepare prepares the executable command
 func (cmd *Command) Prepare() *exec.Cmd {
-	child := exec.Command(binary, cmd.Args...)
+	child := exec.Command(binary, cmd.Args...) // #nosec
 	cmd.setEnv()
 	cmd.absDir()
 	cmd.setChildChannels(child)

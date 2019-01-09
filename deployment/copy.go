@@ -57,7 +57,7 @@ func (c *copyServiceFiles) walkFn(path string, info os.FileInfo, ef error) (err 
 		return os.MkdirAll(toTmp, mode)
 	}
 
-	from, openErr := os.Open(path)
+	from, openErr := os.Open(path) // #nosec
 	to, createErr := os.OpenFile(toTmp, os.O_RDWR|os.O_CREATE, mode)
 
 	if openErr != nil {

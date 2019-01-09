@@ -42,7 +42,7 @@ func readExtraLicenses(buf *bytes.Buffer) error {
 
 func main() {
 	buf := &bytes.Buffer{}
-	cmd := exec.CommandContext(context.Background(), "vendorlicenses")
+	cmd := exec.CommandContext(context.Background(), "vendorlicenses") // #nosec
 	cmd.Dir = ".."
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = buf

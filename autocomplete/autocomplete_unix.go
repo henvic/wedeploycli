@@ -78,7 +78,7 @@ func install() {
 }
 
 func run(command string) error {
-	process := exec.Command("bash", "-c", command)
+	process := exec.Command("bash", "-c", command) // #nosec
 	process.Stderr = os.Stderr
 	process.Stdout = os.Stdout
 	return process.Run()

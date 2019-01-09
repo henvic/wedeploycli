@@ -53,7 +53,7 @@ func (t *Transport) Stage(s services.ServiceInfoList) (err error) {
 func (t *Transport) stageService(dest string) error {
 	var params = []string{"add", dest}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = t.getConfigEnvs()
 	cmd.Dir = filepath.Join(t.settings.WorkDir)
 	cmd.Stderr = errStream
@@ -71,7 +71,7 @@ func (t *Transport) Commit(message string) (commit string, err error) {
 	}
 
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = t.getConfigEnvs()
 	cmd.Dir = t.settings.WorkDir
 
@@ -98,7 +98,7 @@ func (t *Transport) Commit(message string) (commit string, err error) {
 func (t *Transport) getLastCommit() (commit string, err error) {
 	var params = []string{"rev-parse", "HEAD"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = t.getConfigEnvs()
 	var buf bytes.Buffer
 	cmd.Dir = t.settings.WorkDir
@@ -135,7 +135,7 @@ func (t *Transport) Push() (groupUID string, err error) {
 	var wectx = t.settings.ConfigContext
 
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = append(t.getConfigEnvs(),
 		"GIT_TERMINAL_PROMPT=0",
 		envs.GitCredentialRemoteToken+"="+wectx.Token(),
@@ -193,7 +193,7 @@ func existsDependency(cmd string) bool {
 func (t *Transport) getGitVersion() error {
 	var params = []string{"version"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = t.getConfigEnvs()
 	cmd.Dir = t.settings.WorkDir
 	var buf bytes.Buffer
@@ -224,7 +224,7 @@ func (t *Transport) getGitVersion() error {
 func (t *Transport) Init() (err error) {
 	var params = []string{"init"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = t.getConfigEnvs()
 	cmd.Dir = t.settings.WorkDir
 	cmd.Stderr = errStream
@@ -247,7 +247,7 @@ func (t *Transport) Init() (err error) {
 func (t *Transport) setKeepLineEndings() error {
 	var params = []string{"config", "core.autocrlf", "false", "--local"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = t.getConfigEnvs()
 	cmd.Dir = t.settings.WorkDir
 	cmd.Stderr = errStream
@@ -258,7 +258,7 @@ func (t *Transport) setKeepLineEndings() error {
 func (t *Transport) setStopLineEndingsWarnings() error {
 	var params = []string{"config", "core.safecrlf", "false", "--local"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = t.getConfigEnvs()
 	cmd.Dir = t.settings.WorkDir
 	cmd.Stderr = errStream
@@ -277,7 +277,7 @@ func (t *Transport) setGitAuthor() error {
 func (t *Transport) setGitAuthorName() error {
 	var params = []string{"config", "user.name", "WeDeploy user", "--local"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = t.getConfigEnvs()
 	cmd.Dir = t.settings.WorkDir
 	cmd.Stderr = errStream
@@ -288,7 +288,7 @@ func (t *Transport) setGitAuthorName() error {
 func (t *Transport) setGitAuthorEmail() error {
 	var params = []string{"config", "user.email", "user@deployment", "--local"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = t.getConfigEnvs()
 	cmd.Dir = t.settings.WorkDir
 	cmd.Stderr = errStream
@@ -311,7 +311,7 @@ func (t *Transport) getGitRemote() string {
 func (t *Transport) ProcessIgnored() (map[string]struct{}, error) {
 	var params = []string{"status", "--ignored", "--untracked-files=all", "--porcelain", "--", "."}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = append(t.getConfigEnvs(), "GIT_WORK_TREE="+t.settings.Path)
 	cmd.Dir = t.settings.Path
 	cmd.Stderr = errStream
@@ -358,7 +358,7 @@ func (t *Transport) AddRemote() (err error) {
 
 	var params = []string{"remote", "add", t.getGitRemote(), gitServer}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = t.getConfigEnvs()
 	cmd.Dir = t.settings.WorkDir
 	cmd.Stderr = errStream
@@ -378,7 +378,7 @@ func (t *Transport) addEmptyCredentialHelper() (err error) {
 	var params = []string{"config", "--add", "credential.helper", ""}
 	verbose.Debug("Resetting credential helpers")
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = t.getConfigEnvs()
 	cmd.Dir = t.settings.WorkDir
 	cmd.Stderr = errStream
@@ -412,7 +412,7 @@ func (t *Transport) addCredentialHelper() error {
 
 	var params = []string{"config", "--add", "credential.helper", credentialHelper}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = t.getConfigEnvs()
 	cmd.Dir = t.settings.WorkDir
 	cmd.Stderr = errStream
@@ -437,7 +437,7 @@ var semverMatcher = regexp.MustCompile(`(\d+.\d+.\d+)(-[0-9A-Za-z-]*.\d*)?`)
 func (t *Transport) UserAgent() string {
 	var params = []string{"version"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
-	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = t.getConfigEnvs()
 	cmd.Dir = t.settings.WorkDir
 	var buf bytes.Buffer

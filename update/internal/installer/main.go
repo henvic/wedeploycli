@@ -75,7 +75,7 @@ func (i *installation) run() error {
 }
 
 func reexecute() {
-	var cmd = exec.Command(os.Args[0], os.Args[1:]...)
+	var cmd = exec.Command(os.Args[0], os.Args[1:]...) // #nosec
 	cmd.Env = os.Environ()
 	cmd.Dir, _ = os.Getwd()
 	cmd.Stdin = os.Stdin

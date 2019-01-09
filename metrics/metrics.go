@@ -322,7 +322,7 @@ func (s *Sender) maybeSubmitOnBackground() error {
 }
 
 func (s *Sender) submitOnBackground() error {
-	var cmd = exec.Command(os.Args[0], "metrics", "usage", "submit")
+	var cmd = exec.Command(os.Args[0], "metrics", "usage", "submit") // #nosec
 	var pr, pw = io.Pipe()
 	cmd.Stdout = pw
 
@@ -355,7 +355,9 @@ func (s *Sender) testPreparingMetrics(pr *io.PipeReader) error {
 }
 
 func (s *Sender) read() (err error) {
-	switch s.content, err = ioutil.ReadFile(metricsPath); {
+	s.content, err = ioutil.ReadFile(metricsPath) // #nosec
+
+	switch {
 	case os.IsNotExist(err):
 		return nil
 	case err != nil:

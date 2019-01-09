@@ -434,7 +434,7 @@ Using it might make you inadvertently expose private data. Continue at your own 
 func curl(ctx context.Context, params []string) error {
 	verbose.Debug(fmt.Sprintf("Running curl %v", strings.Join(params, " ")))
 
-	var cmd = exec.CommandContext(ctx, "curl", params...)
+	var cmd = exec.CommandContext(ctx, "curl", params...) // #nosec
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
@@ -449,7 +449,7 @@ func curlPretty(ctx context.Context, params []string) error {
 		bufErr bytes.Buffer
 	)
 
-	var cmd = exec.CommandContext(ctx, "curl", params...)
+	var cmd = exec.CommandContext(ctx, "curl", params...) // #nosec
 	cmd.Stdin = os.Stdin
 
 	cmd.Stderr = io.MultiWriter(&bufErr, os.Stderr)

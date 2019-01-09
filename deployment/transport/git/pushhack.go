@@ -46,7 +46,7 @@ func (t *Transport) pushHack() (groupUID string, err error) {
 
 	var wectx = t.settings.ConfigContext
 
-	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = append(t.getConfigEnvs(),
 		"GIT_TERMINAL_PROMPT=0",
 		envs.GitCredentialRemoteToken+"="+wectx.Token(),
@@ -96,7 +96,7 @@ func (t *Transport) addRemoteHack() error {
 		t.getGitRemote(),
 		verbose.SafeEscape(gitServer)))
 
-	var cmd = exec.CommandContext(t.ctx, "git", params...)
+	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = t.getConfigEnvs()
 	cmd.Dir = t.settings.WorkDir
 

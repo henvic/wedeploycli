@@ -20,7 +20,7 @@ var LegalCmd = &cobra.Command{
 }
 
 func legalRun(cmd *cobra.Command, args []string) error {
-	pager := exec.Command("less")
+	pager := exec.Command("less") // #nosec
 	pager.Stdin = strings.NewReader(getLegalNotices())
 	pager.Stdout = os.Stdout
 	err := pager.Run()

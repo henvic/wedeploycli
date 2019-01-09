@@ -63,7 +63,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func readEnvsFromFile(filepath string) ([]string, error) {
-	b, err := ioutil.ReadFile(filepath)
+	b, err := ioutil.ReadFile(filepath) // #nosec
 
 	if err != nil {
 		return []string{}, err
