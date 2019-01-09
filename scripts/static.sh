@@ -16,4 +16,8 @@ go vet -shadow $(go list ./...)
 echo "Running staticcheck toolset https://staticcheck.io"
 staticcheck ./...
 echo "Checking if code contains security issues."
-# gosec -quiet . # should be ./..., but must fix first something...
+# TODO(henvic) fix/update gosec when available:
+# G104: Doesn't understand _ assignments #270
+# https://github.com/securego/gosec/issues/270
+# Ignoring G104: Audit errors not checked for now.
+gosec -quiet -exclude G104 --quiet ./...
