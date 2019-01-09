@@ -41,7 +41,7 @@ func getWorkingDirectory() (wd string, err error) {
 	}
 
 	for _, f := range forbiddenLocations {
-		if strings.ToLower(f) == strings.ToLower(wd) {
+		if strings.EqualFold(f, wd) {
 			return "", fmt.Errorf("refusing to deploy from inside the top-level of \"%v\" because it might be unsafe", wd)
 		}
 	}

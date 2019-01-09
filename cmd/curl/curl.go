@@ -382,7 +382,7 @@ func (cr *curlRunner) run(cmd *cobra.Command, args []string) error {
 			`This command is not enabled by default as it might be dangerous for security.
 Using it might make you inadvertently expose private data. Continue at your own risk.`)
 
-		return fmt.Errorf(`You must enable this command first with "%v"`,
+		return fmt.Errorf(`you must enable this command first with "%v"`,
 			EnableCmd.CommandPath())
 	}
 

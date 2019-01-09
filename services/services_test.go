@@ -798,7 +798,7 @@ func TestValidateAlreadyExists(t *testing.T) {
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)
-			_, _ = fmt.Fprintf(w, tdata.FromFile("mocks/service_already_exists_response.json"))
+			_, _ = fmt.Fprint(w, tdata.FromFile("mocks/service_already_exists_response.json"))
 		})
 
 	if err := client.Validate(context.Background(), "foo", "bar"); err != ErrServiceAlreadyExists {
@@ -815,7 +815,7 @@ func TestValidateInvalidID(t *testing.T) {
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			w.WriteHeader(404)
-			_, _ = fmt.Fprintf(w, tdata.FromFile("mocks/service_invalid_id_response.json"))
+			_, _ = fmt.Fprint(w, tdata.FromFile("mocks/service_invalid_id_response.json"))
 		})
 
 	if err := client.Validate(context.Background(), "foo", "bar"); err != ErrInvalidServiceID {
@@ -832,7 +832,7 @@ func TestValidateError(t *testing.T) {
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			w.WriteHeader(400)
-			_, _ = fmt.Fprintf(w, tdata.FromFile("../apihelper/mocks/unknown_error_api_response.json"))
+			_, _ = fmt.Fprint(w, tdata.FromFile("../apihelper/mocks/unknown_error_api_response.json"))
 		})
 
 	var err = client.Validate(context.Background(), "foo", "bar")

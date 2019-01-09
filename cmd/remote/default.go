@@ -76,7 +76,7 @@ func saveDefaultRemote(remote string) error {
 		}
 	}
 
-	return fmt.Errorf(`Remote "%v" not found`, remote)
+	return fmt.Errorf(`remote "%v" not found`, remote)
 }
 
 func init() {

@@ -124,10 +124,8 @@ func TestAuthGetError(t *testing.T) {
 
 	var err = (&Client{conf}).AuthGet(context.Background(), "/foo", nil)
 
-	switch err.(type) {
+	switch ae := err.(type) {
 	case APIFault:
-		var ae = err.(APIFault)
-
 		if ae.Message != "Forbidden" {
 			t.Errorf("Wanted Forbidden error message, got %v instead",
 				ae.Message)

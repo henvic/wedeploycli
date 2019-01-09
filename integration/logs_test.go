@@ -89,7 +89,7 @@ func TestLogs(t *testing.T) {
 	servertest.IntegrationMux.HandleFunc("/projects/foo/services/nodejs5143/logs",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-			_, _ = fmt.Fprintf(w, tdata.FromFile("mocks/logs/logs_response.json"))
+			_, _ = fmt.Fprint(w, tdata.FromFile("mocks/logs/logs_response.json"))
 		})
 
 	var cmd = &Command{
@@ -128,7 +128,7 @@ func TestLogsFromCurrentWorkingOnProjectDirectoryContext(t *testing.T) {
 			}
 
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-			_, _ = fmt.Fprintf(w, tdata.FromFile("mocks/logs/logs_response.json"))
+			_, _ = fmt.Fprint(w, tdata.FromFile("mocks/logs/logs_response.json"))
 		})
 
 	var cmd = &Command{
@@ -169,7 +169,7 @@ func TestLogsWithLocalhostAddress(t *testing.T) {
 			}
 
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-			_, _ = fmt.Fprintf(w, tdata.FromFile("mocks/logs/logs_response.json"))
+			_, _ = fmt.Fprint(w, tdata.FromFile("mocks/logs/logs_response.json"))
 		})
 
 	var cmd = &Command{

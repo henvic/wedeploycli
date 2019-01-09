@@ -108,7 +108,7 @@ func TestGetList(t *testing.T) {
 			}
 
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-			_, _ = fmt.Fprintf(w, tdata.FromFile("mocks/logs_response.json"))
+			_, _ = fmt.Fprint(w, tdata.FromFile("mocks/logs_response.json"))
 		})
 
 	var filter = &Filter{

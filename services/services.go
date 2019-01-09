@@ -146,22 +146,22 @@ type Register struct {
 
 var (
 	// ErrServiceNotFound happens when a wedeploy.json is not found
-	ErrServiceNotFound = errors.New("Service not found")
+	ErrServiceNotFound = errors.New("service not found")
 
 	// ErrServiceAlreadyExists happens when a service ID already exists
-	ErrServiceAlreadyExists = errors.New("Service already exists")
+	ErrServiceAlreadyExists = errors.New("service already exists")
 
 	// ErrInvalidServiceID happens when a service ID is invalid
-	ErrInvalidServiceID = errors.New("Invalid service ID")
+	ErrInvalidServiceID = errors.New("invalid service ID")
 
 	// ErrEmptyProjectID happens when trying to access a project, but providing an empty ID
-	ErrEmptyProjectID = errors.New("Can't get project: Project ID is empty")
+	ErrEmptyProjectID = errors.New("can't get project: Project ID is empty")
 
 	// ErrEmptyServiceID happens when trying to access a service, but providing an empty ID
-	ErrEmptyServiceID = errors.New("Can't get service: Service ID is empty")
+	ErrEmptyServiceID = errors.New("can't get service: Service ID is empty")
 
 	// ErrEmptyProjectAndServiceID happens when trying to access a service, but providing empty IDs
-	ErrEmptyProjectAndServiceID = errors.New("Can't get service: Project and Service ID is empty")
+	ErrEmptyProjectAndServiceID = errors.New("can't get service: Project and Service ID is empty")
 )
 
 // ServiceInfo is for a tuple of service ID and Location.

@@ -48,7 +48,7 @@ const binaryName = "cli_" + runtime.GOOS + "_" + runtime.GOARCH
 
 var (
 	// ErrExitCodeNotAvailable is used for exit code retrieval failure
-	ErrExitCodeNotAvailable = errors.New("Exit code not available")
+	ErrExitCodeNotAvailable = errors.New("exit code not available")
 
 	binary string
 	update bool

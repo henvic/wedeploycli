@@ -24,7 +24,7 @@ func testMachineFriendlyFormat(t *testing.T) {
 
 	var tw = NewTabWriter(&b)
 	var text = "ABC\tDEFGH\tIJKLMNOPQRSTUVWXYZ\n012345\t6789\n"
-	_, err := fmt.Fprintf(tw, text)
+	_, err := fmt.Fprint(tw, text)
 
 	if err != nil {
 		t.Errorf("Error printing: %v", err)
@@ -50,7 +50,7 @@ func testHumanFriendlyFormat(t *testing.T) {
 
 	var tw = NewTabWriter(&b)
 	var text = "ABC\tDEFGH\tIJKLMNOPQRSTUVWXYZ\n012345\t6789\n"
-	_, err := fmt.Fprintf(tw, text)
+	_, err := fmt.Fprint(tw, text)
 
 	if err != nil {
 		t.Errorf("Error printing: %v", err)

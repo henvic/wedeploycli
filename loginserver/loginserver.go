@@ -156,7 +156,7 @@ func (s *Service) homeHandler(w http.ResponseWriter, r *http.Request) {
 	// this is a compromise
 	var dashboard = defaults.DashboardAddressPrefix + s.Infrastructure
 	if referer.Host != "" && referer.Host != dashboard {
-		s.err = errors.New("Token origin is not from given dashboard")
+		s.err = errors.New("token origin is not from given dashboard")
 		safeErrorHandler(w, "403 Forbidden", http.StatusForbidden)
 		s.ctxCancel()
 		return
@@ -172,7 +172,7 @@ const signupRequestPseudoToken = "signup_requested"
 
 func (s *Service) authenticateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost || r.Header.Get("Referer") != s.serverAddress+"/" {
-		s.err = errors.New("Authentication should have been POSTed and from a localhost origin")
+		s.err = errors.New("authentication should have been POSTed and from a localhost origin")
 		safeErrorHandler(w, "403 Forbidden", http.StatusForbidden)
 		s.ctxCancel()
 		return

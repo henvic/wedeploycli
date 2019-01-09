@@ -301,7 +301,7 @@ func TestBuild(t *testing.T) {
 
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			w.WriteHeader(200)
-			_, _ = fmt.Fprintf(w, string(br))
+			_, _ = fmt.Fprint(w, string(br))
 		})
 
 	b := BuildRequestBody{

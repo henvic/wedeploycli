@@ -113,11 +113,11 @@ func Format(s ...interface{}) string {
 	var in = -1
 
 	for i, v := range s {
-		switch v.(type) {
+		switch vt := v.(type) {
 		case []Attribute:
-			params = append(params, v.([]Attribute)...)
+			params = append(params, vt...)
 		case Attribute:
-			params = append(params, v.(Attribute))
+			params = append(params, vt)
 		default:
 			in = i
 			goto over
