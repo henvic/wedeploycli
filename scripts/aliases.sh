@@ -14,7 +14,7 @@ alias goreport="open coverage.html"
 
 # Check linting issues and exit with error code if there is any linting error
 # Excluding vendor/ directory verification
-alias golintt='test -z "$(golint ./... | grep -v "^vendor" | tee /dev/stderr)"'
+alias golintt='test -z "$(golint `go list ./...` | tee /dev/stderr)"'
 
 # Run govet
 # Excluding vendor/ directory verification
