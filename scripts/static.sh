@@ -13,7 +13,7 @@ echo "Linting code."
 test -z "$(golint ./... | grep -v "^vendor" | tee /dev/stderr)"
 echo "Examining source code against code defect."
 go vet -shadow $(go list ./...)
-echo "Checking if code can be simplified or can be improved."
-megacheck ./...
+echo "Running staticcheck toolset https://staticcheck.io"
+staticcheck ./...
 echo "Checking if code contains security issues."
 gosec -quiet .

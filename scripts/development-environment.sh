@@ -224,8 +224,8 @@ function passGoDevDependencies() {
   echo "golint https://github.com/golang/lint/golint"
   go get -u golang.org/x/lint/golint
   
-  echo "megacheck https://github.com/dominikh/go-tools/tree/master/cmd/megacheck"
-  go get -u honnef.co/go/tools/cmd/megacheck
+  echo "staticcheck https://staticcheck.io"
+  go get -u honnef.co/go/tools/cmd/staticcheck
 
   echo "gosec https://github.com/securego/gosec"
   go get -u github.com/securego/gosec/cmd/gosec
