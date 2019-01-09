@@ -177,7 +177,7 @@ func (e *eventRecorder) jsonMarshal() (err error) {
 
 func (e *eventRecorder) appendEvent() error {
 	// BUG(henvic): corruption might happen from time to time if the last entry didn't finish with a new line
-	var file, err = os.OpenFile(metricsPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
+	var file, err = os.OpenFile(metricsPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	defer func() {
 		if ef := file.Close(); ef != nil {
 			verbose.Debug("Error appending metric to metrics file:", ef)
