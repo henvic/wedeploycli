@@ -1,6 +1,7 @@
 #!/usr/bin/expect
 
 spawn $env(SHELL)
+logout $::_tester(email)
 
 Feature: "Logged out"
 
