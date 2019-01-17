@@ -32,3 +32,5 @@ source include.tcl
 source run.tcl
 
 source report.tcl
+
+source teardown.exp

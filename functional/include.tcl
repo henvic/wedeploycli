@@ -27,5 +27,4 @@ lappend test_files \
   env-var.exp \
   quota.exp \
   scale.exp \
-  shell.exp \
-  teardown.exp
+  shell.exp
