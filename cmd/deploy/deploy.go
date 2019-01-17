@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -104,11 +105,22 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	return followLogs(sil)
 }
 
+func handleCopyPackage() (err error) {
+	if params.CopyPackage == "" {
+		return nil
+	}
+
+	if _, err = os.Stat(params.CopyPackage); err != nil {
+		return errwrap.Wrapf("invalid --copy-pkg value: {{err}}", err)
+	}
+
+	params.CopyPackage, err = filepath.Abs(params.CopyPackage)
+	return err
+}
+
 func local() (sil services.ServiceInfoList, err error) {
-	if params.CopyPackage != "" {
-		if params.CopyPackage, err = filepath.Abs(params.CopyPackage); err != nil {
-			return nil, err
-		}
+	if err = handleCopyPackage(); err != nil {
+		return sil, err
 	}
 
 	params.ProjectID = setupHost.Project()
