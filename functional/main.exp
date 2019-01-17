@@ -3,7 +3,7 @@
 if { [file exists settings.tcl] != 1} {
   puts "No configuration found."
   puts "You probably want to copy settings-sample.tcl to settings.tcl and configure it."
-  exit 1  
+  exit 1
 }
 
 source settings.tcl
@@ -24,6 +24,7 @@ puts "Team user account: $::_teamuser(email)"
 puts ""
 
 source prepare.tcl
+source setup.exp
 
 # include test scenarios
 source include.tcl

@@ -14,7 +14,6 @@ if { $::argc > 1 } {
 
 # list of test files to run
 lappend test_files \
-  setup.exp \
   logout.exp \
   loggedout.exp \
   login.exp \
