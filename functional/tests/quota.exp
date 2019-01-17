@@ -89,10 +89,10 @@ Scenario: "Cannot exceed custom domains quota" {
   set quota1 [prefixed_project quota1]
   set quota2 [prefixed_project quota2]
   set quota3 [prefixed_project quota3]
-  set qadomain1 qadomain1.$::service_domain
-  set qadomain2 qadomain2.$::service_domain
-  set qadomain3 qadomain3.$::service_domain
-  set qadomain4 qadomain4.$::service_domain
+  set qadomain1 qadomain1.$::_service_domain
+  set qadomain2 qadomain2.$::_service_domain
+  set qadomain3 qadomain3.$::_service_domain
+  set qadomain4 qadomain4.$::_service_domain
 
   send "$::bin domain add $qadomain1 -p $quota1 -s hosting1\r"
   expect {

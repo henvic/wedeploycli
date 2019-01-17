@@ -1,4 +1,0 @@
-#!/usr/bin/expect
-
-set service_domain [exec $::bin inspect config --format "{{with index .Remotes.Entries \"qa-remote\"}}{{.Service}}{{end}}"]
-print_msg_stderr "Service domain: $::service_domain"

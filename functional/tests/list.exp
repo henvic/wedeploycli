@@ -32,7 +32,7 @@ Scenario: "List project and services" {
   send "$::bin list\r"
   expect {
     timeout {handle_timeout}
-    -re "list2.*hosting1-$list2\.$::service_domain.*wedeploy/hosting.*none\
-        .*list2.*hosting2-$list2\.$::service_domain.*wedeploy/hosting.*none"
+    -re "list2.*hosting1-$list2\.$::_service_domain.*wedeploy/hosting.*none\
+        .*list2.*hosting2-$list2\.$::_service_domain.*wedeploy/hosting.*none"
   }
 } { delete_project "$list2" }

@@ -18,7 +18,6 @@ lappend test_files \
   logout.exp \
   loggedout.exp \
   login.exp \
-  loggedin.exp \
   list.exp \
   deploy.exp \
   log.exp \

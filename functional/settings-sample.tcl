@@ -13,6 +13,7 @@ set _create_user false
 
 # remote to use during tests
 set _remote "wedeploy.com"
+set _service_domain "wedeploy.sh"
 
 # project prefix
 set project_prefix ""

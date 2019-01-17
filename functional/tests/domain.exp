@@ -6,7 +6,7 @@ Feature: "Domain"
 
 Scenario: "Add and delete a custom domain" {
   set domain1 [prefixed_project domain1]
-  set domain qadomain1.$::service_domain
+  set domain qadomain1.$::_service_domain
 
   create_project $domain1
   create_service $domain1 hosting1

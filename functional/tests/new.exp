@@ -48,7 +48,7 @@ Scenario: "Create a project and service" {
   send "4\r"
   expect {
     timeout { handle_timeout; break }
-    "Service*hosting1-$new1.$::service_domain*created"
+    "Service*hosting1-$new1.$::_service_domain*created"
   }
   assert_service_exists $new1 hosting1
 } { delete_project $new1 }
@@ -89,7 +89,7 @@ Scenario: "Create a service with `$::bin new service`" {
   send "4\r"
   expect {
     timeout { handle_timeout; break }
-    "Service*hosting1-$new3.$::service_domain*created"
+    "Service*hosting1-$new3.$::_service_domain*created"
   }
   assert_service_exists $new3 hosting1
 } { delete_project $new3 }

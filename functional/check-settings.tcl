@@ -4,6 +4,7 @@ foreach var {
   _mode \
   _create_user \
   _remote \
+  _service_domain \
   _teamuser \
   _teamuser(email) \
   _teamuser(password) \
