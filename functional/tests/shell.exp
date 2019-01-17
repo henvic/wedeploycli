@@ -46,7 +46,7 @@ Scenario: "Open a shell on a service container" {
   send "exit\r"
   expect {
     timeout { handle_timeout; break }
-    "/$::_root_dir/"
+    "/$::_root_dir"
   }
 } { delete_project $shell1 }
 
@@ -85,7 +85,7 @@ Scenario: "Open a shell on a specific instance" {
   send "exit\r"
   expect {
   timeout { handle_timeout; break }
-  "/$::_root_dir/"
+  "/$::_root_dir"
   }
 } { delete_project $shell2 }
 
@@ -119,6 +119,6 @@ Scenario: "Open a shell using --instance flag" {
   send "exit\r"
   expect {
     timeout { handle_timeout; break }
-    "/$::_root_dir/"
+    "/$::_root_dir"
   }
 } { delete_project $shell3 }
