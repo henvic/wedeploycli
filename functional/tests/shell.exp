@@ -63,7 +63,7 @@ Scenario: "Open a shell on a specific instance" {
   send "3\r"
   expect {
   timeout { handle_timeout; break }
-  -gl "Scaling service \"*hosting1*\" on project \"*$shell2*\" on *wedeploy.* to *3* instances."
+  -gl "Scaling service \"*hosting1*\" on project \"*$shell2*\" on * to *3* instances."
   }
   sleep 15
   send "$::bin shell -p $shell2 -s hosting1\r"
@@ -102,7 +102,7 @@ Scenario: "Open a shell using --instance flag" {
   send "3\r"
   expect {
     timeout { handle_timeout; break }
-    -gl "Scaling service \"*hosting1*\" on project \"*$shell3*\" on *wedeploy.* to *3* instances."
+    -gl "Scaling service \"*hosting1*\" on project \"*$shell3*\" on * to *3* instances."
   }
   sleep 5
   set instances [get_container_ids $shell3 hosting1]

@@ -34,7 +34,7 @@ Scenario: "Configure scale for a service" {
   send "3\r"
   expect {
     timeout { handle_timeout; break }
-    -gl "Scaling service \"*hosting1*\" on project \"*$scale1*\" on *wedeploy.* to *3* instances."
+    -gl "Scaling service \"*hosting1*\" on project \"*$scale1*\" on * to *3* instances."
   }
   send "$::bin curl /projects/$scale1/services/hosting1\r"
   expect {

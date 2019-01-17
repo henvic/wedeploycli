@@ -90,7 +90,7 @@ Scenario: "View logs with --instance flag" {
   set timeout 15
   expect {
     timeout { handle_timeout; break }
-    -gl "Scaling service \"*ui1qa*\" on project \"*log1*\" on *wedeploy.* to *3* instances."
+    -gl "Scaling service \"*ui1qa*\" on project \"*log1*\" on * to *3* instances."
   }
   expect {
     timeout { handle_timeout; break }
