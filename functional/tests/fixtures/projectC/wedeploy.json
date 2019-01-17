@@ -1,5 +1,4 @@
 {
   "id": "md",
-  "image": "mongoqatest12345",
-  "volume": "/data/db"
+  "image": "mongoqatest12345"
 }
