@@ -1,13 +1,14 @@
 #!/usr/bin/expect
 
-send_user "\nLog out.\n"
-spawn $::bin logout
-expect {
-  timeout {
-    error "Timed out."
+Feature: "Log out"
+
+Scenario: "Log out" {
+  spawn $::bin logout
+  expect {
+    timeout { handle_timeout; break }
+    eof {
+      error "Error logging out."
+    }
+    "have been logged out"
   }
-  eof {
-    error "Error logging out."
-  }
-  "have been logged out"
 }
