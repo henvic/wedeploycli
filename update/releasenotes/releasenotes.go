@@ -220,4 +220,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "January 9th, 2019",
 		Description: `Fixing removing remotes. Improved "we shell" connection reliability. Minor improvements.`,
 	},
+	ReleaseNote{
+		Version:     "1.7.3",
+		Date:        "February 6th, 2019",
+		Description: `Prevent git hooks from being triggered by mistake on Windows. Minor improvements.`,
+	},
 }
