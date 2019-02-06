@@ -2,6 +2,7 @@ package projects
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -212,4 +213,41 @@ func (c *Client) GetDeploymentOrder(ctx context.Context, projectID, groupUID str
 		url.PathEscape(groupUID))
 	err = c.Client.AuthGet(ctx, addr, &order)
 	return order, err
+}
+
+// GetBuilds on a given project.
+func (c *Client) GetBuilds(ctx context.Context, projectID, groupUID string) (bs []Build, err error) {
+	var addr = fmt.Sprintf("/projects/%s/builds?buildGroupUid=%s",
+		url.PathEscape(projectID),
+		url.QueryEscape(groupUID))
+	err = c.Client.AuthGet(ctx, addr, &bs)
+	return bs, err
+}
+
+// Build information.
+type Build struct {
+	ProjectID string
+	ServiceID string
+
+	GroupUID      string
+	BuildGroupUID string
+
+	Environments map[string]json.RawMessage
+}
+
+// SkippedDeploy returns true when the service is not configured to be deployed.
+func (b *Build) SkippedDeploy() bool {
+	ep := strings.Split(b.ProjectID, "-")
+	environment := ep[len(ep)-1]
+
+	ve := b.Environments[environment]
+	var m map[string]interface{}
+	var err = json.Unmarshal(ve, &m)
+
+	if err != nil || m == nil {
+		return false
+	}
+
+	deploy, ok := m["deploy"].(bool)
+	return ok && !deploy
 }

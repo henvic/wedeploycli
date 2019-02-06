@@ -356,3 +356,68 @@ func TestGetDeploymentOrder(t *testing.T) {
 
 	servertest.Teardown()
 }
+
+type buildProvider struct {
+	in      Build
+	skipped bool
+}
+
+var buildCases = []buildProvider{
+	buildProvider{
+		Build{
+			ProjectID: "foo-bar",
+			ServiceID: "x",
+		},
+		false,
+	},
+	buildProvider{
+		Build{
+			ProjectID: "foo-bar",
+			ServiceID: "x",
+			Environments: map[string]json.RawMessage{
+				"bar": json.RawMessage(`invalid`),
+			},
+		},
+		false,
+	},
+	buildProvider{
+		Build{
+			ProjectID: "foo-bar",
+			ServiceID: "x",
+			Environments: map[string]json.RawMessage{
+				"bar": json.RawMessage(`{"deploy": "invalid"}`),
+			},
+		},
+		false,
+	},
+	buildProvider{
+		Build{
+			ProjectID: "foo-bar",
+			ServiceID: "x",
+			Environments: map[string]json.RawMessage{
+				"bar": json.RawMessage(`{"deploy": true}`),
+			},
+		},
+		false,
+	},
+	buildProvider{
+		Build{
+			ProjectID: "foo-bar",
+			ServiceID: "x",
+			Environments: map[string]json.RawMessage{
+				"bar": json.RawMessage(`{"deploy": false}`),
+			},
+		},
+		true,
+	},
+}
+
+func TestBuildSkippedDeploy(t *testing.T) {
+	for _, bc := range buildCases {
+		gotSkipped := bc.in.SkippedDeploy()
+
+		if gotSkipped != bc.skipped {
+			t.Errorf("Expected skipped value to be %v, got %v instead", bc.skipped, gotSkipped)
+		}
+	}
+}
