@@ -35,7 +35,7 @@ import (
 const gitAffectedVersions = "> 2.5.1, < 2.13.3"
 
 func (t *Transport) pushHack() (groupUID string, err error) {
-	var params = []string{"push", t.getGitRemote(), "master", "--force"}
+	var params = []string{"push", t.getGitRemote(), "master", "--force", "--no-verify"}
 
 	if verbose.Enabled {
 		params = append(params, "--verbose")

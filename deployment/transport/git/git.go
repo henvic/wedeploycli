@@ -65,6 +65,7 @@ func (t *Transport) stageService(dest string) error {
 func (t *Transport) Commit(message string) (commit string, err error) {
 	var params = []string{
 		"commit",
+		"--no-verify",
 		"--allow-empty",
 		"--message",
 		message,
@@ -126,7 +127,7 @@ func (t *Transport) Push() (groupUID string, err error) {
 		return t.pushHack()
 	}
 
-	var params = []string{"push", t.getGitRemote(), "master", "--force"}
+	var params = []string{"push", t.getGitRemote(), "master", "--force", "--no-verify"}
 
 	if verbose.Enabled {
 		params = append(params, "--verbose")
