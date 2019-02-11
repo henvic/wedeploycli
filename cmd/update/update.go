@@ -2,7 +2,6 @@ package update
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
@@ -33,12 +32,6 @@ func updateRun(cmd *cobra.Command, args []string) error {
 
 	if !cmd.Flag("channel").Changed {
 		channel = params.ReleaseChannel
-	}
-
-	if params.ReleaseChannel != unstable && version != "" {
-		return fmt.Errorf(
-			`to update to a specific version you need to set the release channel to "%s" first`,
-			unstable)
 	}
 
 	return update.Update(context.Background(), wectx.Config(), channel, version)
