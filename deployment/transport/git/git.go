@@ -495,6 +495,7 @@ func (t *Transport) getConfigEnvs() (es []string) {
 	vars["HOME"] = sandboxHome
 	vars["XDG_CONFIG_HOME"] = sandboxHome
 	vars["GIT_CONFIG"] = filepath.Join(gitDir, "config")
+	vars["GIT_WORK_TREE"] = t.settings.WorkDir
 
 	for key, value := range vars {
 		if !strings.HasPrefix(key, fmt.Sprintf("%s=", key)) {
