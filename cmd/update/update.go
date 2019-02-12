@@ -18,8 +18,6 @@ var UpdateCmd = &cobra.Command{
 	Short: "Update CLI to the latest version",
 }
 
-const unstable = "unstable"
-
 var (
 	channel string
 	version string
