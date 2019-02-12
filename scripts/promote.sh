@@ -36,6 +36,11 @@ done
 read -p "Version: " NEW_RELEASE_VERSION < /dev/tty;
 NEW_RELEASE_VERSION=$(echo $NEW_RELEASE_VERSION | sed 's/^v//')
 
+echo "Deployment checklist: you must verify that the following commands"
+echo "work correctly on macOS, Linux, and Windows:"
+echo "we login, we deploy, we shell, we list."
+echo
+
 read -p "Promote version to release channel [stable]: " RELEASE_CHANNEL < /dev/tty;
 RELEASE_CHANNEL=${RELEASE_CHANNEL:-"stable"}
 
