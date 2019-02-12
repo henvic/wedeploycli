@@ -225,4 +225,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "February 6th, 2019",
 		Description: `Prevent git hooks from being triggered by mistake on Windows. Minor improvements.`,
 	},
+	ReleaseNote{
+		Version:     "1.7.4",
+		Date:        "February 12th, 2019",
+		Description: `Fix Windows issue that prevented some Windows users with certain git versions from deploying.`,
+	},
 }
