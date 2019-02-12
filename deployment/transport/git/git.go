@@ -55,7 +55,7 @@ func (t *Transport) stageService(dest string) error {
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = t.getConfigEnvs()
-	cmd.Dir = filepath.Join(t.settings.WorkDir)
+	cmd.Dir = t.settings.WorkDir
 	cmd.Stderr = errStream
 
 	return cmd.Run()
