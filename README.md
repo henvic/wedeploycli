@@ -21,7 +21,6 @@ You can get the latest CLI source code with `go get -u github.com/wedeploy/cli`
 The following commands are available and requires no arguments:
 
 * **make development-environment**: install development environment for this project
-* **make get-dependencies**: get versioned Go dependencies
 * **make legal**: generate legal notices for existing dependencies
 * **make list-packages**: list all Go packages of the project
 * **make build**: compiles the program
