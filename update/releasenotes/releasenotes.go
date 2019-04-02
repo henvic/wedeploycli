@@ -230,4 +230,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "February 12th, 2019",
 		Description: `Fix Windows issue that prevented some Windows users with certain git versions from deploying.`,
 	},
+	ReleaseNote{
+		Version:     "1.7.5",
+		Date:        "April 1st, 2019",
+		Description: `Fixing deployment progress stuck due to out of order activities.`,
+	},
 }
