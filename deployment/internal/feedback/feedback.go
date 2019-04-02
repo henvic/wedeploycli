@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -535,10 +534,6 @@ func (w *Watch) updateActivitiesStates() (end bool, err error) {
 	})
 	cancel()
 
-	sort.SliceStable(as, func(i, j int) bool {
-		return as[i].CreatedAt < as[j].CreatedAt
-	})
-
 	if err != nil {
 		return isNotFoundError(err), err
 	}
@@ -560,18 +555,17 @@ func (w *Watch) sync(as []activities.Activity) {
 		var serviceID, ok = a.Metadata["serviceId"].(string)
 
 		if _, exists := w.states[serviceID]; !exists {
-			// don't track activities for services we don't know
-			return
+			continue
 		}
 
 		if !ok || !w.isValidState(serviceID, a.Type) {
-			return
+			continue
 		}
 
 		var sw = w.states[serviceID]
 
-		if _, ok := sw.visited[serviceID]; ok {
-			return
+		if _, ok := sw.visited[a.Type]; ok {
+			continue
 		}
 
 		w.updateActivitiesStateMessage(serviceID, a.Type)

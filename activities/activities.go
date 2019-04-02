@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"sort"
 
 	"github.com/wedeploy/cli/apihelper"
 	"github.com/wedeploy/cli/config"
@@ -183,7 +184,7 @@ var activityTemplates = map[string]string{
 	ServiceRestarted:                   "{{.Metadata.serviceId}} service restarted on project {{.ProjectID}}",
 }
 
-// List activities of a given project
+// List activities of a given project, in order.
 func (c *Client) List(ctx context.Context, projectID string, f Filter) (activities []Activity, err error) {
 	if projectID == "" {
 		return activities, projects.ErrEmptyProjectID
@@ -199,6 +200,11 @@ func (c *Client) List(ctx context.Context, projectID string, f Filter) (activiti
 	}
 
 	err = apihelper.DecodeJSON(request, &activities)
+
+	sort.SliceStable(activities, func(i, j int) bool {
+		return activities[i].CreatedAt < activities[j].CreatedAt
+	})
+
 	return activities, err
 }
 
