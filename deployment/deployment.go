@@ -35,6 +35,7 @@ type Transport interface {
 // Params for the deployment
 type Params struct {
 	ProjectID string
+	Region    string
 	ServiceID string
 
 	Remote string

@@ -51,7 +51,7 @@ func (rd *RemoteDeployment) Run(ctx context.Context) (f Feedback, err error) {
 		return f, err
 	}
 
-	rd.Params.ProjectID, err = getproject.MaybeID(rd.Params.ProjectID)
+	rd.Params.ProjectID, err = getproject.MaybeID(rd.Params.ProjectID, rd.Params.Region)
 
 	if err != nil {
 		return f, err

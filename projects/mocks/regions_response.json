@@ -1,0 +1,14 @@
+[
+    {
+        "location": "Australia, Sydney",
+        "name": "australia-southeast1-a"
+    },
+    {
+        "location": "Europe, London",
+        "name": "europe-west2-a"
+    },
+    {
+        "location": "United States, Oregon",
+        "name": "us-west1-a"
+    }
+]
