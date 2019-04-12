@@ -41,6 +41,41 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+func TestRegions(t *testing.T) {
+	servertest.Setup()
+
+	servertest.Mux.HandleFunc(
+		"/clusters",
+		tdata.ServerJSONFileHandler("mocks/regions_response.json"))
+
+	var list, err = client.Regions(context.Background())
+
+	var want = []Region{
+		Region{
+			Location: "Australia, Sydney",
+			Name:     "australia-southeast1-a",
+		},
+		Region{
+			Location: "Europe, London",
+			Name:     "europe-west2-a",
+		},
+		Region{
+			Location: "United States, Oregon",
+			Name:     "us-west1-a",
+		},
+	}
+
+	if !reflect.DeepEqual(want, list) {
+		t.Errorf("Wanted %v, got %v instead", want, list)
+	}
+
+	if err != nil {
+		t.Errorf("Wanted error to be nil, got %v instead", err)
+	}
+
+	servertest.Teardown()
+}
+
 func TestProjectCreatedAtTimeHelper(t *testing.T) {
 	var s = Project{
 		ProjectID: "abc",

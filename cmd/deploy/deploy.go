@@ -24,7 +24,7 @@ import (
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern: cmdflagsfromhost.FullHostPattern,
+	Pattern: cmdflagsfromhost.RegionPattern | cmdflagsfromhost.FullHostPattern,
 
 	Requires: cmdflagsfromhost.Requires{
 		Auth:    true,
@@ -124,6 +124,7 @@ func local() (sil services.ServiceInfoList, err error) {
 	}
 
 	params.ProjectID = setupHost.Project()
+	params.Region = setupHost.Region()
 	params.ServiceID = setupHost.Service()
 
 	var rd = &deployremote.RemoteDeployment{
@@ -165,7 +166,8 @@ func fromGitRepo(repo string) (services.ServiceInfoList, error) {
 	}
 
 	var err error
-	params.ProjectID, err = getproject.MaybeID(setupHost.Project())
+	params.Region = setupHost.Region()
+	params.ProjectID, err = getproject.MaybeID(setupHost.Project(), params.Region)
 
 	if err != nil {
 		return nil, err

@@ -2,6 +2,7 @@ package new
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/wedeploy/cli/cmd/canceled"
@@ -17,7 +18,7 @@ import (
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern: cmdflagsfromhost.FullHostPattern,
+	Pattern: cmdflagsfromhost.RegionPattern | cmdflagsfromhost.FullHostPattern,
 
 	Requires: cmdflagsfromhost.Requires{
 		Auth: true,
@@ -38,15 +39,20 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func newRun(cmd *cobra.Command, args []string) error {
+	var region = setupHost.Region()
 	var projectID = setupHost.Project()
 	var serviceID = setupHost.Service()
+
+	if serviceID != "" && setupHost.Region() != "" {
+		return errors.New("cannot use --region on this")
+	}
 
 	if serviceID != "" {
 		return service.Run(projectID, serviceID, setupHost.ServiceDomain())
 	}
 
 	if projectID != "" {
-		return project.Run(projectID)
+		return project.Run(projectID, region)
 	}
 
 	if !isterm.Check() {
@@ -65,6 +71,10 @@ func newRun(cmd *cobra.Command, args []string) error {
 	case "1", "p", "project":
 		return project.Cmd.RunE(cmd, []string{})
 	case "2", "s", "service":
+		if setupHost.Region() != "" {
+			return errors.New("cannot use --region on this")
+		}
+
 		return service.Cmd.RunE(cmd, []string{})
 	case "3", "cancel":
 		return canceled.Skip()
