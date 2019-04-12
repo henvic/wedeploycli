@@ -235,4 +235,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "April 1st, 2019",
 		Description: `Fixing deployment progress stuck due to out of order activities.`,
 	},
+	ReleaseNote{
+		Version:     "2.0.0-alpha",
+		Date:        "April 12nd, 2019",
+		Description: `WeDeploy is being discontinued. Renaming "we" as "liferay". Please see https://wedeploy.com/blog/discontinuing-wedeploy/`,
+	},
 }
