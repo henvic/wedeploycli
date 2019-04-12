@@ -53,7 +53,7 @@ func (t *Transport) Commit(message string) (commit string, err error) {
 
 	hash, err = t.worktree.Commit(message, &git.CommitOptions{
 		Author: &object.Signature{
-			Name:  "WeDeploy user",
+			Name:  "Liferay user",
 			Email: "user@deployment",
 			When:  time.Now(),
 		},
@@ -69,7 +69,7 @@ func (t *Transport) Commit(message string) (commit string, err error) {
 	return commit, nil
 }
 
-// Push deployment to the WeDeploy remote
+// Push deployment to the remote
 func (t *Transport) Push() (groupUID string, err error) {
 	verbose.Debug("Started uploading deployment package to the infrastructure")
 
@@ -131,9 +131,9 @@ func (t *Transport) Init() (err error) {
 func (t *Transport) getGitRemote() string {
 	var remote = t.settings.ConfigContext.Remote()
 
-	// always add a "wedeploy-" prefix to all deployment remote endpoints, but "wedeploy"
-	if remote != "wedeploy" {
-		remote = "wedeploy" + "-" + remote
+	// always add a "wedeploy-" prefix to all deployment remote endpoints, but "liferay"
+	if remote != "liferay" {
+		remote = "liferay" + "-" + remote
 	}
 
 	return remote

@@ -22,7 +22,7 @@ func Print() {
 	var os = runtime.GOOS
 	var arch = runtime.GOARCH
 	fmt.Printf(
-		"WeDeploy CLI version %s %s/%s\n",
+		"Liferay CLI version %s %s/%s\n",
 		defaults.Version,
 		os,
 		arch)

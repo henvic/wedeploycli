@@ -26,9 +26,9 @@ var EnvCmd = &cobra.Command{
 	Use:   "env-var",
 	Short: "Show and configure environment variables for services",
 	Long:  `Show and configure environment variables for services. You must restart the service afterwards.`,
-	Example: `  we env-var (to list and change your environment variables values)
-  we env-var set foo bar
-  we env-var rm foo`,
+	Example: `  liferay env-var (to list and change your environment variables values)
+  liferay env-var set foo bar
+  liferay env-var rm foo`,
 	Args:    cobra.NoArgs,
 	PreRunE: ie.preRun,
 	RunE:    ie.run,

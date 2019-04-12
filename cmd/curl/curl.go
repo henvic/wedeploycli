@@ -1,6 +1,6 @@
 package curl
 
-// NOTE: curl's --url is not used due to conflicting we --url flag
+// NOTE: curl's --url is not used due to conflicting liferay --url flag
 // However, this code considers it (though the code wounever be executed),
 // for the sake of completion [and if things change].
 
@@ -31,19 +31,19 @@ var CurlCmd = &cobra.Command{
 	Short: "Do requests with curl",
 	Long: `Do requests with curl
 Requests are piped to curl with credentials attached and paths expanded.
-Pattern: we curl [curl options...] <url>
+Pattern: liferay curl [curl options...] <url>
 Use "curl --help" to see curl usage options.
 `,
-	Example: `  we curl /projects
-  we curl /plans/user
-  we curl https://api.wedeploy.com/projects`,
+	Example: `  liferay curl /projects
+  liferay curl /plans/user
+  liferay curl https://api.us-west-1.liferay.cloud/projects`,
 	// maybe --pretty=false to disable pipe, should add example
 	RunE:               (&curlRunner{}).run,
 	Hidden:             true,
 	DisableFlagParsing: true,
 }
 
-// EnableCmd for enabling using "we curl"
+// EnableCmd for enabling using "liferay curl"
 var EnableCmd = &cobra.Command{
 	Use:   "enable",
 	Short: "Enable curl commands",
@@ -51,7 +51,7 @@ var EnableCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 }
 
-// DisableCmd for disabling using "we curl"
+// DisableCmd for disabling using "liferay curl"
 var DisableCmd = &cobra.Command{
 	Use:   "disable",
 	Short: "Disable curl commands",
@@ -87,7 +87,7 @@ type argsF struct {
 	input []string
 	pos   int
 
-	weArgs   []string
+	selfArgs []string
 	curlArgs []string
 
 	pfs []*pflag.Flag
@@ -99,7 +99,7 @@ func (af *argsF) maybeGetBoolArgument() (is bool) {
 	// -H might be either --long-help or curl header
 	if arg == "-H" && (af.pos+1 >= len(af.input) ||
 		strings.HasPrefix(af.input[af.pos+1], "-")) {
-		af.weArgs = append(af.weArgs, arg)
+		af.selfArgs = append(af.selfArgs, arg)
 		return true
 	}
 
@@ -110,10 +110,10 @@ func (af *argsF) maybeGetBoolArgument() (is bool) {
 				continue
 			}
 
-			af.weArgs = append(af.weArgs, arg)
+			af.selfArgs = append(af.selfArgs, arg)
 
 			if p.Value.Type() != "bool" && af.pos+1 < len(af.input) {
-				af.weArgs = append(af.weArgs, af.input[af.pos+1])
+				af.selfArgs = append(af.selfArgs, af.input[af.pos+1])
 				af.pos++
 			}
 
@@ -124,8 +124,8 @@ func (af *argsF) maybeGetBoolArgument() (is bool) {
 	return false
 }
 
-func (cr *curlRunner) parseArguments() (weArgs, curlArgs []string) {
-	// ignore "we curl"
+func (cr *curlRunner) parseArguments() (selfArgs, curlArgs []string) {
+	// ignore "liferay curl"
 	var commandLength = len(strings.Split(cr.cmd.CommandPath(), " "))
 
 	if len(os.Args) <= commandLength {
@@ -152,7 +152,7 @@ func (cr *curlRunner) parseArguments() (weArgs, curlArgs []string) {
 		af.pos++
 	}
 
-	return af.weArgs, af.curlArgs
+	return af.selfArgs, af.curlArgs
 }
 
 func isSafeInfrastructureURL(wectx config.Context, param string) bool {
@@ -260,7 +260,7 @@ func expandPathsToFullRequests(wectx config.Context, params []string) ([]string,
 			continue
 		}
 
-		// let's try to expand URLs (e.g., "we curl /projects" should work)
+		// let's try to expand URLs (e.g., "liferay curl /projects" should work)
 		if strings.HasPrefix(p, "/") {
 			if i == 0 {
 				out = append(out, fmt.Sprintf("%v%v", wectx.Infrastructure(), p))
@@ -330,7 +330,7 @@ func disableRun(cmd *cobra.Command, args []string) (err error) {
 	return conf.Save()
 }
 
-func maybeChangeRemote(wectx config.Context, cmd *cobra.Command, weArgs []string, alternative string) error {
+func maybeChangeRemote(wectx config.Context, cmd *cobra.Command, selfArgs []string, alternative string) error {
 	// if no change on remote, shortcuit it
 	if alternative == "" {
 		return nil
@@ -365,10 +365,10 @@ func (cr *curlRunner) run(cmd *cobra.Command, args []string) error {
 	var conf = wectx.Config()
 	var params = conf.GetParams()
 
-	var weArgs, curlArgs = cr.parseArguments()
+	var selfArgs, curlArgs = cr.parseArguments()
 
 	cmd.DisableFlagParsing = false
-	if err := cmd.ParseFlags(weArgs); err != nil {
+	if err := cmd.ParseFlags(selfArgs); err != nil {
 		return err
 	}
 
@@ -396,7 +396,7 @@ Using it might make you inadvertently expose private data. Continue at your own 
 		return err
 	}
 
-	if err = maybeChangeRemote(wectx, cmd, weArgs, alternative); err != nil {
+	if err = maybeChangeRemote(wectx, cmd, selfArgs, alternative); err != nil {
 		return err
 	}
 

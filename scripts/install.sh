@@ -7,7 +7,7 @@ RELEASE_CHANNEL=${1:-"stable"}
 RELEASE_CHANNEL_ADDRESS=""
 
 if [[ $RELEASE_CHANNEL == "help" ]] || [[ $RELEASE_CHANNEL == "--help" ]] || [[ $RELEASE_CHANNEL == "-h" ]]; then
-  echo "WeDeploy CLI install script:
+  echo "Liferay CLI install script:
 
 $0 [channel] [dest]
 
@@ -29,18 +29,18 @@ PACKAGE_FORMAT=""
 # Hacking mktemp's incompatible parameters on BSD and Linux
 TEMPDEST=$(mktemp 2>/dev/null || mktemp -t 'wedeploy-cli')
 
-ec=$(which we 2>/dev/null || true)
+ec=$(which liferay 2>/dev/null || true)
 
 if [ ! -z $ec ] ; then
-  DESTDIR=$(dirname $(which we))
+  DESTDIR=$(dirname $(which liferay))
 elif [ $UNAME == "windows" ] ; then
   IS_MINGWIN=${MSYSTEM:-""}
   if [ $HOME != "" ] && [[ ! -z IS_MINGWIN ]] ; then
-    DESTDIR="$HOME/AppData/Local/Programs/we/bin"
+    DESTDIR="$HOME/AppData/Local/Programs/liferay/bin"
   elif [[ $HOMEDRIVE$HOMEPATH != "" ]] ; then
-    DESTDIR="$HOMEDRIVE$HOMEPATH\AppData\Local\Programs\we\bin"
+    DESTDIR="$HOMEDRIVE$HOMEPATH\AppData\Local\Programs\liferay\bin"
   else
-    DESTDIR="$USERPROFILE\AppData\Local\Programs\we\bin"
+    DESTDIR="$USERPROFILE\AppData\Local\Programs\liferay\bin"
   fi
 elif [[ :$PATH: == *:"$HOME/.local/bin":* ]] ; then
   DESTDIR="$HOME/.local/bin"
@@ -108,10 +108,10 @@ function setupReleaseChannelAddress() {
 function extractPackage() {
   case $PACKAGE_FORMAT in
     "zip")
-    unzip -o $TEMPDEST -d $DESTDIR we >/dev/null
+    unzip -o $TEMPDEST -d $DESTDIR liferay >/dev/null
     ;;
     "tgz")
-    tar -xzf $TEMPDEST -C $DESTDIR we
+    tar -xzf $TEMPDEST -C $DESTDIR liferay
     ;;
     *)
     echo "Error trying to extract binary from package."
@@ -138,8 +138,8 @@ function run() {
 }
 
 function info() {
-  wepath=$(which we 2>/dev/null) || true
-  if [[ $ec -ne 0 ]] || [[ ! $wepath -ef "$DESTDIR/we" ]]; then
+  liferayclipath=$(which liferay 2>/dev/null) || true
+  if [[ $ec -ne 0 ]] || [[ ! $liferayclipath -ef "$DESTDIR/liferay" ]]; then
     echo "Installed, but not reachable by \"we\" (check your \$PATH)"
     echo "Run with $DESTDIR/we"
     return
@@ -154,14 +154,14 @@ function info() {
 
 function check() {
   if [ -z "$UNPRIVILEGED_USER" ]; then
-    we 2>&1 >/dev/null
+    liferay 2>&1 >/dev/null
   else
-    sudo --user $UNPRIVILEGED_USER we 2>&1 >/dev/null
+    sudo --user $UNPRIVILEGED_USER liferay 2>&1 >/dev/null
   fi
 }
 
 # Verify direct installation of non-stable version
-# and fix channel on ~/.we configuration file automatically.
+# and fix channel on ~/.liferay configuration file automatically.
 # Fix issue https://github.com/wedeploy/cli/issues/472
 function fixChannel() {
   if [[ $RELEASE_CHANNEL == "stable" ]]; then
@@ -169,9 +169,9 @@ function fixChannel() {
   fi
 
   if [ -z "$UNPRIVILEGED_USER" ]; then
-    we update --channel $RELEASE_CHANNEL 2>&1 >/dev/null
+    liferay update --channel $RELEASE_CHANNEL 2>&1 >/dev/null
   else
-    sudo --user $UNPRIVILEGED_USER we update --channel $RELEASE_CHANNEL 2>&1 >/dev/null
+    sudo --user $UNPRIVILEGED_USER liferay update --channel $RELEASE_CHANNEL 2>&1 >/dev/null
   fi
 }
 

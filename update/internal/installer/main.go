@@ -21,7 +21,7 @@ const EnvSkipReexec = "WEDEPLOY_INSTALLER_SKIP_REEXEC"
 const EnvVerbose = "VERBOSE"
 
 var (
-	// Version of the WeDeploy Project CLI tool
+	// Version of the Project CLI Tool
 	Version = "installer"
 
 	// Build commit
@@ -55,21 +55,21 @@ func (i *installation) install() error {
 		return err
 	}
 
-	_, _ = fmt.Fprintln(i.ws, "Downloading newest WeDeploy CLI. Please wait.")
+	_, _ = fmt.Fprintln(i.ws, "Downloading newest Liferay CLI. Please wait.")
 	_ = i.ws.Flush()
 	return resp.Apply()
 }
 
 func (i *installation) run() error {
 	i.ws = uilive.New()
-	_, _ = fmt.Fprintln(i.ws, "Installing WeDeploy CLI for the first time. Please wait.")
+	_, _ = fmt.Fprintln(i.ws, "Installing Liferay CLI for the first time. Please wait.")
 	_ = i.ws.Flush()
 
 	if err := i.install(); err != nil {
 		return err
 	}
 
-	_, _ = fmt.Fprint(i.ws, "WeDeploy CLI tool installed. Thank you.\n\n")
+	_, _ = fmt.Fprint(i.ws, "Liferay CLI Tool installed. Thank you.\n\n")
 	_ = i.ws.Flush()
 	return nil
 }
@@ -93,7 +93,7 @@ func reexecute() {
 		}
 	}
 
-	_, _ = fmt.Fprintln(os.Stderr, "An unexpected error happened, please report it to support@wedeploy.com")
+	_, _ = fmt.Fprintln(os.Stderr, "An unexpected error happened, please report it to our support team")
 	panic(err)
 }
 
@@ -117,18 +117,18 @@ func main() {
 func printInstallerVersion() {
 	var os = runtime.GOOS
 	var arch = runtime.GOARCH
-	fmt.Printf("WeDeploy CLI Installer version %s %s/%s\n",
+	fmt.Printf("Liferay CLI Installer version %s %s/%s\n",
 		Version,
 		os,
 		arch)
 
 	if Build != "" {
-		fmt.Printf("WeDeploy CLI Installer Build commit: %v\n", Build)
+		fmt.Printf("Liferay CLI Installer Build commit: %v\n", Build)
 	}
 
 	if BuildTime != "" {
-		fmt.Printf("WeDeploy CLI Installer Build time: %v\n", BuildTime)
+		fmt.Printf("Liferay CLI Installer Build time: %v\n", BuildTime)
 	}
 
-	fmt.Printf("WeDeploy CLI Installer Go version: %s\n", runtime.Version())
+	fmt.Printf("Liferay CLI Installer Go version: %s\n", runtime.Version())
 }

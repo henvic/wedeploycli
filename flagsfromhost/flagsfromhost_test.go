@@ -125,7 +125,7 @@ func TestParseRemoteAddresses(t *testing.T) {
 	var rl = remotes.List{}
 
 	rl.Set("cloud", remotes.Entry{
-		Service: "wedeploy.io",
+		Service: "us-west-1.lfr.cloud",
 	})
 
 	rl.Set("demo", remotes.Entry{
@@ -134,7 +134,7 @@ func TestParseRemoteAddresses(t *testing.T) {
 
 	var c = New(&rl)
 
-	if r, err := c.ParseRemoteAddress("wedeploy.io"); r != "cloud" || err != nil {
+	if r, err := c.ParseRemoteAddress("us-west-1.lfr.cloud"); r != "cloud" || err != nil {
 		t.Errorf("Expected parsed remote to be (cloud, nil), got (%v, %v) instead", r, err)
 	}
 }
@@ -519,38 +519,38 @@ var parseMocks = []parseMock{
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:    "wedeploy.io",
+			Host:    "us-west-1.lfr.cloud",
 			Project: "",
 			Service: "",
 			Remote:  "",
 		},
 		Want: parsed{
-			Remote:           "wedeploy",
+			Remote:           "liferay",
 			IsRemoteFromHost: true,
 		},
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:    "wedeploy.io",
+			Host:    "us-west-1.lfr.cloud",
 			Project: "",
 			Service: "",
 			Remote:  "",
 		},
 		Want: parsed{
 			IsRemoteFromHost: true,
-			Remote:           "wedeploy",
+			Remote:           "liferay",
 		},
 	},
 	parseMock{
 		Flags: ParseFlags{
-			Host:    "foo.wedeploy.io",
+			Host:    "foo.us-west-1.lfr.cloud",
 			Project: "",
 			Service: "",
 			Remote:  "",
 		},
 		Want: parsed{
 			Project:          "foo",
-			Remote:           "wedeploy",
+			Remote:           "liferay",
 			IsRemoteFromHost: true,
 		},
 	},
@@ -598,8 +598,8 @@ func TestParse(t *testing.T) {
 		Service: "11.22.33.44:5555",
 	})
 
-	rl.Set("wedeploy", remotes.Entry{
-		Service: "wedeploy.io",
+	rl.Set("liferay", remotes.Entry{
+		Service: "us-west-1.lfr.cloud",
 	})
 
 	var c = New(&rl)
@@ -624,7 +624,7 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 			RemoteChanged: true,
 		},
 		Want: parsed{
-			Remote: "wedeploy",
+			Remote: "liferay",
 		},
 	},
 	parseMockWithDefaultCustomRemote{
@@ -703,7 +703,7 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 		},
 		Want: parsed{
 			Service: "cinema",
-			Remote:  "wedeploy",
+			Remote:  "liferay",
 			Err:     ErrorServiceWithNoProject{},
 		},
 	},
@@ -769,18 +769,18 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 			Remote:  "",
 		},
 		Want: parsed{
-			Remote: "wedeploy",
+			Remote: "liferay",
 		},
 	},
 	parseMockWithDefaultCustomRemote{
 		Flags: ParseFlagsWithDefaultCustomRemote{
-			Host:    "wedeploy.io",
+			Host:    "us-west-1.lfr.cloud",
 			Project: "",
 			Service: "",
 			Remote:  "",
 		},
 		Want: parsed{
-			Remote:           "wedeploy",
+			Remote:           "liferay",
 			IsRemoteFromHost: true,
 		},
 	},
@@ -850,7 +850,7 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 }
 
 func testParseWithDefaultCustomRemote(c CommandFlagFromHost, pm parseMockWithDefaultCustomRemote, t *testing.T) {
-	var parsed, err = c.ParseWithDefaultCustomRemote(pm.Flags, "wedeploy")
+	var parsed, err = c.ParseWithDefaultCustomRemote(pm.Flags, "liferay")
 
 	if err != pm.Want.Err {
 		t.Errorf("Expected error to be %v on parsing, got %v instead", pm.Want.Err, err)
@@ -879,8 +879,8 @@ func TestParseWithDefaultCustomRemote(t *testing.T) {
 		Service: "11.22.33.44:5555",
 	})
 
-	rl.Set("wedeploy", remotes.Entry{
-		Service: "wedeploy.io",
+	rl.Set("liferay", remotes.Entry{
+		Service: "us-west-1.lfr.cloud",
 	})
 
 	rl.Set("local", remotes.Entry{

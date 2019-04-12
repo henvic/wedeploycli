@@ -33,9 +33,9 @@ var setupHost = cmdflagsfromhost.SetupHost{
 var ExecCmd = &cobra.Command{
 	Use:   "exec",
 	Short: "Execute command remotely",
-	Example: `  we exec -p demo -s web -- ls
-  we exec -p demo -s web --instance any -- uname -a (run command on any instance)
-  we exec -p demo -s web --instance ab123 -- backup-db`,
+	Example: `  liferay exec -p demo -s web -- ls
+  liferay exec -p demo -s web --instance any -- uname -a (run command on any instance)
+  liferay exec -p demo -s web --instance ab123 -- backup-db`,
 	PreRunE: execPreRun,
 	RunE:    execRun,
 	Args:    cobra.MinimumNArgs(1),

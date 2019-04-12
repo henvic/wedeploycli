@@ -83,10 +83,10 @@ func getPreparedServicePackage(c changes, path string) ([]byte, error) {
 	// this smells a little bad because wedeploy.json is the responsibility of the services package
 	// and I shouldn't be accessing it directly from here
 	var sp = map[string]interface{}{}
-	wedeployJSON, err := ioutil.ReadFile(filepath.Join(path, "wedeploy.json")) // #nosec
+	conf, err := ioutil.ReadFile(filepath.Join(path, "wedeploy.json")) // #nosec
 	switch {
 	case err == nil:
-		if err = json.Unmarshal(wedeployJSON, &sp); err != nil {
+		if err = json.Unmarshal(conf, &sp); err != nil {
 			return nil, errwrap.Wrapf("error parsing wedeploy.json on "+path+": {{err}}", err)
 		}
 	case os.IsNotExist(err):
@@ -135,7 +135,7 @@ func (d *Deploy) Do(ctx context.Context, t Transport) (err error) {
 		IsUpload: true,
 	}
 
-	d.workDir, err = ioutil.TempDir("", "wedeploy")
+	d.workDir, err = ioutil.TempDir("", "liferay")
 
 	if err != nil {
 		return err

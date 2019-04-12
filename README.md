@@ -1,4 +1,4 @@
-# WeDeploy CLI tool [![Build Status](https://travis-ci.com/wedeploy/cli.svg?token=a51FNuiJPYZtHhup9q1V&branch=master)](https://travis-ci.com/wedeploy/cli) [![Coverage Status](https://coveralls.io/repos/wedeploy/cli/badge.svg)](https://coveralls.io/r/wedeploy/cli) [![codebeat badge](https://codebeat.co/badges/bd6acb49-ccdf-4045-a877-05da0198261a)](https://codebeat.co/projects/github-com-wedeploy-cli) [![Go Report Card](https://goreportcard.com/badge/github.com/wedeploy/cli)](https://goreportcard.com/report/github.com/wedeploy/cli) [![GoDoc](https://godoc.org/github.com/wedeploy/cli?status.svg)](https://godoc.org/github.com/wedeploy/cli)
+# Liferay CLI Tool [![Build Status](https://travis-ci.com/wedeploy/cli.svg?token=a51FNuiJPYZtHhup9q1V&branch=master)](https://travis-ci.com/wedeploy/cli) [![Coverage Status](https://coveralls.io/repos/wedeploy/cli/badge.svg)](https://coveralls.io/r/wedeploy/cli) [![codebeat badge](https://codebeat.co/badges/bd6acb49-ccdf-4045-a877-05da0198261a)](https://codebeat.co/projects/github-com-wedeploy-cli) [![Go Report Card](https://goreportcard.com/badge/github.com/wedeploy/cli)](https://goreportcard.com/report/github.com/wedeploy/cli) [![GoDoc](https://godoc.org/github.com/wedeploy/cli?status.svg)](https://godoc.org/github.com/wedeploy/cli)
 
 Install this tool with
 
@@ -6,7 +6,7 @@ Install this tool with
 
 or download from our [stable release channel](https://dl.equinox.io/wedeploy/we/stable).
 
-To update this tool, just run `we update`.
+To update this tool, just run `liferay update`.
 
 ## Dependencies
 The following external soft dependencies are necessary to correctly run some commands:
@@ -77,7 +77,7 @@ And run it as a regular executable on each target system.
 ## Functional testing
 Functional tests for the CLI are written in the [Tcl](https://tcl.tk/) programming language and uses [Expect](https://core.tcl.tk/expect/). See the [README](functional/README.md) at the functional directory.
 
-These tests are run by connecting to a real WeDeploy infrastructure, therefore caution to avoid data loss is advised. For this very reason it refuses to be run on a non-empty user account by default.
+These tests are run by connecting to a real infrastructure, therefore caution to avoid data loss is advised. For this very reason it refuses to be run on a non-empty user account by default.
 
 You need to copy `functional/settings-sample.tcl` to `functional/settings.tcl` and configure it appropriately.
 

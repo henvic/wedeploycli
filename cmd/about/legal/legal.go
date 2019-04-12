@@ -37,7 +37,7 @@ func getLegalNotices() string {
 	return fmt.Sprintf(`Legal Notices:
 
 Copyright © 2016-present Liferay, Inc.
-WeDeploy CLI Software License Agreement
+Liferay CLI Software License Agreement
 
 Liferay, the Liferay logo, WeDeploy, and WeDeploy logo
 are trademarks of Liferay, Inc., registered in the U.S. and other countries.

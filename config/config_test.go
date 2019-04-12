@@ -14,7 +14,7 @@ import (
 )
 
 func TestSetupNonExistingConfigFileAndTeardown(t *testing.T) {
-	wectx, err := Setup("./mocks/invalid/.we")
+	wectx, err := Setup("./mocks/invalid/.liferaycli")
 
 	if err != nil {
 		panic(err)
@@ -33,8 +33,8 @@ func TestSetupNonExistingConfigFileAndTeardown(t *testing.T) {
 	var (
 		wantUsername             = ""
 		wantToken                = ""
-		wantRemote               = "wedeploy"
-		wantInfrastructureDomain = "wedeploy.com"
+		wantRemote               = "liferay"
+		wantInfrastructureDomain = "us-west-1.liferay.cloud"
 	)
 
 	var params = conf.GetParams()
@@ -61,7 +61,7 @@ func TestSetupNonExistingConfigFileAndTeardown(t *testing.T) {
 }
 
 func TestSetupDefaultAndTeardown(t *testing.T) {
-	wectx, err := Setup("./mocks/home/.we")
+	wectx, err := Setup("./mocks/home/.liferaycli")
 
 	if err != nil {
 		panic(err)
@@ -81,8 +81,8 @@ func TestSetupDefaultAndTeardown(t *testing.T) {
 	var (
 		wantUsername       = "foo@example.com"
 		wantToken          = "mock_token"
-		wantRemote         = "wedeploy"
-		wantInfrastructure = "wedeploy.com"
+		wantRemote         = "liferay"
+		wantInfrastructure = "us-west-1.liferay.cloud"
 	)
 
 	if len(params.Remotes.Keys()) != 2 {
@@ -107,7 +107,7 @@ func TestSetupDefaultAndTeardown(t *testing.T) {
 }
 
 func TestSetupRemoteAndTeardown(t *testing.T) {
-	wectx, err := Setup("./mocks/home/.we")
+	wectx, err := Setup("./mocks/home/.liferaycli")
 
 	if err != nil {
 		panic(err)
@@ -127,8 +127,8 @@ func TestSetupRemoteAndTeardown(t *testing.T) {
 	var (
 		wantUsername       = "foo@example.com"
 		wantToken          = "mock_token"
-		wantRemote         = "wedeploy"
-		wantInfrastructure = "wedeploy.com"
+		wantRemote         = "liferay"
+		wantInfrastructure = "us-west-1.liferay.cloud"
 	)
 
 	if len(params.Remotes.Keys()) != 2 {
@@ -167,7 +167,7 @@ func TestSetupAndTeardownProject(t *testing.T) {
 		t.Error(err)
 	}
 
-	if _, err := Setup("../../home/.we"); err != nil {
+	if _, err := Setup("../../home/.liferaycli"); err != nil {
 		panic(err)
 	}
 
@@ -183,7 +183,7 @@ func TestSetupAndTeardownProjectAndService(t *testing.T) {
 		t.Error(err)
 	}
 
-	_, err := Setup("../../../home/.we")
+	_, err := Setup("../../../home/.liferaycli")
 
 	if err != nil {
 		panic(err)
@@ -195,7 +195,7 @@ func TestSetupAndTeardownProjectAndService(t *testing.T) {
 }
 
 func TestSave(t *testing.T) {
-	wectx, err := Setup("mocks/home/.we")
+	wectx, err := Setup("mocks/home/.liferaycli")
 
 	if err != nil {
 		panic(err)
@@ -203,7 +203,7 @@ func TestSave(t *testing.T) {
 
 	conf := wectx.Config()
 
-	tmp, err := ioutil.TempFile(os.TempDir(), "we")
+	tmp, err := ioutil.TempFile(os.TempDir(), "liferaycli")
 
 	if err != nil {
 		panic(err)
@@ -218,9 +218,9 @@ func TestSave(t *testing.T) {
 
 	var got = tdata.FromFile(conf.Path)
 	var want = []string{
-		`; Configuration file for WeDeploy CLI
-; https://wedeploy.com`,
-		`default_remote                   = wedeploy`,
+		`; Configuration file for Liferay CLI
+; https://www.liferay.com/`,
+		`default_remote                   = liferay`,
 		`local_http_port                  = 80`,
 		`local_https_port                 = 443`,
 		`disable_autocomplete_autoinstall = true`,
@@ -228,9 +228,9 @@ func TestSave(t *testing.T) {
 		`notify_updates                   = false`,
 		`release_channel                  = stable`,
 		`enable_analytics                 = false`,
-		`[remote "wedeploy"]
+		`[remote "liferay"]
     ; Default cloud remote
-    infrastructure = wedeploy.com
+    infrastructure = us-west-1.liferay.cloud
     username       = foo@example.com
     token          = mock_token
 `,
@@ -256,7 +256,7 @@ func TestSave(t *testing.T) {
 }
 
 func TestRemotes(t *testing.T) {
-	wectx, err := Setup("./mocks/remotes/.we")
+	wectx, err := Setup("./mocks/remotes/.liferaycli")
 
 	if err != nil {
 		panic(err)
@@ -265,7 +265,7 @@ func TestRemotes(t *testing.T) {
 	conf := wectx.Config()
 	params := conf.GetParams()
 
-	tmp, err := ioutil.TempFile(os.TempDir(), "we")
+	tmp, err := ioutil.TempFile(os.TempDir(), "liferaycli")
 
 	if err != nil {
 		panic(err)
@@ -320,9 +320,9 @@ func TestRemotes(t *testing.T) {
 [remote "remain"]
 `,
 		`
-[remote "wedeploy"]
+[remote "liferay"]
     ; Default cloud remote
-    infrastructure = wedeploy.com
+    infrastructure = us-west-1.liferay.cloud
 `,
 		`
 [remote "new"]
@@ -345,7 +345,7 @@ func TestRemotes(t *testing.T) {
 }
 
 func TestRemotesListAndGet(t *testing.T) {
-	wectx, err := Setup("./mocks/remotes/.we")
+	wectx, err := Setup("./mocks/remotes/.liferaycli")
 
 	if err != nil {
 		panic(err)
@@ -356,8 +356,8 @@ func TestRemotesListAndGet(t *testing.T) {
 
 	var wantOriginalRemotes = remotes.List{}
 
-	wantOriginalRemotes.Set("wedeploy", remotes.Entry{
-		Infrastructure:        "wedeploy.com",
+	wantOriginalRemotes.Set("liferay", remotes.Entry{
+		Infrastructure:        "us-west-1.liferay.cloud",
 		InfrastructureComment: "Default cloud remote",
 	})
 
@@ -409,9 +409,9 @@ func TestRemotesListAndGet(t *testing.T) {
 		"beta",
 		"dontremain",
 		"dontremain2",
+		"liferay",
 		"remain",
 		"staging",
-		"wedeploy",
 	}
 
 	var names = params.Remotes.Keys()

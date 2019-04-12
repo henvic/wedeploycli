@@ -1,3 +1,3 @@
 This command is not enabled by default as it might be dangerous for security.
 Using it might make you inadvertently expose private data. Continue at your own risk.
-You must enable this command first with "we curl enable".
+You must enable this command first with "liferay curl enable".

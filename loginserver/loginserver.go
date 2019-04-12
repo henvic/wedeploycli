@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -166,7 +167,7 @@ func (s *Service) homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ErrSignUpEmailConfirmation tells that sign up was canceled because user is signing up
-var ErrSignUpEmailConfirmation = errors.New(`sign up on WeDeploy requested: try "we login" once you confirm your email`)
+var ErrSignUpEmailConfirmation = errors.New(`sign up on Liferay requested: try "` + os.Args[0] + ` login" once you confirm your email`)
 
 const signupRequestPseudoToken = "signup_requested"
 

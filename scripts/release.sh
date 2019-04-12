@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# WeDeploy CLI Tool publishing script
+# Liferay CLI Tool publishing script
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -11,7 +11,7 @@ skipIntegrationTests=false
 config=""
 
 function helpmenu() {
-  echo "WeDeploy CLI Tool publishing script:
+  echo "Liferay CLI Tool publishing script:
 
 1) check if all changes are commited
 2) run tests on a local drone.io instance

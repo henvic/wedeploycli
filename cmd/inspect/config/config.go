@@ -11,7 +11,7 @@ import (
 	"github.com/wedeploy/cli/inspector"
 )
 
-// ConfigCmd for "we inspect config"
+// ConfigCmd for "liferay inspect config"
 var ConfigCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Get config info",

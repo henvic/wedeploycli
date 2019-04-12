@@ -28,4 +28,4 @@ set _teamuser(email) "tester@example.com"
 set _teamuser(password) "password"
 
 # name of the binary file to test
-set bin "we"
+set bin "liferay"

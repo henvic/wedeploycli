@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# WeDeploy CLI integration tests build tool
+# Liferay CLI integration tests build tool
 
 set -euo pipefail
 IFS=$'\n\t'

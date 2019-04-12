@@ -24,9 +24,9 @@ var DeleteCmd = &cobra.Command{
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,
 	RunE:    run,
-	Example: `  we delete --url data.chat.wedeploy.io
-  we delete --project chat
-  we delete --project chat --service data`,
+	Example: `  liferay delete --url data-chat.us-west-1.lfr.cloud
+  liferay delete --project chat
+  liferay delete --project chat --service data`,
 }
 
 type undeployer struct {

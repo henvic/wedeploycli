@@ -8,6 +8,6 @@ import (
 )
 
 func init() {
-	_, _ = fmt.Fprintln(os.Stderr, `Skipping compilation: using "we" command available on system.`)
-	binary = "we"
+	_, _ = fmt.Fprintln(os.Stderr, `Skipping compilation: using "liferay" command available on system.`)
+	binary = "liferay"
 }

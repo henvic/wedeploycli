@@ -53,8 +53,8 @@ func uninstallChan(m *waitlivemsg.Message, ec chan error) {
 		return
 	}
 
-	m.StopText("WeDeploy CLI uninstalled [2/2]\n" +
-		fancy.Info("WeDeploy CLI is not working on your computer anymore.") + "\n" +
+	m.StopText("Liferay CLI uninstalled [2/2]\n" +
+		fancy.Info("Liferay CLI is not working on your computer anymore.") + "\n" +
 		color.Format(color.FgHiYellow, "  For installing it again, type this command and press Enter:\n") +
 		color.Format(color.FgHiBlack, "  $ curl http://cdn.wedeploy.com/cli/latest/wedeploy.sh -sL | bash"))
 	ec <- err
@@ -77,10 +77,10 @@ func removeConfig() error {
 	var homeDir = userhome.GetHomeDir()
 
 	var files = []string{
-		filepath.Join(homeDir, ".wedeploy"), // cache directory
-		filepath.Join(homeDir, ".we"),
-		filepath.Join(homeDir, ".we_autocomplete"),
-		filepath.Join(homeDir, ".we_metrics"),
+		filepath.Join(homeDir, ".liferay-deploys"), // cache directory
+		filepath.Join(homeDir, ".liferaycli"),
+		filepath.Join(homeDir, ".liferaycli_autocomplete"),
+		filepath.Join(homeDir, ".liferaycli_metrics"),
 	}
 
 	var el []string
@@ -116,10 +116,10 @@ func uninstallRun(cmd *cobra.Command, args []string) error {
 		m = waitlivemsg.NewMessage("Removing configuration files [1/2]")
 	default:
 		if runtime.GOOS == "windows" {
-			_, _ = fmt.Fprintln(os.Stderr, "Can't self-uninstall on Windows yet. Please remove the WeDeploy CLI in the Control Panel.")
+			_, _ = fmt.Fprintln(os.Stderr, "Can't self-uninstall on Windows yet. Please remove the Liferay CLI in the Control Panel.")
 		}
 
-		m = waitlivemsg.NewMessage("Uninstalling the WeDeploy CLI [1/2]")
+		m = waitlivemsg.NewMessage("Uninstalling the Liferay CLI Tool [1/2]")
 	}
 
 	var wlm = waitlivemsg.New(nil)

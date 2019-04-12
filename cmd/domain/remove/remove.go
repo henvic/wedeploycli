@@ -15,7 +15,7 @@ var Cmd = &cobra.Command{
 	Use:     "delete",
 	Aliases: []string{"unset", "del", "rm"},
 	Short:   "Remove custom domain of a given service",
-	Example: "we domain rm example.com",
+	Example: "liferay domain rm example.com",
 	PreRunE: preRun,
 	RunE:    run,
 }

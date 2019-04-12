@@ -8,7 +8,7 @@ import (
 
 var header = `---
 title: "CLI"
-description: "Check out the latest releases of the WeDeploy"
+description: "Check out the latest releases of the Liferay CLI Tool"
 layout: "updates"
 updates:
 `

@@ -112,7 +112,7 @@ func (m *mainProgram) autocomplete() {
 func (m *mainProgram) setupMetrics() {
 	metrics.SetPID(os.Getpid())
 
-	var weMetricsPath = filepath.Join(userhome.GetHomeDir(), ".we_metrics")
+	var weMetricsPath = filepath.Join(userhome.GetHomeDir(), ".liferaycli_metrics")
 	metrics.SetPath(weMetricsPath)
 }
 
@@ -131,8 +131,7 @@ func printError(e error) {
 		return
 	}
 
-	_, _ = fmt.Fprintf(os.Stderr, "%v\n",
-		fancy.Error("Contact us: "+links.Support()))
+	_, _ = fmt.Fprintf(os.Stderr, "%v\n", fancy.Error("Contact us: "+links.Support))
 }
 
 func (m *mainProgram) prepareCommand() {
@@ -231,8 +230,8 @@ func (m *mainProgram) getCommandErrorDetails() map[string]string {
 func (m *mainProgram) reportCommand() {
 	var commandPath = m.cmd.CommandPath()
 
-	if commandPath == "we metrics usage reset" {
-		// Skip storing "we metrics usage reset" on the analytics log
+	if commandPath == "liferay metrics usage reset" {
+		// Skip storing "liferay metrics usage reset" on the analytics log
 		// otherwise this would recreate the file just after removal
 		return
 	}
@@ -261,7 +260,7 @@ type configLoader struct {
 }
 
 func (cl *configLoader) loadConfig() {
-	var path = filepath.Join(userhome.GetHomeDir(), ".we")
+	var path = filepath.Join(userhome.GetHomeDir(), ".liferaycli")
 
 	wectx, err := config.Setup(path)
 	we.WithContext(&wectx)
@@ -373,6 +372,6 @@ func (m *mainProgram) commandErrorConditionalUsage() {
 			panic(ue)
 		}
 	} else if strings.HasPrefix(emsg, "unknown command ") {
-		_, _ = fmt.Fprintln(os.Stderr, fancy.Error(`Run "we --help" for usage.`))
+		_, _ = fmt.Fprintln(os.Stderr, fancy.Error(`Run "liferay --help" for usage.`))
 	}
 }

@@ -57,7 +57,7 @@ func verifyAlreadyLoggedIn(wectx config.Context) error {
 	}
 
 	return fmt.Errorf(`already logged in as %v on %v (%v)
-Logout first with "we logout"`,
+Logout first with "liferay logout"`,
 		wectx.Username(),
 		wectx.Remote(),
 		wectx.InfrastructureDomain())

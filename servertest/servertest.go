@@ -34,7 +34,7 @@ func (p *proxy) RoundTrip(r *http.Request) (w *http.Response, err error) {
 	return (&http.Client{}).Do(r)
 }
 
-// Setup the mock server and setup WeDeploy client setup with it
+// Setup the mock server and setup the client
 func Setup() {
 	Mux = http.NewServeMux()
 	server = httptest.NewServer(Mux)
@@ -56,7 +56,7 @@ func SetupIntegration() {
 	IntegrationServer = httptest.NewServer(IntegrationMux)
 }
 
-// Teardown the mock server and teardown WeDeploy client
+// Teardown the mock server and teardown client
 func Teardown() {
 	wedeploy.Client().SetHTTP(defaultHTTPClient)
 	server.Close()

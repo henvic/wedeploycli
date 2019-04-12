@@ -22,8 +22,8 @@ import (
 
 // Cmd is the main command for the CLI
 var Cmd = &cobra.Command{
-	Use:               "we",
-	Short:             "WeDeploy CLI Tool",
+	Use:               "liferay",
+	Short:             "Liferay CLI Tool",
 	Args:              cobra.NoArgs,
 	PersistentPreRunE: persistentPreRun,
 	RunE:              runE,

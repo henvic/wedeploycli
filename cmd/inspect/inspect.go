@@ -2,9 +2,9 @@ package inspect
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmd/inspect/config"
-	"github.com/wedeploy/cli/cmd/inspect/context"
-	"github.com/wedeploy/cli/cmd/inspect/service"
+	inspectconfig "github.com/wedeploy/cli/cmd/inspect/config"
+	inspectcontext "github.com/wedeploy/cli/cmd/inspect/context"
+	inspectservice "github.com/wedeploy/cli/cmd/inspect/service"
 	"github.com/wedeploy/cli/cmd/inspect/token"
 )
 
@@ -14,8 +14,8 @@ var InspectCmd = &cobra.Command{
 	Short:  "Inspect environment info",
 	Hidden: true,
 	Args:   cobra.MaximumNArgs(1),
-	Example: `  we inspect context
-  we inspect service --format "{{.ID}}"`,
+	Example: `  liferay inspect context
+  liferay inspect service --format "{{.ID}}"`,
 }
 
 func init() {

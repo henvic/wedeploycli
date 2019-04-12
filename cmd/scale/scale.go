@@ -20,9 +20,9 @@ var ScaleCmd = &cobra.Command{
 	Use:   "scale",
 	Short: "Configure number of instances for services",
 	RunE:  scaleRun,
-	Example: `  we scale --project chat --service data 3
-  we scale --project chat --service data --remote wedeploy 5
-  we scale --url data-chat.wedeploy.io 1`,
+	Example: `  liferay scale --project chat --service data 3
+  liferay scale --project chat --service data --remote liferay 5
+  liferay scale --url data-chat.us-west-1.lfr.cloud 1`,
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{

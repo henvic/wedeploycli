@@ -17,26 +17,26 @@ var script = `if [ -n "$ZSH_VERSION" ]; then
   bashcompinit
 fi
 
-_we()  {
+_liferay()  {
   COMPREPLY=()
   local cur="${COMP_WORDS[COMP_CWORD]}"
-  local opts="$(we autocomplete -- ${COMP_WORDS[@]:1})"
+  local opts="$(liferay autocomplete -- ${COMP_WORDS[@]:1})"
   COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
   return 0
 }
 
-complete -F _we we
+complete -F _liferay liferay
 `
 
 var add = `
-autocompleteCommand="[ -f ~/.we_autocomplete ] && source ~/.we_autocomplete"
+autocompleteCommand="[ -f ~/.liferaycli_autocomplete ] && source ~/.liferaycli_autocomplete"
 
 # Install autocomplete for bash
 if [ -w ~/.bashrc ] ; then
   grep -Fxq "$autocompleteCommand" ~/.bashrc && ec=$? || ec=$?
 
   if [ $ec -ne 0 ] ; then
-    echo -e "\n# Adding autocomplete for 'we'\n$autocompleteCommand" >> ~/.bashrc
+    echo -e "\n# Adding autocomplete for 'liferay'\n$autocompleteCommand" >> ~/.bashrc
   fi
 fi
 
@@ -45,7 +45,7 @@ if [ -w ~/.zshrc ] ; then
   grep -Fxq "$autocompleteCommand" ~/.zshrc && ec=$? || ec=$?
 
   if [ $ec -ne 0 ] ; then
-    echo -e "\n# Adding autocomplete for 'we'\n$autocompleteCommand" >> ~/.zshrc
+    echo -e "\n# Adding autocomplete for 'liferay'\n$autocompleteCommand" >> ~/.zshrc
   fi
 fi
 `
@@ -53,7 +53,7 @@ fi
 var scriptPath string
 
 func init() {
-	scriptPath = filepath.Join(userhome.GetHomeDir(), "/.we_autocomplete")
+	scriptPath = filepath.Join(userhome.GetHomeDir(), "/.liferaycli_autocomplete")
 }
 
 func autoInstall() {

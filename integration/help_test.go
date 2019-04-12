@@ -20,7 +20,7 @@ func TestHelp(t *testing.T) {
 	cmd.Run()
 
 	if cmd.ExitCode != 0 {
-		t.Errorf("Exit code for \"we help\" was %v, instead of expected 0", cmd.ExitCode)
+		t.Errorf("Exit code for \"liferay help\" was %v, instead of expected 0", cmd.ExitCode)
 	}
 
 	if cmd.Stderr.String() != "" {

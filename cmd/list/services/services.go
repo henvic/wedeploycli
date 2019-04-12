@@ -16,8 +16,8 @@ import (
 // ListServicesCmd is used for getting a list of projects and services
 var ListServicesCmd = &cobra.Command{
 	Use: "services",
-	Example: `  we list services --project chat --service data
-   we list services --url data-chat.wedeploy.io`,
+	Example: `  liferay list services --project chat --service data
+   liferay list services --url data-chat.us-west-1.lfr.cloud`,
 	Short:   "Show list of services",
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,

@@ -11,7 +11,7 @@ import (
 // Run the credential helper
 func Run(args []string) error {
 	if len(args) != 3 {
-		return errors.New("usage: we git-credential-helper get")
+		return errors.New("usage: liferay git-credential-helper get")
 	}
 
 	// this is a read-only credential helper: ignore transparently other commands

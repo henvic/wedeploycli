@@ -223,13 +223,13 @@ func getHomePath(home string) string {
 
 func removeLoginHomeMock() {
 	var weHomePath = GetLoginHome()
-	var err = os.Remove(filepath.Join(weHomePath, ".we"))
+	var err = os.Remove(filepath.Join(weHomePath, ".liferaycli"))
 
 	if err != nil && !os.IsNotExist(err) {
 		panic(err)
 	}
 
-	var errMetrics = os.Remove(filepath.Join(weHomePath, ".we_metrics"))
+	var errMetrics = os.Remove(filepath.Join(weHomePath, ".liferaycli_metrics"))
 
 	if errMetrics != nil && !os.IsNotExist(errMetrics) {
 		panic(errMetrics)
@@ -237,7 +237,7 @@ func removeLoginHomeMock() {
 }
 
 func setupLoginHome() {
-	var file = filepath.Join(GetLoginHome(), ".we")
+	var file = filepath.Join(GetLoginHome(), ".liferaycli")
 	removeLoginHomeMock()
 
 	var mock = &config.Config{

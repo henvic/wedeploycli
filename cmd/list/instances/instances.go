@@ -17,8 +17,8 @@ import (
 // ListInstancesCmd is used for getting a list of projects and services
 var ListInstancesCmd = &cobra.Command{
 	Use: "instances",
-	Example: `  we list instances --project chat --service data
-  we list instances --url data-chat.wedeploy.io`,
+	Example: `  liferay list instances --project chat --service data
+  liferay list instances --url data-chat.us-west-1.lfr.cloud`,
 	Short:   "Show list of instances",
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,

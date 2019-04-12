@@ -14,7 +14,7 @@ import (
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/remotes"
 	"github.com/wedeploy/cli/verbose"
-	"gopkg.in/ini.v1"
+	ini "gopkg.in/ini.v1"
 )
 
 // Config of the application
@@ -104,7 +104,7 @@ func (c *Config) loadDefaultRemotes() {
 	default:
 		_, _ = fmt.Fprintln(os.Stderr, color.Format(
 			color.FgHiRed,
-			"Warning: Non-standard wedeploy remote cloud detected"))
+			"Warning: Non-standard remote cloud detected"))
 	}
 }
 
@@ -120,7 +120,7 @@ func (c *Config) validateDefaultRemote() error {
 	}
 
 	return fmt.Errorf(`Remote "%v" is set as default, but not found.
-Please fix your ~/.we file`, c.Params.DefaultRemote)
+Please fix your ~/.liferaycli file`, c.Params.DefaultRemote)
 }
 
 // Save the configuration
@@ -372,6 +372,6 @@ func (c *Config) updateRemotes() {
 }
 
 func (c *Config) banner() {
-	c.file.Section("DEFAULT").Comment = `; Configuration file for WeDeploy CLI
-; https://wedeploy.com`
+	c.file.Section("DEFAULT").Comment = `; Configuration file for Liferay CLI
+; https://www.liferay.com/`
 }

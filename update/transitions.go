@@ -31,7 +31,7 @@ var autocompleteTransition = Transition{
 			return nil
 		}
 
-		oldAutocomplete := filepath.Join(userhome.GetHomeDir(), "/.we_autocomplete")
+		oldAutocomplete := filepath.Join(userhome.GetHomeDir(), "/.liferaycli_autocomplete")
 
 		if err := os.Remove(oldAutocomplete); err != nil {
 			return errwrap.Wrapf("can't remove old autocomplete script: {{err}}", err)

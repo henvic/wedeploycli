@@ -2,20 +2,20 @@ package diagnostics
 
 import "os"
 
-var we = os.Args[0]
+var liferay = os.Args[0]
 
 // Executables is a list of executables
 var Executables = []*Executable{
 	&Executable{
 		Description: "Installed version",
-		Command:     we + " version",
+		Command:     liferay + " version",
 	},
 	&Executable{
-		Command: we + " who",
+		Command: liferay + " who",
 	},
 	&Executable{
 		Description: "Inspecting working directory context",
-		Command:     we + " inspect context",
+		Command:     liferay + " inspect context",
 	},
 	&Executable{
 		Description: "Installed git version",

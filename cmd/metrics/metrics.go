@@ -24,7 +24,7 @@ func init() {
 		"Do not purge usage log after submission")
 }
 
-// MetricsCmd controls the metrics for the WeDeploy CLI
+// MetricsCmd controls the metrics for the Liferay CLI
 var MetricsCmd = &cobra.Command{
 	Use:   "metrics",
 	Short: "Metrics",
@@ -38,11 +38,11 @@ var UsageCmd = &cobra.Command{
 
 var submitCmd = &cobra.Command{
 	Use:   "submit",
-	Short: "Submit anonymous analytics to WeDeploy",
-	Long: `Submit anonymous analytics to WeDeploy
+	Short: "Submit anonymous analytics to Liferay",
+	Long: `Submit anonymous analytics to Liferay
 
-Analytics events are stashed in ~/.we_metrics and occasionally
-submitted to WeDeploy by this command. No need to call it yourself.`,
+Analytics events are stashed in ~/.liferaycli_metrics and occasionally
+submitted to Liferay by this command. No need to call it yourself.`,
 	RunE: submitRun,
 }
 

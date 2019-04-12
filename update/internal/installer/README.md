@@ -10,7 +10,7 @@ This program runs only once. On its first run, it replaces itself with the newes
 Environment variable `WEDEPLOY_INSTALLER_SKIP_REEXEC` can be used to skip the re-execution step.
 
 ## Why
-We use [equinox.io](https://equinox.io) to distribute the WeDeploy CLI tool (for a few reasons, like its binary deltas). It packages the generated CLI binaries in different formats, such as .rpm, .deb, .msi (Microsoft Installer), and .pkg (macOS installer).
+We use [equinox.io](https://equinox.io) to distribute the Liferay CLI Tool (for a few reasons, like its binary deltas). It packages the generated CLI binaries in different formats, such as .rpm, .deb, .msi (Microsoft Installer), and .pkg (macOS installer).
 
 The equinox.io service generates a page with all these different download options for each version we release. However, the .msi and .pkg packages there aren't code signed.
 
@@ -23,7 +23,7 @@ While we can't code sign the Equinox distributed packages until they add support
 
 Create and serve placeholder packages for macOS and Windows (as described above) so that users can install them on their operating systems without getting security warnings (or even end up completely blocked from installing the software).
 
-The package can try to execute the binary itself, as part of an install script. For this, set the WEDEPLOY_INSTALLER_SKIP_REEXEC environment variable to skip running "we" afterward.
+The package can try to execute the binary itself, as part of an install script. For this, set the WEDEPLOY_INSTALLER_SKIP_REEXEC environment variable to skip running "liferay" afterward.
 
 Timestamping the signature with a remote server is recommended.
 

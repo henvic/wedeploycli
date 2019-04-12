@@ -20,7 +20,7 @@ Please verify what you copy & paste here and do NOT disclose any sensitive infor
 
 <!--
 Briefly describe the problem you are having in a few paragraphs.
-Try updating your CLI tool with "we update" before you report a bug.
+Try updating your CLI Tool with "liferay update" before you report a bug.
 -->
 
 **Steps to reproduce the issue:**
@@ -36,7 +36,7 @@ Try updating your CLI tool with "we update" before you report a bug.
 
 **Additional information you deem important (e.g. issue happens only occasionally):**
 
-**Output of `we version`:**
+**Output of `liferay version`:**
 
 ```
 (paste your output here)

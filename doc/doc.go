@@ -7,7 +7,7 @@ import (
 
 func main() {
 	header := &doc.GenManHeader{
-		Title:  "WeDeploy CLI Tool",
+		Title:  "Liferay CLI Tool",
 		Source: "Docs created automatically from the source files",
 	}
 

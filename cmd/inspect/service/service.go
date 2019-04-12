@@ -12,7 +12,7 @@ import (
 	"github.com/wedeploy/cli/services"
 )
 
-// ServiceCmd for "we inspect service"
+// ServiceCmd for "liferay inspect service"
 var ServiceCmd = &cobra.Command{
 	Use:   "service",
 	Short: "Get service info",

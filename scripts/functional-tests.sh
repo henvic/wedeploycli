@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# WeDeploy CLI Tool functional test script
+# Liferay CLI Tool functional test script
 
 set -euo pipefail
 IFS=$'\n\t'

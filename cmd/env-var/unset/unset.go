@@ -15,7 +15,7 @@ var Cmd = &cobra.Command{
 	Use:     "rm",
 	Aliases: []string{"unset", "del", "delete"},
 	Short:   "Remove an environment variable for a given service",
-	Example: "  we env-var rm foo",
+	Example: "  liferay env-var rm foo",
 	PreRunE: preRun,
 	RunE:    run,
 }

@@ -21,7 +21,7 @@ var (
 
 func TestMain(m *testing.M) {
 	var err error
-	wectx, err = config.Setup("mocks/.we")
+	wectx, err = config.Setup("mocks/.liferaycli")
 
 	if err != nil {
 		panic(err)

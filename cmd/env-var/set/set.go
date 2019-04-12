@@ -23,8 +23,8 @@ var Cmd = &cobra.Command{
 	Use:     "set",
 	Aliases: []string{"add"},
 	Short:   "Set an environment variable for a given service",
-	Example: `  we env-var set key value
-  we env-var set key=value`,
+	Example: `  liferay env-var set key value
+  liferay env-var set key=value`,
 	Args:    checkFileAndArgs,
 	PreRunE: preRun,
 	RunE:    run,

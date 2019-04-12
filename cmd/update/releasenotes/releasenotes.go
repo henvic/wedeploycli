@@ -16,7 +16,7 @@ var (
 	all bool
 )
 
-// Cmd for "we update release-notes"
+// Cmd for "liferay update release-notes"
 var Cmd = &cobra.Command{
 	Use:   "release-notes",
 	Args:  cobra.NoArgs,

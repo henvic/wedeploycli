@@ -1,0 +1,5 @@
+; Broken Configuration file for Liferay CLI
+; https://www.liferay.com/
+{ username          = admin
+password          = safe
+}

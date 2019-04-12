@@ -1,6 +1,6 @@
-; Configuration file for WeDeploy CLI
-; https://wedeploy.com
-default_remote                   = wedeploy
+; Configuration file for Liferay CLI
+; https://www.liferay.com/
+default_remote                   = liferay
 local_http_port                  = 80
 local_https_port                 = 443
 disable_autocomplete_autoinstall = true
@@ -9,10 +9,10 @@ notify_updates                   = true
 release_channel                  = stable
 enable_analytics                 = false
 
-[remote "wedeploy"]
+[remote "liferay"]
     ; Default cloud remote
-    infrastructure = wedeploy.com
-    service        = wedeploy.io
+    infrastructure = us-west-1.liferay.cloud
+    service        = us-west-1.lfr.cloud
     username       = admin
     password       = safe
 

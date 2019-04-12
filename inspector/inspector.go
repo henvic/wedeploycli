@@ -52,7 +52,7 @@ func (overview *ContextOverview) loadService() error {
 
 	if errwrap.GetType(cerr, &json.SyntaxError{}) != nil {
 		return errwrap.Wrapf(`{{err}}.
-The wedeploy.json file syntax is described at `+links.Configuring(), cerr)
+The wedeploy.json file syntax is described at `+links.Configuring, cerr)
 	}
 
 	if strings.Contains(cerr.Error(), servicePath) {
