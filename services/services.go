@@ -330,35 +330,6 @@ func (l *listFromDirectoryGetter) addFunc(p *Package, dir string) error {
 	return nil
 }
 
-// Catalog of services
-type Catalog []CatalogItem
-
-// CatalogItem is a item on the WeDeploy services registry
-type CatalogItem struct {
-	Category    string   `json:"category"`
-	Description string   `json:"description"`
-	Image       string   `json:"image"`
-	Name        string   `json:"name"`
-	State       string   `json:"state"`
-	Versions    []string `json:"versions"`
-}
-
-// Catalog of services
-func (c *Client) Catalog(ctx context.Context) (catalog Catalog, err error) {
-	var cm = map[string]CatalogItem{}
-	err = c.Client.AuthGet(ctx, "/catalog/services", &cm)
-
-	for _, i := range cm {
-		catalog = append(catalog, i)
-	}
-
-	sort.Slice(catalog, func(i, j int) bool {
-		return catalog[i].Image < catalog[j].Image
-	})
-
-	return catalog, err
-}
-
 // List services of a given project
 func (c *Client) List(ctx context.Context, projectID string) (Services, error) {
 	var cs Services
