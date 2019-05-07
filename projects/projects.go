@@ -233,10 +233,15 @@ type Build struct {
 	BuildGroupUID string
 
 	Environments map[string]json.RawMessage
+	Metadata     map[string]interface{}
 }
 
 // SkippedDeploy returns true when the service is not configured to be deployed.
 func (b *Build) SkippedDeploy() bool {
+	if deploy, ok := b.Metadata["deploy"].(bool); ok && !deploy {
+		return true
+	}
+
 	ep := strings.Split(b.ProjectID, "-")
 	environment := ep[len(ep)-1]
 

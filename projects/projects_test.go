@@ -410,6 +410,41 @@ var buildCases = []buildProvider{
 		},
 		true,
 	},
+	buildProvider{
+		Build{
+			ProjectID: "foo-bar",
+			ServiceID: "x",
+		},
+		false,
+	},
+	buildProvider{
+		Build{
+			ProjectID: "foo-bar",
+			ServiceID: "x",
+			Metadata:  map[string]interface{}{},
+		},
+		false,
+	},
+	buildProvider{
+		Build{
+			ProjectID: "foo-bar",
+			ServiceID: "x",
+			Metadata: map[string]interface{}{
+				"deploy": true,
+			},
+		},
+		false,
+	},
+	buildProvider{
+		Build{
+			ProjectID: "foo-bar",
+			ServiceID: "x",
+			Metadata: map[string]interface{}{
+				"deploy": false,
+			},
+		},
+		true,
+	},
 }
 
 func TestBuildSkippedDeploy(t *testing.T) {
