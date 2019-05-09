@@ -1,5 +1,5 @@
 build:
-  image: golang:1.12
+  image: golang:1.12.5
   commands:
     - go version
     - go test $(go list ./... | grep -v /integration$) -race
