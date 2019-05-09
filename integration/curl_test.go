@@ -11,7 +11,7 @@ func TestCURLEnableFirst(t *testing.T) {
 	Setup()
 
 	var cmd = &Command{
-		Args: []string{"curl", "--remote", "wedeploy"},
+		Args: []string{"curl", "--remote", "lcp"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/home/",
 	}
@@ -37,7 +37,7 @@ func TestCURLMissingPath(t *testing.T) {
 	enableCURL(t)
 
 	var cmd = &Command{
-		Args: []string{"curl", "--remote", "wedeploy"},
+		Args: []string{"curl", "--remote", "lcp"},
 		Env:  []string{"WEDEPLOY_CUSTOM_HOME=" + GetLoginHome()},
 		Dir:  "mocks/home/",
 	}

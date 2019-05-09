@@ -25,9 +25,9 @@ var idc = &interativeDomainCmd{}
 var DomainCmd = &cobra.Command{
 	Use:   "domain",
 	Short: "Show and configure domain names for services",
-	Example: `  we domain (to list domains)
-  we domain add foo.com
-  we domain rm foo.com`,
+	Example: `  lcp domain (to list domains)
+  lcp domain add foo.com
+  lcp domain rm foo.com`,
 	Args:    cobra.NoArgs,
 	PreRunE: idc.preRun,
 	RunE:    idc.run,

@@ -17,7 +17,7 @@ var DocsCmd = &cobra.Command{
 }
 
 func docsRun(cmd *cobra.Command, args []string) error {
-	err := browser.OpenURL(links.Docs())
+	err := browser.OpenURL(links.Docs)
 
 	if err != nil {
 		return err

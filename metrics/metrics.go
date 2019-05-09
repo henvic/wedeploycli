@@ -251,7 +251,7 @@ func (s *Sender) trySend(ctx context.Context) (events int, err error) {
 	return s.lines, err
 }
 
-// SubmitEventuallyOnBackground eventually forks a child process that submits analytics to WeDeploy
+// SubmitEventuallyOnBackground eventually forks a child process that submits analytics
 // if the analytics reporting is enabled
 func SubmitEventuallyOnBackground(conf *config.Config) (err error) {
 	var params = conf.GetParams()
@@ -332,7 +332,7 @@ func (s *Sender) submitOnBackground() error {
 
 	verbose.Debug(fmt.Sprintf(
 		`Started short-lived analytics reporting background process (PID %v)
-Metrics stored in ~/.we_metrics are going to be submitted in batch to WeDeploy`,
+Metrics stored in ~/.lcp_metrics are going to be submitted in batch to Liferay Cloud`,
 		cmd.Process.Pid))
 
 	return s.testPreparingMetrics(pr)

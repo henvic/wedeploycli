@@ -146,7 +146,7 @@ func runUpdateNotices() {
 	cmd.Stdout = buf
 
 	if err := cmd.Run(); err != nil {
-		verbose.Debug("we update release-notes error:", err)
+		verbose.Debug("lcp update release-notes error:", err)
 		return
 	}
 
@@ -219,7 +219,7 @@ func isNotifyOn(c *config.Config) bool {
 func notify(c *config.Config) {
 	var params = c.GetParams()
 	var channel = params.ReleaseChannel
-	var cmd = "we update"
+	var cmd = "lcp update"
 
 	if channel != params.ReleaseChannel {
 		cmd += " --channel " + channel
@@ -227,7 +227,7 @@ func notify(c *config.Config) {
 
 	_, _ = fmt.Fprintln(os.Stderr, color.Format(color.FgBlue,
 		`
-INFO: New version of WeDeploy CLI is available. Please run "%v".`,
+INFO: New version of Liferay Cloud Platform CLI is available. Please run "%v".`,
 		cmd))
 }
 
@@ -241,7 +241,7 @@ func updateApply(c *config.Config, channel string, resp *equinox.Response) error
 
 func handleUpdateApplyError(err error) error {
 	if err != nil && strings.Contains(err.Error(), "permission denied") {
-		return errwrap.Wrapf(`permission denied. Try "sudo we update" instead`, err)
+		return errwrap.Wrapf(`permission denied. Try "sudo lcp update" instead`, err)
 	}
 
 	return err

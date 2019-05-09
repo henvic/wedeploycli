@@ -14,8 +14,8 @@ var InspectCmd = &cobra.Command{
 	Short:  "Inspect environment info",
 	Hidden: true,
 	Args:   cobra.MaximumNArgs(1),
-	Example: `  we inspect context
-  we inspect service --format "{{.ID}}"`,
+	Example: `  lcp inspect context
+  lcp inspect service --format "{{.ID}}"`,
 }
 
 func init() {

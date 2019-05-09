@@ -190,7 +190,7 @@ func TestInspectServiceCorruptedOnContextOverview(t *testing.T) {
 	var _, err = InspectContext("", "./mocks/corrupted-service-outside-project")
 	var wantErr = fmt.Sprintf(`error parsing wedeploy.json on %v:`+
 		` invalid character ':' after top-level value.
-The wedeploy.json file syntax is described at https://wedeploy.com/docs/deploy/configuring-deployments/`,
+The wedeploy.json file syntax is described at https://help.liferay.com/hc/en-us/articles/360012918551-Configuring-via-the-wedeploy-json`,
 		abs("./mocks/corrupted-service-outside-project"))
 
 	if err == nil || err.Error() != wantErr {

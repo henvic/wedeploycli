@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# WeDeploy CLI integration tests build tool
+# Liferay Cloud Platform CLI integration tests build tool
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -35,7 +35,7 @@ function removeAndCopyMocks() {
 }
 
 for platform in ${PLATFORMS[@]}; do
-  out="wedeploy-cli-integration-${platform}.test"
+  out="lcp-cli-integration-${platform}.test"
 
   if [[ $platform == "windows" ]]; then
   	out=${out}.exe

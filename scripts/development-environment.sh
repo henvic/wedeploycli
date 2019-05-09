@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Install environment for development on the WeDeploy CLI Tool
+# Install environment for development on the Liferay Cloud Platform CLI Tool
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -22,7 +22,7 @@ function checkYesCONT() {
 }
 
 function welcome() {
-  echo "WeDeploy Command-Line-Interface Development Environment installer."
+  echo "Liferay Cloud Platform Command-Line-Interface Development Environment installer."
   echo "This program tries to install and verify all necessary dependencies for doing CLI development."
   echo ""
 }
@@ -277,7 +277,7 @@ function maybeMoveToGopathDir() {
 
 function infoRenewShell() {
   echo "Compile and immediately run the CLI program by using \"i\" instead of \"we\" from inside any directory."
-  echo "For example: instead of using \"we list\" to list your services, use \"i list\" like this:"
+  echo "For example: instead of using \"lcp list\" to list your services, use \"i list\" like this:"
   echo
   echo "$ i list --help"
   bash -c "i deploy --help"

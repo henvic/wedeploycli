@@ -136,7 +136,7 @@ func (d *Deploy) Do(ctx context.Context, t Transport) (err error) {
 		IsUpload: true,
 	}
 
-	d.workDir, err = ioutil.TempDir("", "wedeploy")
+	d.workDir, err = ioutil.TempDir("", "lcp")
 
 	if err != nil {
 		return err

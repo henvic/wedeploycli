@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# WeDeploy CLI tool build and run script (with race detector)
+# Liferay Cloud Platform CLI tool build and run script (with race detector)
 
 set -euo pipefail
 IFS=$'\n\t'

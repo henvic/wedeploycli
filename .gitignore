@@ -5,11 +5,11 @@ doc/*.1
 # Temporary mocks
 deployment/mocks/project/.git
 deployment/mocks/project-repo/
-metrics/mocks/.we
-metrics/mocks/.we_metrics
-integration/mocks/login/.we
-integration/mocks/login/.we_metrics
-integration/mocks/logout/.we_metrics
+metrics/mocks/.lcp
+metrics/mocks/.lcp_metrics
+integration/mocks/login/.lcp
+integration/mocks/login/.lcp_metrics
+integration/mocks/logout/.lcp_metrics
 integration/mocks/generate/example
 integration/mocks/generate/foo/data
 deployment/internal/repodiscovery/mocks/project

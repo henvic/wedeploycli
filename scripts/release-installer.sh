@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# WeDeploy CLI Tool installer publishing script
+# Liferay Cloud Platform CLI Tool installer publishing script
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -12,7 +12,7 @@ INSTALLER_RELEASE_CHANNEL="installer"
 INSTALLER_RELEASE_VERSION="installer-0.2"
 
 function helpmenu() {
-  echo "WeDeploy CLI Tool installer publishing script:
+  echo "Liferay Cloud Platform CLI Tool installer publishing script:
 
 1) check if all changes are commited
 2) create and push a release tag

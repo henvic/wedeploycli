@@ -1,5 +1,5 @@
-; Configuration file for WeDeploy CLI
-; https://wedeploy.com
+; Configuration file for Liferay Cloud
+; https://www.liferay.com/products/dxp-cloud
 auto_update                      = true
 release_channel                  = stable
 notify_updates                   = true
@@ -7,13 +7,13 @@ disable_colors                   = true
 username                         = 
 password                         = 
 token                            = 
-default_remote                   = wedeploy
+default_remote                   = lcp
 local_http_port                  = 80
 local_https_port                 = 443
 disable_autocomplete_autoinstall = false
 enable_analytics                 = true
 analytics_id                     = d9b2920e-564b-4c5b-a414-d6da9af2bcdd
 
-[remote "wedeploy"]
+[remote "lcp"]
     ; Default cloud remote
-    infrastructure = wedeploy.com
+    infrastructure = liferay.cloud

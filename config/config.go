@@ -120,7 +120,7 @@ func (c *Config) validateDefaultRemote() error {
 	}
 
 	return fmt.Errorf(`Remote "%v" is set as default, but not found.
-Please fix your ~/.we file`, c.Params.DefaultRemote)
+Please fix your ~/.lcp file`, c.Params.DefaultRemote)
 }
 
 // Save the configuration
@@ -372,6 +372,6 @@ func (c *Config) updateRemotes() {
 }
 
 func (c *Config) banner() {
-	c.file.Section("DEFAULT").Comment = `; Configuration file for WeDeploy CLI
-; https://wedeploy.com`
+	c.file.Section("DEFAULT").Comment = `; Configuration file for Liferay Cloud
+; https://www.liferay.com/products/dxp-cloud`
 }

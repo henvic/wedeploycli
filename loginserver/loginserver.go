@@ -166,7 +166,7 @@ func (s *Service) homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ErrSignUpEmailConfirmation tells that sign up was canceled because user is signing up
-var ErrSignUpEmailConfirmation = errors.New(`sign up on WeDeploy requested: try "we login" once you confirm your email`)
+var ErrSignUpEmailConfirmation = errors.New(`sign up on Liferay Cloud requested: try "lcp login" once you confirm your email`)
 
 const signupRequestPseudoToken = "signup_requested"
 

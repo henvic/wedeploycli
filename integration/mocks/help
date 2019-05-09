@@ -1,5 +1,5 @@
 
-  Usage: we [command] [flag]
+  Usage: lcp [command] [flag]
 
   Command               Description
   deploy           Deploy your services

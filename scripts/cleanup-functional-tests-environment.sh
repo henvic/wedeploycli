@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# WeDeploy CLI Tool cleanup functional test environment script
+# Liferay Cloud Platform CLI Tool cleanup functional test environment script
 
 set -euo pipefail
 IFS=$'\n\t'

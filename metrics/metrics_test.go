@@ -33,7 +33,7 @@ func TestMain(m *testing.M) {
 	removeMetricsFile()
 
 	var err error
-	wectx, err = config.Setup("mocks/.we")
+	wectx, err = config.Setup("mocks/.lcp")
 	conf = wectx.Config()
 
 	if err != nil {
@@ -52,14 +52,14 @@ func TestMain(m *testing.M) {
 }
 
 func removeMetricsFile() {
-	if err := os.Remove("mocks/.we_metrics"); err != nil && !os.IsNotExist(err) {
+	if err := os.Remove("mocks/.lcp_metrics"); err != nil && !os.IsNotExist(err) {
 		panic(err)
 	}
 }
 
 func resetMetricsSetup() {
 	SetPID(os.Getpid())
-	SetPath(abs("mocks/.we_metrics"))
+	SetPath(abs("mocks/.lcp_metrics"))
 	if err := Enable(conf); err != nil {
 		panic(err)
 	}
@@ -230,8 +230,8 @@ func TestRec(t *testing.T) {
 }
 
 func testRec(t *testing.T) {
-	if _, err := os.Open("mocks/.we_metrics"); os.IsExist(err) {
-		t.Fatalf(".we_metrics file should not exist at this time")
+	if _, err := os.Open("mocks/.lcp_metrics"); os.IsExist(err) {
+		t.Fatalf(".lcp_metrics file should not exist at this time")
 	}
 
 	for _, e := range testRecMock {
@@ -248,7 +248,7 @@ func testRec(t *testing.T) {
 }
 
 func testReadingMetricsFile(t *testing.T) {
-	var lines = strings.Split(tdata.FromFile("mocks/.we_metrics"), "\n")
+	var lines = strings.Split(tdata.FromFile("mocks/.lcp_metrics"), "\n")
 
 	if len(lines) != 4 {
 		t.Errorf("Expected 4 lines, got %v instead", len(lines))
@@ -328,8 +328,8 @@ func testTrySubmitWithoutPurging(t *testing.T) {
 		t.Errorf("Lines should be 3, is %v instead", lines)
 	}
 
-	if _, err = os.Stat("mocks/.we_metrics"); err != nil {
-		t.Errorf("we metrics file should exist, got %v error instead", err)
+	if _, err = os.Stat("mocks/.lcp_metrics"); err != nil {
+		t.Errorf("lcp metrics file should exist, got %v error instead", err)
 	}
 }
 
@@ -348,10 +348,10 @@ func testTrySubmitAndPurge(t *testing.T) {
 		t.Errorf("Lines should be 3, is %v instead", lines)
 	}
 
-	fi, ferr := os.Stat("mocks/.we_metrics")
+	fi, ferr := os.Stat("mocks/.lcp_metrics")
 
 	if ferr != nil {
-		t.Errorf("we metrics file should exist, got %v error instead", ferr)
+		t.Errorf("lcp metrics file should exist, got %v error instead", ferr)
 	}
 
 	if fi.Size() != 0 {
@@ -444,9 +444,9 @@ func (te *testStatusMetricsStory) testDisable(t *testing.T) {
 		t.Errorf("Analytics should be disabled")
 	}
 
-	var weWithoutSpace = strings.Replace(tdata.FromFile("mocks/.we"), " ", "", -1)
+	var weWithoutSpace = strings.Replace(tdata.FromFile("mocks/.lcp"), " ", "", -1)
 	if !strings.Contains(weWithoutSpace, "enable_analytics=false") {
-		t.Errorf(".we should have enable_analytics = false")
+		t.Errorf(".lcp should have enable_analytics = false")
 	}
 }
 
@@ -455,9 +455,9 @@ func (te *testStatusMetricsStory) testEnableAndRecording(t *testing.T) {
 		t.Errorf("Expected no error while re-enabling analytics, got %v instead", err)
 	}
 
-	var weWithoutSpace = strings.Replace(tdata.FromFile("mocks/.we"), " ", "", -1)
+	var weWithoutSpace = strings.Replace(tdata.FromFile("mocks/.lcp"), " ", "", -1)
 	if !strings.Contains(weWithoutSpace, "enable_analytics=true") {
-		t.Errorf(".we should have enable_analytics = true")
+		t.Errorf(".lcp should have enable_analytics = true")
 	}
 
 	var params = conf.GetParams()
@@ -476,8 +476,8 @@ func (te *testStatusMetricsStory) testEnableAndRecording(t *testing.T) {
 			Text: "Foo bar",
 		})
 
-	if len(tdata.FromFile("mocks/.we_metrics")) == 0 {
-		t.Errorf(".we_metrics has no content")
+	if len(tdata.FromFile("mocks/.lcp_metrics")) == 0 {
+		t.Errorf(".lcp_metrics has no content")
 	}
 
 	if bufErrStream.Len() != 0 {
@@ -498,18 +498,18 @@ func (te *testStatusMetricsStory) testResetting(t *testing.T) {
 		t.Errorf("Initial SID should be revoked: got same: %v", params.AnalyticsID)
 	}
 
-	var weWithoutSpace = strings.Replace(tdata.FromFile("mocks/.we"), " ", "", -1)
+	var weWithoutSpace = strings.Replace(tdata.FromFile("mocks/.lcp"), " ", "", -1)
 
 	if strings.Contains(weWithoutSpace, "analytics_id="+te.initialSID) {
-		t.Errorf(".we should not have analytics_id = <initial SID>")
+		t.Errorf(".lcp should not have analytics_id = <initial SID>")
 	}
 
 	if !strings.Contains(weWithoutSpace, "analytics_id="+params.AnalyticsID) {
-		t.Errorf(".we should have analytics_id = <new SID>")
+		t.Errorf(".lcp should have analytics_id = <new SID>")
 	}
 
-	if len(tdata.FromFile("mocks/.we_metrics")) != 0 {
-		t.Errorf(".we_metrics should have no content")
+	if len(tdata.FromFile("mocks/.lcp_metrics")) != 0 {
+		t.Errorf(".lcp_metrics should have no content")
 	}
 }
 

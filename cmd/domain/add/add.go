@@ -15,7 +15,7 @@ var Cmd = &cobra.Command{
 	Use:     "add",
 	Aliases: []string{"set"},
 	Short:   "Add custom domain to a given service",
-	Example: "  we domain add example.com",
+	Example: "  lcp domain add example.com",
 	PreRunE: preRun,
 	RunE:    run,
 }

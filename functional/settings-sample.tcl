@@ -12,8 +12,8 @@ set _mode "basic"
 set _create_user false
 
 # remote to use during tests
-set _remote "wedeploy.com"
-set _service_domain "wedeploy.sh"
+set _remote "liferay.cloud"
+set _service_domain "lfr.cloud"
 
 # project prefix
 set project_prefix ""
@@ -28,4 +28,4 @@ set _teamuser(email) "tester@example.com"
 set _teamuser(password) "password"
 
 # name of the binary file to test
-set bin "we"
+set bin "lcp"

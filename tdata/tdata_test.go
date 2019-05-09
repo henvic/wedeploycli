@@ -55,7 +55,7 @@ func TestFromFileNotFound(t *testing.T) {
 }
 
 func TestToFile(t *testing.T) {
-	var tmp, err = ioutil.TempFile(os.TempDir(), "we")
+	var tmp, err = ioutil.TempFile(os.TempDir(), "lcp")
 
 	if err != nil {
 		panic(err)

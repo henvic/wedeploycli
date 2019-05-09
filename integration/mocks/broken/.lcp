@@ -1,4 +1,4 @@
-; Broken Configuration file for WeDeploy CLI
+; Broken Configuration file for Liferay Cloud Platform CLI
 ; https://wedeploy.io
 { username          = admin
 password          = safe

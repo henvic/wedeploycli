@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# WeDeploy CLI Tool static analysis scripts
+# Liferay Cloud Platform CLI Tool static analysis scripts
 
 set -euo pipefail
 IFS=$'\n\t'

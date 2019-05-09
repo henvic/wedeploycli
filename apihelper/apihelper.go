@@ -156,7 +156,7 @@ var (
 	errStream io.Writer = os.Stderr
 )
 
-// Auth a WeDeploy request with the global authentication data
+// Auth a request with the global authentication data
 func (c *Client) Auth(request *wedeploy.WeDeploy) {
 	request.Auth(c.Context.Token())
 }
@@ -255,7 +255,7 @@ func SetBody(request *wedeploy.WeDeploy, data interface{}) error {
 	return err
 }
 
-// URL creates a WeDeploy URL instance
+// URL creates a URL instance
 func (c *Client) URL(ctx context.Context, paths ...string) *wedeploy.WeDeploy {
 	u := wedeploy.URL(c.Context.Infrastructure(), paths...)
 	u.SetContext(ctx)

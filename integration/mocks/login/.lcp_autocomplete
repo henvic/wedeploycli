@@ -1,10 +1,10 @@
 
-_we()  {
+_lcp()  {
   COMPREPLY=()
   local cur="${COMP_WORDS[COMP_CWORD]}"
-  local opts="$(we autocomplete -- ${COMP_WORDS[@]:1})"
+  local opts="$(lcp autocomplete -- ${COMP_WORDS[@]:1})"
   COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
   return 0
 }
 
-complete -F _we we
+complete -F _lcp lcp

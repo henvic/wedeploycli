@@ -18,9 +18,9 @@ var RestartCmd = &cobra.Command{
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,
 	RunE:    restartRun,
-	Example: `  we restart --project chat --service data
-  we restart --project chat --service data --remote wedeploy
-  we restart --url data-chat.wedeploy.io`,
+	Example: `  lcp restart --project chat --service data
+^  lcp restart --project chat --service data --remote wedeploy
+^  lcp restart --url data-chat.wedeploy.io`,
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{

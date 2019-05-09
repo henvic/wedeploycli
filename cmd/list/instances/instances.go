@@ -17,8 +17,8 @@ import (
 // ListInstancesCmd is used for getting a list of projects and services
 var ListInstancesCmd = &cobra.Command{
 	Use: "instances",
-	Example: `  we list instances --project chat --service data
-  we list instances --url data-chat.wedeploy.io`,
+	Example: `  lcp list instances --project chat --service data
+  lcp list instances --url data-chat.wedeploy.io`,
 	Short:   "Show list of instances",
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,
