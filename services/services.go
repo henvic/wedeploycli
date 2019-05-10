@@ -113,7 +113,7 @@ func (s *Service) Type() string {
 	return s.Image
 }
 
-// Package is the structure for wedeploy.json
+// Package is the structure for LCP.json
 type Package struct {
 	ID            string            `json:"id,omitempty"`
 	ProjectID     string            `json:"projectId,omitempty"`
@@ -126,7 +126,7 @@ type Package struct {
 	dockerfile string
 }
 
-// Service returns a Service type created taking wedeploy.json as base
+// Service returns a Service type created taking LCP.json as base
 func (p Package) Service() *Service {
 	return &Service{
 		ServiceID:     p.ID,
@@ -145,7 +145,7 @@ type Register struct {
 }
 
 var (
-	// ErrServiceNotFound happens when a wedeploy.json is not found
+	// ErrServiceNotFound happens when a LCP.json is not found
 	ErrServiceNotFound = errors.New("service not found")
 
 	// ErrServiceAlreadyExists happens when a service ID already exists
@@ -472,7 +472,7 @@ func (c *Client) Instances(ctx context.Context, projectID, serviceID string) ([]
 	return is, err
 }
 
-// Read a service directory properties (defined by a wedeploy.json and/or Dockerfile on it)
+// Read a service directory properties (defined by the LCP.json or a Dockerfile on it)
 func Read(path string) (*Package, error) {
 	var p = Package{}
 	var hasDockerfile bool
@@ -486,13 +486,13 @@ func Read(path string) (*Package, error) {
 		return nil, errwrap.Wrapf("error reading Dockerfile: {{err}}", err)
 	}
 
-	wedeployJSON, err := ioutil.ReadFile(filepath.Join(path, "wedeploy.json")) // #nosec
+	pkg, err := ioutil.ReadFile(filepath.Join(path, "LCP.json")) // #nosec
 
 	switch {
 	case err == nil:
-		if err = json.Unmarshal(wedeployJSON, &p); err != nil {
+		if err = json.Unmarshal(pkg, &p); err != nil {
 			return nil, errwrap.Wrapf(
-				"error parsing wedeploy.json on "+path+": {{err}}",
+				"error parsing LCP.json on "+path+": {{err}}",
 				jsonerror.FriendlyUnmarshal(err))
 		}
 	case os.IsNotExist(err):
@@ -500,7 +500,7 @@ func Read(path string) (*Package, error) {
 			return nil, ErrServiceNotFound
 		}
 	default:
-		return nil, errwrap.Wrapf("error reading wedeploy.json: {{err}}", err)
+		return nil, errwrap.Wrapf("error reading LCP.json: {{err}}", err)
 	}
 
 	if hasDockerfile {

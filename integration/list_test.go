@@ -92,7 +92,7 @@ func TestListServiceFromInsideProject(t *testing.T) {
 
 	servertest.IntegrationMux.HandleFunc(
 		"/projects/app/services/service",
-		tdata.ServerJSONFileHandler("./mocks/home/bucket/project/service/wedeploy.json"))
+		tdata.ServerJSONFileHandler("./mocks/home/bucket/project/service/LCP.json"))
 
 	var cmd = &Command{
 		Args: []string{"list", "--service", "service", "--project", "app", "--remote", "local", "--no-color"},

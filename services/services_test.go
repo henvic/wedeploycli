@@ -531,7 +531,7 @@ func TestReadEmail(t *testing.T) {
 func TestReadCorrupted(t *testing.T) {
 	var _, err = Read("mocks/app-with-invalid-service/corrupted")
 
-	var want = "error parsing wedeploy.json on mocks/app-with-invalid-service/corrupted:" +
+	var want = "error parsing LCP.json on mocks/app-with-invalid-service/corrupted:" +
 		" invalid character 'I' looking for beginning of value"
 
 	if err == nil || err.Error() != want {

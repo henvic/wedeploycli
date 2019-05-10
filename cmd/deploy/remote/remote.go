@@ -199,7 +199,7 @@ func (rd *RemoteDeployment) checkEmptyIDOnMultipleDeployment() error {
 		return nil
 	}
 
-	fmt.Println(fancy.Info("Multiple services found without wedeploy.json IDs:"))
+	fmt.Println(fancy.Info("Multiple services found without LCP.json IDs:"))
 
 	for _, e := range empty {
 		fmt.Printf("%v %v\n", e.Location, fancy.Tip("using "+filepath.Base(e.Location)))

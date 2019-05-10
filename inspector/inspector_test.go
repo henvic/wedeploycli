@@ -156,7 +156,7 @@ func TestInspectServiceNotFound(t *testing.T) {
 
 func TestInspectServiceCorrupted(t *testing.T) {
 	var _, err = InspectService("", "./mocks/project-with-corrupted-service/corrupted-service")
-	var wantErr = fmt.Sprintf(`error parsing wedeploy.json on %v: unexpected end of JSON input`,
+	var wantErr = fmt.Sprintf(`error parsing LCP.json on %v: unexpected end of JSON input`,
 		abs("./mocks/project-with-corrupted-service/corrupted-service"))
 
 	if err == nil || err.Error() != wantErr {
@@ -167,7 +167,7 @@ func TestInspectServiceCorrupted(t *testing.T) {
 func TestInspectProjectWithCorruptedServiceOnContextOverview(t *testing.T) {
 	var _, err = InspectContext("", "./mocks/project-with-corrupted-service")
 	var wantErr = fmt.Sprintf(
-		`error parsing wedeploy.json on %v: unexpected end of JSON input`,
+		`error parsing LCP.json on %v: unexpected end of JSON input`,
 		abs("mocks/project-with-corrupted-service/corrupted-service"))
 
 	if err == nil || err.Error() != wantErr {
@@ -188,9 +188,9 @@ func TestInspectContextOverviewWithDuplicatedServices(t *testing.T) {
 
 func TestInspectServiceCorruptedOnContextOverview(t *testing.T) {
 	var _, err = InspectContext("", "./mocks/corrupted-service-outside-project")
-	var wantErr = fmt.Sprintf(`error parsing wedeploy.json on %v:`+
+	var wantErr = fmt.Sprintf(`error parsing LCP.json on %v:`+
 		` invalid character ':' after top-level value.
-The wedeploy.json file syntax is described at https://help.liferay.com/hc/en-us/articles/360012918551-Configuring-via-the-wedeploy-json`,
+The LCP.json file syntax is described at https://help.liferay.com/hc/en-us/articles/360012918551-Configuring-via-the-wedeploy-json`,
 		abs("./mocks/corrupted-service-outside-project"))
 
 	if err == nil || err.Error() != wantErr {
@@ -231,7 +231,7 @@ func TestInspectContextOverview(t *testing.T) {
 func TestInspectContextOverviewMismatchedProjectID(t *testing.T) {
 	var _, err = InspectContext("", "./mocks/project-with-mismatched-project-id")
 
-	var wantErr = `services "email" and "other" must have the same project ID defined on "email/wedeploy.json" and "other/wedeploy.json" (currently: "exampleProject" and "notExampleProject")`
+	var wantErr = `services "email" and "other" must have the same project ID defined on "email/LCP.json" and "other/LCP.json" (currently: "exampleProject" and "notExampleProject")`
 
 	if err == nil || err.Error() != wantErr {
 		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
@@ -241,7 +241,7 @@ func TestInspectContextOverviewMismatchedProjectID(t *testing.T) {
 func TestInspectContextOverviewMismatchedProjectIDWhenEmpty(t *testing.T) {
 	var _, err = InspectContext("", "./mocks/project-with-mismatched-project-id-2")
 
-	var wantErr = `services "email" and "other" must have the same project ID defined on "email/wedeploy.json" and "other/wedeploy.json" (currently: "" and "notExampleProject")`
+	var wantErr = `services "email" and "other" must have the same project ID defined on "email/LCP.json" and "other/LCP.json" (currently: "" and "notExampleProject")`
 
 	if err == nil || err.Error() != wantErr {
 		t.Errorf("Expected error to be %v, got %v instead", wantErr, err)
