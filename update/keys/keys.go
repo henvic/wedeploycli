@@ -6,7 +6,7 @@ package keys
 // which imports it.
 
 // AppID is Equinox's app ID for this tool
-var AppID = "app_g12mjgk2k9D"
+var AppID = "app_3V9rgoT6qD1"
 
 // PublicKey is the public key for the certificate used with Equinox
 var PublicKey = []byte(`
