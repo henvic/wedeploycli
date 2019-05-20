@@ -34,7 +34,7 @@ The following commands are available and requires no arguments:
 * **make build-integration-tests**: generate integration tests suites
 * **make release**: tag, build, and publish new version of the app
 * **make promote**: publish version already released to a given distribution channel
-* **make release-notes-page**: update release notes page on wedeploy.com
+* **make release-notes-page**: update release notes page
 
 In lieu of a formal style guide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Integration tests should be written as well.
 

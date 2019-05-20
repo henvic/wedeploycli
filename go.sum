@@ -20,6 +20,7 @@ github.com/henvic/ctxsignal v1.0.0 h1:EvBKhGucE28G25BSRzJgXtfNQDVk0i5Ag8L/jmfT/h
 github.com/henvic/ctxsignal v1.0.0/go.mod h1:UT/zf10ZRehwLPo6UhRgzkGEoOEKSfjqhhf1lrV54To=
 github.com/henvic/uilive v0.0.0-20170601211230-dc7a6ced9df3 h1:PT1IMEovAbWAtVMk4sk0ANF2WDyaxrPIMDEEBRbVs5s=
 github.com/henvic/uilive v0.0.0-20170601211230-dc7a6ced9df3/go.mod h1:hYCEkhSdgd89EzavwjVwKzueIzZM6BzGF4IoyRm7cLw=
+github.com/inconshreveable/mousetrap v1.0.0 h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NHg9XEKhtSvM=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
@@ -27,6 +28,7 @@ github.com/kevinburke/ssh_config v0.0.0-20180317175531-9fc7bb800b55 h1:S38dC4mEw
 github.com/kevinburke/ssh_config v0.0.0-20180317175531-9fc7bb800b55/go.mod h1:CT57kijsi8u/K/BOFA39wgDQJ9CxiF4nAY/ojJ6r6mM=
 github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348 h1:MtvEpTB6LX3vkb4ax0b5D2DHbNAUsen0Gx5wZoq3lV4=
 github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348/go.mod h1:B69LEHPfb2qLo0BaaOLcbitczOKLWTsrBG9LczfCD4k=
+github.com/mattn/go-isatty v0.0.3 h1:ns/ykhmWi7G9O+8a448SecJU3nSMBXJfqQkl0upE1jI=
 github.com/mattn/go-isatty v0.0.3/go.mod h1:M+lRXTBqGeGNdLjl/ufCoiOlB5xdOkqRJdNxMWT7Zi4=
 github.com/mitchellh/go-homedir v0.0.0-20180801233206-58046073cbff h1:jM4Eo4qMmmcqePS3u6X2lcEELtVuXWkWJIS/pRI3oSk=
 github.com/mitchellh/go-homedir v0.0.0-20180801233206-58046073cbff/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
