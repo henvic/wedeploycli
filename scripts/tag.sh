@@ -13,7 +13,7 @@ dryrun=false
 function helpmenu() {
   echo "Liferay Cloud Platform CLI Tool tagging script:
 
-1) check if all changes are commited
+1) check if all changes are committed
 2) run tests on a local drone.io instance
 3) create and push a release tag
 5) build and push a new release to equinox

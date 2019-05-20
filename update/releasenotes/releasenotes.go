@@ -241,7 +241,7 @@ var ReleaseNotes = []ReleaseNote{
 		Description: `Liferay Cloud CLI tool.`,
 	},
 	ReleaseNote{
-		Version:     "2.0.0-beta2",
+		Version:     "2.0.0-beta.2",
 		Date:        "May 20th, 2019",
 		Description: `Liferay Cloud CLI tool.`,
 	},
