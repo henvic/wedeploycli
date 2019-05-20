@@ -1,6 +1,6 @@
 package curl
 
-// NOTE: curl's --url is not used due to conflicting we --url flag
+// NOTE: curl's --url is not used due to conflicting lcp --url flag
 // However, this code considers it (though the code wounever be executed),
 // for the sake of completion [and if things change].
 
@@ -31,19 +31,19 @@ var CurlCmd = &cobra.Command{
 	Short: "Do requests with curl",
 	Long: `Do requests with curl
 Requests are piped to curl with credentials attached and paths expanded.
-Pattern: we curl [curl options...] <url>
+Pattern: lcp curl [curl options...] <url>
 Use "curl --help" to see curl usage options.
 `,
-	Example: `  we curl /projects
-  we curl /plans/user
-  we curl https://api.wedeploy.com/projects`,
+	Example: `  lcp curl /projects
+  lcp curl /plans/user
+  lcp curl https://api.liferay.cloud/projects`,
 	// maybe --pretty=false to disable pipe, should add example
 	RunE:               (&curlRunner{}).run,
 	Hidden:             true,
 	DisableFlagParsing: true,
 }
 
-// EnableCmd for enabling using "we curl"
+// EnableCmd for enabling using "lcp curl"
 var EnableCmd = &cobra.Command{
 	Use:   "enable",
 	Short: "Enable curl commands",
@@ -51,7 +51,7 @@ var EnableCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 }
 
-// DisableCmd for disabling using "we curl"
+// DisableCmd for disabling using "lcp curl"
 var DisableCmd = &cobra.Command{
 	Use:   "disable",
 	Short: "Disable curl commands",
@@ -125,7 +125,7 @@ func (af *argsF) maybeGetBoolArgument() (is bool) {
 }
 
 func (cr *curlRunner) parseArguments() (weArgs, curlArgs []string) {
-	// ignore "we curl"
+	// ignore "lcp curl"
 	var commandLength = len(strings.Split(cr.cmd.CommandPath(), " "))
 
 	if len(os.Args) <= commandLength {
@@ -260,7 +260,7 @@ func expandPathsToFullRequests(wectx config.Context, params []string) ([]string,
 			continue
 		}
 
-		// let's try to expand URLs (e.g., "we curl /projects" should work)
+		// let's try to expand URLs (e.g., "lcp curl /projects" should work)
 		if strings.HasPrefix(p, "/") {
 			if i == 0 {
 				out = append(out, fmt.Sprintf("%v%v", wectx.Infrastructure(), p))

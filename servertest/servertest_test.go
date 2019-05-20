@@ -16,7 +16,7 @@ func TestSetupAndTeardown(t *testing.T) {
 	Setup()
 
 	if httpClient == client.HTTP() {
-		t.Error("Expected different WeDeploy HTTP Client instance")
+		t.Error("Expected different Liferay Cloud HTTP Client instance")
 	}
 
 	Mux.HandleFunc("/foo", func(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +41,7 @@ func TestSetupAndTeardown(t *testing.T) {
 	Teardown()
 
 	if httpClient != client.HTTP() {
-		t.Error("Expected same WeDeploy HTTP Client instance")
+		t.Error("Expected same Liferay Cloud HTTP Client instance")
 	}
 
 	if server != nil {

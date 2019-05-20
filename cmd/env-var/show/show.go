@@ -15,8 +15,8 @@ var Cmd = &cobra.Command{
 	Use:     "show",
 	Aliases: []string{"list"},
 	Short:   "Show your environment variable values for a given service",
-	Example: `  we env-var show
-  we env-var show key`,
+	Example: `  lcp env-var show
+  lcp env-var show key`,
 	PreRunE: preRun,
 	RunE:    run,
 }

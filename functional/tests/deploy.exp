@@ -108,7 +108,7 @@ Scenario: "Deploy project with two services" {
   delete_project $deploy3
 }
 
-Scenario: "Deploy project with bad wedeploy.json" {
+Scenario: "Deploy project with bad LCP.json" {
   send "cd ../projectC\r"
   expect {
     timeout {

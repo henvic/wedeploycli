@@ -13,11 +13,11 @@ import (
 	"github.com/wedeploy/cli/remotes"
 )
 
-// RemoteCmd is the command to control WeDeploy remotes.
+// RemoteCmd is the command to control Liferay Cloud remotes.
 var RemoteCmd = &cobra.Command{
 	Use:    "remote",
 	Hidden: true,
-	Short:  "Configure WeDeploy remotes",
+	Short:  "Configure Liferay Cloud remotes",
 	Args:   cobra.NoArgs,
 	RunE:   remoteRun,
 }
@@ -146,13 +146,13 @@ func removeRun(cmd *cobra.Command, args []string) error {
 	rl.Del(name)
 
 	if name == defaults.CloudRemote {
-		_, _ = fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Removed default cloud remote "wedeploy" will be recreated with its default value`))
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Removed default cloud remote "lcp" will be recreated with its default value`))
 	}
 
 	if name == params.DefaultRemote && name != defaults.CloudRemote {
 		params.DefaultRemote = defaults.CloudRemote
 		conf.SetParams(params)
-		_, _ = fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Default remote reset to "wedeploy"`))
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", color.Format(color.FgHiRed, `Default remote reset to "lcp"`))
 	}
 
 	return conf.Save()

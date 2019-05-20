@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/projects"
-
 	"github.com/spf13/cobra"
 	"github.com/wedeploy/cli/cmd/internal/we"
 	"github.com/wedeploy/cli/cmdflagsfromhost"
+	"github.com/wedeploy/cli/color"
 	"github.com/wedeploy/cli/fancy"
+	"github.com/wedeploy/cli/projects"
+	"github.com/wedeploy/cli/prompt"
 )
 
 // Don't use this anywhere but on Cmd.RunE
 var sh = cmdflagsfromhost.SetupHost{
-	Pattern: cmdflagsfromhost.ProjectAndRemotePattern,
+	Pattern: cmdflagsfromhost.RegionPattern | cmdflagsfromhost.ProjectAndRemotePattern,
 
 	Requires: cmdflagsfromhost.Requires{
 		Auth: true,
@@ -38,13 +38,13 @@ func runE(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	return Run(sh.Project())
+	return Run(sh.Project(), sh.Region())
 }
 
 // Run command for creating a project
-func Run(projectID string) (err error) {
+func Run(projectID, region string) (err error) {
 	if projectID != "" {
-		return createProject(projectID)
+		return createProject(projectID, region)
 	}
 
 	fmt.Println(fancy.Question("Choose a project ID") + " " + fancy.Tip("default: random"))
@@ -54,15 +54,27 @@ func Run(projectID string) (err error) {
 		return err
 	}
 
-	return createProject(projectID)
+	return createProject(projectID, region)
 }
 
-func createProject(projectID string) error {
+func createProject(projectID, region string) error {
+	var err error
+	var project projects.Project
+
+	if region == "" {
+		region, err = promptRegion()
+
+		if err != nil {
+			return err
+		}
+	}
+
 	wectx := we.Context()
 	projectsClient := projects.New(wectx)
 
-	var project, err = projectsClient.Create(context.Background(), projects.Project{
+	project, err = projectsClient.Create(context.Background(), projects.Project{
 		ProjectID: projectID,
+		Region:    region,
 	})
 
 	if err != nil {
@@ -74,6 +86,39 @@ func createProject(projectID string) error {
 	}
 
 	return createdProject(project)
+}
+
+func promptRegion() (string, error) {
+	wectx := we.Context()
+	projectsClient := projects.New(wectx)
+
+	fmt.Printf("Please %s a region from the list below.\n",
+		color.Format(color.FgMagenta, color.Bold, "select"))
+
+	var regions, err = projectsClient.Regions(context.Background())
+
+	if err != nil {
+		return "", err
+	}
+
+	var m = map[string]int{}
+
+	fmt.Println(color.Format(color.FgHiBlack, "#\tRegion"))
+
+	for k, v := range regions {
+		fmt.Printf("%d\t%v (%v)\n", k+1, v.Location, v.Name)
+		m[v.Name] = k + 1
+	}
+
+	fmt.Print("Choice: ")
+	var i int
+	i, err = prompt.SelectOption(len(regions), m)
+
+	if err != nil {
+		return "", err
+	}
+
+	return regions[i].Name, nil
 }
 
 func createdProject(p projects.Project) error {

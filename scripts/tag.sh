@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# WeDeploy CLI Tool tagging script
+# Liferay Cloud Platform CLI Tool tagging script
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -11,7 +11,7 @@ skipIntegrationTests=false
 dryrun=false
 
 function helpmenu() {
-  echo "WeDeploy CLI Tool tagging script:
+  echo "Liferay Cloud Platform CLI Tool tagging script:
 
 1) check if all changes are commited
 2) run tests on a local drone.io instance

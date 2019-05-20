@@ -28,13 +28,13 @@ func (d *Deploy) prepareAndModifyServicePackage(s services.ServiceInfo) error {
 	switch err {
 	case nil:
 	case services.ErrServiceNotFound:
-		verbose.Debug(fmt.Sprintf(`wedeploy.json not found for service "%s"`, s.ServiceID))
+		verbose.Debug(fmt.Sprintf(`LCP.json not found for service "%s"`, s.ServiceID))
 		err = nil
 	default:
 		return err
 	}
 
-	// wedeploy.json is actively modified. Therefore, by using a map instead of relying on the
+	// LCP.json is actively modified. Therefore, by using a map instead of relying on the
 	// Package struct we avoid any issues regarding synchronization and we future-proof the structure.
 
 	c := changes{
@@ -48,7 +48,7 @@ func (d *Deploy) prepareAndModifyServicePackage(s services.ServiceInfo) error {
 		return err
 	}
 
-	path := filepath.Join(filepath.Base(s.Location), "wedeploy.json")
+	path := filepath.Join(filepath.Base(s.Location), "LCP.json")
 
 	return d.overwriteServicePackage(path, bin)
 }

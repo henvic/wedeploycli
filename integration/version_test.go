@@ -18,7 +18,7 @@ func TestVersion(t *testing.T) {
 	var os = runtime.GOOS
 	var arch = runtime.GOARCH
 	var version = fmt.Sprintf(
-		"WeDeploy CLI version %s %s/%s\n",
+		"Liferay Cloud Platform CLI version %s %s/%s\n",
 		defaults.Version,
 		os,
 		arch)

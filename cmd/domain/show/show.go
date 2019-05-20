@@ -15,7 +15,7 @@ var Cmd = &cobra.Command{
 	Use:     "show",
 	Aliases: []string{"list"},
 	Short:   "Show your domains for a given service",
-	Example: `  we domain show`,
+	Example: `  lcp domain show`,
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,
 	RunE:    run,

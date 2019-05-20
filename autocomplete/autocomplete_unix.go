@@ -17,19 +17,19 @@ var script = `if [ -n "$ZSH_VERSION" ]; then
   bashcompinit
 fi
 
-_we()  {
+_lcp()  {
   COMPREPLY=()
   local cur="${COMP_WORDS[COMP_CWORD]}"
-  local opts="$(we autocomplete -- ${COMP_WORDS[@]:1})"
+  local opts="$(lcp autocomplete -- ${COMP_WORDS[@]:1})"
   COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
   return 0
 }
 
-complete -F _we we
+complete -F _lcp lcp
 `
 
 var add = `
-autocompleteCommand="[ -f ~/.we_autocomplete ] && source ~/.we_autocomplete"
+autocompleteCommand="[ -f ~/.lcp_autocomplete ] && source ~/.lcp_autocomplete"
 
 # Install autocomplete for bash
 if [ -w ~/.bashrc ] ; then
@@ -53,7 +53,7 @@ fi
 var scriptPath string
 
 func init() {
-	scriptPath = filepath.Join(userhome.GetHomeDir(), "/.we_autocomplete")
+	scriptPath = filepath.Join(userhome.GetHomeDir(), "/.lcp_autocomplete")
 }
 
 func autoInstall() {

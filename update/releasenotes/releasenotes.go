@@ -235,4 +235,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "April 1st, 2019",
 		Description: `Fixing deployment progress stuck due to out of order activities.`,
 	},
+	ReleaseNote{
+		Version:     "2.0.0-beta",
+		Date:        "May 10th, 2019",
+		Description: `Liferay Cloud CLI tool.`,
+	},
 }

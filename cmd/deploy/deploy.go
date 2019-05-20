@@ -24,7 +24,7 @@ import (
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{
-	Pattern: cmdflagsfromhost.FullHostPattern,
+	Pattern: cmdflagsfromhost.RegionPattern | cmdflagsfromhost.FullHostPattern,
 
 	Requires: cmdflagsfromhost.Requires{
 		Auth:    true,
@@ -50,9 +50,9 @@ var (
 var DeployCmd = &cobra.Command{
 	Use:   "deploy",
 	Short: "Deploy your services",
-	Example: `  we deploy
-  we deploy https://gitlab.com/user/repo
-  we deploy user/repo#branch`,
+	Example: `  lcp deploy
+  lcp deploy https://gitlab.com/user/repo
+  lcp deploy user/repo#branch`,
 	Args:    cobra.MaximumNArgs(1),
 	PreRunE: preRun,
 	RunE:    run,
@@ -124,6 +124,7 @@ func local() (sil services.ServiceInfoList, err error) {
 	}
 
 	params.ProjectID = setupHost.Project()
+	params.Region = setupHost.Region()
 	params.ServiceID = setupHost.Service()
 
 	var rd = &deployremote.RemoteDeployment{
@@ -165,7 +166,8 @@ func fromGitRepo(repo string) (services.ServiceInfoList, error) {
 	}
 
 	var err error
-	params.ProjectID, err = getproject.MaybeID(setupHost.Project())
+	params.Region = setupHost.Region()
+	params.ProjectID, err = getproject.MaybeID(setupHost.Project(), params.Region)
 
 	if err != nil {
 		return nil, err

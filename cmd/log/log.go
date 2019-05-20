@@ -43,11 +43,11 @@ var LogCmd = &cobra.Command{
 	PreRunE: preRun,
 	RunE:    logRun,
 	Args:    cobra.NoArgs,
-	Example: `  we log --project chat --service data
-  we log --service data
-  we log --project chat --service data
-  we log --url data-chat.wedeploy.io
-  we log --url data-chat.wedeploy.io --instance 10ab22`,
+	Example: `  lcp log --project chat --service data
+  lcp log --service data
+  lcp log --project chat --service data
+  lcp log --url data-chat.wedeploy.io
+  lcp log --url data-chat.wedeploy.io --instance 10ab22`,
 }
 
 func preRun(cmd *cobra.Command, args []string) error {

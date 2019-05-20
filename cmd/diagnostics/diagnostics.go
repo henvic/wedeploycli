@@ -56,7 +56,7 @@ func diagnosticsRun(cmd *cobra.Command, args []string) error {
 		color.Format(color.Bold, humanize.Bytes(bu)))
 
 	if !send && !cmd.Flag("send").Changed {
-		var report, askErr = fancy.Boolean("Send this report to WeDeploy?")
+		var report, askErr = fancy.Boolean("Send this report to Liferay Cloud?")
 
 		if askErr != nil {
 			return askErr
@@ -120,7 +120,7 @@ func init() {
 		&send,
 		"send",
 		false,
-		"Send to WeDeploy")
+		"Send to Liferay Cloud")
 
 	DiagnosticsCmd.Flags().IntVar(
 		&timeout,

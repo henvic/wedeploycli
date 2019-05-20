@@ -7,8 +7,8 @@ import (
 
 // JSONWebToken for the user
 type JSONWebToken struct {
-	Email string `json:"email"`
-	UID   string `json:"sub"`
+	Email string `json:"sub"`
+	UID   string `json:"uid"`
 }
 
 type jsonWebToken JSONWebToken

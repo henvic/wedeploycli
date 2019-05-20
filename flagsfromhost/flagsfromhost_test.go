@@ -525,7 +525,7 @@ var parseMocks = []parseMock{
 			Remote:  "",
 		},
 		Want: parsed{
-			Remote:           "wedeploy",
+			Remote:           "lcp",
 			IsRemoteFromHost: true,
 		},
 	},
@@ -538,7 +538,7 @@ var parseMocks = []parseMock{
 		},
 		Want: parsed{
 			IsRemoteFromHost: true,
-			Remote:           "wedeploy",
+			Remote:           "lcp",
 		},
 	},
 	parseMock{
@@ -550,7 +550,7 @@ var parseMocks = []parseMock{
 		},
 		Want: parsed{
 			Project:          "foo",
-			Remote:           "wedeploy",
+			Remote:           "lcp",
 			IsRemoteFromHost: true,
 		},
 	},
@@ -598,7 +598,7 @@ func TestParse(t *testing.T) {
 		Service: "11.22.33.44:5555",
 	})
 
-	rl.Set("wedeploy", remotes.Entry{
+	rl.Set("lcp", remotes.Entry{
 		Service: "wedeploy.io",
 	})
 
@@ -624,7 +624,7 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 			RemoteChanged: true,
 		},
 		Want: parsed{
-			Remote: "wedeploy",
+			Remote: "lcp",
 		},
 	},
 	parseMockWithDefaultCustomRemote{
@@ -703,7 +703,7 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 		},
 		Want: parsed{
 			Service: "cinema",
-			Remote:  "wedeploy",
+			Remote:  "lcp",
 			Err:     ErrorServiceWithNoProject{},
 		},
 	},
@@ -769,7 +769,7 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 			Remote:  "",
 		},
 		Want: parsed{
-			Remote: "wedeploy",
+			Remote: "lcp",
 		},
 	},
 	parseMockWithDefaultCustomRemote{
@@ -780,7 +780,7 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 			Remote:  "",
 		},
 		Want: parsed{
-			Remote:           "wedeploy",
+			Remote:           "lcp",
 			IsRemoteFromHost: true,
 		},
 	},
@@ -850,7 +850,7 @@ var parseMocksWithDefaultCustomRemote = []parseMockWithDefaultCustomRemote{
 }
 
 func testParseWithDefaultCustomRemote(c CommandFlagFromHost, pm parseMockWithDefaultCustomRemote, t *testing.T) {
-	var parsed, err = c.ParseWithDefaultCustomRemote(pm.Flags, "wedeploy")
+	var parsed, err = c.ParseWithDefaultCustomRemote(pm.Flags, "lcp")
 
 	if err != pm.Want.Err {
 		t.Errorf("Expected error to be %v on parsing, got %v instead", pm.Want.Err, err)
@@ -879,7 +879,7 @@ func TestParseWithDefaultCustomRemote(t *testing.T) {
 		Service: "11.22.33.44:5555",
 	})
 
-	rl.Set("wedeploy", remotes.Entry{
+	rl.Set("lcp", remotes.Entry{
 		Service: "wedeploy.io",
 	})
 

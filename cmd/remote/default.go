@@ -12,9 +12,9 @@ import (
 var defaultCmd = &cobra.Command{
 	Use:   "default",
 	Short: "Set a default (active) remote to use",
-	Example: `we remote default
-we remote local
-we remote wedeploy`,
+	Example: `lcp remote default
+lcp remote local
+lcp remote wedeploy`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: setDefaultRun,
 }
@@ -28,7 +28,7 @@ func getRemoteFromList() (string, error) {
 
 	var m = map[string]int{}
 
-	fmt.Println(`Select a remote to use for the next "we" commands:`)
+	fmt.Println(`Select a remote to use for the next "lcp" commands:`)
 	fmt.Println(color.Format(color.FgHiBlack, "#\tRemote"))
 
 	for v, k := range keys {

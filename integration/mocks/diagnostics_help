@@ -1,8 +1,8 @@
 ! Run system diagnostics and show report
 
-  Usage: we diagnostics [flag]
+  Usage: lcp diagnostics [flag]
 
   Flag                  Description
       --print      Print diagnostics
-      --send       Send to WeDeploy
+      --send       Send to Liferay Cloud
   -v, --verbose    Show more information about an operation

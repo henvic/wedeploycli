@@ -35,6 +35,7 @@ type Transport interface {
 // Params for the deployment
 type Params struct {
 	ProjectID string
+	Region    string
 	ServiceID string
 
 	Remote string
@@ -80,14 +81,14 @@ type changes struct {
 }
 
 func getPreparedServicePackage(c changes, path string) ([]byte, error) {
-	// this smells a little bad because wedeploy.json is the responsibility of the services package
+	// this smells a little bad because LCP.json is the responsibility of the services package
 	// and I shouldn't be accessing it directly from here
 	var sp = map[string]interface{}{}
-	wedeployJSON, err := ioutil.ReadFile(filepath.Join(path, "wedeploy.json")) // #nosec
+	pkg, err := ioutil.ReadFile(filepath.Join(path, "LCP.json")) // #nosec
 	switch {
 	case err == nil:
-		if err = json.Unmarshal(wedeployJSON, &sp); err != nil {
-			return nil, errwrap.Wrapf("error parsing wedeploy.json on "+path+": {{err}}", err)
+		if err = json.Unmarshal(pkg, &sp); err != nil {
+			return nil, errwrap.Wrapf("error parsing LCP.json on "+path+": {{err}}", err)
 		}
 	case os.IsNotExist(err):
 		sp = map[string]interface{}{}
@@ -135,7 +136,7 @@ func (d *Deploy) Do(ctx context.Context, t Transport) (err error) {
 		IsUpload: true,
 	}
 
-	d.workDir, err = ioutil.TempDir("", "wedeploy")
+	d.workDir, err = ioutil.TempDir("", "lcp")
 
 	if err != nil {
 		return err

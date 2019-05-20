@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# WeDeploy CLI Tool test script
+# Liferay Cloud Platform CLI Tool test script
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -10,7 +10,7 @@ cd $(dirname $0)/..
 skipIntegrationTests=false
 
 function helpmenu() {
-  echo "WeDeploy CLI Tool test script:
+  echo "Liferay Cloud Platform CLI Tool test script:
 
 Use ./test.sh [flags]
 

@@ -30,7 +30,7 @@ var (
 
 func TestMain(m *testing.M) {
 	var err error
-	wectx, err = config.Setup("mocks/.we")
+	wectx, err = config.Setup("mocks/.lcp")
 
 	if err != nil {
 		panic(err)
@@ -384,43 +384,6 @@ func TestGetEmptyProjectAndServiceID(t *testing.T) {
 	}
 }
 
-func TestCatalogItem(t *testing.T) {
-	servertest.Setup()
-
-	var want = Catalog{
-		CatalogItem{
-			Category:    "WeDeploy™",
-			Description: "Simple authentication with email/password or third-party providers like GitHub and Google.",
-			Image:       "wedeploy/auth",
-			Name:        "WeDeploy™ Auth",
-			State:       "active",
-			Versions:    []string{"2.0.0"}},
-		CatalogItem{
-			Category:    "WeDeploy™",
-			Description: "Scalable JSON database with search and realtime that makes building realtime apps dramatically easier.",
-			Image:       "wedeploy/data",
-			Name:        "WeDeploy™ Data",
-			State:       "active",
-			Versions:    []string{"2.0.0"},
-		},
-	}
-
-	servertest.Mux.HandleFunc("/catalog/services",
-		tdata.ServerJSONFileHandler("mocks/catalog_services.json"))
-
-	var got, err = client.Catalog(context.Background())
-
-	if err != nil {
-		t.Errorf("Expected no error, got %v instead", err)
-	}
-
-	if !reflect.DeepEqual(want, got) {
-		t.Error("Catalog doesn't have expected structure")
-	}
-
-	servertest.Teardown()
-}
-
 func TestList(t *testing.T) {
 	servertest.Setup()
 
@@ -568,7 +531,7 @@ func TestReadEmail(t *testing.T) {
 func TestReadCorrupted(t *testing.T) {
 	var _, err = Read("mocks/app-with-invalid-service/corrupted")
 
-	var want = "error parsing wedeploy.json on mocks/app-with-invalid-service/corrupted:" +
+	var want = "error parsing LCP.json on mocks/app-with-invalid-service/corrupted:" +
 		" invalid character 'I' looking for beginning of value"
 
 	if err == nil || err.Error() != want {

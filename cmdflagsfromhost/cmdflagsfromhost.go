@@ -14,7 +14,6 @@ import (
 	"github.com/wedeploy/cli/inspector"
 	"github.com/wedeploy/cli/instances"
 	"github.com/wedeploy/cli/isterm"
-	"github.com/wedeploy/cli/links"
 	"github.com/wedeploy/cli/list"
 	"github.com/wedeploy/cli/listinstances"
 	"github.com/wedeploy/cli/login"
@@ -27,6 +26,7 @@ type Requires struct {
 	NoHost bool
 	Auth   bool
 
+	Region   bool
 	Project  bool
 	Service  bool
 	Instance bool
@@ -55,6 +55,7 @@ type SetupHost struct {
 	ListExtraDetails list.Pattern
 
 	url      string
+	region   string
 	project  string
 	service  string
 	instance string
@@ -72,6 +73,8 @@ type Pattern int
 
 const (
 	missing Pattern = 1 << iota
+	// RegionPattern takes only --region
+	RegionPattern
 	// RemotePattern takes only --remote
 	RemotePattern
 	// ServicePattern takes only --service
@@ -89,6 +92,11 @@ const (
 
 	anyInstance = "any" // magic keyword for choosing any instance
 )
+
+// Region of the parsed flags
+func (s *SetupHost) Region() string {
+	return s.region
+}
 
 // Project of the parsed flags or host
 func (s *SetupHost) Project() string {
@@ -157,6 +165,10 @@ func (s *SetupHost) Init(cmd *cobra.Command) {
 	if s.Pattern&RemotePattern != 0 {
 		s.addRemoteFlag(cmd)
 		none = false
+	}
+
+	if s.Pattern&RegionPattern != 0 {
+		s.addRegionFlag(cmd)
 	}
 
 	if s.Pattern&ProjectPattern != 0 {
@@ -295,10 +307,6 @@ func (s *SetupHost) Process(ctx context.Context, wectx config.Context) (err erro
 		return err
 	}
 
-	if strings.HasSuffix(wectx.InfrastructureDomain(), ".liferay.cloud") {
-		links.SetDXP()
-	}
-
 	if !s.Requires.Auth {
 		return nil
 	}
@@ -314,6 +322,12 @@ func (s *SetupHost) addRemoteFlag(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(
 		&s.remote,
 		"remote", "r", "current", "Perform the operation for a specific remote")
+}
+
+func (s *SetupHost) addRegionFlag(cmd *cobra.Command) {
+	cmd.Flags().StringVar(
+		&s.region,
+		"region", "", "Perform the operation for a specific region")
 }
 
 func (s *SetupHost) addProjectFlag(cmd *cobra.Command) {

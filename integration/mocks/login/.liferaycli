@@ -1,0 +1,22 @@
+; Configuration file for Liferay CLI
+; https://www.liferay.com/
+default_remote                   = liferay
+disable_autocomplete_autoinstall = false
+disable_colors                   = true
+notify_updates                   = true
+release_channel                  = stable
+enable_analytics                 = true
+analytics_id                     = 
+enable_curl                      = false
+
+[remote "liferay"]
+    ; Default cloud remote
+    infrastructure = us-west-1.liferay.cloud
+    username       = admin
+
+[remote "local"]
+    infrastructure = http://localhost:63887
+    service        = wedeploy.me
+    username       = admin
+    token          = token
+

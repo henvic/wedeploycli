@@ -11,7 +11,7 @@ import (
 	"github.com/wedeploy/cli/inspector"
 )
 
-// ContextCmd for "we inspect context"
+// ContextCmd for "lcp inspect context"
 var ContextCmd = &cobra.Command{
 	Use:   "context",
 	Short: "Get context info",

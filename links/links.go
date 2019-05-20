@@ -1,38 +1,40 @@
 package links
 
-import "sync"
+import (
+	"text/template"
 
-// Link to expose.
-type Link struct {
-	WeDeploy string
-	DXP      string
+	"github.com/wedeploy/cli/templates"
+)
+
+func init() {
+	templates.Funcs(template.FuncMap{
+		"LinkConfiguring": link(Configuring),
+		"LinkDocs":        link(Docs),
+		"LinkUsingCLI":    link(UsingCLI),
+		"LinkSupport":     link(Support),
+		"LinkPlanUpgrade": link(PlanUpgrade),
+	})
 }
 
-// String gets the link related to the current infrastructure.
-func (l Link) String() string {
-	defer m.RUnlock()
-	m.RLock()
-
-	if dxp {
-		return l.DXP
+func link(s string) func() string {
+	return func() string {
+		return s
 	}
-
-	return l.WeDeploy
 }
 
-var dxp = false
-var m sync.RWMutex
+const (
+	// Configuring deployments link.
+	Configuring = "https://help.liferay.com/hc/en-us/articles/360012918551-Configuring-via-the-wedeploy-json"
 
-// SetDXP sets the link option to DXP.
-func SetDXP() {
-	m.Lock()
-	defer m.Unlock()
-	dxp = true
-}
+	// Docs of the cloud infrastructure.
+	Docs = "https://help.liferay.com/hc/en-us/categories/360000813091-Liferay-DXP-Cloud-Documentation"
 
-// SetWeDeploy sets the link option to WeDeploy.
-func SetWeDeploy() {
-	m.Lock()
-	defer m.Unlock()
-	dxp = false
-}
+	// UsingCLI link.
+	UsingCLI = "https://help.liferay.com/hc/en-us/articles/360015214691-Command-line-Tool"
+
+	// Support link
+	Support = "https://help.liferay.com/hc/en-us/categories/360000813091-Liferay-DXP-Cloud-Documentation"
+
+	// PlanUpgrade link
+	PlanUpgrade = "https://help.liferay.com/hc/en-us/categories/360000813091-Liferay-DXP-Cloud-Documentation"
+)

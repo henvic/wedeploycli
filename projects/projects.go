@@ -28,9 +28,16 @@ func New(wectx config.Context) *Client {
 	}
 }
 
+// Region of the project
+type Region struct {
+	Location string `json:"location"`
+	Name     string `json:"name"`
+}
+
 // Project structure
 type Project struct {
 	ProjectID   string `json:"projectId"`
+	Region      string `json:"cluster"`
 	Health      string `json:"health,omitempty"`
 	Description string `json:"description,omitempty"`
 	CreatedAt   int64  `json:"createdAt,omitempty"`
@@ -55,8 +62,18 @@ var (
 	ErrEmptyProjectID = errors.New("can't get project: ID is empty")
 )
 
+// Regions available for the project
+func (c *Client) Regions(ctx context.Context) (list []Region, err error) {
+	err = c.Client.AuthGet(ctx, "/clusters", &list)
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].Name < list[j].Name
+	})
+	return list, err
+}
+
 type createRequestBody struct {
 	ProjectID   string `json:"projectId,omitempty"`
+	Cluster     string `json:"cluster,omitempty"`
 	Environment bool   `json:"environment,omitempty"`
 }
 
@@ -65,6 +82,7 @@ func (c *Client) Create(ctx context.Context, project Project) (p Project, err er
 	var req = c.Client.URL(ctx, "/projects")
 	var reqBody = createRequestBody{
 		ProjectID:   project.ProjectID,
+		Cluster:     project.Region,
 		Environment: strings.Contains(project.ProjectID, "-"),
 	}
 
@@ -233,10 +251,15 @@ type Build struct {
 	BuildGroupUID string
 
 	Environments map[string]json.RawMessage
+	Metadata     map[string]interface{}
 }
 
 // SkippedDeploy returns true when the service is not configured to be deployed.
 func (b *Build) SkippedDeploy() bool {
+	if deploy, ok := b.Metadata["deploy"].(bool); ok && !deploy {
+		return true
+	}
+
 	ep := strings.Split(b.ProjectID, "-")
 	environment := ep[len(ep)-1]
 

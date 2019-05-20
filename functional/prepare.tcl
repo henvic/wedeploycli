@@ -1,5 +1,5 @@
 # set remote
-print_msg_stderr "enabling \"we curl\""
+print_msg_stderr "enabling \"lcp curl\""
 exec $::bin curl enable
 
 print_msg_stderr "creating qa-remote $_remote"

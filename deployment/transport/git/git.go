@@ -116,7 +116,7 @@ func (t *Transport) getLastCommit() (commit string, err error) {
 	return commit, nil
 }
 
-// Push deployment to the WeDeploy remote
+// Push deployment to the Liferay Cloud remote
 func (t *Transport) Push() (groupUID string, err error) {
 	t.start = time.Now()
 	defer func() {
@@ -276,7 +276,7 @@ func (t *Transport) setGitAuthor() error {
 }
 
 func (t *Transport) setGitAuthorName() error {
-	var params = []string{"config", "user.name", "WeDeploy user", "--local"}
+	var params = []string{"config", "user.name", "Liferay Cloud user", "--local"}
 	verbose.Debug(fmt.Sprintf("Running git %v", strings.Join(params, " ")))
 	var cmd = exec.CommandContext(t.ctx, "git", params...) // #nosec
 	cmd.Env = t.getConfigEnvs()
@@ -300,9 +300,9 @@ func (t *Transport) setGitAuthorEmail() error {
 func (t *Transport) getGitRemote() string {
 	var remote = t.settings.ConfigContext.Remote()
 
-	// always add a "wedeploy-" prefix to all deployment remote endpoints, but "wedeploy"
-	if remote != "wedeploy" {
-		remote = "wedeploy" + "-" + remote
+	// always add a "wedeploy-" prefix to all deployment remote endpoints, but "lcp"
+	if remote != "lcp" {
+		remote = "lcp" + "-" + remote
 	}
 
 	return remote

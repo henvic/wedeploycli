@@ -69,8 +69,8 @@ type Authentication struct {
 func (a *Authentication) basicAuthLogin(ctx context.Context) error {
 	var remoteAddress = a.wectx.InfrastructureDomain()
 
-	fmt.Println(fancy.Info("Alert     You need a WeDeploy password for authenticating without opening your browser." +
-		"\n          If you created your WeDeploy account by connecting to your Google or GitHub account," +
+	fmt.Println(fancy.Info("Alert     You need a Liferay Cloud password for authenticating without opening your browser." +
+		"\n          If you created your Liferay Cloud account by using OAuth," +
 		"\n          make sure you set up a password to continue."))
 	fmt.Println(color.Format(color.FgHiYellow, "\n            Open this URL in your browser for creating a password:"))
 	fmt.Println(color.Format(color.FgHiBlack, fmt.Sprintf("            %v%v/password/reset\n", defaults.DashboardURLPrefix, remoteAddress)))
@@ -151,7 +151,7 @@ func (a *Authentication) tryStdinToken() (bool, error) {
 	// Different systems treat Stdin differently
 	// On Ubuntu (Linux), the stdin size is zero even if all
 	// content was already piped, say with:
-	// echo foo | we login
+	// echo foo | lcp login
 	// On Darwin (macOS), this is not the case.
 	// See http://learngowith.me/a-better-way-of-handling-stdin/
 
@@ -308,11 +308,11 @@ func (a *Authentication) success(username string) {
 }
 
 func (a *Authentication) printTipCommands(buf *bytes.Buffer) {
-	_, _ = fmt.Fprintln(buf, fancy.Info("See some of the useful commands you can start using on the WeDeploy CLI.\n"))
+	_, _ = fmt.Fprintln(buf, fancy.Info("See some of the useful commands you can start using on the Liferay Cloud Platform CLI.\n"))
 	tw := formatter.NewTabWriter(buf)
 	_, _ = fmt.Fprintln(tw, color.Format(color.FgHiBlack, "  Command\t     Description"))
-	_, _ = fmt.Fprintln(tw, "  we\tShow list of all commands available in WeDeploy CLI")
-	_, _ = fmt.Fprintln(tw, "  we deploy\tDeploy your services")
+	_, _ = fmt.Fprintln(tw, "  we\tShow list of all commands available in Liferay Cloud Platform CLI")
+	_, _ = fmt.Fprintln(tw, "  lcp deploy\tDeploy your services")
 	_, _ = fmt.Fprintln(tw, "  we docs\tOpen docs on your browser")
 	_ = tw.Flush()
 	_, _ = fmt.Fprint(buf, fancy.Info("\nType a command and press Enter to execute it."))

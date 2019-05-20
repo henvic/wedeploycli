@@ -2,9 +2,7 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/wedeploy/cli/fancy"
 
@@ -62,32 +60,8 @@ func (n *newService) getOrSelectImageType() (string, error) {
 		return image, nil
 	}
 
-	var catalog, err = n.servicesClient.Catalog(context.Background())
-
-	var options = fancy.Options{
-		Hash: true,
-	}
-
-	for n, i := range catalog {
-		options.Add(fmt.Sprintf("%d", n+1), "\t"+i.Name+"    \t"+color.Format(color.FgHiBlack, i.Image))
-	}
-
-	option, err := options.Ask("Select a Service Type")
-
-	if err != nil {
-		return "", err
-	}
-
-	choice, err := strconv.Atoi(option)
-
-	switch {
-	case choice < 1 || choice > len(catalog):
-		return "", errors.New("invalid option")
-	case err == nil:
-		return catalog[choice-1].Image, nil
-	default:
-		return option, nil
-	}
+	fmt.Println(fancy.Question("Type a service type"))
+	return fancy.Prompt()
 }
 
 func (n *newService) run(projectID, serviceID, serviceDomain string) error {

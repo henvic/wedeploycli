@@ -11,7 +11,7 @@ import (
 // WhoCmd get the current user
 var WhoCmd = &cobra.Command{
 	Use:   "who",
-	Short: "Get who is using WeDeploy locally",
+	Short: "Get who is using Liferay Cloud",
 	Args:  cobra.NoArgs,
 	RunE:  whoRun,
 }

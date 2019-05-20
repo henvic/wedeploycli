@@ -1,4 +1,4 @@
-// Package wesocket is WeDeploy's websocket.
+// Package wesocket handles websocket connections to the cloud infrastructure.
 package wesocket
 
 import (
@@ -10,7 +10,7 @@ import (
 	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 
-// Dialer for websocket connection with default WeDeploy client settings.
+// Dialer for websocket connection with default client settings.
 func Dialer() websocket.Dialer {
 	client := wedeploy.Client()
 	dialer := websocket.Dialer{}
@@ -25,7 +25,7 @@ func Dialer() websocket.Dialer {
 	return dialer
 }
 
-// Authenticate resolves the authentication for the socket.io connection with WeDeploy.
+// Authenticate resolves the authentication for the socket.io connection.
 func Authenticate(conn *gosocketio.Namespace) error {
 	var cerr = make(chan error, 1)
 

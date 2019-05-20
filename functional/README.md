@@ -1,6 +1,6 @@
 # ✨ CLI functional tests
 
-This is the test suite for the functional tests for the WeDeploy CLI. The functional testing suite is written with [TCL](https://tcl.tk/) and uses the [expect](https://core.tcl.tk/expect) toolkit.
+This is the test suite for the functional tests for the Liferay Cloud Platform CLI. The functional testing suite is written with [TCL](https://tcl.tk/) and uses the [expect](https://core.tcl.tk/expect) toolkit.
 
 ## Dependencies
 

@@ -22,8 +22,8 @@ import (
 
 // Cmd is the main command for the CLI
 var Cmd = &cobra.Command{
-	Use:               "we",
-	Short:             "WeDeploy CLI Tool",
+	Use:               "lcp",
+	Short:             "Liferay Cloud Platform CLI Tool",
 	Args:              cobra.NoArgs,
 	PersistentPreRunE: persistentPreRun,
 	RunE:              runE,
@@ -129,8 +129,8 @@ func checkCompatibility() error {
 		return nil
 	}
 
-	return errors.New(`cowardly refusing to use "we.exe" Windows binary on a Linux working directory.
-Windows Subsystem for Linux has no support for accessing Linux fs from a Windows application.
+	return errors.New(`cowardly refusing to use "lcp.exe" Windows binary on a Linux working directory.
+Windows Subsystem for Linux has no support for accessing Linux filesystem from a Windows application.
 Please install the Linux version of this application with:
 curl https://cdn.wedeploy.com/cli/latest/wedeploy.sh -sL | bash`)
 }

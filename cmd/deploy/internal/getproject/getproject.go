@@ -16,7 +16,7 @@ import (
 )
 
 // MaybeID tries to get a project ID for using on deployment
-func MaybeID(maybe string) (projectID string, err error) {
+func MaybeID(maybe, region string) (projectID string, err error) {
 	projectsClient := projects.New(we.Context())
 	projectID = maybe
 
@@ -37,7 +37,11 @@ func MaybeID(maybe string) (projectID string, err error) {
 		userProject, err := projectsClient.Get(context.Background(), projectID)
 
 		if err == nil {
-			return projectID, nil
+			if region == "" || region == userProject.Region {
+				return projectID, nil
+			}
+
+			return "", errors.New("cannot change region of existing project")
 		}
 
 		if epf, ok := err.(apihelper.APIFault); !ok || epf.Status != http.StatusNotFound {
@@ -51,6 +55,7 @@ func MaybeID(maybe string) (projectID string, err error) {
 
 	p, ep := projectsClient.Create(context.Background(), projects.Project{
 		ProjectID: projectID,
+		Region:    region,
 	})
 
 	return p.ProjectID, ep

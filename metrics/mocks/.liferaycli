@@ -1,0 +1,18 @@
+username                         = admin
+password                         = safe
+token                            = mock_token
+local_http_port                  = 80
+disable_autocomplete_autoinstall = false
+disable_colors                   = false
+notify_updates                   = false
+release_channel                  = stable
+enable_analytics                 = true
+analytics_id                     = 05eacbd4-aec0-4ec2-98ee-69fc4a0d008b
+default_remote                   = liferay
+local_https_port                 = 443
+enable_curl                      = false
+
+[remote "liferay"]
+    ; Default cloud remote
+    infrastructure = us-west-1.liferay.cloud
+

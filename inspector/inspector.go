@@ -52,7 +52,7 @@ func (overview *ContextOverview) loadService() error {
 
 	if errwrap.GetType(cerr, &json.SyntaxError{}) != nil {
 		return errwrap.Wrapf(`{{err}}.
-The wedeploy.json file syntax is described at `+links.Configuring(), cerr)
+The LCP.json file syntax is described at `+links.Configuring, cerr)
 	}
 
 	if strings.Contains(cerr.Error(), servicePath) {
@@ -104,8 +104,8 @@ func (overview *ContextOverview) setUniqueProjectID() error {
 				`services "%s" and "%s" must have the same project ID defined on "%s" and "%s" (currently: "%s" and "%s")`,
 				prevService.ServiceID,
 				sInfo.ServiceID,
-				filepath.Join(relPrev, "wedeploy.json"),
-				filepath.Join(relCurrent, "wedeploy.json"),
+				filepath.Join(relPrev, "LCP.json"),
+				filepath.Join(relCurrent, "LCP.json"),
 				overview.ProjectID,
 				sInfo.ProjectID,
 			)
@@ -133,7 +133,7 @@ func getServicePackage(directory string) (path string, p *services.Package, err 
 	var servicePath, cerr = findresource.GetRootDirectory(
 		directory,
 		findresource.GetSysRoot(),
-		"wedeploy.json")
+		"LCP.json")
 
 	if cerr != nil {
 		return "", nil, cerr

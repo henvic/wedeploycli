@@ -2,7 +2,7 @@ package defaults
 
 // don't change this to const as it would make go build -ldflags fail silently
 var (
-	// Version of the WeDeploy Project CLI tool
+	// Version of the Liferay Cloud Platform CLI tool
 	Version = "master"
 
 	// Build commit
@@ -12,7 +12,7 @@ var (
 	BuildTime = ""
 
 	// Infrastructure is the default remote address
-	Infrastructure = "wedeploy.com"
+	Infrastructure = "liferay.cloud"
 
 	// DashboardAddressPrefix for a given remote
 	DashboardAddressPrefix = "console."
@@ -26,8 +26,8 @@ var (
 	// AnalyticsEndpoint for posting analytics events in bulk
 	AnalyticsEndpoint = "https://cli-metrics.wedeploy.com/metrics/bulk"
 
-	// CloudRemote is the name for the default cloud for WeDeploy
-	CloudRemote = "wedeploy"
+	// CloudRemote is the name for the default cloud for Liferay Cloud
+	CloudRemote = "lcp"
 
 	// StableReleaseChannel for the distribution of the CLI tool
 	StableReleaseChannel = "stable"
@@ -39,5 +39,5 @@ const MousetrapHelpText = `This is a command line tool.
 
 You need to open this using a terminal/console application.
 
-If you want to learn how to use the CLI for WeDeploy, please see:
-https://wedeploy.com/docs/intro/using-the-command-line/`
+If you want to learn how to use the CLI for Liferay Cloud, please see:
+https://help.liferay.com/hc/en-us/articles/360015214691-Command-line-Tool`

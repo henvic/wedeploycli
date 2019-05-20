@@ -21,8 +21,8 @@ import (
 // ListCmd is used for getting a list of projects and services
 var ListCmd = &cobra.Command{
 	Use: "list",
-	Example: `  we list --project chat --service data
-  we list --url data-chat.wedeploy.io`,
+	Example: `  lcp list --project chat --service data
+  lcp list --url data-chat.wedeploy.io`,
 	Short:   "Show list of projects and services",
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,
