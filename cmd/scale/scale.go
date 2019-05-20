@@ -21,7 +21,7 @@ var ScaleCmd = &cobra.Command{
 	Short: "Configure number of instances for services",
 	RunE:  scaleRun,
 	Example: `  lcp scale --project chat --service data 3
-  lcp scale --project chat --service data --remote wedeploy 5
+  lcp scale --project chat --service data --remote lfr-cloud 5
   lcp scale --url data-chat.lfr.cloud 1`,
 }
 

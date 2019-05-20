@@ -19,7 +19,7 @@ var RestartCmd = &cobra.Command{
 	PreRunE: preRun,
 	RunE:    restartRun,
 	Example: `  lcp restart --project chat --service data
-^  lcp restart --project chat --service data --remote wedeploy
+^  lcp restart --project chat --service data --remote lfr-cloud
 ^  lcp restart --url data-chat.lfr.cloud`,
 }
 
