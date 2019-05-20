@@ -1,5 +1,7 @@
-.SILENT: main development-environment legal list-packages build fast-test test cleanup-functional-tests-environment functional-tests build-integration-tests tag release release-installer promote release-notes-page check-go check-cli-release-config-path
+.SILENT: main development-environment legal list-packages clean build fast-test test cleanup-functional-tests-environment functional-tests build-integration-tests tag release release-installer promote release-notes-page check-go check-cli-release-config-path
 .PHONY: development-environment legal list-packages build fast-test test cleanup-functional-tests-environment functional-tests build-integration-tests tag release release-installer promote release-notes-page
+clean:
+	rm -f cli*
 main:
 	echo "Liferay Cloud Platform CLI build tool commands:"
 	echo "development-environment, list-packages, build, fast-test, test, tag, release, promote"
