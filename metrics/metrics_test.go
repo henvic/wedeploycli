@@ -355,7 +355,7 @@ func testTrySubmitAndPurge(t *testing.T) {
 	}
 
 	if fi.Size() != 0 {
-		t.Errorf("Expected we metrics file to be truncated")
+		t.Errorf("Expected lcp metrics file to be truncated")
 	}
 }
 

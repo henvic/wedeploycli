@@ -311,9 +311,9 @@ func (a *Authentication) printTipCommands(buf *bytes.Buffer) {
 	_, _ = fmt.Fprintln(buf, fancy.Info("See some of the useful commands you can start using on the Liferay Cloud Platform CLI.\n"))
 	tw := formatter.NewTabWriter(buf)
 	_, _ = fmt.Fprintln(tw, color.Format(color.FgHiBlack, "  Command\t     Description"))
-	_, _ = fmt.Fprintln(tw, "  we\tShow list of all commands available in Liferay Cloud Platform CLI")
+	_, _ = fmt.Fprintln(tw, "  lcp\tShow list of all commands available in Liferay Cloud Platform CLI")
 	_, _ = fmt.Fprintln(tw, "  lcp deploy\tDeploy your services")
-	_, _ = fmt.Fprintln(tw, "  we docs\tOpen docs on your browser")
+	_, _ = fmt.Fprintln(tw, "  lcp docs\tOpen docs on your browser")
 	_ = tw.Flush()
 	_, _ = fmt.Fprint(buf, fancy.Info("\nType a command and press Enter to execute it."))
 }
