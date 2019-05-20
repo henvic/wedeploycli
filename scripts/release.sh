@@ -54,13 +54,6 @@ function checkCONT() {
   fi
 }
 
-function testHuman() {
-  if [ ! -t 1 ] ; then
-    >&2 echo "Run this script from terminal."
-    exit 1
-  fi
-}
-
 function checkWorkingDir() {
   if [ $(git status --short | wc -l) -gt 0 ]; then
     echo "You have uncommited changes."
@@ -119,7 +112,6 @@ function publish() {
 }
 
 function prerelease() {
-  testHuman
   checkWorkingDir
   runTests
   echo All tests and checks necessary for release passed.

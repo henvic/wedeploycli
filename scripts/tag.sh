@@ -54,13 +54,6 @@ function checkCONT() {
   fi
 }
 
-function testHuman() {
-  if [ ! -t 1 ] ; then
-    >&2 echo "Run this script from terminal."
-    exit 1
-  fi
-}
-
 function checkBranch() {
   if [ $CURRENT_BRANCH != "master" ]; then
     read -p "Draft a new release from non-default $CURRENT_BRANCH branch [no]: " CONT < /dev/tty;
@@ -137,9 +130,9 @@ function runTestsOnDrone() {
 }
 
 function setEditor() {
-  editor="${EDITOR:editor}"
-  editor=$(git config core.editor) || true
-  editor="${editor:-vi}"
+  editor="${EDITOR:-vi}"
+  gitEditor=$(git config core.editor) || true
+  editor="${gitEditor:-$editor}"
 }
 
 function tag() {
@@ -191,14 +184,13 @@ function publishTag() {
 }
 
 function pretag() {
-  testHuman
 
   if [ ! $dryrun ]; then
     checkBranch
   fi
 
   checkWorkingDir
-  runTests
+  #runTests
   echo "All tests and checks necessary for release passed."
   echo ""
 }
