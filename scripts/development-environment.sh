@@ -276,7 +276,7 @@ function maybeMoveToGopathDir() {
 }
 
 function infoRenewShell() {
-  echo "Compile and immediately run the CLI program by using \"i\" instead of \"we\" from inside any directory."
+  echo "Compile and immediately run the CLI program by using \"i\" instead of \"lcp\" from inside any directory."
   echo "For example: instead of using \"lcp list\" to list your services, use \"i list\" like this:"
   echo
   echo "$ i list --help"

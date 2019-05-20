@@ -11,7 +11,7 @@ enable_analytics                 = false
 
 [remote "lcp"]
     ; Default cloud remote
-    url      = wedeploy.io
+    url      = lfr.cloud
     username = foo@example.com
 
 [remote "local"]

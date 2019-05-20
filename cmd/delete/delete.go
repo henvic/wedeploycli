@@ -24,7 +24,7 @@ var DeleteCmd = &cobra.Command{
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,
 	RunE:    run,
-	Example: `  lcp delete --url data.chat.wedeploy.io
+	Example: `  lcp delete --url data.chat.lfr.cloud
   lcp delete --project chat
   lcp delete --project chat --service data`,
 }

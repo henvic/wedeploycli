@@ -18,7 +18,7 @@ import (
 var ListInstancesCmd = &cobra.Command{
 	Use: "instances",
 	Example: `  lcp list instances --project chat --service data
-  lcp list instances --url data-chat.wedeploy.io`,
+  lcp list instances --url data-chat.lfr.cloud`,
 	Short:   "Show list of instances",
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,

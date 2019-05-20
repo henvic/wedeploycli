@@ -17,7 +17,7 @@ import (
 var ListServicesCmd = &cobra.Command{
 	Use: "services",
 	Example: `  lcp list services --project chat --service data
-   lcp list services --url data-chat.wedeploy.io`,
+   lcp list services --url data-chat.lfr.cloud`,
 	Short:   "Show list of services",
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,

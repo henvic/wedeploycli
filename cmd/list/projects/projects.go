@@ -15,7 +15,7 @@ import (
 // ListProjectsCmd is used for getting a list of projects
 var ListProjectsCmd = &cobra.Command{
 	Use:     "projects",
-	Example: `  lcp list projects --url wedeploy.io`,
+	Example: `  lcp list projects --url lfr.cloud`,
 	Short:   "Show list of projects",
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,

@@ -22,7 +22,7 @@ import (
 var ListCmd = &cobra.Command{
 	Use: "list",
 	Example: `  lcp list --project chat --service data
-  lcp list --url data-chat.wedeploy.io`,
+  lcp list --url data-chat.lfr.cloud`,
 	Short:   "Show list of projects and services",
 	Args:    cobra.NoArgs,
 	PreRunE: preRun,

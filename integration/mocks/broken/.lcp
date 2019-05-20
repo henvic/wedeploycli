@@ -1,5 +1,5 @@
 ; Broken Configuration file for Liferay Cloud Platform CLI
-; https://wedeploy.io
+; https://lfr.cloud
 { username          = admin
 password          = safe
 }

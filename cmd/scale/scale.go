@@ -22,7 +22,7 @@ var ScaleCmd = &cobra.Command{
 	RunE:  scaleRun,
 	Example: `  lcp scale --project chat --service data 3
   lcp scale --project chat --service data --remote wedeploy 5
-  lcp scale --url data-chat.wedeploy.io 1`,
+  lcp scale --url data-chat.lfr.cloud 1`,
 }
 
 var setupHost = cmdflagsfromhost.SetupHost{
