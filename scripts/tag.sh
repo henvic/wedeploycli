@@ -218,7 +218,7 @@ function tagging() {
 }
 
 function release() {
-  runTestsOnDrone
+#  runTestsOnDrone
   checkPublishedTag
   checkUnusedTag
   publishTag

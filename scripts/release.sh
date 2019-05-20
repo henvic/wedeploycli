@@ -126,7 +126,7 @@ function release() {
 
   echo "build commit $BUILD_COMMIT at $BUILD_TIME"
 
-  runTestsOnDrone
+#  runTestsOnDrone
   publish
 }
 
