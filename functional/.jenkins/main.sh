@@ -55,7 +55,7 @@ setup_machine() {
 
   dig +trace wedeploy.domains
 
-  curl https://cdn.wedeploy.com/cli/latest/wedeploy.sh -fsSL | sudo bash
+  curl https://cdn.liferay.cloud/cli/latest/lcp.sh -fsSL | sudo bash
 }
 
 start_infrastructure() {

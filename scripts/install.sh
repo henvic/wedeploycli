@@ -64,7 +64,7 @@ function setupAlternateDir() {
 
   echo "No permission to install in $DESTDIR"
   echo "Try again as root or run:"
-  echo "curl https://cdn.wedeploy.com/cli/latest/wedeploy.sh -sL | sudo bash"
+  echo "curl https://cdn.liferay.cloud/cli/latest/lcp.sh -fsSL | sudo bash"
   read -p "Install in [current dir]: " DESTDIR < /dev/tty;
   DESTDIR=${DESTDIR:-$(pwd)}
   DESTDIR=${DESTDIR/"~"/$HOME}

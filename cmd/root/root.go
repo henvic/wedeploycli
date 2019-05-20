@@ -132,7 +132,7 @@ func checkCompatibility() error {
 	return errors.New(`cowardly refusing to use "lcp.exe" Windows binary on a Linux working directory.
 Windows Subsystem for Linux has no support for accessing Linux filesystem from a Windows application.
 Please install the Linux version of this application with:
-curl https://cdn.wedeploy.com/cli/latest/wedeploy.sh -sL | bash`)
+curl https://cdn.liferay.cloud/cli/latest/lcp.sh -fsSL | bash`)
 }
 
 func checkLongHelp(cmd *cobra.Command) error {

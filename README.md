@@ -2,9 +2,9 @@
 
 Install this tool with
 
-`curl https://cdn.wedeploy.com/cli/latest/wedeploy.sh -fsSL | bash`
+`curl https://cdn.liferay.cloud/cli/latest/lcp.sh -fsSL | bash`
 
-or download from our [stable release channel](https://dl.equinox.io/wedeploy/we/stable).
+or download from our [stable release channel](https://dl.equinox.io/wedeploy/lcp/stable).
 
 To update this tool, just run `lcp update`.
 
