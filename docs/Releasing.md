@@ -9,7 +9,10 @@ Versions of this tool follow the [Semantic Versioning 2.0](http://www.semver.org
 Most of the commands below are iterative.
 
 ## Tagging
-A developer tags a new tag using the command `make tag`.
+The process of tagging consist of the following steps:
+
+1. Edit `releasenotes.go` and add tag information. Commit and push the changes.
+2. Add new tag using the command `make tag`.
 
 This command runs all code static analysis/quality tools and the unit and integration tests available on the wedeploy/cli package, similarly to `make test`.
 

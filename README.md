@@ -1,8 +1,10 @@
 # Liferay Cloud Platform CLI tool [![Build Status](https://travis-ci.com/wedeploy/cli.svg?token=a51FNuiJPYZtHhup9q1V&branch=master)](https://travis-ci.com/wedeploy/cli) [![Coverage Status](https://coveralls.io/repos/wedeploy/cli/badge.svg)](https://coveralls.io/r/wedeploy/cli) [![codebeat badge](https://codebeat.co/badges/bd6acb49-ccdf-4045-a877-05da0198261a)](https://codebeat.co/projects/github-com-wedeploy-cli) [![Go Report Card](https://goreportcard.com/badge/github.com/wedeploy/cli)](https://goreportcard.com/report/github.com/wedeploy/cli) [![GoDoc](https://godoc.org/github.com/wedeploy/cli?status.svg)](https://godoc.org/github.com/wedeploy/cli)
 
-Install this tool with
+Install the tool with:
 
-`curl https://cdn.liferay.cloud/cli/latest/lcp.sh -fsSL | bash`
+```shell
+curl https://cdn.liferay.cloud/cli/latest/lcp.sh -fsSL | bash
+```
 
 or download from our [stable release channel](https://dl.equinox.io/wedeploy/lcp/stable).
 
@@ -10,16 +12,18 @@ To update this tool, just run `lcp update`.
 
 ## Dependencies
 The following external soft dependencies are necessary to correctly run some commands:
+
 * [docker](https://www.docker.com/)
 * [git](https://git-scm.com/)
 
-The availability of dependencies are tested just before its immediate use. If a required dependency is not found, an useful error message is printed and the calling process is terminated with an error code.
+The availability of dependencies are tested just before its immediate use. If a required dependency is not found, an error message is printed and the calling process is terminated with an error code.
 
 ## Contributing
-You can get the latest CLI source code with `go get -u github.com/wedeploy/cli`
+You can get the latest CLI source code with `go get -u github.com/wedeploy/cli`. Alternatively, clone the repo as usual. 
 
 The following commands are available and requires no arguments:
 
+* **make clean**: clears generated binaries
 * **make development-environment**: install development environment for this project
 * **make legal**: generate legal notices for existing dependencies
 * **make list-packages**: list all Go packages of the project
