@@ -68,6 +68,12 @@ You always release first to the unstable channel, then promote the new version t
 ### Run functional tests
 All functional tests must now be run and verified before going to the next step.
 
+Copy `settings-sample.tcl` to `settings.tcl` and configure it.
+
+```shell
+make functional-tests
+```
+
 ### Promoting to the stable channel
 If all functional tests passed, a release should be ready for being promoted to the stable channel using the `make promote` command.
 
