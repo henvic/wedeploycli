@@ -99,8 +99,8 @@ function setPackageFormat() {
 
 function setupReleaseChannelAddress() {
   case $RELEASE_CHANNEL in
-    "stable") RELEASE_CHANNEL_ADDRESS="8WGbGy94JXa" ;;
-    "unstable") RELEASE_CHANNEL_ADDRESS="5VvYPvs2CSX" ;;
+    "stable") RELEASE_CHANNEL_ADDRESS="kRnXg5EBEtY" ;;
+    "unstable") RELEASE_CHANNEL_ADDRESS="bxVdLEkWuZs" ;;
     *) echo "Error translating release channel glob." exit 1 ;;
   esac
 }
