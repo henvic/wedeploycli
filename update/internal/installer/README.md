@@ -30,11 +30,18 @@ Timestamping the signature with a remote server is recommended.
 ### Windows package
 Read the references below to see how it works. There are a few Certificate Authorities selling code sign certificates for Windows, such as [DigiCert](https://www.digicert.com/).
 
+If you can't find the code signing tool, try
+`C:\Program Files (x86)\Windows kits\10\App Certification Kit\signtool.exe`.
+
+Currently we use DigiCert, so following the steps described in the document [Signing Code with Microsoft Signcode or SignTool | DigiCert](https://www.digicert.com/code-signing/signcode-signtool-command-line.htm) should be the easier way to code sign a package.
+
+You can verify that an application is signed by right click → File Properties → Digital Signatures. A file can be signed multiple times. Make sure to check the details of the signature to confirm everything is correct.
+
 * [Cryptography Tools](https://docs.microsoft.com/en-us/windows/desktop/seccrypto/cryptography-tools)
 * [SignTool](https://docs.microsoft.com/en-us/windows/desktop/seccrypto/signtool)
 
 ### macOS package
-GateKeeper requires an Apple Developer code signing certificate to avoid a security warning when running a .pkg installer (and unfortunately, we can't use Apple issued certificate on Windows).
+GateKeeper requires an Apple Developer code signing certificate to avoid a security warning when running a .pkg installer. The only CA recognized by macOS is Apple's own CA.
 
 Tip: verify macOS .pkg installers with the native `installer` program or with [Suspicious Package](https://www.mothersruin.com/software/SuspiciousPackage/).
 
