@@ -46,20 +46,47 @@ If any of the steps above fail, correct what is wrong and try again. Step 5 migh
 
 **Notice:** releases are atomic. Packages can't be erased/unpublished.
 
+### Make tag and release notes
+1. Fill the release notes in `update/releasenotes/releasenotes.go`.
+2. Make tag using the following command `make tag`. The tag will be published on Github.
+
 ### Publishing a new version
-You need:
- 
-+ download the [equinox release tool](https://dl.equinox.io/equinox/release-tool/stable) for publishing/promoting wedeploy/cli versions
-+ configured it with our public/private key pair with Equinox. **Keep in mind that keeping these keys safe is essential for protecting our consumer base against arbitrary code execution.**
-+ `equinox.yml` and `equinox.key` (from 1Password) somewhere on your local machine. Edit `equinox.yml` to point to the `equinox.key` and use the correct `app:` id. Do not commit these two files.
+1. Using the CLI build server
 
-The public key is included in the binary file distributed to our users and allows them to seamlessly update their software.
++ Download `equinox.yml`, `equinox.pub` and `equinox.key` (from 1Password) somewhere on your local machine. Verify that  `equinox.yml` is pointing to the right place where `equinox.key` is located and that the `app:` id corresponds to what is written [here](https://github.com/wedeploy/cli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/update/keys/keys.go#L9). Do not commit these two files.
++ Download `wedeploy-cli-services.pem` from `CLI Services Builder` section in 1Password
++ Execute the following commands:
 
-Use the command `make release` from the CLI build server to generate a new release. This command builds the static binaries necessary for all supported operating systems and uploads them to Equinox.
+```
+chmod 600 wedeploy-cli-services.pem
+mv wedeploy-cli-services.pem ~/.ssh
+ssh -i ~/.ssh/wedeploy-cli-services.pem builder@cli-services.wedeploy.com
+```
+
+Afterwards, you are going to be prompted for the password and one-time password. Both can be taken from `CLI Services Builder` section in 1Password.
+
++ Once connected to the remote machine, navigate to `~/go/src/github.com/wedeploy/cli`.
++ Pull the latest changes from the `master` branch
++ Execute `make release`. It will ask on which channel the release has to be published. First publish on the unstable channel, check the changes, run the functional tests, and then publish on the stable chanel.
++ Execute `make promote` to publish on the stable channel.
+
+2. Using your local machine
++ Install the [equinox release tool](https://dl.equinox.io/equinox/release-tool/stable) for publishing/promoting wedeploy/cli versions.
++ Download `equinox.yml`, `equinox.pub` and `equinox.key` (from 1Password) somewhere on your local machine. Verify that  `equinox.yml` is pointing to the right place where `equinox.key` is located and that the `app:` id corresponds to what is written [here](https://github.com/wedeploy/cli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/update/keys/keys.go#L9). Do not commit these files.
+
+The public key is included in the binary file distributed to our users and allows them to seamlessly update their version of CLI.
+
++ configure it with our public/private key pair. **Keep in mind that keeping these keys safe is essential for protecting our consumer base against arbitrary code execution.**. For that purpose the following ENV variable should be provided:
 
 ```shell
-WEDEPLOY_CLI_RELEASE_CONFIG_PATH=../equinox.yml make release
+WEDEPLOY_CLI_RELEASE_CONFIG_PATH=<path-to>/equinox.yml make release
 ```
+
+It will ask on which channel the release has to be published. First publish on the unstable channel, check the changes, run the functional tests, and then publish on the stable chanel.
+
++ Execute `make promote` to publish on the stable channel.
+
+This command builds the static binaries necessary for all supported operating systems and uploads them to Equinox.
 
 For this command to work, you have to be at the HEAD of the version (tag) you choose to publish.
 
