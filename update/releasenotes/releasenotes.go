@@ -245,4 +245,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "May 20th, 2019",
 		Description: `Liferay Cloud CLI tool.`,
 	},
+	ReleaseNote{
+		Version:     "2.0.0-beta.3",
+		Date:        "May 23rd, 2019",
+		Description: `Fixing fetching the logs of a service.`,
+	},
 }
