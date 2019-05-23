@@ -1,10 +1,11 @@
-.SILENT: main development-environment legal list-packages clean build fast-test test cleanup-functional-tests-environment functional-tests build-integration-tests tag release release-installer promote release-notes-page check-go check-cli-release-config-path
-.PHONY: development-environment legal list-packages build fast-test test cleanup-functional-tests-environment functional-tests build-integration-tests tag release release-installer promote release-notes-page
-clean:
-	rm -f cli*
-main:
+.SILENT: main clean development-environment legal list-packages build fast-test test cleanup-functional-tests-environment functional-tests build-integration-tests tag release release-installer promote release-notes-page check-go check-cli-release-config-path
+.PHONY: clean development-environment legal list-packages build fast-test test cleanup-functional-tests-environment functional-tests build-integration-tests tag release release-installer promote release-notes-page
+.DEFAULT_GOAL := main
+main: # don't change this line; first line is the default target in make <= 3.79 despite .DEFAULT_GOAL
 	echo "Liferay Cloud Platform CLI build tool commands:"
 	echo "development-environment, list-packages, build, fast-test, test, tag, release, promote"
+clean:
+	rm -f cli*
 development-environment:
 	./scripts/development-environment.sh
 legal:
