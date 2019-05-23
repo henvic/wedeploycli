@@ -37,6 +37,10 @@ func cleanup() {
 }
 
 func setup() {
+	if !existsDependency("tar") {
+		return
+	}
+
 	cmd := exec.Command("tar", "xjf", "mocks.tar.bz2")
 	cmd.Dir = "./mocks"
 	cmd.Stderr = os.Stderr
@@ -60,10 +64,10 @@ var repoCases = []repoCase{
 			Repository{
 				Services:          []string{"service1"},
 				Path:              "service-with-git-1",
-				Commit:            "b0e71920287fc3d6103f45d173fd0c94cefdcf76",
+				Commit:            "53f46851d481468d34eef9c868eceaad8778e60c",
 				CommitAuthor:      "Henrique Vicente",
 				CommitAuthorEmail: "henriquevicente@gmail.com",
-				CommitMessage:     "Adding wedeploy.json.\n",
+				CommitMessage:     "Adding LCP.json.\n",
 				CommitDate:        "2018-08-23 19:16:31 -0400 -0400",
 				Branch:            "master",
 				CleanWorkingTree:  true,
@@ -71,7 +75,7 @@ var repoCases = []repoCase{
 			Repository{
 				Services:          []string{"service2"},
 				Path:              "service-with-git-2",
-				Commit:            "259a4e4c8bf201113ff828fa83fb7205e7ac7bba",
+				Commit:            "c17f3c056d0facfb7d4c04f32d6191deb9b9f95a",
 				CommitAuthor:      "Henrique Vicente",
 				CommitAuthorEmail: "henriquevicente@gmail.com",
 				CommitMessage:     "Adding service 2.\n",
@@ -89,7 +93,7 @@ var repoCases = []repoCase{
 				Services:          []string{"service", "nested"},
 				Path:              "",
 				Origin:            "https://github.com/example/project-with-git",
-				Commit:            "c03668d5c9d781188f5e60e7417d79ccc74b3549",
+				Commit:            "0bf3c655b40eb018978a31f208376c94b2529a08",
 				CommitAuthor:      "Henrique Vicente",
 				CommitAuthorEmail: "henriquevicente@gmail.com",
 				CommitMessage:     "Adding project.\n",
@@ -105,7 +109,7 @@ var repoCases = []repoCase{
 				Services:          []string{"withgit"},
 				Path:              "",
 				Origin:            "https://github.com/example/service-with-git",
-				Commit:            "ef1a4f3d06b0c3f547f69a3b530c06687efbf4d8",
+				Commit:            "e9bfabfb987a4594321a2b7045bd9abae21d69b3",
 				CommitAuthor:      "Henrique Vicente",
 				CommitAuthorEmail: "henriquevicente@gmail.com",
 				CommitMessage:     "Adding service.\n",
@@ -126,7 +130,10 @@ var repoCases = []repoCase{
 }
 
 func TestDiscover(t *testing.T) {
-	t.Skip() // TODO(henvic): update mocks to work with the current LCP.json scheme
+	if !existsDependency("tar") {
+		t.Skip("tar not found in system")
+	}
+
 	for _, rc := range repoCases {
 		i := inspector.ContextOverview{}
 
@@ -153,4 +160,9 @@ func TestDiscover(t *testing.T) {
 			t.Errorf("Expected error to be %v, got %v instead", rc.err, err)
 		}
 	}
+}
+
+func existsDependency(cmd string) bool {
+	_, err := exec.LookPath(cmd)
+	return err == nil
 }
