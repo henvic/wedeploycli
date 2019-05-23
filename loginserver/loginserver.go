@@ -37,6 +37,9 @@ const redirectPage = `<html>
 <form action="/authenticate" method="post" id="authenticate">
 <input type="hidden" id="access_token" name="access_token" />
 </form>
+<noscript>
+You need JavaScript enabled to complete the authentication. Enable it and try again.
+</noscript>
 <script>
 var accessToken = document.location.hash.replace('#access_token=', '');
 var rm = "#access_token=";
