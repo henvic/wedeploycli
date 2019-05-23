@@ -195,8 +195,7 @@ func followLogs(sil services.ServiceInfoList) error {
 	}
 
 	watcher := &logs.Watcher{
-		Filter:          f,
-		PoolingInterval: time.Second,
+		Filter: f,
 	}
 
 	ctx, cancel := ctxsignal.WithTermination(context.Background())

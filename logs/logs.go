@@ -74,8 +74,8 @@ var SeverityToLevel = map[string]int{
 	"debug":    7,
 }
 
-// PoolingInterval is the time between retries
-var PoolingInterval = time.Second
+// PoolingInterval is the default time between retries.
+var PoolingInterval = 5 * time.Second
 
 var instancesWheel = colorwheel.New(color.TextPalette)
 
@@ -115,17 +115,17 @@ func (c *Client) GetList(ctx context.Context, f *Filter) ([]Log, error) {
 		url.PathEscape(f.Project),
 	}
 
-	if len(f.Services) == 1 && f.Services[0] != "" {
-		// avoid getting all logs unnecessarily
-		// CAUTION: see filter function below: on changes here, update it.
-		params = append(params, "/services", url.PathEscape(f.Services[0]))
-	}
-
 	params = append(params, "/logs")
 
 	var req = c.Client.URL(ctx, params...)
 
 	c.Client.Auth(req)
+
+	if len(f.Services) == 1 && f.Services[0] != "" {
+		// avoid getting all logs unnecessarily
+		// CAUTION: see filter function below: on changes here, update it.
+		req.Param("serviceId", f.Services[0])
+	}
 
 	if f.Level != 0 {
 		req.Param("level", fmt.Sprintf("%d", f.Level))
@@ -199,15 +199,21 @@ func (c *Client) List(ctx context.Context, filter *Filter) error {
 	return err
 }
 
-// Watch logs.
+// Watch logs. If no pooling interval is set it uses the default value.
 func (w *Watcher) Watch(ctx context.Context, wectx config.Context) {
 	w.ctx = ctx
 	w.Client = New(wectx)
+
+	if w.PoolingInterval == 0 {
+		w.PoolingInterval = PoolingInterval
+	}
 
 	w.watch()
 }
 
 func (w *Watcher) watch() {
+	w.pool()
+
 	ticker := time.NewTicker(w.PoolingInterval)
 
 	for {

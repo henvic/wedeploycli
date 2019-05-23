@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/henvic/ctxsignal"
@@ -93,8 +92,7 @@ func logRun(cmd *cobra.Command, args []string) error {
 	}
 
 	watcher := &logs.Watcher{
-		Filter:          f,
-		PoolingInterval: time.Second,
+		Filter: f,
 	}
 
 	ctx, cancel := ctxsignal.WithTermination(context.Background())
