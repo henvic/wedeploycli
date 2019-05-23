@@ -154,7 +154,7 @@ func (c *Client) GetList(ctx context.Context, f *Filter) ([]Log, error) {
 }
 
 func filter(list []Log, services []string, instance string) []Log {
-	// CAUTION: see optimization call to /services/:serviceID above: on changes here, update it.
+	// CAUTION: see optimization call to ?serviceId=:serviceID above: on changes here, update it.
 	if instance == "" && len(services) <= 1 {
 		return list
 	}
