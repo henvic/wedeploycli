@@ -86,8 +86,12 @@ func TestLogs(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc("/projects/foo/services/nodejs5143/logs",
+	servertest.IntegrationMux.HandleFunc("/projects/foo/logs",
 		func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Query().Get("serviceId") != "nodejs5143" {
+				t.Errorf("Wrong value for serviceId")
+			}
+
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			_, _ = fmt.Fprint(w, tdata.FromFile("mocks/logs/logs_response.json"))
 		})
@@ -162,8 +166,12 @@ func TestLogsWithLocalhostAddress(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc("/projects/foo/services/nodejs5143/logs",
+	servertest.IntegrationMux.HandleFunc("/projects/foo/logs",
 		func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Query().Get("serviceId") != "nodejs5143" {
+				t.Errorf("Wrong value for serviceId")
+			}
+
 			if strings.Index(r.Host, "localhost:") != 0 {
 				t.Errorf("Expected host to be localhost, got %v instead", r.Host)
 			}
@@ -201,8 +209,12 @@ func TestWatch(t *testing.T) {
 	defer Teardown()
 	Setup()
 
-	servertest.IntegrationMux.HandleFunc("/projects/foo/services/nodejs5143/logs",
+	servertest.IntegrationMux.HandleFunc("/projects/foo/logs",
 		func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Query().Get("serviceId") != "nodejs5143" {
+				t.Errorf("Wrong value for serviceId")
+			}
+
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			_, _ = fmt.Fprintf(w, "[]")
 		})

@@ -101,8 +101,12 @@ func TestGetLevel(t *testing.T) {
 func TestGetList(t *testing.T) {
 	servertest.Setup()
 
-	servertest.Mux.HandleFunc("/projects/foo/services/nodejs5143/logs",
+	servertest.Mux.HandleFunc("/projects/foo/logs",
 		func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Query().Get("serviceId") != "nodejs5143" {
+				t.Errorf("Wrong value for serviceId")
+			}
+
 			if r.URL.Query().Get("level") != "4" {
 				t.Errorf("Wrong value for level")
 			}
@@ -141,7 +145,7 @@ func TestList(t *testing.T) {
 
 	servertest.Setup()
 
-	servertest.Mux.HandleFunc("/projects/foo/services/nodejs5143/logs",
+	servertest.Mux.HandleFunc("/projects/foo/logs",
 		tdata.ServerJSONFileHandler("mocks/logs_response.json"))
 
 	var filter = &Filter{
@@ -237,8 +241,12 @@ func TestWatch(t *testing.T) {
 
 	var missing = true
 
-	servertest.Mux.HandleFunc("/projects/foo/services/bar/logs",
+	servertest.Mux.HandleFunc("/projects/foo/logs",
 		func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Query().Get("serviceId") != "bar" {
+				t.Errorf("Wrong value for serviceId")
+			}
+
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			switch missing {
 			case true:
@@ -312,8 +320,12 @@ func TestWatcherStart(t *testing.T) {
 	var file = 0
 	var fileM sync.Mutex
 
-	servertest.Mux.HandleFunc("/projects/foo/services/bar/logs",
+	servertest.Mux.HandleFunc("/projects/foo/logs",
 		func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Query().Get("serviceId") != "bar" {
+				t.Errorf("Wrong value for serviceId")
+			}
+
 			fileM.Lock()
 			defer fileM.Unlock()
 
