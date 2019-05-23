@@ -33,6 +33,7 @@ var convertCases = []convertCase{
 		Tiny{
 			Deploy: true,
 			Commit: &commitInfo{
+				Repository:  "https://github.com/example/project-with-git",
 				SHA:         "5fb64d23dc767fda01416ba0f89375ee88688a74",
 				Branch:      "master",
 				Message:     "deployment: create microformat to list repos used during a deployment.",
