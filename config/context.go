@@ -38,7 +38,13 @@ func (c *Context) Remote() string {
 
 // Infrastructure used on the context
 func (c *Context) Infrastructure() string {
-	return c.context.Infrastructure
+	infra := c.context.Infrastructure
+
+	if infra == "localhost" || strings.HasPrefix(infra, "localhost:") {
+		return "http://" + infra
+	}
+
+	return infra
 }
 
 // InfrastructureDomain used on the context
