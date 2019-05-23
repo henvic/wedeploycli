@@ -32,6 +32,8 @@ type Service struct {
 	err            error
 }
 
+// BUG(henvic): Ajax could be used to avoid a small risk of the user being stuck in a white error
+// when the authentication fails (at some implementation cost).
 const redirectPage = `<html>
 <body>
 <form action="/authenticate" method="post" id="authenticate">
