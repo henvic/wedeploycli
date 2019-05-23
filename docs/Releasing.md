@@ -110,7 +110,7 @@ Verify if updating from previous CLI version works fine and that it is returning
 ## CLI build server access
 Access to the CLI build server is restricted for security reasons on an as-needed basis. All users of it are required to meet certain security criteria.
 
-If you require access to it, request an account with the CLI team by explaining why you need to and provide an SSH public key (and consider having your private key protected by password) over secure means.
+If you require access to it, request an account with the CLI team by explaining why you need to and provide an SSH public key (and consider having your private key protected by password) or secure means.
 
 * You MUST keep your private key in a safe place
 * You MUST NOT share your private access keys with others
