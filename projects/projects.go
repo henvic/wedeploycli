@@ -252,9 +252,13 @@ type Build struct {
 
 	Environments map[string]json.RawMessage
 	Metadata     map[string]interface{}
+	Wedeploy     map[string]interface{}
 }
 
 // SkippedDeploy returns true when the service is not configured to be deployed.
+// TODO(henvic): these rules should actually be moved to the server-side.
+// The code below is explicitly repetitive/verbose to clarify how hard it is to
+// currently guess whether the service is to be built or deployed.
 func (b *Build) SkippedDeploy() bool {
 	if deploy, ok := b.Metadata["deploy"].(bool); ok && !deploy {
 		return true
@@ -263,14 +267,31 @@ func (b *Build) SkippedDeploy() bool {
 	ep := strings.Split(b.ProjectID, "-")
 	environment := ep[len(ep)-1]
 
+	if environment == "" {
+		if deploy, ok := b.Wedeploy["deploy"].(bool); ok && !deploy {
+			return true
+		}
+	}
+
 	ve := b.Environments[environment]
 	var m map[string]interface{}
 	var err = json.Unmarshal(ve, &m)
 
 	if err != nil || m == nil {
+		if deploy, ok := b.Wedeploy["deploy"].(bool); ok && !deploy {
+			return true
+		}
+
 		return false
 	}
 
-	deploy, ok := m["deploy"].(bool)
-	return ok && !deploy
+	if deploy, ok := m["deploy"].(bool); ok {
+		return ok && !deploy
+	}
+
+	if deploy, ok := b.Wedeploy["deploy"].(bool); ok && !deploy {
+		return true
+	}
+
+	return false
 }
