@@ -257,7 +257,7 @@ var ReleaseNotes = []ReleaseNote{
 	},
 	ReleaseNote{
 		Version:     "2.0.0-beta.5",
-		Date:        "May 24rd, 2019",
+		Date:        "May 24th, 2019",
 		Description: `Fixing issue where progress bar would never stop for services only supposed to be built in some circumstances.`,
 	},
 }
