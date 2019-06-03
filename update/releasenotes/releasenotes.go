@@ -260,4 +260,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "May 24th, 2019",
 		Description: `Fixing issue where progress bar would never stop for services only supposed to be built in some circumstances.`,
 	},
+	ReleaseNote{
+		Version:     "2.0.0-beta.6",
+		Date:        "June 3rd, 2019",
+		Description: `Try to send related git remote even when branch is untracked.`,
+	},
 }
