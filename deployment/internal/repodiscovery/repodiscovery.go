@@ -2,6 +2,7 @@ package repodiscovery
 
 import (
 	"path/filepath"
+	"sort"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/wedeploy/cli/services"
@@ -141,8 +142,23 @@ func (d *Discover) maybeGetBranchAndRemote() (branch, remote string) {
 
 	branch = d.head.Name().Short()
 
+	// try first to use whatever remote that is in a given branch
 	if b, ok := d.config.Branches[branch]; ok {
 		remote = b.Remote
+		return
+	}
+
+	// fallback to whatever remote is left using the first found in increasing order
+	remotes := []string{}
+
+	for r := range d.config.Remotes {
+		remotes = append(remotes, r)
+	}
+
+	sort.Strings(remotes)
+
+	if len(remotes) > 0 {
+		remote = remotes[0]
 	}
 
 	return

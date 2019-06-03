@@ -26,6 +26,7 @@ func cleanup() {
 		"project-with-git",
 		"service-with-git",
 		"service-with-git-init-only",
+		"service-with-git-no-upstream",
 		"service-without-git",
 	}
 
@@ -104,6 +105,23 @@ var repoCases = []repoCase{
 	},
 	repoCase{
 		path: "mocks/service-with-git",
+		repositories: []Repository{
+			Repository{
+				Services:          []string{"withgit"},
+				Path:              "",
+				Origin:            "https://github.com/example/service-with-git",
+				Commit:            "e9bfabfb987a4594321a2b7045bd9abae21d69b3",
+				CommitAuthor:      "Henrique Vicente",
+				CommitAuthorEmail: "henriquevicente@gmail.com",
+				CommitMessage:     "Adding service.\n",
+				CommitDate:        "2018-08-23 19:18:51 -0400 -0400",
+				Branch:            "master",
+				CleanWorkingTree:  true,
+			},
+		},
+	},
+	repoCase{
+		path: "mocks/service-with-git-no-upstream",
 		repositories: []Repository{
 			Repository{
 				Services:          []string{"withgit"},
