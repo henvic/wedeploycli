@@ -60,43 +60,9 @@ func TestMain(m *testing.M) {
 	os.Exit(ec)
 }
 
-type GetLevelProvider struct {
-	in    string
-	out   int
-	valid bool
-}
-
 var (
 	bufOutStream bytes.Buffer
 )
-
-var GetLevelCases = []GetLevelProvider{
-	{"0", 0, true},
-	{"", 0, true},
-	{"3", 3, true},
-	{"critical", 2, true},
-	{"error", 3, true},
-	{"warning", 4, true},
-	{"info", 6, true},
-	{"debug", 7, true},
-	{"foo", 0, false},
-}
-
-func TestGetLevel(t *testing.T) {
-	for _, c := range GetLevelCases {
-		out, err := GetLevel(c.in)
-		valid := (c.valid == (err == nil))
-
-		if out != c.out && valid {
-			t.Errorf("Wanted level %v = (%v, valid: %v), got (%v, %v) instead",
-				c.in,
-				c.out,
-				c.valid,
-				out,
-				err)
-		}
-	}
-}
 
 func TestGetList(t *testing.T) {
 	servertest.Setup()
@@ -107,7 +73,7 @@ func TestGetList(t *testing.T) {
 				t.Errorf("Wrong value for serviceId")
 			}
 
-			if r.URL.Query().Get("level") != "4" {
+			if r.URL.Query().Get("level") != "INFO" {
 				t.Errorf("Wrong value for level")
 			}
 
@@ -119,7 +85,7 @@ func TestGetList(t *testing.T) {
 		Project:  "foo",
 		Services: []string{"nodejs5143"},
 		Instance: "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
-		Level:    4,
+		Level:    "INFO",
 	}
 
 	var list, err = New(wectx).GetList(context.Background(), filter)
@@ -149,7 +115,7 @@ func TestList(t *testing.T) {
 		tdata.ServerJSONFileHandler("mocks/logs_response.json"))
 
 	var filter = &Filter{
-		Level:    4,
+		Level:    "INFO",
 		Project:  "foo",
 		Services: []string{"nodejs5143"},
 		Instance: "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
@@ -197,7 +163,7 @@ func TestListProject(t *testing.T) {
 		tdata.ServerJSONFileHandler("mocks/logs_response_project.json"))
 
 	var filter = &Filter{
-		Level:   4,
+		Level:   "INFO",
 		Project: "foo",
 	}
 
@@ -261,7 +227,7 @@ func TestWatch(t *testing.T) {
 		Filter: &Filter{
 			Project:  "foo",
 			Services: []string{"bar"},
-			Level:    4,
+			Level:    "INFO",
 		},
 		PoolingInterval: time.Millisecond,
 	}
@@ -345,7 +311,7 @@ func TestWatcherStart(t *testing.T) {
 			Project:  "foo",
 			Services: []string{"bar"},
 			Instance: "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
-			Level:    4,
+			Level:    "INFO",
 		},
 		PoolingInterval: 2 * time.Millisecond,
 	}

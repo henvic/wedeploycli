@@ -2,6 +2,7 @@ package logs
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -17,6 +18,7 @@ import (
 	"github.com/wedeploy/cli/colorwheel"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/errorhandler"
+	"github.com/wedeploy/cli/logs/internal/timelog"
 	"github.com/wedeploy/cli/verbose"
 )
 
@@ -34,24 +36,26 @@ func New(wectx config.Context) *Client {
 
 // Log structure
 type Log struct {
-	ServiceID    string `json:"serviceId"`
-	ContainerUID string `json:"containerUid"`
-	Build        bool   `json:"build"`
-	DeployUID    string `json:"deployUid"`
-	ProjectID    string `json:"projectId"`
-	Level        int    `json:"level"`
-	Message      string `json:"message"`
-	Severity     string `json:"severity"`
-	Timestamp    string `json:"timestamp"`
+	InsertID      string                  `json:"insertId"`
+	ServiceID     string                  `json:"serviceId,omitempty"`
+	ContainerUID  string                  `json:"containerUid,omitempty"`
+	Build         bool                    `json:"build,omitempty"`
+	BuildGroupUID string                  `json:"buildGroupUid,omitempty"`
+	DeployUID     string                  `json:"deployUid,omitempty"`
+	ProjectID     string                  `json:"projectId,omitempty"`
+	Level         string                  `json:"level,omitempty"`
+	Message       string                  `json:"message,omitempty"`
+	Timestamp     timelog.TimeStackDriver `json:"timestamp"`
 }
 
 // Filter structure
 type Filter struct {
-	Project  string   `json:"-"`
-	Services []string `json:"services,omitempty"`
-	Instance string   `json:"containerUid,omitempty"`
-	Level    int      `json:"level,omitempty"`
-	Since    string   `json:"start,omitempty"`
+	Project       string   `json:"-"`
+	Services      []string `json:"services,omitempty"`
+	Instance      string   `json:"containerUid,omitempty"`
+	Level         string   `json:"level,omitempty"`
+	Since         string   `json:"start,omitempty"`
+	AfterInsertID string   `json:"afterInsertId,omitempty"`
 }
 
 // Watcher structure
@@ -65,15 +69,6 @@ type Watcher struct {
 	ctx context.Context
 }
 
-// SeverityToLevel map
-var SeverityToLevel = map[string]int{
-	"critical": 2,
-	"error":    3,
-	"warning":  4,
-	"info":     6,
-	"debug":    7,
-}
-
 // PoolingInterval is the default time between retries.
 var PoolingInterval = 5 * time.Second
 
@@ -84,27 +79,6 @@ var errStreamMutex sync.Mutex
 
 var outStream io.Writer = os.Stdout
 var outStreamMutex sync.Mutex
-
-// GetLevel to get level from severity or itself
-func GetLevel(severityOrLevel string) (int, error) {
-	var level = SeverityToLevel[severityOrLevel]
-
-	if level != 0 {
-		return level, nil
-	}
-
-	if severityOrLevel == "" {
-		return 0, nil
-	}
-
-	var i, err = strconv.Atoi(severityOrLevel)
-
-	if err != nil {
-		err = errwrap.Wrapf(fmt.Sprintf(`unknown log level "%v"`, severityOrLevel), err)
-	}
-
-	return i, err
-}
 
 // GetList logs
 func (c *Client) GetList(ctx context.Context, f *Filter) ([]Log, error) {
@@ -127,8 +101,12 @@ func (c *Client) GetList(ctx context.Context, f *Filter) ([]Log, error) {
 		req.Param("serviceId", f.Services[0])
 	}
 
-	if f.Level != 0 {
-		req.Param("level", fmt.Sprintf("%d", f.Level))
+	if f.Level != "" {
+		req.Param("level", f.Level)
+	}
+
+	if f.AfterInsertID != "" {
+		req.Param("afterInsertId", f.AfterInsertID)
 	}
 
 	if f.Since != "" {
@@ -228,17 +206,18 @@ func (w *Watcher) watch() {
 }
 
 func addHeader(log Log) (m string) {
-	m = log.ServiceID
 	switch {
 	case log.ServiceID == "":
-		m += "[" + log.ProjectID + "]"
+		return "[" + log.ProjectID + "]"
 	case log.ContainerUID != "":
-		m += "[" + trim(log.ContainerUID, 12) + "]"
+		return "[" + log.ServiceID + "-" + trim(log.ContainerUID, 12) + "]"
 	case log.Build:
-		m += "[build]"
+		return "build-" + log.BuildGroupUID + " " + log.ServiceID + "[building]"
+	case log.BuildGroupUID != "":
+		return "build-" + log.BuildGroupUID + " [" + log.ProjectID + "]"
 	}
 
-	return m
+	return "[" + log.ProjectID + "]"
 }
 
 func printList(list []Log) {
@@ -248,21 +227,13 @@ func printList(list []Log) {
 		ts := color.Format(color.FgWhite, getTimestamp(log.Timestamp))
 
 		outStreamMutex.Lock()
-		_, _ = fmt.Fprintf(outStream, "%v %v %v\n", ts, fd, log.Message)
+		_, _ = fmt.Fprintf(outStream, "%v %v %v\n", ts, fd, strings.TrimSpace(log.Message))
 		outStreamMutex.Unlock()
 	}
 }
 
-func getTimestamp(timestamp string) string {
-	i, err := strconv.ParseInt(timestamp, 10, 64)
-
-	if err != nil {
-		verbose.Debug("can't decode timestamp", err)
-		return "unknown"
-	}
-
-	t := time.Unix(0, i)
-	return t.Format("Jan 02 15:04:05.000")
+func getTimestamp(t timelog.TimeStackDriver) string {
+	return time.Time(t).Format("Jan 02 15:04:05.000")
 }
 
 func (w *Watcher) pool() {
@@ -288,7 +259,7 @@ func (w *Watcher) pool() {
 
 	printList(list)
 
-	if err := w.incSinceArgument(list); err != nil {
+	if err := w.prepareNext(list); err != nil {
 		errStreamMutex.Lock()
 		defer errStreamMutex.Unlock()
 		_, _ = fmt.Fprintf(errStream, "%v\n", errorhandler.Handle(err))
@@ -296,20 +267,21 @@ func (w *Watcher) pool() {
 	}
 }
 
-func (w *Watcher) incSinceArgument(list []Log) error {
+func (w *Watcher) prepareNext(list []Log) error {
 	var last = list[len(list)-1]
 
-	var next, err = strconv.ParseUint(last.Timestamp, 10, 64)
+	w.Filter.AfterInsertID = last.InsertID
+	verbose.Debug("Next logs after log insertId = " + last.InsertID)
 
-	if err != nil {
-		return errwrap.Wrapf("invalid timestamp value on log line: {{err}}", err)
+	var next = time.Time(last.Timestamp)
+
+	if next.IsZero() {
+		return errors.New("invalid timestamp value on log line")
 	}
-
-	next++
 
 	w.filterMutex.Lock()
 	defer w.filterMutex.Unlock()
-	w.Filter.Since = fmt.Sprintf("%v", next)
+	w.Filter.Since = fmt.Sprintf("%v", next.Add(time.Nanosecond).Format(time.RFC3339Nano))
 	verbose.Debug("Next --since parameter value = " + w.Filter.Since)
 	return nil
 }

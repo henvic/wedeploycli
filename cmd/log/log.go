@@ -15,9 +15,9 @@ import (
 )
 
 var (
-	severity string
-	since    string
-	watch    bool
+	level string
+	since string
+	watch bool
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{
@@ -58,18 +58,11 @@ func logRun(cmd *cobra.Command, args []string) error {
 	var service = setupHost.Service()
 	var instance = setupHost.Instance()
 
-	var level, err = logs.GetLevel(severity)
-
-	if err != nil {
-		return err
-	}
-
 	if len(args) > 2 {
 		return errors.New("invalid number of arguments")
 	}
 
-	var t string
-	t, err = getSince()
+	var t, err = getSince()
 
 	if err != nil {
 		return err
@@ -123,7 +116,7 @@ func getSince() (string, error) {
 }
 
 func init() {
-	LogCmd.Flags().StringVar(&severity, "level", "0", `Severity (critical, error, warning, info (default), debug)`)
+	LogCmd.Flags().StringVar(&level, "level", "", `Severity (critical, error, warning, info (default), debug)`)
 	LogCmd.Flag("level").Hidden = true
 
 	LogCmd.Flags().StringVar(&since, "since", "", "Show since moment (i.e., 20min, 3h, UNIX timestamp)")

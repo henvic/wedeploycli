@@ -3,7 +3,7 @@
         "projectId": "foo",
         "serviceId": "bar",
         "containerUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
-        "level": 6,
+        "level": "INFO",
         "logger": {
             "line": 125,
             "message": "Server started\r",
@@ -13,13 +13,13 @@
         "message": "[2016-03-29 18:55:51,234] INFO  [main] com.liferay.wedeploy.server.AppServer#start:125 - Server started\r",
         "podName": "nodejs5143",
         "severity": "INFO",
-        "timestamp": "1459277751234"
+        "timestamp": "2019-06-03T21:31:06.223000049Z"
     },
     {
         "projectId": "foo",
         "serviceId": "bar",
         "containerUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
-        "level": 6,
+        "level": "INFO",
         "logger": {
             "line": 163,
             "message": "Server is up and running\r",
@@ -29,6 +29,6 @@
         "message": "[2016-03-29 18:55:51,237] INFO  [main] com.liferay.wedeploy.WeDeploy#startServer:163 - Server is up and running\r",
         "podName": "nodejs5143",
         "severity": "INFO",
-        "timestamp": "1459277751237"
+        "timestamp": "2019-06-03T21:31:06.223000149Z"
     }
 ]

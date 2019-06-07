@@ -3,7 +3,7 @@
         "projectId": "foo",
         "serviceId": "bar",
         "containerUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
-        "level": 6,
+        "level": "INFO",
         "logger": {
             "line": 69,
             "message": "WeDeploy is ready\r",
@@ -13,28 +13,28 @@
         "message": "[2016-03-29 18:55:51,240] INFO  [main] com.liferay.wedeploy.WeDeploy#start:69 - WeDeploy is ready\r",
         "podName": "nodejs5143",
         "severity": "INFO",
-        "timestamp": "1459277751240"
+        "timestamp": "2019-06-03T21:31:06.223010149Z"
     },
     {
         "projectId": "foo",
         "serviceId": "bar",
         "containerUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
-        "level": 6,
+        "level": "INFO",
         "logger": null,
-        "message": "\tMember [172.21.0.2]:5701\r",
+        "message": "Member [172.21.0.2]:5701\r",
         "podName": "nodejs5143",
         "severity": null,
-        "timestamp": "1459280610000"
+        "timestamp": "2019-06-03T21:31:10.893000049Z"
     },
     {
         "projectId": "foo",
         "serviceId": "bar",
         "containerUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
-        "level": 6,
+        "level": "INFO",
         "logger": null,
         "message": "Mar 29, 2016 7:43:30 PM com.hazelcast.core.LifecycleService\r",
         "podName": "nodejs5143",
         "severity": null,
-        "timestamp": "1459280610000"
+        "timestamp": "2019-06-03T21:31:10.893000049Z"
     }
 ]

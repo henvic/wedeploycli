@@ -1,9 +1,9 @@
-Jan 01 12:24:19.277 bar[foo_nodejs51] [2016-03-29 18:55:51,234] INFO  [main] com.liferay.wedeploy.server.AppServer#start:125 - Server started
-Jan 01 12:24:19.277 bar[foo_nodejs51] [2016-03-29 18:55:51,237] INFO  [main] com.liferay.wedeploy.WeDeploy#startServer:163 - Server is up and running
-Jan 01 12:24:19.277 bar[foo_nodejs51] [2016-03-29 18:55:51,240] INFO  [main] com.liferay.wedeploy.WeDeploy#start:69 - WeDeploy is ready
-Jan 01 12:24:19.280 bar[foo_nodejs51] 	Member [172.21.0.2]:5701
-Jan 01 12:24:19.280 bar[foo_nodejs51] Mar 29, 2016 7:43:30 PM com.hazelcast.core.LifecycleService
-Jan 01 12:24:19.280 bar[foo_nodejs51] Mar 29, 2016 7:43:30 PM com.hazelcast.client.connection.nio.ClientConnectionManagerImpl
-Jan 01 12:24:19.280 bar[foo_nodejs51] INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_CONNECTED
-Jan 01 12:24:19.280 bar[foo_nodejs51] INFO:
-Jan 01 12:24:19.280 bar[foo_nodejs51] INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_DISCONNECTED
+Jun 03 21:31:06.223 [bar-foo_nodejs51] [2016-03-29 18:55:51,234] INFO  [main] com.liferay.wedeploy.server.AppServer#start:125 - Server started
+Jun 03 21:31:06.223 [bar-foo_nodejs51] [2016-03-29 18:55:51,237] INFO  [main] com.liferay.wedeploy.WeDeploy#startServer:163 - Server is up and running
+Jun 03 21:31:06.223 [bar-foo_nodejs51] [2016-03-29 18:55:51,240] INFO  [main] com.liferay.wedeploy.WeDeploy#start:69 - WeDeploy is ready
+Jun 03 21:31:10.893 [bar-foo_nodejs51] Member [172.21.0.2]:5701
+Jun 03 21:31:10.893 [bar-foo_nodejs51] Mar 29, 2016 7:43:30 PM com.hazelcast.core.LifecycleService
+Jun 03 21:31:10.893 [bar-foo_nodejs51] Mar 29, 2016 7:43:30 PM com.hazelcast.client.connection.nio.ClientConnectionManagerImpl
+Jun 03 21:31:10.893 [bar-foo_nodejs51] INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_CONNECTED
+Jun 03 21:31:10.893 [bar-foo_nodejs51] INFO:
+Jun 03 21:31:10.893 [bar-foo_nodejs51] INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_DISCONNECTED

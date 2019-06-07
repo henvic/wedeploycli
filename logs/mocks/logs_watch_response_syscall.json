@@ -3,11 +3,11 @@
         "projectId": "foo",
         "serviceId": "bar",
         "containerUid": "foo_nodejs5143_sqimupf5tfsf9iylzpg3e4zj",
-        "level": 6,
+        "level": "INFO",
         "logger": null,
         "message": "INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_DISCONNECTED\r",
         "podName": "nodejs5143",
         "severity": null,
-        "timestamp": "1459280610000"
+        "timestamp": "2019-06-03T21:31:10.893000049Z"
     }
 ]
