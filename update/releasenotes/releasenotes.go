@@ -265,4 +265,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "June 3rd, 2019",
 		Description: `Try to send related git remote even when branch is untracked.`,
 	},
+	ReleaseNote{
+		Version:     "2.1.0",
+		Date:        "June 7th, 2019",
+		Description: `Update breaking changes to the log format.`,
+	},
 }
