@@ -230,6 +230,7 @@ func TestWatch(t *testing.T) {
 
 	var e = &Expect{
 		ExitCode: 0,
+		Stdout:   "Logs shown on your current timezone: +12:00",
 	}
 
 	var c = cmd.Prepare()

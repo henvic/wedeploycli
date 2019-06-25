@@ -1,18 +1,18 @@
-Jun 03 21:31:06.223 [nodejs5143-foo_nodejs51] [2016-03-29 18:55:51,234] INFO  [main] com.liferay.wedeploy.server.AppServer#start:125 - Server started
-Jun 03 21:31:06.223 [nodejs5143-foo_nodejs51] [2016-03-29 18:55:51,237] INFO  [main] com.liferay.wedeploy.WeDeploy#startServer:163 - Server is up and running
-Jun 03 21:31:06.223 [nodejs5143-foo_nodejs51] [2016-03-29 18:55:51,240] INFO  [main] com.liferay.wedeploy.WeDeploy#start:69 - WeDeploy is ready
-Jun 03 21:31:10.893 [nodejs5143-foo_nodejs51] Member [172.21.0.2]:5701
-Jun 03 21:31:10.893 [nodejs5143-foo_nodejs51] Mar 29, 2016 7:43:30 PM com.hazelcast.core.LifecycleService
-Jun 03 21:31:10.893 [nodejs5143-foo_nodejs51] Mar 29, 2016 7:43:30 PM com.hazelcast.client.connection.nio.ClientConnectionManagerImpl
-Jun 03 21:31:10.893 [nodejs5143-foo_nodejs51] INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_CONNECTED
-Jun 03 21:31:10.893 [nodejs5143-foo_nodejs51] INFO:
-Jun 03 21:31:10.893 [nodejs5143-foo_nodejs51] INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_DISCONNECTED
-Jun 03 21:31:10.893 [nodejs5143-foo_nodejs51] WARNING: Connection [/192.168.99.100:5701] lost. Reason: Socket explicitly closed
-Jun 03 21:31:10.893 [nodejs5143-foo_nodejs51]
-Jun 03 21:31:10.893 [nodejs5143-foo_nodejs51] Members [1] {
-Jun 03 21:31:10.893 [nodejs5143-foo_nodejs51]
-Jun 03 21:31:10.893 [nodejs5143-foo_nodejs51] Mar 29, 2016 7:43:30 PM com.hazelcast.client.spi.impl.ClientMembershipListener
-Jun 03 21:31:10.893 [nodejs5143-foo_nodejs51] }
-Jun 03 21:31:10.893 [nodejs5143-foo_nodejs51] Mar 29, 2016 7:43:30 PM com.hazelcast.core.LifecycleService
-Jun 03 21:31:10.893 [nodejs5143-foo_nodejs51] Mar 29, 2016 7:43:30 PM com.hazelcast.client.connection.nio.ClientConnection
-Jun 03 21:31:10.893 [nodejs5143-foo_nodejs51] WARNING: Heartbeat failed to connection : ClientConnection{live=true, writeHandler=com.hazelcast.client.connection.nio.ClientWriteHandler@4934e36f, readHandler=com.hazelcast.client.connection.nio.ClientReadHandler@62aac949, connectionId=1, socketChannel=DefaultSocketChannelWrapper{socketChannel=java.nio.channels.SocketChannel[connected local=/172.17.0.7:41139 remote=/192.168.99.100:5701]}, remoteEndpoint=Address[172.21.0.2]:5701}
+Jun 04 09:31:06.223 [nodejs5143-foo_nodejs51] [2016-03-29 18:55:51,234] INFO  [main] com.liferay.wedeploy.server.AppServer#start:125 - Server started
+Jun 04 09:31:06.223 [nodejs5143-foo_nodejs51] [2016-03-29 18:55:51,237] INFO  [main] com.liferay.wedeploy.WeDeploy#startServer:163 - Server is up and running
+Jun 04 09:31:06.223 [nodejs5143-foo_nodejs51] [2016-03-29 18:55:51,240] INFO  [main] com.liferay.wedeploy.WeDeploy#start:69 - WeDeploy is ready
+Jun 04 09:31:10.893 [nodejs5143-foo_nodejs51] Member [172.21.0.2]:5701
+Jun 04 09:31:10.893 [nodejs5143-foo_nodejs51] Mar 29, 2016 7:43:30 PM com.hazelcast.core.LifecycleService
+Jun 04 09:31:10.893 [nodejs5143-foo_nodejs51] Mar 29, 2016 7:43:30 PM com.hazelcast.client.connection.nio.ClientConnectionManagerImpl
+Jun 04 09:31:10.893 [nodejs5143-foo_nodejs51] INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_CONNECTED
+Jun 04 09:31:10.893 [nodejs5143-foo_nodejs51] INFO:
+Jun 04 09:31:10.893 [nodejs5143-foo_nodejs51] INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_DISCONNECTED
+Jun 04 09:31:10.893 [nodejs5143-foo_nodejs51] WARNING: Connection [/192.168.99.100:5701] lost. Reason: Socket explicitly closed
+Jun 04 09:31:10.893 [nodejs5143-foo_nodejs51] 
+Jun 04 09:31:10.893 [nodejs5143-foo_nodejs51] Members [1] {
+Jun 04 09:31:10.893 [nodejs5143-foo_nodejs51] 
+Jun 04 09:31:10.893 [nodejs5143-foo_nodejs51] Mar 29, 2016 7:43:30 PM com.hazelcast.client.spi.impl.ClientMembershipListener
+Jun 04 09:31:10.893 [nodejs5143-foo_nodejs51] }
+Jun 04 09:31:10.893 [nodejs5143-foo_nodejs51] Mar 29, 2016 7:43:30 PM com.hazelcast.core.LifecycleService
+Jun 04 09:31:10.893 [nodejs5143-foo_nodejs51] Mar 29, 2016 7:43:30 PM com.hazelcast.client.connection.nio.ClientConnection
+Jun 04 09:31:10.893 [nodejs5143-foo_nodejs51] WARNING: Heartbeat failed to connection : ClientConnection{live=true, writeHandler=com.hazelcast.client.connection.nio.ClientWriteHandler@4934e36f, readHandler=com.hazelcast.client.connection.nio.ClientReadHandler@62aac949, connectionId=1, socketChannel=DefaultSocketChannelWrapper{socketChannel=java.nio.channels.SocketChannel[connected local=/172.17.0.7:41139 remote=/192.168.99.100:5701]}, remoteEndpoint=Address[172.21.0.2]:5701}

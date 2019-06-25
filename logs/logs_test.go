@@ -45,6 +45,8 @@ func setAnywhereOnEarthTimezone() {
 var wectx config.Context
 
 func TestMain(m *testing.M) {
+	time.Local = time.UTC
+
 	var err error
 	wectx, err = config.Setup("mocks/.lcp")
 

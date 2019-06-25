@@ -1,3 +1,4 @@
+Logs shown on your current timezone: +00:00
 Jun 03 21:31:06.223 [bar-foo_nodejs51] [2016-03-29 18:55:51,234] INFO  [main] com.liferay.wedeploy.server.AppServer#start:125 - Server started
 Jun 03 21:31:06.223 [bar-foo_nodejs51] [2016-03-29 18:55:51,237] INFO  [main] com.liferay.wedeploy.WeDeploy#startServer:163 - Server is up and running
 Jun 03 21:31:06.223 [bar-foo_nodejs51] [2016-03-29 18:55:51,240] INFO  [main] com.liferay.wedeploy.WeDeploy#start:69 - WeDeploy is ready

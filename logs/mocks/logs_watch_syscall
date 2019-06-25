@@ -1,2 +1,3 @@
+Logs shown on your current timezone: +00:00
 Jun 03 21:31:10.893 [bar-foo_nodejs51] INFO: HazelcastClient[hz.client_0_dev][3.6.1] is CLIENT_DISCONNECTED
 

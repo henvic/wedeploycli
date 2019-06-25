@@ -190,6 +190,7 @@ func (w *Watcher) Watch(ctx context.Context, wectx config.Context) {
 }
 
 func (w *Watcher) watch() {
+	_, _ = fmt.Fprintf(outStream, "Logs shown on your current timezone: %s\n", time.Now().Format("-07:00"))
 	w.pool()
 
 	ticker := time.NewTicker(w.PoolingInterval)
@@ -224,7 +225,7 @@ func printList(list []Log) {
 	for _, log := range list {
 		iw := instancesWheel.Get(log.ProjectID + "-" + log.ContainerUID)
 		fd := color.Format(iw, addHeader(log))
-		ts := color.Format(color.FgWhite, getTimestamp(log.Timestamp))
+		ts := color.Format(color.FgWhite, getLocalTimestamp(log.Timestamp))
 
 		outStreamMutex.Lock()
 		_, _ = fmt.Fprintf(outStream, "%v %v %v\n", ts, fd, strings.TrimSpace(log.Message))
@@ -232,8 +233,10 @@ func printList(list []Log) {
 	}
 }
 
-func getTimestamp(t timelog.TimeStackDriver) string {
-	return time.Time(t).Format("Jan 02 15:04:05.000")
+func getLocalTimestamp(t timelog.TimeStackDriver) string {
+	v := time.Time(t)
+	l := v.Local()
+	return l.Format("Jan 02 15:04:05.000")
 }
 
 func (w *Watcher) pool() {
