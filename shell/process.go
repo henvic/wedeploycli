@@ -76,6 +76,14 @@ func (p *Process) Run(ctx context.Context, conn *gosocketio.Client) (err error) 
 }
 
 func (p *Process) run(ctx context.Context, conn *gosocketio.Client) error {
+	readyToStartExec := make(chan struct{}, 1)
+
+	if err := p.shell.On("readyToStartExec", func() {
+		readyToStartExec <- struct{}{}
+	}); err != nil {
+		return err
+	}
+
 	if err := wesocket.Authenticate(p.shell); err != nil {
 		return err
 	}
@@ -89,14 +97,6 @@ func (p *Process) run(ctx context.Context, conn *gosocketio.Client) error {
 	p.handleConnections()
 
 	if err := p.Streams(); err != nil {
-		return err
-	}
-
-	readyToStartExec := make(chan struct{}, 1)
-
-	if err := p.shell.On("readyToStartExec", func() {
-		readyToStartExec <- struct{}{}
-	}); err != nil {
 		return err
 	}
 
