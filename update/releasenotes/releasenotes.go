@@ -270,4 +270,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "June 7th, 2019",
 		Description: `Update breaking changes to the log format.`,
 	},
+	ReleaseNote{
+		Version:     "2.1.1",
+		Date:        "June 25th, 2019",
+		Description: `Print logs using local timezone instead of UTC. Fix race condition that was making opening up a shell when using a fast Internet connection fail sometimes.`,
+	},
 }
