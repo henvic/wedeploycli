@@ -275,4 +275,9 @@ var ReleaseNotes = []ReleaseNote{
 		Date:        "June 25th, 2019",
 		Description: `Print logs using local timezone instead of UTC. Fix race condition that was making opening up a shell when using a fast Internet connection fail sometimes.`,
 	},
+	ReleaseNote{
+		Version:     "2.1.2",
+		Date:        "July 9th, 2019",
+		Description: `Fix missing exit code relay after move to Kubernetes.`,
+	},
 }
