@@ -152,14 +152,6 @@ func (p *Process) PipeStderr() error {
 // WatchEnd of process
 func (p *Process) WatchEnd() error {
 	return p.shell.On("execExit", func(e *ExitError) {
-		verbose.Debug("Process", e.PID, "exited.")
-
-		if e.ExitCode == 0 {
-			p.err <- nil
-			p.ctxCancel()
-			return
-		}
-
 		p.err <- e
 		p.ctxCancel()
 	})

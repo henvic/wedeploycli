@@ -5,7 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strconv"
+	"strings"
 
+	"github.com/wedeploy/cli/shell/internal/kubernetes"
 	"github.com/wedeploy/cli/wesocket"
 	"github.com/wedeploy/gosocketio"
 	"github.com/wedeploy/gosocketio/websocket"
@@ -13,12 +16,44 @@ import (
 
 // An ExitError reports an unsuccessful exit by a command.
 type ExitError struct {
-	PID      int `json:"pid"`
-	ExitCode int `json:"exitCode"`
+	Status  string                   `json:"status"`
+	Message string                   `json:"message,omitempty"`
+	Details kubernetes.StatusDetails `json:"details,omitempty"`
+}
+
+// GetExitCode gets the exit code from the process.
+func (e *ExitError) GetExitCode() (int, bool) {
+	var details = e.Details
+
+	for _, c := range details.Causes {
+		if c.Type != "ExitCode" {
+			continue
+		}
+
+		switch code, err := strconv.Atoi(c.Message); {
+		case err != nil:
+			return -1, false
+		default:
+			return code, true
+		}
+	}
+
+	return 0, true
 }
 
 func (e *ExitError) Error() string {
-	return fmt.Sprintf("process terminated: %d", e.ExitCode)
+	if code, ok := e.GetExitCode(); ok {
+		return fmt.Sprintf("process terminated: %d", code)
+	}
+
+	var causes []string
+	var details = e.Details
+
+	for _, c := range details.Causes {
+		causes = append(causes, fmt.Sprintf("%v: %v", c.Type, e.Message))
+	}
+
+	return fmt.Sprintf("cannot get exit code: %v\n%v", e.Message, strings.Join(causes, "\n"))
 }
 
 // Params for the shell and its connection.

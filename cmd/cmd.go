@@ -189,7 +189,11 @@ func (m *mainProgram) handleErrorExitCode() {
 	var maybeSSHExitErr = errwrap.GetType(m.cmdErr, &shell.ExitError{})
 
 	if sshE, ok := maybeSSHExitErr.(*shell.ExitError); ok {
-		os.Exit(sshE.ExitCode)
+		if code, ok := sshE.GetExitCode(); ok {
+			os.Exit(code)
+		}
+
+		os.Exit(1)
 	}
 
 	if e, ok := m.cmdErr.(exiterror.Error); ok {

@@ -125,8 +125,12 @@ func (p *Process) run(ctx context.Context, conn *gosocketio.Client) error {
 	if err := <-p.err; err != nil {
 		stopTermSession(t)
 
-		// add a line break to separate connection errors from other messages
-		_, _ = fmt.Fprintln(os.Stderr)
+		if _, ok := err.(*ExitError); !ok {
+			// add a line break to separate connection errors from other messages
+			_, _ = fmt.Fprintln(os.Stderr)
+		}
+
+		return err
 	}
 
 	return nil
