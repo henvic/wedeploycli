@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/spf13/cobra/doc"
-	"github.com/wedeploy/cli/cmd/root"
+	"github.com/wedeploy/cli/command/root"
 )
 
 func main() {

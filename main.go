@@ -15,8 +15,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/wedeploy/cli/cmd"
-	"github.com/wedeploy/cli/cmd/gitcredentialhelper"
+	cmd "github.com/wedeploy/cli/command"
+	"github.com/wedeploy/cli/command/gitcredentialhelper"
 	"github.com/wedeploy/cli/envs"
 	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/client"

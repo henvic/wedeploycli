@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/henvic/browser"
-	"github.com/wedeploy/cli/cmd/canceled"
 	"github.com/wedeploy/cli/color"
+	"github.com/wedeploy/cli/command/canceled"
 	"github.com/wedeploy/cli/config"
 	"github.com/wedeploy/cli/defaults"
 	"github.com/wedeploy/cli/fancy"
