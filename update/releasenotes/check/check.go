@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/wedeploy/cli/update/releasenotes"
+	"github.com/henvic/wedeploycli/update/releasenotes"
 )
 
 func main() {

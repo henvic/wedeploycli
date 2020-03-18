@@ -3,5 +3,5 @@ build:
   commands:
     - go version
     - go test $(go list ./... | grep -v /integration$) -race
-    - go test github.com/wedeploy/cli/integration
+    - go test github.com/henvic/wedeploycli/integration
     

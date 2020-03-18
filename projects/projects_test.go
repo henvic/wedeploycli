@@ -12,12 +12,12 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/servertest"
-	"github.com/wedeploy/cli/services"
-	"github.com/wedeploy/cli/tdata"
+	"github.com/henvic/wedeploycli/apihelper"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/servertest"
+	"github.com/henvic/wedeploycli/services"
+	"github.com/henvic/wedeploycli/tdata"
 )
 
 var (

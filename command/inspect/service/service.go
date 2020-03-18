@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/henvic/wedeploycli/inspector"
+	"github.com/henvic/wedeploycli/services"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/inspector"
-	"github.com/wedeploy/cli/services"
 )
 
 // ServiceCmd for "lcp inspect service"

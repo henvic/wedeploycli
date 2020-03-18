@@ -8,12 +8,12 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/fancy"
+	"github.com/henvic/wedeploycli/userhome"
+	"github.com/henvic/wedeploycli/verbose"
+	"github.com/henvic/wedeploycli/waitlivemsg"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/fancy"
-	"github.com/wedeploy/cli/userhome"
-	"github.com/wedeploy/cli/verbose"
-	"github.com/wedeploy/cli/waitlivemsg"
 )
 
 // UninstallCmd is used for uninstall this tool

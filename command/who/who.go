@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/henvic/wedeploycli/command/internal/we"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/command/internal/we"
 )
 
 // WhoCmd get the current user

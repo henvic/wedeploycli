@@ -3,8 +3,8 @@ package isterm
 import (
 	"os"
 
-	"github.com/wedeploy/cli/envs"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/envs"
+	"github.com/henvic/wedeploycli/verbose"
 	"golang.org/x/crypto/ssh/terminal"
 )
 

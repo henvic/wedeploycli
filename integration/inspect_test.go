@@ -6,7 +6,7 @@ import (
 
 	"strings"
 
-	"github.com/wedeploy/cli/tdata"
+	"github.com/henvic/wedeploycli/tdata"
 	"github.com/wedeploy/wedeploy-sdk-go/jsonlib"
 )
 
@@ -101,7 +101,7 @@ func TestInspectServiceFormatVerbose(t *testing.T) {
 		t.Errorf("Expected output not found: %v", cmd.Stdout)
 	}
 
-	if !strings.Contains(cmd.Stderr.String(), `/cli/integration/mocks/inspect/my-project/email`) {
+	if !strings.Contains(cmd.Stderr.String(), `/wedeploycli/integration/mocks/inspect/my-project/email`) {
 		t.Errorf("Expected err output not found: %v", cmd.Stderr)
 	}
 

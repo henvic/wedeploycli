@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/wedeploy/cli/servertest"
-	"github.com/wedeploy/cli/tdata"
+	"github.com/henvic/wedeploycli/servertest"
+	"github.com/henvic/wedeploycli/tdata"
 )
 
 func TestList(t *testing.T) {

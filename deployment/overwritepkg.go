@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/wedeploy/cli/services"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/services"
+	"github.com/henvic/wedeploycli/verbose"
 )
 
 func (d *Deploy) overwriteServicePackage(path string, content []byte) error {

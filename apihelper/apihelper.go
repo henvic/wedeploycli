@@ -18,8 +18,8 @@ import (
 	"strings"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/verbosereq"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/verbosereq"
 	"github.com/wedeploy/wedeploy-sdk-go"
 )
 

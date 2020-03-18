@@ -3,15 +3,15 @@ package env
 import (
 	"context"
 
+	"github.com/henvic/wedeploycli/cmdflagsfromhost"
+	"github.com/henvic/wedeploycli/command/env-var/internal/commands"
+	cmdenvset "github.com/henvic/wedeploycli/command/env-var/set"
+	cmdenvshow "github.com/henvic/wedeploycli/command/env-var/show"
+	cmdenvunset "github.com/henvic/wedeploycli/command/env-var/unset"
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/fancy"
+	"github.com/henvic/wedeploycli/services"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/command/env-var/internal/commands"
-	cmdenvset "github.com/wedeploy/cli/command/env-var/set"
-	cmdenvshow "github.com/wedeploy/cli/command/env-var/show"
-	cmdenvunset "github.com/wedeploy/cli/command/env-var/unset"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/fancy"
-	"github.com/wedeploy/cli/services"
 )
 
 type interativeEnvCmd struct {

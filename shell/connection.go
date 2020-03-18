@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/verbose"
 	"github.com/wedeploy/gosocketio"
 )
 

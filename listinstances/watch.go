@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/henvic/ctxsignal"
-	"github.com/wedeploy/cli/errorhandler"
+	"github.com/henvic/wedeploycli/errorhandler"
 )
 
 func (l *List) watchHandler() {

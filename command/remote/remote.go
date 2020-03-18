@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/formatter"
+	"github.com/henvic/wedeploycli/remotes"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/formatter"
-	"github.com/wedeploy/cli/remotes"
 )
 
 // RemoteCmd is the command to control Liferay Cloud remotes.

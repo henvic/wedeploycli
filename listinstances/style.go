@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/formatter"
-	"github.com/wedeploy/cli/services"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/formatter"
+	"github.com/henvic/wedeploycli/services"
+	"github.com/henvic/wedeploycli/verbose"
 )
 
 // Printf list

@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/verbose"
 )
 
 // Fork the process

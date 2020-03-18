@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/wedeploy/cli/envs"
+	"github.com/henvic/wedeploycli/envs"
 )
 
 func TestCheckForced(t *testing.T) {

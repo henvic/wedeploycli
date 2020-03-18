@@ -64,7 +64,7 @@ $ git config --add credential.helper :credential-helper
 $ git commit --no-verify --allow-empty --message :msg
 $ git rev-parse HEAD // Get the SHA1 of the latest commit
 ```
-7. We add the remote. The remote address is [discovered](https://github.com/wedeploy/cli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/deployment/transport/git/git.go#L349) via a common convention. The following command is used:
+7. We add the remote. The remote address is [discovered](https://github.com/henvic/wedeploycli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/deployment/transport/git/git.go#L349) via a common convention. The following command is used:
 ```sh
 $ git remote add :remote-name :remote-address
 ```
@@ -73,7 +73,7 @@ $ git remote add :remote-name :remote-address
 git push :branch --force --no-verify
 ```
 
-_Note_: There is a [hack](https://github.com/wedeploy/cli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/deployment/transport/git/pushhack.go#L37) for Windows and some [versions](https://github.com/wedeploy/cli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/deployment/transport/git/pushhack.go#L24) of Git on pushing the code.
+_Note_: There is a [hack](https://github.com/henvic/wedeploycli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/deployment/transport/git/pushhack.go#L37) for Windows and some [versions](https://github.com/henvic/wedeploycli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/deployment/transport/git/pushhack.go#L24) of Git on pushing the code.
 
 About 4). The command used was:
 ```sh

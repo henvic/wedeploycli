@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/henvic/wedeploycli/inspector"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/inspector"
 )
 
 // ContextCmd for "lcp inspect context"

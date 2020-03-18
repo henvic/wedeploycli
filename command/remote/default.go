@@ -3,10 +3,10 @@ package remote
 import (
 	"fmt"
 
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/prompt"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/prompt"
 )
 
 var defaultCmd = &cobra.Command{

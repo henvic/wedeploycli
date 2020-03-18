@@ -3,10 +3,10 @@ package activities
 import (
 	"context"
 
+	"github.com/henvic/wedeploycli/activities"
+	"github.com/henvic/wedeploycli/cmdflagsfromhost"
+	"github.com/henvic/wedeploycli/command/internal/we"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/activities"
-	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/command/internal/we"
 )
 
 // ActivitiesCmd is the command to list activities on a deploymnet.

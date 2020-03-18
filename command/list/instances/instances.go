@@ -5,13 +5,13 @@ import (
 	"fmt"
 
 	"github.com/henvic/ctxsignal"
+	"github.com/henvic/wedeploycli/cmdflagsfromhost"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/list"
+	"github.com/henvic/wedeploycli/listinstances"
+	"github.com/henvic/wedeploycli/services"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/list"
-	"github.com/wedeploy/cli/listinstances"
-	"github.com/wedeploy/cli/services"
 )
 
 // ListInstancesCmd is used for getting a list of projects and services

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/verbose"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/verbose"
 )
 
 // VersionCmd is used for reading the version of this tool

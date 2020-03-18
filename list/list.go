@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/henvic/uilive"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/formatter"
-	"github.com/wedeploy/cli/projects"
-	"github.com/wedeploy/cli/services"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/formatter"
+	"github.com/henvic/wedeploycli/projects"
+	"github.com/henvic/wedeploycli/services"
 )
 
 // Filter parameters for the list command

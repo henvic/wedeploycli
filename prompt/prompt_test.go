@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/wedeploy/cli/envs"
+	"github.com/henvic/wedeploycli/envs"
 )
 
 var bufInStream bytes.Buffer

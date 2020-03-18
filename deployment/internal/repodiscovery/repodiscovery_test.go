@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/wedeploy/cli/inspector"
+	"github.com/henvic/wedeploycli/inspector"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 )
 

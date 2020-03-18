@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/henvic/wedeploycli/apihelper"
+	"github.com/henvic/wedeploycli/cmdflagsfromhost"
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/fancy"
+	"github.com/henvic/wedeploycli/login"
+	"github.com/henvic/wedeploycli/projects"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/fancy"
-	"github.com/wedeploy/cli/login"
-	"github.com/wedeploy/cli/projects"
 )
 
 var noLaunchBrowser bool

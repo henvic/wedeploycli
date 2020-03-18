@@ -6,14 +6,14 @@ import (
 	"time"
 
 	humanize "github.com/dustin/go-humanize"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/diagnostics"
+	"github.com/henvic/wedeploycli/fancy"
+	"github.com/henvic/wedeploycli/verbose"
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/diagnostics"
-	"github.com/wedeploy/cli/fancy"
-	"github.com/wedeploy/cli/verbose"
 )
 
 var (

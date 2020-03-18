@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/services"
+	"github.com/henvic/wedeploycli/apihelper"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/services"
 )
 
 // Client for the projects

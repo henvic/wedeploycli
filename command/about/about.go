@@ -1,8 +1,8 @@
 package about
 
 import (
+	"github.com/henvic/wedeploycli/command/about/legal"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/command/about/legal"
 )
 
 // AboutCmd is used for showing the abouts of all used libraries

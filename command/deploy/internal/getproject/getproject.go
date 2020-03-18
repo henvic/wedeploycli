@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/command/canceled"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/fancy"
-	"github.com/wedeploy/cli/isterm"
-	"github.com/wedeploy/cli/projects"
+	"github.com/henvic/wedeploycli/apihelper"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/command/canceled"
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/fancy"
+	"github.com/henvic/wedeploycli/isterm"
+	"github.com/henvic/wedeploycli/projects"
 )
 
 // MaybeID tries to get a project ID for using on deployment

@@ -1,4 +1,4 @@
-module github.com/wedeploy/cli
+module github.com/henvic/wedeploycli
 
 go 1.12
 

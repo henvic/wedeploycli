@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	version "github.com/hashicorp/go-version"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/update/releasenotes"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/update/releasenotes"
 )
 
 var (

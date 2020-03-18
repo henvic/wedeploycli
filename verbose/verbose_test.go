@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/tdata"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/tdata"
 )
 
 var update bool

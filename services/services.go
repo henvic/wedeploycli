@@ -14,10 +14,10 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/jsonerror"
-	"github.com/wedeploy/cli/verbosereq"
+	"github.com/henvic/wedeploycli/apihelper"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/jsonerror"
+	"github.com/henvic/wedeploycli/verbosereq"
 	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 

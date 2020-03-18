@@ -19,7 +19,7 @@ The following external soft dependencies are necessary to correctly run some com
 The availability of dependencies are tested just before its immediate use. If a required dependency is not found, an error message is printed and the calling process is terminated with an error code.
 
 ## Contributing
-You can get the latest CLI source code with `go get -u github.com/wedeploy/cli`. Alternatively, clone the repo as usual. 
+You can get the latest CLI source code with `go get -u github.com/henvic/wedeploycli`. Alternatively, clone the repo as usual. 
 
 The following commands are available and requires no arguments:
 
@@ -47,11 +47,11 @@ The master branch of this repository on GitHub is protected:
 Keep your commits neat and [well documented](https://wiki.openstack.org/wiki/GitCommitMessages). Try to always rebase your changes before publishing them.
 
 ## Maintaining code quality
-[goreportcard](https://goreportcard.com/report/github.com/wedeploy/cli) can be used online or locally to detect defects and static analysis results from tools with a great overview.
+[goreportcard](https://goreportcard.com/report/github.com/henvic/wedeploycli) can be used online or locally to detect defects and static analysis results from tools with a great overview.
 
 Using go test and go cover are essential to make sure your code is covered with unit tests.
 
-Check [scripts/aliases.sh](https://github.com/wedeploy/cli/tree/master/scripts/aliases.sh) for a list of aliases you might find useful for development / testing.
+Check [scripts/aliases.sh](https://github.com/henvic/wedeploycli/tree/master/scripts/aliases.sh) for a list of aliases you might find useful for development / testing.
 
 Always run `make test` before submitting changes.
 

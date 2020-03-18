@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wedeploy/cli/userhome"
+	"github.com/henvic/wedeploycli/userhome"
 )
 
 func TestGetWorkingDirectory(t *testing.T) {

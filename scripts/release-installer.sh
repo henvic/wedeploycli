@@ -73,7 +73,7 @@ function publish() {
   -X 'main.BuildTime=$BUILD_TIME'" \
   -gcflags=-trimpath=$GOPATH \
   -asmflags=-trimpath=$GOPATH \
-  github.com/wedeploy/cli/update/internal/installer
+  github.com/henvic/wedeploycli/update/internal/installer
   cd ../..
 }
 

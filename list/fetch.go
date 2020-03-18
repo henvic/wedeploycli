@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/wedeploy/cli/projects"
+	"github.com/henvic/wedeploycli/projects"
 )
 
 func (l *List) fetchProjects() ([]projects.Project, error) {

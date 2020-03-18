@@ -4,7 +4,7 @@
 # A better alternative is to create a symbolic link to this file,
 # like "make development-environment.sh" does
 # e.g., "l link" instead of "lcp link"
-# alias l="$GOPATH/src/github.com/wedeploy/cli/scripts/build-run.sh $@"
+# alias l="$GOPATH/src/github.com/henvic/wedeploycli/scripts/build-run.sh $@"
 
 # Run go tests and generate test coverage for the current directory
 alias gotest='go test -race -coverprofile=coverage.out && go tool cover -html coverage.out -o coverage.html'

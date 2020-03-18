@@ -9,7 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/wedeploy/cli/userhome"
+	"github.com/henvic/wedeploycli/userhome"
 )
 
 var script = `if [ -n "$ZSH_VERSION" ]; then

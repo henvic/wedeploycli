@@ -7,10 +7,10 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/fancy"
-	"github.com/wedeploy/cli/projects"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/fancy"
+	"github.com/henvic/wedeploycli/projects"
 )
 
 // PromptProject from the list selection

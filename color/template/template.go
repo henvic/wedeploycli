@@ -3,7 +3,7 @@ package template
 import (
 	"text/template"
 
-	"github.com/wedeploy/cli/color"
+	"github.com/henvic/wedeploycli/color"
 )
 
 var templateColorFunctions = template.FuncMap{

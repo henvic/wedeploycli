@@ -53,7 +53,7 @@ If any of the steps above fail, correct what is wrong and try again. Step 5 migh
 ### Publishing a new version
 1. Using the CLI build server
 
-+ Download `equinox.yml`, `equinox.pub` and `equinox.key` (from 1Password) somewhere on your local machine. Verify that  `equinox.yml` is pointing to the right place where `equinox.key` is located and that the `app:` id corresponds to what is written [here](https://github.com/wedeploy/cli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/update/keys/keys.go#L9). Do not commit these two files.
++ Download `equinox.yml`, `equinox.pub` and `equinox.key` (from 1Password) somewhere on your local machine. Verify that  `equinox.yml` is pointing to the right place where `equinox.key` is located and that the `app:` id corresponds to what is written [here](https://github.com/henvic/wedeploycli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/update/keys/keys.go#L9). Do not commit these two files.
 + Download `wedeploy-cli-services.pem` from `CLI Services Builder` section in 1Password
 + Execute the following commands:
 
@@ -72,7 +72,7 @@ Afterwards, you are going to be prompted for the password and one-time password.
 
 2. Using your local machine
 + Install the [equinox release tool](https://dl.equinox.io/equinox/release-tool/stable) for publishing/promoting wedeploy/cli versions.
-+ Download `equinox.yml`, `equinox.pub` and `equinox.key` (from 1Password) somewhere on your local machine. Verify that  `equinox.yml` is pointing to the right place where `equinox.key` is located and that the `app:` id corresponds to what is written [here](https://github.com/wedeploy/cli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/update/keys/keys.go#L9). Do not commit these files.
++ Download `equinox.yml`, `equinox.pub` and `equinox.key` (from 1Password) somewhere on your local machine. Verify that  `equinox.yml` is pointing to the right place where `equinox.key` is located and that the `app:` id corresponds to what is written [here](https://github.com/henvic/wedeploycli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/update/keys/keys.go#L9). Do not commit these files.
 
 The public key is included in the binary file distributed to our users and allows them to seamlessly update their version of CLI.
 

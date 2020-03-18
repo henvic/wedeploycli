@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/wedeploy/cli/deployment/internal/repodiscovery"
+	"github.com/henvic/wedeploycli/deployment/internal/repodiscovery"
 )
 
 type convertCase struct {

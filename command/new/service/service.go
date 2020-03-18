@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/fancy"
+	"github.com/henvic/wedeploycli/cmdflagsfromhost"
+	"github.com/henvic/wedeploycli/fancy"
 
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/services"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/services"
 )
 
 var image string

@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/apihelper"
+	"github.com/henvic/wedeploycli/apihelper"
 )
 
 var (

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wedeploy/cli/tdata"
+	"github.com/henvic/wedeploycli/tdata"
 )
 
 type HomesProvider struct {

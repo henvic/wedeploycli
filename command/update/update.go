@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/wedeploy/cli/fancy"
-	"github.com/wedeploy/cli/isterm"
-	"github.com/wedeploy/cli/update"
+	"github.com/henvic/wedeploycli/fancy"
+	"github.com/henvic/wedeploycli/isterm"
+	"github.com/henvic/wedeploycli/update"
 
 	version "github.com/hashicorp/go-version"
+	"github.com/henvic/wedeploycli/command/canceled"
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/command/update/releasenotes"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/verbose"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/command/canceled"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/command/update/releasenotes"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/verbose"
 )
 
 // UpdateCmd is used for updating this tool

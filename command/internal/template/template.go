@@ -7,10 +7,10 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/formatter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/formatter"
 )
 
 // Configure template for cobra commands

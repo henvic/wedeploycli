@@ -3,7 +3,7 @@ package links
 import (
 	"text/template"
 
-	"github.com/wedeploy/cli/templates"
+	"github.com/henvic/wedeploycli/templates"
 )
 
 func init() {

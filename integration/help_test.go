@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/henvic/wedeploycli/tdata"
 	"github.com/kylelemons/godebug/diff"
-	"github.com/wedeploy/cli/tdata"
 )
 
 func TestHelp(t *testing.T) {

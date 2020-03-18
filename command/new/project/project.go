@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/henvic/wedeploycli/cmdflagsfromhost"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/fancy"
+	"github.com/henvic/wedeploycli/projects"
+	"github.com/henvic/wedeploycli/prompt"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/fancy"
-	"github.com/wedeploy/cli/projects"
-	"github.com/wedeploy/cli/prompt"
 )
 
 // Don't use this anywhere but on Cmd.RunE

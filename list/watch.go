@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/wedeploy/cli/errorhandler"
+	"github.com/henvic/wedeploycli/errorhandler"
 )
 
 func (l *List) watchHandler() {

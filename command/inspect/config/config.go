@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/inspector"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/inspector"
 )
 
 // ConfigCmd for "lcp inspect config"

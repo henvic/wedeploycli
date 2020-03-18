@@ -14,11 +14,11 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/templates"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/apihelper"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/templates"
+	"github.com/henvic/wedeploycli/verbose"
 )
 
 const panicTemplate = `An unrecoverable error has occurred.

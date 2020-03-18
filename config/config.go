@@ -10,10 +10,10 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	version "github.com/hashicorp/go-version"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/remotes"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/remotes"
+	"github.com/henvic/wedeploycli/verbose"
 	"gopkg.in/ini.v1"
 )
 

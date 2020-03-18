@@ -11,7 +11,7 @@ import (
 
 	"github.com/equinox-io/equinox"
 	"github.com/henvic/uilive"
-	"github.com/wedeploy/cli/update/keys"
+	"github.com/henvic/wedeploycli/update/keys"
 )
 
 // EnvSkipReexec environment variable option for skipping to re-execute command

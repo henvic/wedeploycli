@@ -15,14 +15,14 @@ import (
 	"testing"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/servertest"
+	"github.com/henvic/wedeploycli/stringlib"
+	"github.com/henvic/wedeploycli/tdata"
+	"github.com/henvic/wedeploycli/verbose"
 	"github.com/kylelemons/godebug/pretty"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/servertest"
-	"github.com/wedeploy/cli/stringlib"
-	"github.com/wedeploy/cli/tdata"
-	"github.com/wedeploy/cli/verbose"
 	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 

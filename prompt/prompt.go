@@ -11,7 +11,7 @@ import (
 	"syscall"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/isterm"
+	"github.com/henvic/wedeploycli/isterm"
 	"golang.org/x/crypto/ssh/terminal"
 )
 

@@ -208,7 +208,7 @@ function setupGopath() {
 
 function setupI() {
   if [ ! -f $GOPATH/bin/i ] ; then
-    ln -s $GOPATH/src/github.com/wedeploy/cli/scripts/build-run.sh $GOPATH/bin/i
+    ln -s $GOPATH/src/github.com/henvic/wedeploycli/scripts/build-run.sh $GOPATH/bin/i
   fi
 }
 

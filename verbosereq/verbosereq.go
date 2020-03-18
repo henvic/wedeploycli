@@ -12,10 +12,10 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/envs"
-	"github.com/wedeploy/cli/prettyjson"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/envs"
+	"github.com/henvic/wedeploycli/prettyjson"
+	"github.com/henvic/wedeploycli/verbose"
 	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 

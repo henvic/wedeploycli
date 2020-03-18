@@ -18,12 +18,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/envs"
-	"github.com/wedeploy/cli/remotes"
-	"github.com/wedeploy/cli/servertest"
-	"github.com/wedeploy/cli/stringlib"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/envs"
+	"github.com/henvic/wedeploycli/remotes"
+	"github.com/henvic/wedeploycli/servertest"
+	"github.com/henvic/wedeploycli/stringlib"
 )
 
 // Expect structure

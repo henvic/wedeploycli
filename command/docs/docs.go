@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/henvic/browser"
+	"github.com/henvic/wedeploycli/links"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/links"
 )
 
 // DocsCmd opens the docs on the browser

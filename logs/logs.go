@@ -13,13 +13,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/colorwheel"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/errorhandler"
-	"github.com/wedeploy/cli/logs/internal/timelog"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/apihelper"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/colorwheel"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/errorhandler"
+	"github.com/henvic/wedeploycli/logs/internal/timelog"
+	"github.com/henvic/wedeploycli/verbose"
 )
 
 // Client for the services

@@ -7,7 +7,7 @@ import (
 
 	"strings"
 
-	"github.com/wedeploy/cli/defaults"
+	"github.com/henvic/wedeploycli/defaults"
 )
 
 func TestVersion(t *testing.T) {

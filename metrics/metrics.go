@@ -20,11 +20,11 @@ import (
 	"os/exec"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/verbose"
+	"github.com/henvic/wedeploycli/verbosereq"
 	uuid "github.com/satori/go.uuid"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/verbose"
-	"github.com/wedeploy/cli/verbosereq"
 	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 

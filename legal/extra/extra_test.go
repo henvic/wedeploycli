@@ -4,7 +4,7 @@ import (
 	"flag"
 	"testing"
 
-	"github.com/wedeploy/cli/tdata"
+	"github.com/henvic/wedeploycli/tdata"
 )
 
 var update bool

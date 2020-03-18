@@ -6,10 +6,10 @@ import (
 	"os"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/shell/internal/termsession"
-	"github.com/wedeploy/cli/verbose"
-	"github.com/wedeploy/cli/wesocket"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/shell/internal/termsession"
+	"github.com/henvic/wedeploycli/verbose"
+	"github.com/henvic/wedeploycli/wesocket"
 	"github.com/wedeploy/gosocketio"
 )
 

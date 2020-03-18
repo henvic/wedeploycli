@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/wedeploy/cli/config"
+	"github.com/henvic/wedeploycli/config"
 )
 
 // Checker for update checks

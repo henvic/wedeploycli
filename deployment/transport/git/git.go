@@ -15,12 +15,12 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/deployment/internal/groupuid"
-	"github.com/wedeploy/cli/deployment/transport"
-	"github.com/wedeploy/cli/envs"
-	"github.com/wedeploy/cli/services"
-	"github.com/wedeploy/cli/userhome"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/deployment/internal/groupuid"
+	"github.com/henvic/wedeploycli/deployment/transport"
+	"github.com/henvic/wedeploycli/envs"
+	"github.com/henvic/wedeploycli/services"
+	"github.com/henvic/wedeploycli/userhome"
+	"github.com/henvic/wedeploycli/verbose"
 )
 
 var errStream io.Writer = os.Stderr

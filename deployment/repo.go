@@ -5,11 +5,11 @@ import (
 	"strings"
 
 	"github.com/henvic/ctxsignal"
-	"github.com/wedeploy/cli/services"
+	"github.com/henvic/wedeploycli/services"
 
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/deployment/internal/feedback"
-	"github.com/wedeploy/cli/projects"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/deployment/internal/feedback"
+	"github.com/henvic/wedeploycli/projects"
 )
 
 // DeployFromGitRepository deploys from a repository on the web.

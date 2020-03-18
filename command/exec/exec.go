@@ -4,14 +4,14 @@ import (
 	"context"
 	"strings"
 
-	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/cmdflagsfromhost"
+	"github.com/henvic/wedeploycli/verbose"
 
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/isterm"
+	"github.com/henvic/wedeploycli/services"
+	"github.com/henvic/wedeploycli/shell"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/isterm"
-	"github.com/wedeploy/cli/services"
-	"github.com/wedeploy/cli/shell"
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{

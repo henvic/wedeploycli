@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/metrics"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/metrics"
 )
 
 var noPurge bool

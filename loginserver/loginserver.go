@@ -12,11 +12,11 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/usertoken"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/apihelper"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/usertoken"
+	"github.com/henvic/wedeploycli/verbose"
 )
 
 // Service server for receiving JSON Web Token

@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/henvic/wedeploycli/cmdflagsfromhost"
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/templates"
+	"github.com/henvic/wedeploycli/usertoken"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/templates"
-	"github.com/wedeploy/cli/usertoken"
 )
 
 // TokenCmd gets the user credential

@@ -72,7 +72,7 @@ function runTests() {
 
   go test $(go list ./... | grep -v /integration$) -race
   if [[ $skipIntegrationTests != true ]] ; then
-    go test github.com/wedeploy/cli/integration
+    go test github.com/henvic/wedeploycli/integration
   fi
 }
 
@@ -104,12 +104,12 @@ function publish() {
   --channel=unstable \
   --config=$config \
   -- \
-  -ldflags="-X 'github.com/wedeploy/cli/defaults.Version=$NEW_RELEASE_VERSION' \
-  -X 'github.com/wedeploy/cli/defaults.Build=$BUILD_COMMIT' \
-  -X 'github.com/wedeploy/cli/defaults.BuildTime=$BUILD_TIME'" \
+  -ldflags="-X 'github.com/henvic/wedeploycli/defaults.Version=$NEW_RELEASE_VERSION' \
+  -X 'github.com/henvic/wedeploycli/defaults.Build=$BUILD_COMMIT' \
+  -X 'github.com/henvic/wedeploycli/defaults.BuildTime=$BUILD_TIME'" \
   -gcflags=-trimpath=$GOPATH \
   -asmflags=-trimpath=$GOPATH \
-  github.com/wedeploy/cli/cmd/lcp
+  github.com/henvic/wedeploycli/cmd/lcp
   cd ~-
 }
 

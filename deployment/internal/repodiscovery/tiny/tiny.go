@@ -3,7 +3,7 @@ package tiny
 import (
 	"encoding/json"
 
-	"github.com/wedeploy/cli/deployment/internal/repodiscovery"
+	"github.com/henvic/wedeploycli/deployment/internal/repodiscovery"
 )
 
 // Info about the deployment.

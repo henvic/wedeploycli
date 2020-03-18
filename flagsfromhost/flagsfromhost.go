@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/remotes"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/remotes"
 )
 
 // ErrorRemoteFlagAndHost happens when both --remote and host remote are used together

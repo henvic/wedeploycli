@@ -24,15 +24,15 @@ In short:
 1. The client runs `lcp login`
 2. The CLI tool asks the user for permission to open the browser
 3. The browser is open on a link that redirects to an HTTP local server running on the CLI tool briefly. The URL looks like this: `https://console.liferay.cloud/login?redirect_uri=http%3A%2F%2Flocalhost%3A65335`
-4. The built-in server does all the handshake and sends back the user to an "authorized" [page](https://github.com/wedeploy/cli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/loginserver/loginserver.go#L126) on the infrastructure.
+4. The built-in server does all the handshake and sends back the user to an "authorized" [page](https://github.com/henvic/wedeploycli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/loginserver/loginserver.go#L126) on the infrastructure.
 
 Behind the scenes, the CLI tool retrieved the response from the OAuth layer.
 
-After the user logins in Console, the browser is [redirected](https://github.com/wedeploy/cli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/loginserver/loginserver.go#L126) with this URL: `http://localhost:65335/#access_token=<access_token>`. The CLI contains a small built-in server that does this [handling](https://github.com/wedeploy/cli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/loginserver/loginserver.go#L48) with a blank page with minimal JavaScript to retrieve the token from the fragment part of the redirected URI. This built-in HTTP server runs on an ephemeral port usually for a few seconds or less during the OAuth handshake process.
+After the user logins in Console, the browser is [redirected](https://github.com/henvic/wedeploycli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/loginserver/loginserver.go#L126) with this URL: `http://localhost:65335/#access_token=<access_token>`. The CLI contains a small built-in server that does this [handling](https://github.com/henvic/wedeploycli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/loginserver/loginserver.go#L48) with a blank page with minimal JavaScript to retrieve the token from the fragment part of the redirected URI. This built-in HTTP server runs on an ephemeral port usually for a few seconds or less during the OAuth handshake process.
 
 After the access token is retrieved from the fragment part of the redirected URL, a form is sumbmitted to another endpoint of the local CLI server, called `/authenticate`. This is done, because browser doesn't send the fragment part of the URL to a server.
 
-Once the login process finishes, the user is [redirected](https://github.com/wedeploy/cli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/loginserver/loginserver.go#L106) to `https://console.liferay.cloud/cli/login-success` page.
+Once the login process finishes, the user is [redirected](https://github.com/henvic/wedeploycli/blob/7a00f6d2bfeec5e710f6790b24c1a2a442a6465c/loginserver/loginserver.go#L106) to `https://console.liferay.cloud/cli/login-success` page.
 
 
 ## Known issues on Liferay Cloud platform

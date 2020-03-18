@@ -11,16 +11,16 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/henvic/ctxsignal"
+	"github.com/henvic/wedeploycli/cmdflagsfromhost"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/command/deploy/internal/getproject"
+	deployremote "github.com/henvic/wedeploycli/command/deploy/remote"
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/deployment"
+	"github.com/henvic/wedeploycli/jsonerror"
+	"github.com/henvic/wedeploycli/logs"
+	"github.com/henvic/wedeploycli/services"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/command/deploy/internal/getproject"
-	deployremote "github.com/wedeploy/cli/command/deploy/remote"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/deployment"
-	"github.com/wedeploy/cli/jsonerror"
-	"github.com/wedeploy/cli/logs"
-	"github.com/wedeploy/cli/services"
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{

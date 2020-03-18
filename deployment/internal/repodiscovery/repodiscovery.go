@@ -5,7 +5,7 @@ import (
 	"sort"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/services"
+	"github.com/henvic/wedeploycli/services"
 	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/config"
 	"gopkg.in/src-d/go-git.v4/plumbing"

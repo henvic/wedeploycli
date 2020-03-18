@@ -22,8 +22,8 @@ var Licenses = []License{
 		Notes:       "modified",
 		LicensePath: "extra/licenses/DOCKER_LICENSE", // Apache License 2.0
 		// Files:
-		// github.com/wedeploy/cli/namesgenerator
-		// github.com/wedeploy/cli/templates
+		// github.com/henvic/wedeploycli/namesgenerator
+		// github.com/henvic/wedeploycli/templates
 	},
 	License{
 		Name:        "color",
@@ -31,7 +31,7 @@ var Licenses = []License{
 		Notes:       "heavily modified",
 		LicensePath: "extra/licenses/COLOR_LICENSE", // MIT
 		// Files:
-		// github.com/wedeploy/cli/color
+		// github.com/henvic/wedeploycli/color
 	},
 	License{
 		Name:        "figures",
@@ -39,7 +39,7 @@ var Licenses = []License{
 		Notes:       "heavily simplified",
 		LicensePath: "extra/licenses/FIGURES_LICENSE", // MIT
 		// Files:
-		// github.com/wedeploy/cli/figures
+		// github.com/henvic/wedeploycli/figures
 	},
 	License{
 		Name:        "buffruneio",

@@ -1,9 +1,9 @@
 package prettyjson
 
 import (
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/isterm"
 	"github.com/tidwall/pretty"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/isterm"
 )
 
 // Pretty prettifies JSON

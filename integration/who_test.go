@@ -3,7 +3,7 @@ package integration
 import (
 	"testing"
 
-	"github.com/wedeploy/cli/tdata"
+	"github.com/henvic/wedeploycli/tdata"
 )
 
 func TestWho(t *testing.T) {

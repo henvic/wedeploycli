@@ -1,11 +1,11 @@
 package inspect
 
 import (
+	inspectconfig "github.com/henvic/wedeploycli/command/inspect/config"
+	inspectcontext "github.com/henvic/wedeploycli/command/inspect/context"
+	inspectservice "github.com/henvic/wedeploycli/command/inspect/service"
+	"github.com/henvic/wedeploycli/command/inspect/token"
 	"github.com/spf13/cobra"
-	inspectconfig "github.com/wedeploy/cli/command/inspect/config"
-	inspectcontext "github.com/wedeploy/cli/command/inspect/context"
-	inspectservice "github.com/wedeploy/cli/command/inspect/service"
-	"github.com/wedeploy/cli/command/inspect/token"
 )
 
 // InspectCmd returns information about current environment

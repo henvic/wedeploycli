@@ -1,6 +1,6 @@
 package colorwheel
 
-import "github.com/wedeploy/cli/color"
+import "github.com/henvic/wedeploycli/color"
 
 // Wheel for sequentially repeatable colors for coloring messages related
 // grouping by a given id - color relation

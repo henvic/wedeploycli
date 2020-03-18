@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/wedeploy/cli/userhome"
+	"github.com/henvic/wedeploycli/userhome"
 )
 
 var home = userhome.GetHomeDir()

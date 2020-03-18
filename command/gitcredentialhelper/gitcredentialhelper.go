@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/wedeploy/cli/envs"
+	"github.com/henvic/wedeploycli/envs"
 )
 
 // Run the credential helper

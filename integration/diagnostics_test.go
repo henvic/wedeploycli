@@ -3,8 +3,8 @@ package integration
 import (
 	"testing"
 
+	"github.com/henvic/wedeploycli/tdata"
 	"github.com/kylelemons/godebug/diff"
-	"github.com/wedeploy/cli/tdata"
 )
 
 func TestDiagnosticsHelpIssue321(t *testing.T) {

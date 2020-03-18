@@ -8,10 +8,10 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/henvic/ctxsignal"
+	"github.com/henvic/wedeploycli/cmdflagsfromhost"
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/logs"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/logs"
 )
 
 var (

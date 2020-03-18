@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/verbose"
 	"github.com/wedeploy/gosocketio"
 	"golang.org/x/crypto/ssh/terminal"
 )

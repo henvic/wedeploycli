@@ -104,7 +104,7 @@ function runTests() {
 
   go test $(go list ./... | grep -v /integration$) -race
   if [[ $skipIntegrationTests != true ]] ; then
-    go test github.com/wedeploy/cli/integration
+    go test github.com/henvic/wedeploycli/integration
   fi
 }
 

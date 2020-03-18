@@ -5,11 +5,11 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/henvic/wedeploycli/cmdflagsfromhost"
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/isterm"
+	"github.com/henvic/wedeploycli/shell"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/isterm"
-	"github.com/wedeploy/cli/shell"
 )
 
 var setupHost = cmdflagsfromhost.SetupHost{

@@ -14,11 +14,11 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/wedeploy/cli/deployment/internal/groupuid"
+	"github.com/henvic/wedeploycli/deployment/internal/groupuid"
 
 	version "github.com/hashicorp/go-version"
-	"github.com/wedeploy/cli/envs"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/envs"
+	"github.com/henvic/wedeploycli/verbose"
 )
 
 // Tests were made on the following git versions on Windows:

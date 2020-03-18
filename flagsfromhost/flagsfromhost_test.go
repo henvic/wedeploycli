@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/wedeploy/cli/remotes"
+	"github.com/henvic/wedeploycli/remotes"
 )
 
 func TestParseNoRemoteList(t *testing.T) {

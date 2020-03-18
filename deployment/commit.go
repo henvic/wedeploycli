@@ -8,11 +8,11 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/deployment/internal/repodiscovery"
-	"github.com/wedeploy/cli/deployment/internal/repodiscovery/tiny"
-	"github.com/wedeploy/cli/services"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/deployment/internal/repodiscovery"
+	"github.com/henvic/wedeploycli/deployment/internal/repodiscovery/tiny"
+	"github.com/henvic/wedeploycli/services"
+	"github.com/henvic/wedeploycli/verbose"
 	git "gopkg.in/src-d/go-git.v4"
 )
 

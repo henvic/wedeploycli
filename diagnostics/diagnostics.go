@@ -8,12 +8,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/fancy"
-	"github.com/wedeploy/cli/verbose"
-	"github.com/wedeploy/cli/waitlivemsg"
+	"github.com/henvic/wedeploycli/apihelper"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/fancy"
+	"github.com/henvic/wedeploycli/verbose"
+	"github.com/henvic/wedeploycli/waitlivemsg"
 	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 

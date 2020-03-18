@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/henvic/wedeploycli/command/root"
 	"github.com/spf13/cobra/doc"
-	"github.com/wedeploy/cli/command/root"
 )
 
 func main() {

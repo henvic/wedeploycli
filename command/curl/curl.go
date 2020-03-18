@@ -15,14 +15,14 @@ import (
 	"strings"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/henvic/wedeploycli/cmdflagsfromhost"
+	"github.com/henvic/wedeploycli/command/curl/internal/curlargs"
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/prettyjson"
+	"github.com/henvic/wedeploycli/verbose"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/command/curl/internal/curlargs"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/prettyjson"
-	"github.com/wedeploy/cli/verbose"
 )
 
 // CurlCmd do curl requests using the user credential

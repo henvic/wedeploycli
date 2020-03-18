@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/wedeploy/cli/update/releasenotes"
+	"github.com/henvic/wedeploycli/update/releasenotes"
 )
 
 var header = `---

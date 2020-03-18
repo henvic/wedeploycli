@@ -1,6 +1,6 @@
 package we
 
-import "github.com/wedeploy/cli/config"
+import "github.com/henvic/wedeploycli/config"
 
 var ctx config.Context
 

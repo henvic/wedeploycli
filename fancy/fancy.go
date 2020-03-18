@@ -7,8 +7,8 @@ import (
 
 	"strings"
 
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/prompt"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/prompt"
 )
 
 // Question formatter

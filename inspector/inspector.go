@@ -9,12 +9,12 @@ import (
 	"strings"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/findresource"
-	"github.com/wedeploy/cli/links"
-	"github.com/wedeploy/cli/services"
-	"github.com/wedeploy/cli/templates"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/findresource"
+	"github.com/henvic/wedeploycli/links"
+	"github.com/henvic/wedeploycli/services"
+	"github.com/henvic/wedeploycli/templates"
+	"github.com/henvic/wedeploycli/verbose"
 )
 
 // GetSpec of the passed type

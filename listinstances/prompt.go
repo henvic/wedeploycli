@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/fancy"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/fancy"
+	"github.com/henvic/wedeploycli/verbose"
 )
 
 // Prompt from the list selection

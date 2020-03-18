@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/deployment/internal/ignore"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/deployment/internal/ignore"
+	"github.com/henvic/wedeploycli/verbose"
 )
 
 func (d *Deploy) copyServiceFiles(path string) (err error) {

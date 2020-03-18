@@ -3,7 +3,7 @@ package userhome
 import (
 	"os"
 
-	"github.com/wedeploy/cli/envs"
+	"github.com/henvic/wedeploycli/envs"
 )
 
 // GetHomeDir returns the user's ~ (home)

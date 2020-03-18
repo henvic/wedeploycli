@@ -7,8 +7,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/envs"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/envs"
 )
 
 var (

@@ -3,15 +3,15 @@ package domain
 import (
 	"context"
 
+	"github.com/henvic/wedeploycli/cmdflagsfromhost"
+	cmddomainadd "github.com/henvic/wedeploycli/command/domain/add"
+	"github.com/henvic/wedeploycli/command/domain/internal/commands"
+	cmddomainremove "github.com/henvic/wedeploycli/command/domain/remove"
+	cmddomainshow "github.com/henvic/wedeploycli/command/domain/show"
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/fancy"
+	"github.com/henvic/wedeploycli/services"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmdflagsfromhost"
-	cmddomainadd "github.com/wedeploy/cli/command/domain/add"
-	"github.com/wedeploy/cli/command/domain/internal/commands"
-	cmddomainremove "github.com/wedeploy/cli/command/domain/remove"
-	cmddomainshow "github.com/wedeploy/cli/command/domain/show"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/fancy"
-	"github.com/wedeploy/cli/services"
 )
 
 type interativeDomainCmd struct {

@@ -9,14 +9,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/services"
-	"github.com/wedeploy/cli/tdata"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/services"
+	"github.com/henvic/wedeploycli/tdata"
 	"github.com/wedeploy/wedeploy-sdk-go/jsonlib"
 
 	"reflect"
 
-	"github.com/wedeploy/cli/findresource"
+	"github.com/henvic/wedeploycli/findresource"
 )
 
 var update bool

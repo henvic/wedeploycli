@@ -12,11 +12,11 @@ import (
 
 	"github.com/hashicorp/errwrap"
 	"github.com/henvic/ctxsignal"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/deployment/internal/copypkg"
-	"github.com/wedeploy/cli/deployment/internal/feedback"
-	"github.com/wedeploy/cli/deployment/transport"
-	"github.com/wedeploy/cli/services"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/deployment/internal/copypkg"
+	"github.com/henvic/wedeploycli/deployment/internal/feedback"
+	"github.com/henvic/wedeploycli/deployment/transport"
+	"github.com/henvic/wedeploycli/services"
 )
 
 // Transport for the deployment.

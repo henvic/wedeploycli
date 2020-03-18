@@ -11,11 +11,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/servertest"
-	"github.com/wedeploy/cli/stringlib"
-	"github.com/wedeploy/cli/tdata"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/servertest"
+	"github.com/henvic/wedeploycli/stringlib"
+	"github.com/henvic/wedeploycli/tdata"
+	"github.com/henvic/wedeploycli/verbose"
 	"github.com/wedeploy/wedeploy-sdk-go"
 )
 

@@ -3,11 +3,11 @@ package show
 import (
 	"context"
 
+	"github.com/henvic/wedeploycli/cmdflagsfromhost"
+	"github.com/henvic/wedeploycli/command/env-var/internal/commands"
+	"github.com/henvic/wedeploycli/command/internal/we"
+	"github.com/henvic/wedeploycli/services"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/cmdflagsfromhost"
-	"github.com/wedeploy/cli/command/env-var/internal/commands"
-	"github.com/wedeploy/cli/command/internal/we"
-	"github.com/wedeploy/cli/services"
 )
 
 // Cmd for showing

@@ -7,9 +7,9 @@ import (
 	"runtime"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/userhome"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/userhome"
+	"github.com/henvic/wedeploycli/verbose"
 )
 
 // Transition for update changes

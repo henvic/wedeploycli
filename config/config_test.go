@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/remotes"
-	"github.com/wedeploy/cli/tdata"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/remotes"
+	"github.com/henvic/wedeploycli/tdata"
 )
 
 func TestSetupNonExistingConfigFileAndTeardown(t *testing.T) {

@@ -7,10 +7,10 @@ import (
 	"os"
 	"sort"
 
-	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/projects"
-	"github.com/wedeploy/cli/templates"
+	"github.com/henvic/wedeploycli/apihelper"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/projects"
+	"github.com/henvic/wedeploycli/templates"
 )
 
 // Client for the services

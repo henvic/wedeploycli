@@ -6,9 +6,9 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/henvic/wedeploycli/legal"
+	"github.com/henvic/wedeploycli/verbose"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/legal"
-	"github.com/wedeploy/cli/verbose"
 )
 
 // LegalCmd is used for showing the abouts of all used libraries

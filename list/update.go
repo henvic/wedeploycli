@@ -1,7 +1,7 @@
 package list
 
 import (
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/verbose"
 	"golang.org/x/time/rate"
 )
 

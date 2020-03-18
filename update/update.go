@@ -12,12 +12,12 @@ import (
 
 	"github.com/equinox-io/equinox"
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/fancy"
-	"github.com/wedeploy/cli/update/keys"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/fancy"
+	"github.com/henvic/wedeploycli/update/keys"
+	"github.com/henvic/wedeploycli/verbose"
 )
 
 var cacheNonAvailabilityHours = 12

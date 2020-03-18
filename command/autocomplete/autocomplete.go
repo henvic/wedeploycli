@@ -1,8 +1,8 @@
 package autocomplete
 
 import (
+	"github.com/henvic/wedeploycli/autocomplete"
 	"github.com/spf13/cobra"
-	"github.com/wedeploy/cli/autocomplete"
 )
 
 // AutocompleteCmd is used for reading the version of this tool

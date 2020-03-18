@@ -5,10 +5,10 @@ import (
 	"os"
 
 	"github.com/henvic/browser"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/errorhandler"
-	"github.com/wedeploy/cli/fancy"
-	"github.com/wedeploy/cli/verbose"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/errorhandler"
+	"github.com/henvic/wedeploycli/fancy"
+	"github.com/henvic/wedeploycli/verbose"
 )
 
 func (w *Watch) maybeSetOpenLogsFunc() {

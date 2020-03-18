@@ -14,12 +14,12 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/henvic/wedeploycli/apihelper"
+	"github.com/henvic/wedeploycli/config"
+	"github.com/henvic/wedeploycli/defaults"
+	"github.com/henvic/wedeploycli/servertest"
+	"github.com/henvic/wedeploycli/tdata"
 	"github.com/kylelemons/godebug/pretty"
-	"github.com/wedeploy/cli/apihelper"
-	"github.com/wedeploy/cli/config"
-	"github.com/wedeploy/cli/defaults"
-	"github.com/wedeploy/cli/servertest"
-	"github.com/wedeploy/cli/tdata"
 	"github.com/wedeploy/wedeploy-sdk-go/jsonlib"
 )
 

@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/wedeploy/cli/shell/internal/kubernetes"
-	"github.com/wedeploy/cli/wesocket"
+	"github.com/henvic/wedeploycli/shell/internal/kubernetes"
+	"github.com/henvic/wedeploycli/wesocket"
 	"github.com/wedeploy/gosocketio"
 	"github.com/wedeploy/gosocketio/websocket"
 )

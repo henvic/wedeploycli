@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wedeploy/cli/color"
-	"github.com/wedeploy/cli/formatter"
-	"github.com/wedeploy/cli/projects"
-	"github.com/wedeploy/cli/services"
+	"github.com/henvic/wedeploycli/color"
+	"github.com/henvic/wedeploycli/formatter"
+	"github.com/henvic/wedeploycli/projects"
+	"github.com/henvic/wedeploycli/services"
 )
 
 // Printf list
