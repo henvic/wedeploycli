@@ -68,7 +68,7 @@ func autoInstall() {
 }
 
 func install() {
-	if err := ioutil.WriteFile(scriptPath, []byte(script), 0644); err != nil {
+	if err := ioutil.WriteFile(scriptPath, []byte(script), 0600); err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Saving autocomplete script error: %v\n", err)
 	}
 

@@ -73,10 +73,10 @@ func main() {
 
 func saveCode(text string) error {
 	var code = fmt.Sprintf(codeFormat, legal.FormatLicense(text))
-	return ioutil.WriteFile("licenses.go", []byte(code), 0644)
+	return ioutil.WriteFile("licenses.go", []byte(code), 0600)
 }
 
 func saveThirdPartyFile(text string) error {
 	var licenses = fmt.Sprintf(thirdPartyFormat, text)
-	return ioutil.WriteFile("../LICENSE-THIRD-PARTY", []byte(licenses), 0644)
+	return ioutil.WriteFile("../LICENSE-THIRD-PARTY", []byte(licenses), 0600)
 }

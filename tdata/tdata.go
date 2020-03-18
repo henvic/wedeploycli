@@ -27,7 +27,7 @@ func FromFile(filename string) string {
 
 // ToFile is a helper function to create a file from a given content
 func ToFile(filename string, content string) {
-	var err = ioutil.WriteFile(filename, []byte(content), 0644)
+	var err = ioutil.WriteFile(filename, []byte(content), 0600)
 
 	if err != nil {
 		panic(err)
