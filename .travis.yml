@@ -1,19 +1,38 @@
 language: go
+
 go:
-  - "1.14"
-before_install:
-  - go get github.com/mattn/goveralls
-  - go get github.com/kisielk/errcheck
-  - go get golang.org/x/lint/golint
-  - go get honnef.co/go/tools/cmd/staticcheck
-  - go get github.com/securego/gosec/cmd/gosec
-  - go get -u golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow
+  - "1.14.x" # when updating to a new major release, update scripts below too
+  - "tip"
+
+os:
+  - linux
+  - osx
+  - windows
+
+jobs:
+  allow_failures:
+    - go: tip
+    - os: windows
+
+env:
+  - GO111MODULE=on
+
+install:
+  - |
+    if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TRAVIS_GO_VERSION" == "1.14.x" ]; then
+      ./scripts/install-ci.sh;
+    fi
+
 script:
-  - make test
+  - |
+    if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TRAVIS_GO_VERSION" == "1.14.x" ]; then
+      make test
+    else
+      go test ./... -race
+    fi
+
 after_success:
-  - sh $(pwd)/scripts/coverage.sh --coveralls
-notifications:
-  slack:
-    rooms:
-      - wedeploy-team:FV024dTryw7D7SW7HYmZsWyB#ci
-    on_success: change
+  - |
+    if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TRAVIS_GO_VERSION" == "1.14.x" ]; then
+      ./scripts/coverage.sh --coveralls;
+    fi
