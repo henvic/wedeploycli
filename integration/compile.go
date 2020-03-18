@@ -15,7 +15,7 @@ func init() {
 		panic(err)
 	}
 
-	chdir("..")
+	chdir("../cmd/lcp")
 	defer chdir(workingDir)
 	compile()
 }

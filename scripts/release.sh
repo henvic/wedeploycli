@@ -98,9 +98,10 @@ function runTestsOnDrone() {
 }
 
 function publish() {
+  cd cmd/lcp
   equinox release \
-  --version=$NEW_RELEASE_VERSION \
-  --channel=$RELEASE_CHANNEL \
+  --version=x \
+  --channel=unstable \
   --config=$config \
   -- \
   -ldflags="-X 'github.com/wedeploy/cli/defaults.Version=$NEW_RELEASE_VERSION' \
@@ -108,7 +109,8 @@ function publish() {
   -X 'github.com/wedeploy/cli/defaults.BuildTime=$BUILD_TIME'" \
   -gcflags=-trimpath=$GOPATH \
   -asmflags=-trimpath=$GOPATH \
-  github.com/wedeploy/cli
+  github.com/wedeploy/cli/cmd/lcp
+  cd ~-
 }
 
 function prerelease() {

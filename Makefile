@@ -13,7 +13,7 @@ legal:
 list-packages:
 	go list ./...
 build:
-	go build
+	go build -o lcp cmd/lcp/*.go
 fast-test:
 	./scripts/test.sh --skip-integration-tests
 test:
