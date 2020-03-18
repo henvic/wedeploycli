@@ -1,8 +1,0 @@
-{
-  "name": "example",
-  "private": true,
-  "main": "server.js",
-  "dependencies": {
-    "socket.io": "^2.1.0"
-  }
-}
