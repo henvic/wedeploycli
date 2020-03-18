@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/henvic/wedeploy-sdk-go/jsonlib"
 	"github.com/henvic/wedeploycli/config"
 	"github.com/henvic/wedeploycli/services"
 	"github.com/henvic/wedeploycli/tdata"
-	"github.com/wedeploy/wedeploy-sdk-go/jsonlib"
 
 	"reflect"
 

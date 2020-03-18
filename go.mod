@@ -19,6 +19,7 @@ require (
 	github.com/henvic/browser v0.0.0-20170823060333-647cc3c01339
 	github.com/henvic/ctxsignal v1.0.0
 	github.com/henvic/uilive v0.0.0-20170601211230-dc7a6ced9df3
+	github.com/henvic/wedeploy-sdk-go v0.0.0-20200318232926-3c570b5617c6
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20180317175531-9fc7bb800b55 // indirect
@@ -39,7 +40,6 @@ require (
 	github.com/stretchr/testify v1.5.1 // indirect
 	github.com/tidwall/pretty v0.0.0-20180105212114-65a9db5fad51
 	github.com/wedeploy/gosocketio v0.0.7-beta
-	github.com/wedeploy/wedeploy-sdk-go v3.0.0+incompatible
 	github.com/xanzy/ssh-agent v0.2.0 // indirect
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect

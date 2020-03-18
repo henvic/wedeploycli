@@ -4,7 +4,7 @@
 
 package aggregation
 
-import "github.com/wedeploy/wedeploy-sdk-go/qrange"
+import "github.com/henvic/wedeploy-sdk-go/qrange"
 
 // Aggregation is a map with the aggregation data
 type Aggregation map[string]*data

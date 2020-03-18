@@ -18,9 +18,9 @@ import (
 	"strings"
 
 	"github.com/hashicorp/errwrap"
+	"github.com/henvic/wedeploy-sdk-go"
 	"github.com/henvic/wedeploycli/config"
 	"github.com/henvic/wedeploycli/verbosereq"
-	"github.com/wedeploy/wedeploy-sdk-go"
 )
 
 // Client for the API

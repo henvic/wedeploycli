@@ -11,12 +11,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/henvic/wedeploy-sdk-go"
 	"github.com/henvic/wedeploycli/color"
 	"github.com/henvic/wedeploycli/servertest"
 	"github.com/henvic/wedeploycli/stringlib"
 	"github.com/henvic/wedeploycli/tdata"
 	"github.com/henvic/wedeploycli/verbose"
-	"github.com/wedeploy/wedeploy-sdk-go"
 )
 
 var (

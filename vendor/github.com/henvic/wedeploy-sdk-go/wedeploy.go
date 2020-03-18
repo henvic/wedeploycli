@@ -18,13 +18,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/wedeploy/wedeploy-sdk-go/query"
-	"github.com/wedeploy/wedeploy-sdk-go/urilib"
+	"github.com/henvic/wedeploy-sdk-go/query"
+	"github.com/henvic/wedeploy-sdk-go/urilib"
 )
 
 var (
 	// Version of Go API Client for WeDeploy Project
-	Version = "3.0.0"
+	Version = "master"
 	// UserAgent of the WeDeploy wedeploy-sdk-go client
 	UserAgent = "WeDeploy/" + Version + " (+https://wedeploy.com)"
 

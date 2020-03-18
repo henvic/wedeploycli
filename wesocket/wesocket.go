@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	wedeploy "github.com/henvic/wedeploy-sdk-go"
 	"github.com/wedeploy/gosocketio"
-	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 
 // Dialer for websocket connection with default client settings.

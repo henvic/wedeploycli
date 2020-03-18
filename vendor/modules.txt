@@ -51,6 +51,16 @@ github.com/henvic/ctxsignal
 # github.com/henvic/uilive v0.0.0-20170601211230-dc7a6ced9df3
 ## explicit
 github.com/henvic/uilive
+# github.com/henvic/wedeploy-sdk-go v0.0.0-20200318232926-3c570b5617c6
+## explicit
+github.com/henvic/wedeploy-sdk-go
+github.com/henvic/wedeploy-sdk-go/aggregation
+github.com/henvic/wedeploy-sdk-go/filter
+github.com/henvic/wedeploy-sdk-go/geo
+github.com/henvic/wedeploy-sdk-go/jsonlib
+github.com/henvic/wedeploy-sdk-go/qrange
+github.com/henvic/wedeploy-sdk-go/query
+github.com/henvic/wedeploy-sdk-go/urilib
 # github.com/inconshreveable/mousetrap v1.0.0
 ## explicit
 github.com/inconshreveable/mousetrap
@@ -114,16 +124,6 @@ github.com/wedeploy/gosocketio
 github.com/wedeploy/gosocketio/ack
 github.com/wedeploy/gosocketio/internal/protocol
 github.com/wedeploy/gosocketio/websocket
-# github.com/wedeploy/wedeploy-sdk-go v3.0.0+incompatible
-## explicit
-github.com/wedeploy/wedeploy-sdk-go
-github.com/wedeploy/wedeploy-sdk-go/aggregation
-github.com/wedeploy/wedeploy-sdk-go/filter
-github.com/wedeploy/wedeploy-sdk-go/geo
-github.com/wedeploy/wedeploy-sdk-go/jsonlib
-github.com/wedeploy/wedeploy-sdk-go/qrange
-github.com/wedeploy/wedeploy-sdk-go/query
-github.com/wedeploy/wedeploy-sdk-go/urilib
 # github.com/xanzy/ssh-agent v0.2.0
 ## explicit
 github.com/xanzy/ssh-agent

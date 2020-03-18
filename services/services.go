@@ -14,11 +14,11 @@ import (
 	"time"
 
 	"github.com/hashicorp/errwrap"
+	wedeploy "github.com/henvic/wedeploy-sdk-go"
 	"github.com/henvic/wedeploycli/apihelper"
 	"github.com/henvic/wedeploycli/config"
 	"github.com/henvic/wedeploycli/jsonerror"
 	"github.com/henvic/wedeploycli/verbosereq"
-	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 
 // Client for the services

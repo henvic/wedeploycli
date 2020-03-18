@@ -20,12 +20,12 @@ import (
 	"os/exec"
 
 	"github.com/hashicorp/errwrap"
+	wedeploy "github.com/henvic/wedeploy-sdk-go"
 	"github.com/henvic/wedeploycli/config"
 	"github.com/henvic/wedeploycli/defaults"
 	"github.com/henvic/wedeploycli/verbose"
 	"github.com/henvic/wedeploycli/verbosereq"
 	uuid "github.com/satori/go.uuid"
-	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 
 var (

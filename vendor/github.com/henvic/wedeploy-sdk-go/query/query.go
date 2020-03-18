@@ -5,8 +5,8 @@
 package query
 
 import (
-	"github.com/wedeploy/wedeploy-sdk-go/aggregation"
-	"github.com/wedeploy/wedeploy-sdk-go/filter"
+	"github.com/henvic/wedeploy-sdk-go/aggregation"
+	"github.com/henvic/wedeploy-sdk-go/filter"
 )
 
 // Builder is the query builder type

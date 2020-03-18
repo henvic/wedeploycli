@@ -6,7 +6,7 @@ import (
 	"net/url"
 
 	"github.com/hashicorp/errwrap"
-	"github.com/wedeploy/wedeploy-sdk-go"
+	"github.com/henvic/wedeploy-sdk-go"
 )
 
 var (

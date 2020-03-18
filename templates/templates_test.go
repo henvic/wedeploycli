@@ -12,7 +12,7 @@ import (
 	"testing"
 	"text/template"
 
-	"github.com/wedeploy/wedeploy-sdk-go/jsonlib"
+	"github.com/henvic/wedeploy-sdk-go/jsonlib"
 )
 
 type mock struct {

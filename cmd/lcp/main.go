@@ -15,10 +15,10 @@ import (
 	"os"
 	"time"
 
+	wedeploy "github.com/henvic/wedeploy-sdk-go"
 	cmd "github.com/henvic/wedeploycli/command"
 	"github.com/henvic/wedeploycli/command/gitcredentialhelper"
 	"github.com/henvic/wedeploycli/envs"
-	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/client"
 	githttp "gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )

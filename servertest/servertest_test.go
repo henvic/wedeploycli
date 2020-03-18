@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/wedeploy/wedeploy-sdk-go"
+	"github.com/henvic/wedeploy-sdk-go"
 )
 
 func TestSetupAndTeardown(t *testing.T) {

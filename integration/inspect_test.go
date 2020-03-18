@@ -6,8 +6,8 @@ import (
 
 	"strings"
 
+	"github.com/henvic/wedeploy-sdk-go/jsonlib"
 	"github.com/henvic/wedeploycli/tdata"
-	"github.com/wedeploy/wedeploy-sdk-go/jsonlib"
 )
 
 func TestInspectPrintServiceStructure(t *testing.T) {

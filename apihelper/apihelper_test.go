@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/errwrap"
+	wedeploy "github.com/henvic/wedeploy-sdk-go"
 	"github.com/henvic/wedeploycli/color"
 	"github.com/henvic/wedeploycli/config"
 	"github.com/henvic/wedeploycli/defaults"
@@ -23,7 +24,6 @@ import (
 	"github.com/henvic/wedeploycli/tdata"
 	"github.com/henvic/wedeploycli/verbose"
 	"github.com/kylelemons/godebug/pretty"
-	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 
 type postMock struct {

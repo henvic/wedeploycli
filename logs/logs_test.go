@@ -11,13 +11,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/henvic/wedeploy-sdk-go/jsonlib"
 	"github.com/henvic/wedeploycli/color"
 	"github.com/henvic/wedeploycli/config"
 	"github.com/henvic/wedeploycli/defaults"
 	"github.com/henvic/wedeploycli/servertest"
 	"github.com/henvic/wedeploycli/stringlib"
 	"github.com/henvic/wedeploycli/tdata"
-	"github.com/wedeploy/wedeploy-sdk-go/jsonlib"
 )
 
 var update bool

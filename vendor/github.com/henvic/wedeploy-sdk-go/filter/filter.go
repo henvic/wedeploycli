@@ -5,8 +5,8 @@
 package filter
 
 import (
-	"github.com/wedeploy/wedeploy-sdk-go/geo"
-	"github.com/wedeploy/wedeploy-sdk-go/qrange"
+	"github.com/henvic/wedeploy-sdk-go/geo"
+	"github.com/henvic/wedeploy-sdk-go/qrange"
 )
 
 // Filter is a map with the filter data

@@ -12,11 +12,11 @@ import (
 	"reflect"
 	"strings"
 
+	wedeploy "github.com/henvic/wedeploy-sdk-go"
 	"github.com/henvic/wedeploycli/color"
 	"github.com/henvic/wedeploycli/envs"
 	"github.com/henvic/wedeploycli/prettyjson"
 	"github.com/henvic/wedeploycli/verbose"
-	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 
 // Disabled flag

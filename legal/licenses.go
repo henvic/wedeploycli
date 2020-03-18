@@ -1732,7 +1732,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-wedeploy-sdk-go github.com/wedeploy/wedeploy-sdk-go
+wedeploy-sdk-go github.com/henvic/wedeploy-sdk-go
 # BSD 3-clause "New" or "Revised" License
 
 Copyright (c) 2016-present, Liferay Inc.

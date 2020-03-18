@@ -8,13 +8,13 @@ import (
 	"sync"
 	"time"
 
+	wedeploy "github.com/henvic/wedeploy-sdk-go"
 	"github.com/henvic/wedeploycli/apihelper"
 	"github.com/henvic/wedeploycli/color"
 	"github.com/henvic/wedeploycli/defaults"
 	"github.com/henvic/wedeploycli/fancy"
 	"github.com/henvic/wedeploycli/verbose"
 	"github.com/henvic/wedeploycli/waitlivemsg"
-	wedeploy "github.com/wedeploy/wedeploy-sdk-go"
 )
 
 // Diagnostics for the CLI and environment
