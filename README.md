@@ -1,4 +1,17 @@
-# Liferay Cloud Platform CLI tool [![Build Status](https://travis-ci.com/wedeploy/cli.svg?token=a51FNuiJPYZtHhup9q1V&branch=master)](https://travis-ci.com/wedeploy/cli) [![Coverage Status](https://coveralls.io/repos/wedeploy/cli/badge.svg)](https://coveralls.io/r/wedeploy/cli) [![codebeat badge](https://codebeat.co/badges/bd6acb49-ccdf-4045-a877-05da0198261a)](https://codebeat.co/projects/github-com-wedeploy-cli) [![Go Report Card](https://goreportcard.com/badge/github.com/wedeploy/cli)](https://goreportcard.com/report/github.com/wedeploy/cli) [![GoDoc](https://godoc.org/github.com/wedeploy/cli?status.svg)](https://godoc.org/github.com/wedeploy/cli)
+# About this repository
+The code you find here is legacy and was originally created for WeDeploy (that originated Liferay Cloud Platform later on). This code is not maintained or used anymore, but there are parts of it that might be useful for many Go projects (especially CLI tools).
+
+To quickly test it, you can run:
+
+```shell
+go install github.com/henvic/wedeploycli/cmd/lcp
+```
+
+This code was previously at github.com/wedeploy/cli.
+
+# Liferay Cloud Platform CLI tool [![Build Status](https://travis-ci.org/henvic/wedeploycli.svg?branch=master)](https://travis-ci.org/henvic/wedeploycli) [![Coverage Status](https://coveralls.io/repos/henvic/wedeploycli/badge.svg)](https://coveralls.io/r/henvic/wedeploycli) [![codebeat badge](https://codebeat.co/badges/bd6acb49-ccdf-4045-a877-05da0198261a)](https://codebeat.co/projects/github-com-wedeploy-cli) [![Go Report Card](https://goreportcard.com/badge/github.com/henvic/wedeploycli)](https://goreportcard.com/report/github.com/henvic/wedeploycli) [![GoDoc](https://godoc.org/github.com/henvic/wedeploycli?status.svg)](https://godoc.org/github.com/henvic/wedeploycli)
+
+**The contents below are outdated.**
 
 Install the tool with:
 
