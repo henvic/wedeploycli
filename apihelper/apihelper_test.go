@@ -994,25 +994,10 @@ func TestURL(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	var want = `Get x://localhost: unsupported protocol scheme "x"`
-
 	r := wedeploy.URL("x://localhost/")
-
 	err := Validate(r, r.Get())
 
-	if err.Error() != want {
-		t.Errorf("Wanted error to be %v, got %v instead", want, err)
-	}
-}
-
-func TestValidateOnNoContext(t *testing.T) {
-	var want = `Get x://localhost: unsupported protocol scheme "x"`
-
-	r := wedeploy.URL("x://localhost/")
-
-	err := Validate(r, r.Get())
-
-	if err.Error() != want {
+	if want := "unsupported protocol scheme"; err == nil || !strings.Contains(err.Error(), want) {
 		t.Errorf("Wanted error to be %v, got %v instead", want, err)
 	}
 }

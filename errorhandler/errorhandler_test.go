@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/errwrap"
@@ -529,11 +530,9 @@ func TestHandleURLError(t *testing.T) {
 	}
 
 	got := Handle(err)
-	want := `network connection error:
-OPTIONS http://example.com/: not timeout`
 
-	if got.Error() != want {
-		t.Errorf("Expected error to be %v, got %v instead", got, want)
+	if want := "network connection error"; err == nil || !strings.Contains(got.Error(), want) {
+		t.Errorf("Expected error to contain %v, got %v instead", want, got)
 	}
 }
 
@@ -556,11 +555,8 @@ func TestHandleURLErrorTimeout(t *testing.T) {
 
 	got := Handle(err)
 
-	want := `network connection timed out:
-OPTIONS http://example.com/: timeout error`
-
-	if got.Error() != want {
-		t.Errorf("Expected error to be %v, got %v instead", got, want)
+	if want := "network connection timed out"; got == nil || !strings.Contains(got.Error(), want) {
+		t.Errorf("Expected error to contain %v, got %v instead", want, got)
 	}
 }
 
