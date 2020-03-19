@@ -8,3 +8,4 @@ go get golang.org/x/lint/golint
 go get honnef.co/go/tools/cmd/staticcheck
 go get github.com/securego/gosec/cmd/gosec
 go get golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow
+go get github.com/kisielk/errcheck

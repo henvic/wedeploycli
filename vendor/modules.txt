@@ -70,6 +70,8 @@ github.com/jbenet/go-context/io
 # github.com/kevinburke/ssh_config v0.0.0-20180317175531-9fc7bb800b55
 ## explicit
 github.com/kevinburke/ssh_config
+# github.com/kisielk/errcheck v1.2.0
+## explicit
 # github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348
 ## explicit
 github.com/kylelemons/godebug/diff
